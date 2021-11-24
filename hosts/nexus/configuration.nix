@@ -1,8 +1,8 @@
 { config, pkgs, lib, ... }:
 let
-  unstableTarball =
-    fetchTarball
-      https://github.com/NixOS/nixpkgs/archive/nixpkgs-unstable.tar.gz;
+  # unstableTarball =
+  #   fetchTarball
+  #     https://github.com/NixOS/nixpkgs/archive/nixpkgs-unstable.tar.gz;
 in
 {
   imports =
@@ -66,9 +66,9 @@ in
   nixpkgs.config = {
     pulse = true;
     packageOverrides = pkgs: {
-      unstable = import unstableTarball {
-        config = config.nixpkgs.config;
-      };
+      # unstable = import unstableTarball {
+      #   config = config.nixpkgs.config;
+      # };
       linux = pkgs.linux.override {
         extraConfig = ''
           USB_CONFIGFS y
@@ -80,7 +80,13 @@ in
         '';
       };
     };
+  };
 
+  nix = {
+    package = pkgs.nixUnstable;
+    extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
   };
 
   # Configure keymap in X11
@@ -132,7 +138,7 @@ in
   # Default system packages, note, should be minimal, for now using it to be
   # lazy until I get home-manager setup
   environment.systemPackages = with pkgs; [
-    unstable.nix
+    # unstable.nix
     libv4l
     rtkit
     kmix
