@@ -1,14 +1,8 @@
 { config, pkgs, lib, ... }:
 let
-  # unstableTarball =
-  #   fetchTarball
-  #     https://github.com/NixOS/nixpkgs/archive/nixpkgs-unstable.tar.gz;
-  nix = {
-    package = pkgs.nixUnstable;
-    extraOptions = ''
-      experimental-features = nix-command flakes
-    '';
-  };
+  unstableTarball =
+    fetchTarball
+      https://github.com/NixOS/nixpkgs/archive/nixpkgs-unstable.tar.gz;
 in
 {
   imports =
@@ -70,11 +64,28 @@ in
   # Related to plasma/x we want pulse
   nixpkgs.config = {
     pulse = true;
-    # packageOverrides = pkgs: {
-    #   unstable = import unstableTarball {
-    #     config = config.nixpkgs.config;
-    #   };
-    # };
+    packageOverrides = pkgs: {
+      unstable = import unstableTarball {
+        config = config.nixpkgs.config;
+      };
+    linux = pkgs.linux.override {
+        extraConfig = ''
+          USB_CONFIGFS y
+          USB_CONFIGFS_F_UVC y
+          USB_CONFIGFS_F_UAC1 y
+          USB_CONFIGFS_F_UAC2 y
+          USB_GADGET y
+          USB_GADGETFS y
+        '';
+    };
+    };
+
+  };
+
+  nix = {
+    extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
   };
 
   # Configure keymap in X11
@@ -126,6 +137,7 @@ in
   # Default system packages, note, should be minimal, for now using it to be
   # lazy until I get home-manager setup
   environment.systemPackages = with pkgs; [
+    unstable.nix
     libv4l
     rtkit
     kmix
@@ -264,18 +276,6 @@ in
   # Use the latest packaged kernel rev (can't zfs broken on latest...)
   #boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelPackages = pkgs.linuxPackages;
-  nixpkgs.config.packageOverrides = pkgs: {
-    linux = pkgs.linux.override {
-        extraConfig = ''
-          USB_CONFIGFS y
-          USB_CONFIGFS_F_UVC y
-          USB_CONFIGFS_F_UAC1 y
-          USB_CONFIGFS_F_UAC2 y
-          USB_GADGET y
-          USB_GADGETFS y
-        '';
-    };
-  };
 
   # lets try pipewire
   security.rtkit.enable = true;
