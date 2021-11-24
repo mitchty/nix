@@ -6,7 +6,8 @@ let
 in
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
 
@@ -16,10 +17,10 @@ in
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.devNodes = "/dev/disk/by-partuuid";
 
-  networking.interfaces.eno1.ipv4.addresses = [ {
+  networking.interfaces.eno1.ipv4.addresses = [{
     address = "10.10.10.10";
     prefixLength = 24;
-  } ];
+  }];
 
   networking.defaultGateway = "10.10.10.1";
   networking.nameservers = [ "10.10.10.1" ];
@@ -56,10 +57,10 @@ in
   services.xserver.enable = true;
   services.xserver.displayManager.sddm.enable = true;
   services.xserver.desktopManager.plasma5.enable = true;
-#  services.xserver.displayManager.autoLogin = {
-#    enable = true;
-#    user = "mitch";
-#  };
+  #  services.xserver.displayManager.autoLogin = {
+  #    enable = true;
+  #    user = "mitch";
+  #  };
 
   # Related to plasma/x we want pulse
   nixpkgs.config = {
@@ -68,7 +69,7 @@ in
       unstable = import unstableTarball {
         config = config.nixpkgs.config;
       };
-    linux = pkgs.linux.override {
+      linux = pkgs.linux.override {
         extraConfig = ''
           USB_CONFIGFS y
           USB_CONFIGFS_F_UVC y
@@ -77,7 +78,7 @@ in
           USB_GADGET y
           USB_GADGETFS y
         '';
-    };
+      };
     };
 
   };
@@ -96,7 +97,7 @@ in
   # services.printing.enable = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
-#  services.xserver.libinput.enable = true;
+  #  services.xserver.libinput.enable = true;
 
   # zsh for a login shell, bash is silly
   programs.zsh.enable = true;
@@ -205,15 +206,15 @@ in
   # };
 
   # This no work with xquartz, why? who knows figure it out later future me if ever.
-#  services.openssh.forwardX11 = true;
-#  programs.ssh.forwardX11 = true;
-#  programs.ssh.setXAuthLocation = true;
+  #  services.openssh.forwardX11 = true;
+  #  programs.ssh.forwardX11 = true;
+  #  programs.ssh.setXAuthLocation = true;
 
   services.xrdp.enable = true;
   #services.xrdp.defaultWindowManager = "startplasma-x11";
   services.xrdp.defaultWindowManager = "startplasma-x11";
   networking.firewall.allowedTCPPorts = [ 3389 3350 5900 ];
-  networking.firewall.allowedUDPPortRanges = [ {from = 60000; to = 60010; }];
+  networking.firewall.allowedUDPPortRanges = [{ from = 60000; to = 60010; }];
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
@@ -224,15 +225,15 @@ in
   networking.enableIPv6 = false;
 
   # Non networkmanager setup, deal with this later
-#  networking.wireless.enable = true;
-#  networking.wireless.networks = {
-#    newhotness = {
-#      psk = "changeme";
-#    };
-#  };
-#  networking.networkmanager.unmanaged = [
-#    "*" "except:type:wwan" "except:type:gsm"
-#  ];
+  #  networking.wireless.enable = true;
+  #  networking.wireless.networks = {
+  #    newhotness = {
+  #      psk = "changeme";
+  #    };
+  #  };
+  #  networking.networkmanager.unmanaged = [
+  #    "*" "except:type:wwan" "except:type:gsm"
+  #  ];
 
   # This config is for nixos release 21.05
   system.stateVersion = "21.05";
@@ -370,7 +371,7 @@ in
         }
         {
           name = "libpipewire-module-access";
-          args = {};
+          args = { };
         }
         { name = "libpipewire-module-adapter"; }
         { name = "libpipewire-module-link-factory"; }
@@ -399,5 +400,5 @@ in
   boot.extraModprobeConfig = ''
     options kvm_intel nested=1
     options v4l2loopback exclusive_caps=1 video_nr=9 card_label="obs"
-    '';
+  '';
 }
