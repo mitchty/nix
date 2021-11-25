@@ -12,6 +12,7 @@
     docker
     docker-compose
     dstat
+    file
     git
     git-lfs
     gitAndTools.transcrypt
@@ -20,6 +21,8 @@
     iotop
     jq
     niv
+    podman
+    podman-compose
     syncthing
     tcpdump
     tmux
