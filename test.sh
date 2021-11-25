@@ -7,6 +7,12 @@ export _base _dir
 
 cd "${_dir}" || exit 126
 
+cleanup() {
+  rm -fr "${_dir}/result"
+}
+
+trap cleanup EXIT
+
 set -e
 nixos-rebuild build --flake .#
 nix build --show-trace ".#homeManagerConfigurations.${USER}.activationPackage"
