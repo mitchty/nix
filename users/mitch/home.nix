@@ -42,5 +42,5 @@
     # extraPackages = (epkgs: [ epkgs.vterm] );
   };
 
-#  home.file = ...
+  #  home.file = ...
 }
