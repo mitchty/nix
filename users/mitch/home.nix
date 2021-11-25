@@ -59,7 +59,7 @@
 
     # Probably need to put more in here
     shellAliases = {
-      edirs = "ls -d **/*(/&F)"; # empty directories
+      edirs = "ls -d **/*(/^F)"; # empty directories
     };
 
     # Maybe make these uppercase? Meh been fine so far
@@ -82,6 +82,4 @@
     # package = unstable.emacsGcc;
     # extraPackages = (epkgs: [ epkgs.vterm] );
   };
-
-  #  home.file = ...
 }
