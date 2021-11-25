@@ -26,7 +26,6 @@
     wget
     xorg.xauth
     xrdp
-    xrdp
   ];
 
   # TODO: convert zsh config to this
