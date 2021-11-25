@@ -16,4 +16,11 @@ as_root() {
   fi
 }
 
+set -e
 as_root nixos-rebuild switch --flake .#
+
+# Not sure this makes sense to run the same way as both $USER/root...
+nix build ".#homeManagerConfigurations.${USER}.activationPackage"
+"${_dir}/result/activate"
+rm -fr result
+exit $?
