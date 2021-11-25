@@ -1,0 +1,16 @@
+* My nix flake for system setup
+
+This is all a work in progress so if you use anything from here, caveat emptor.
+
+I am converting over all my home network to be as much in nixos+flakes as I can get. For now that is one system that is a bit of a test case. More will come at some point.
+
+I'm not sure anything here is useful for anyone but me but the intended usage here is to run something like:
+
+#+begin_src shell
+clear; cd $CHECKOUT && ./update.sh && ./test.sh && ./rebuild.sh
+#+end_src
+
+The 3 scripts function as:
+ - update.sh  - Updates the flake.lock file
+ - test.sh    - Runs a few nix ... build commands to make sure its worth running a rebuild
+ - rebuild.sh - Runs nixos-rebuild and/or home manager activation scripts as needed
