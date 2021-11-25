@@ -9,4 +9,4 @@ cd "${_dir}" || exit 126
 
 set -e
 nix flake update
-echo $?
+exit $?
