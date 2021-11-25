@@ -1,9 +1,5 @@
 { config, pkgs, lib, ... }:
-let
-  # unstableTarball =
-  #   fetchTarball
-  #     https://github.com/NixOS/nixpkgs/archive/nixpkgs-unstable.tar.gz;
-in
+
 {
   imports =
     [
@@ -27,8 +23,6 @@ in
   networking.hostId = "30d18215";
   networking.firewall.enable = false;
 
-  # boot.kernelParams = [ "boot.shell_on_fail" ];
-
   users.users.root.initialPassword = "changeme";
 
   services.openssh = {
@@ -42,21 +36,19 @@ in
   # Set your time zone.
   time.timeZone = "America/Chicago";
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  # };
+  console = {
+    font = "Lat2-Terminus16";
+    keyMap = "us";
+  };
 
   # Enable the Plasma 5 Desktop Environment.
   services.xserver.enable = true;
   services.xserver.displayManager.sddm.enable = true;
   services.xserver.desktopManager.plasma5.enable = true;
+
+  # TODO: review this setup, would like to have login for local but not xrdp
   #  services.xserver.displayManager.autoLogin = {
   #    enable = true;
   #    user = "mitch";
@@ -66,9 +58,6 @@ in
   nixpkgs.config = {
     pulse = true;
     packageOverrides = pkgs: {
-      # unstable = import unstableTarball {
-      #   config = config.nixpkgs.config;
-      # };
       linux = pkgs.linux.override {
         extraConfig = ''
           USB_CONFIGFS y
@@ -82,6 +71,8 @@ in
     };
   };
 
+  # Until nix 2.4 is shipped in a version of nixos, bit of hacks to get things
+  # to work.
   nix = {
     package = pkgs.nixUnstable;
     extraOptions = ''
@@ -91,17 +82,11 @@ in
 
   # Configure keymap in X11
   services.xserver.layout = "us";
-  # services.xserver.xkbOptions = "eurosign:e";
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  #  services.xserver.libinput.enable = true;
 
   # zsh for a login shell, bash is silly
   programs.zsh.enable = true;
 
+  # TODO: can home-manager sort this out now?
   # My normal user account
   users.users.mitch = {
     isNormalUser = true;
@@ -131,67 +116,42 @@ in
   # Only allow certain unfree packages to install
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
     "google-chrome"
-    "slack"
-    "teams"
   ];
 
   # Default system packages, note, should be minimal, for now using it to be
-  # lazy until I get home-manager setup
+  # lazy until I get home-manager setup. Also not sure which of these I want to
+  # be in home-manager and not...
   environment.systemPackages = with pkgs; [
-    # unstable.nix
     libv4l
     rtkit
     kmix
     plasma-pa
     intel-media-driver
-    ag
-    alacritty
-    bind
-    curl
-    docker
-    docker-compose
-    emacs
     element-desktop
     firefox
-    git
-    git-lfs
-    gitAndTools.transcrypt
     google-chrome
-    htop
     libvirt
-    mosh
     networkmanager
     networkmanager-openconnect
     networkmanagerapplet
-    niv
     openvpn
     openresolv
-    # We want newer/more recent nixpkg versions of obs etc...
-    obs-studio
-    obs-v4l2sink
-    #unstable.obs-studio
-    #unstable.obs-v4l2sink
     pavucontrol
-    # pulseaudio
     plasma-desktop
     plasma-integration
     sddm
-    slack
-    syncthing
-    teams
     openconnect
-    tmux
     pipewire
-    tcpdump
-    #vagrant
     yakuake
-    xpra
     xrdp
     xorg.xauth
-    vim
-    vlc
-    wget
-    zsh
+    # TODO: These need to go into home-manager somehow...
+    # We want newer/more recent nixpkg versions of obs etc...
+    # obs-studio
+    # obs-v4l2sink
+    #unstable.obs-studio
+    #unstable.obs-v4l2sink
+    # vlc
   ];
 
   # For the qemu-agent integration for kvm/qemu
@@ -200,40 +160,15 @@ in
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
 
-  # This no work with xquartz, why? who knows figure it out later future me if ever.
-  #  services.openssh.forwardX11 = true;
-  #  programs.ssh.forwardX11 = true;
-  #  programs.ssh.setXAuthLocation = true;
-
+  # Use xrdp for gui usage for this node
+  # TODO: once pikvm is working maybe see if that is worth using instead
   services.xrdp.enable = true;
-  #services.xrdp.defaultWindowManager = "startplasma-x11";
   services.xrdp.defaultWindowManager = "startplasma-x11";
   networking.firewall.allowedTCPPorts = [ 3389 3350 5900 ];
   networking.firewall.allowedUDPPortRanges = [{ from = 60000; to = 60010; }];
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
   networking.networkmanager.enable = true;
   networking.enableIPv6 = false;
-
-  # Non networkmanager setup, deal with this later
-  #  networking.wireless.enable = true;
-  #  networking.wireless.networks = {
-  #    newhotness = {
-  #      psk = "changeme";
-  #    };
-  #  };
-  #  networking.networkmanager.unmanaged = [
-  #    "*" "except:type:wwan" "except:type:gsm"
-  #  ];
 
   # This config is for nixos release 21.05
   system.stateVersion = "21.05";
@@ -274,11 +209,12 @@ in
   virtualisation.libvirtd.enable = true;
   virtualisation.docker.enable = true;
 
-  # Use the latest packaged kernel rev (can't zfs broken on latest...)
+  # Use the latest packaged kernel rev
+  # TODO: can't zfs broken on latest kernel
   #boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelPackages = pkgs.linuxPackages;
 
-  # lets try pipewire
+  # TODO: lets try pipewire, this needs review with OBS...
   security.rtkit.enable = true;
   hardware.pulseaudio.enable = false;
   programs.dconf.enable = true;
@@ -380,10 +316,10 @@ in
     };
   };
 
-
-  # blah
+  # TODO: Lets re-enable ipv6 soon
   boot.kernelParams = [ "ipv6.disable=1" ];
 
+  # Default queueing discipline will be controlled delay
   boot.kernel.sysctl = {
     "net.core.default_qdisc" = "fq_codel";
   };
