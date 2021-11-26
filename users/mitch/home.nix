@@ -31,6 +31,9 @@
     xrdp
   ];
 
+  # TODO: Is this a good spot for this?
+  home.file.".profile".source = ./.profile;
+
   # Options ref: https://github.com/nix-community/home-manager/blob/master/modules/programs/zsh.nix
   programs.zsh = {
     enable = true;
