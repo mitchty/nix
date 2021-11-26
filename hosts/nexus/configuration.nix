@@ -122,30 +122,31 @@
   # lazy until I get home-manager setup. Also not sure which of these I want to
   # be in home-manager and not...
   environment.systemPackages = with pkgs; [
-    libv4l
-    rtkit
-    kmix
-    plasma-pa
-    intel-media-driver
     element-desktop
     firefox
     google-chrome
+    intel-media-driver
+    kmix
+    libv4l
     libvirt
+    linuxPackages.perf
     mosh
     networkmanager
     networkmanager-openconnect
     networkmanagerapplet
-    openvpn
+    openconnect
     openresolv
+    openvpn
     pavucontrol
+    pipewire
     plasma-desktop
     plasma-integration
+    plasma-pa
+    rtkit
     sddm
-    openconnect
-    pipewire
-    yakuake
-    xrdp
     xorg.xauth
+    xrdp
+    yakuake
     # TODO: These need to go into home-manager somehow...
     # We want newer/more recent nixpkg versions of obs etc...
     # obs-studio
