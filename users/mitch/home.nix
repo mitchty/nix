@@ -84,7 +84,6 @@
     initExtra = builtins.readFile ./.zshrc;
   };
 
-  # TODO: tmux porting
   programs.tmux = {
     enable = true;
     tmuxinator.enable = true;
