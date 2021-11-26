@@ -26,6 +26,7 @@
     syncthing
     tcpdump
     tmux
+    vim
     wget
     xorg.xauth
     xrdp
@@ -34,7 +35,13 @@
   # TODO: Is this a good spot for this?
   home.file.".profile".source = ./.profile;
 
-  # Options ref: https://github.com/nix-community/home-manager/blob/master/modules/programs/zsh.nix
+  # TODO: This is just a quick hack to get git config setup for now. Future me
+  # make sure there isn't a programs.git
+  home.file.".gitconfig".source = ./.gitconfig;
+  home.file.".gitignore".source = ./.gitignore;
+
+  # Options ref:
+  # https://github.com/nix-community/home-manager/blob/master/modules/programs/zsh.nix
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -87,11 +94,8 @@
     extraConfig = builtins.readFile ./tmux.conf;
   };
 
-  # TODO: convert emacs config to this setup and make the emacs overlay work...
   programs.emacs = {
     enable = true;
-    package = pkgs.emacs;
-    # package = unstable.emacsGcc;
-    # extraPackages = (epkgs: [ epkgs.vterm] );
+    package = pkgs.emacsGcc;
   };
 }

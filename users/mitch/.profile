@@ -246,3 +246,10 @@ alias tl='tmux ls'
 
 PATH="${PATH}:${HOME}/bin:${HOME}/.local/bin"
 export PATH
+
+# For now lets not use the terribad nano editor
+# TODO: probably emacsclient this up...
+if [ "${EDITOR}" = "nano" ]; then
+  EDITOR="vi"
+  export EDITOR
+fi
