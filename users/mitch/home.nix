@@ -77,6 +77,16 @@
     initExtra = builtins.readFile ./.zshrc;
   };
 
+  # TODO: tmux porting
+  programs.tmux = {
+    enable = true;
+    tmuxinator.enable = true;
+    keyMode = "vi";
+    # This no worky doing in tmux.conf
+    # prefix = "C-\\";
+    extraConfig = builtins.readFile ./tmux.conf;
+  };
+
   # TODO: convert emacs config to this setup and make the emacs overlay work...
   programs.emacs = {
     enable = true;
