@@ -31,7 +31,6 @@
     xrdp
   ];
 
-  # TODO: convert zsh config to this
   # Options ref: https://github.com/nix-community/home-manager/blob/master/modules/programs/zsh.nix
   programs.zsh = {
     enable = true;
@@ -53,9 +52,6 @@
       # And share between sessions
       share = true;
     };
-
-    # What the hell else would I want to do if I type a dirname? Execute it?
-    autocd = true;
 
     # Probably need to put more in here
     shellAliases = {

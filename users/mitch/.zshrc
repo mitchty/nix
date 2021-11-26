@@ -33,6 +33,7 @@ unsetopt bad_pattern # No, don't warn me on bad file patterns kthxbai.
 # The rest of the story (tm) (c) (r) in option settings.
 setopt equals
 setopt notify
+setopt auto_cd
 setopt glob_dots
 setopt print_exit_value # I love you zsh for this, print out non zero exits.
 
