@@ -131,6 +131,7 @@
     firefox
     google-chrome
     libvirt
+    mosh
     networkmanager
     networkmanager-openconnect
     networkmanagerapplet
