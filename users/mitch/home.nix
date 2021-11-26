@@ -73,6 +73,9 @@
       sigcont = "kill -CONT ";
       sigstop = "kill -STOP ";
     };
+
+    # Everything we can't define ^^thataway^^
+    initExtra = builtins.readFile ./.zshrc;
   };
 
   # TODO: convert emacs config to this setup and make the emacs overlay work...
