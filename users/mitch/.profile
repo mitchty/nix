@@ -244,6 +244,8 @@ alias g=git
 alias m=mosh
 alias tl='tmux ls'
 
+alias nfmt='nix-shell -p nixpkgs-fmt --run "find ${_dir} -type f -name '*.nix' -exec nixpkgs-fmt {} \; -print"'
+
 PATH="${PATH}:${HOME}/bin:${HOME}/.local/bin"
 export PATH
 
