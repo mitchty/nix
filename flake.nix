@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-21.05";
+    unstable.url = "nixpkgs/master";
     # Follow same nixpkgs as the system for home-manager
     home-manager = {
       url = "github:nix-community/home-manager/release-21.05";
@@ -14,8 +15,7 @@
     };
     deploy-rs = {
       url = "github:serokell/deploy-rs";
-      # TODO: post nixos-21.05 we can do this
-      # inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "unstable";
     };
   };
 
@@ -55,7 +55,7 @@
       };
 
       deploy = {
-        sshUser = "root";
+        sshUser = "mitch";
         user = "root";
         autoRollback = false;
         magicRollback = false;
@@ -69,5 +69,6 @@
           };
         };
       };
+      checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
     };
 }
