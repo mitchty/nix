@@ -13,10 +13,13 @@
     docker-compose
     dstat
     file
+    firefox
     git
     git-lfs
     gitAndTools.transcrypt
     glances
+    # TODO: Figure out allowfreepredicate for home-manager
+    # google-chrome
     htop
     iotop
     jq

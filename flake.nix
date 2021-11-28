@@ -12,9 +12,14 @@
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    deploy-rs = {
+      url = "github:serokell/deploy-rs";
+      # TODO: post nixos-21.05 we can do this
+      # inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { nixpkgs, home-manager, emacs-overlay, ... }:
+  outputs = { self, nixpkgs, home-manager, emacs-overlay, deploy-rs, ... }@inputs:
     let
       # for now we'll just do one nixos-system
       system = "x86_64-linux";
@@ -46,6 +51,22 @@
           modules = [
             ./hosts/nexus/configuration.nix
           ];
+        };
+      };
+
+      deploy = {
+        sshUser = "root";
+        user = "root";
+        autoRollback = false;
+        magicRollback = false;
+
+        nodes = {
+          "nexus" = {
+            hostname = "10.10.10.200";
+            profiles.system = {
+              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
+            };
+          };
         };
       };
     };
