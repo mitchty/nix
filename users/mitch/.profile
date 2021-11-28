@@ -134,49 +134,70 @@ login_shell()
 # etc... for now whatever.
 try_git()
 {
-  # assume https if input doesn't contain a protocol
-  proto=https
-  destination=${HOME}/src
-  branch="${2:-master}"
+  # assume https if input doesn't contain a protocol string :// otherwise treat
+  # it as golden and let git complain or not
+  proto=${$(printf "%s" "${1}" | grep '://' > /dev/null 2>&1 && printf "%s" "${1}" | sed -e 's|[:]\/\/.*||g'):-https}
+  defbranches="${2:-master main}"
+  destination=${3:-$HOME/src}
 
-  printf "%s\n" "${1}" | grep '://' > /dev/null 2>&1 && proto=$(echo "${1}" | sed -e 's|[:]\/\/.*||g')
-  git_dir=$(echo "${1}" | sed -e 's|.*[:]\/\/||g')
+  git_dir=$(printf "%s" "${1}" | sed -e 's|.*[:]\/\/||g')
   rrepo="${proto}://${git_dir}"
 
   # strip user@, :NNN, and .git from input uri's
-  repo="${destination}/"$(echo "${git_dir}" |
+  repo="${destination}/"$(printf "%s" "${git_dir}" |
     sed -e 's/\.git$//g' |
     sed -e 's|.*\@||g' |
     sed -e 's|\:[[:digit:]]\{1,\}\/|/|g' |
     tr -d '~')
 
-  if [ ! -d "${repo}" ]; then
-    if git ls-remote "${rrepo}" > /dev/null 2>&1; then
-      install -dm755 "${repo}"
-      echo "git clone ${rrepo} ${repo}"
-      git clone --recursive "${rrepo}" "${repo}"
-    else
-      echo "${rrepo} doesn't look to be a git repository"
-    fi
-  fi
+  # Loop through the def(ault)branches looking for a git repo to clone
+  ocwd=$(pwd)
+  for branch in $(echo ${defbranches}); do
+    printf "try git clone %s@%s\n" "${rrepo}" "${branch}" >&2
 
-  if [ "${branch}" != "master" ]; then
-    wtdir="${repo}@${branch}"
-    if [ ! -d "${wtdir}" ]; then
-      if git branch -r --list 'origin/*' | grep -E "^\s+origin/${branch}$" > /dev/null 2>&1; then
-        git worktree add "${repo}@${branch}" "${branch}"
+    # If we git clone(d) and/or changed to that dir already, don't bother
+    # looping, just break
+    [ "${ocwd}" != "$(pwd)" ] && break
+
+    if [ ! -d "${repo}" ]; then
+      if git ls-remote "${rrepo}" > /dev/null 2>&1; then
+        install -dm755 "${repo}"
+        printf "git clone %s %s\n" "${rrepo}" "${repo}" >&2
+        git clone --recursive "${rrepo}" "${repo}" || rmdir "${repo}"
       else
-        echo "${wtdir} branch ${branch} not present in ${rrepo}"
-        return
+        printf "%s doesn't look to be a git repository\n" "${rrepo}" >&2
+        return 1
       fi
     fi
-    echo "${wtdir}" | sed -e "s|$HOME|~|"
-    cd "${wtdir}" || return 126
-  else
-    if [ -d "${repo}" ]; then
-      echo "${repo}" | sed -e "s|$HOME|~|"
-      cd "${repo}" || return 126
+
+    # Treat branch(es) "master" and "main" as special branches we don't treat
+    # as workdir clone directories.
+    if [ "${branch}" != "master" ] && [ "${branch}" != "main" ]; then
+      wtdir="${repo}@${branch}"
+      if [ ! -d "${wtdir}" ]; then
+        if git branch -r --list 'origin/*' | grep -E "^\s+origin/${branch}$" > /dev/null 2>&1; then
+          git worktree add "${repo}@${branch}" "${branch}"
+        else
+          printf "%s at branch %s not present in repo %s\n" "${wtdir}" "${branch}" "${rrepo}"  >&2
+          return 1
+        fi
+      fi
+
+      # shellcheck disable=SC2164
+      cd "${wtdir}"
+    else
+      if [ -d "${repo}" ]; then
+        # shellcheck disable=SC2164
+        cd "${repo}"
+      fi
     fi
+  done
+
+  if [ "${ocwd}" = "$(pwd)" ]; then
+    printf "error: couldn't git clone %s to %s\n" "${rrepo}" "${repo}" >&2
+    return 1
+  else
+    printf "%s\n" "$(pwd)" | sed -e "s|$HOME|~|" >&2
   fi
 }
 
@@ -187,12 +208,17 @@ mt()
 
 gh()
 {
-  try_git "https://github.com/${1}" "${2:-master}"
+  try_git "https://github.com/${1}" "${2:-master main}"
+}
+
+wgh()
+{
+  try_git "https://github.com/${1}" "${2:-master main}" "${HOME}/work/src"
 }
 
 bb()
 {
-  try_git "https://bitbucket.org/${1}" "${2:-master}"
+  try_git "https://bitbucket.org/${1}" "${2:-master main}"
 }
 
 # TODO: This needed anymore for macos?
