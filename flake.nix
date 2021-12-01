@@ -2,17 +2,12 @@
   description = "initial flake configuration setup";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-21.05";
-    unstable.url = "nixpkgs/master";
+    nixpkgs.url = "github:nixpkgs/nixos-21.05";
+    unstable.url = "github:nixpkgs/master";
     # Follow same nixpkgs as the system for home-manager
-    home-manager = {
-      url = "github:nix-community/home-manager/release-21.05";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    emacs-overlay = {
-      url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    home-manager.url = "github:nix-community/home-manager/release-21.05";
+    # inputs.nixpkgs.follows = "nixpkgs";
+    emacs-overlay.url = "github:nix-community/emacs-overlay";
     deploy-rs = {
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "unstable";
@@ -45,6 +40,7 @@
           };
         };
       };
+
       nixosConfigurations = {
         nexus = lib.nixosSystem {
           inherit system;
