@@ -2,8 +2,8 @@
   description = "initial flake configuration setup";
 
   inputs = {
-    nixpkgs.url = "github:nixpkgs/nixos-21.05";
-    unstable.url = "github:nixpkgs/master";
+    nixpkgs.url = "nixpkgs/nixos-21.11";
+    unstable.url = "nixpkgs/master";
     # Follow same nixpkgs as the system for home-manager
     home-manager.url = "github:nix-community/home-manager/release-21.05";
     # inputs.nixpkgs.follows = "nixpkgs";

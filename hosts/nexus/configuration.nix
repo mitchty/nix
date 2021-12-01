@@ -172,8 +172,8 @@
   networking.networkmanager.enable = true;
   networking.enableIPv6 = false;
 
-  # This config is for nixos release 21.05
-  system.stateVersion = "21.05";
+  # This config is for nixos release 21.11
+  system.stateVersion = "21.11";
 
   # Clean /tmp at boot time
   boot.cleanTmpDir = true;
@@ -211,10 +211,8 @@
   virtualisation.libvirtd.enable = true;
   virtualisation.docker.enable = true;
 
-  # Use the latest packaged kernel rev
-  # TODO: can't zfs broken on latest kernel
-  #boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.kernelPackages = pkgs.linuxPackages;
+  # Use the latest packaged kernel rev with zfs support
+  boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
 
   # TODO: lets try pipewire, this needs review with OBS...
   security.rtkit.enable = true;
