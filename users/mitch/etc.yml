@@ -1,0 +1,6 @@
+name: etc
+root: ~/
+windows:
+  - misc: []
+  - syncthing: syncthing
+  - mon: glances --percpu --theme-white --sparkline --sort-processes cpu_percent

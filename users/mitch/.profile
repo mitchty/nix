@@ -153,8 +153,6 @@ try_git()
   # Loop through the def(ault)branches looking for a git repo to clone
   ocwd=$(pwd)
   for branch in $(echo ${defbranches}); do
-    printf "try git clone %s@%s\n" "${rrepo}" "${branch}" >&2
-
     # If we git clone(d) and/or changed to that dir already, don't bother
     # looping, just break
     [ "${ocwd}" != "$(pwd)" ] && break
@@ -185,20 +183,22 @@ try_git()
 
       # shellcheck disable=SC2164
       cd "${wtdir}"
-    else
-      if [ -d "${repo}" ]; then
-        # shellcheck disable=SC2164
-        cd "${repo}"
-      fi
+    fi
+
+    if [ -d "${repo}" ]; then
+      # shellcheck disable=SC2164
+      cd "${repo}"
     fi
   done
 
-  if [ "${ocwd}" = "$(pwd)" ]; then
+  # If we didn't chdir() to the ${repo} let user know.
+  if [ "${ocwd}" = "$(pwd)" ] && [ "$(pwd)" != "${repo}" ]; then
     printf "error: couldn't git clone %s to %s\n" "${rrepo}" "${repo}" >&2
     return 1
-  else
-    printf "%s\n" "$(pwd)" | sed -e "s|$HOME|~|" >&2
   fi
+
+  # Otherwise act like cd and print out the dir we're in to stderr
+  printf "%s\n" "$(pwd)" | sed -e "s|$HOME|~|" >&2
 }
 
 mt()

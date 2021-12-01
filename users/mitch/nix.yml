@@ -1,0 +1,8 @@
+name: nix
+root: ~/src/github.com/mitchty/nix
+windows:
+  - wip:
+      layout: main-horizontal
+      panes:
+        - clear
+        - clear; ./test.sh && ./rebuild.sh
