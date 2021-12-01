@@ -96,6 +96,11 @@
     extraConfig = builtins.readFile ./tmux.conf;
   };
 
+  # Setup some tmuxinator configs
+  home.file.".config/tmuxinator/etc.yml".source = ./etc.yml;
+  home.file.".config/tmuxinator/nix.yml".source = ./nix.yml;
+
+  # TODO: Finish porting emacs config over
   programs.emacs = {
     enable = true;
     package = pkgs.emacsGcc;
