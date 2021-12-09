@@ -99,9 +99,10 @@
   home.file.".config/tmuxinator/etc.yml".source = ./etc.yml;
   home.file.".config/tmuxinator/nix.yml".source = ./nix.yml;
 
-  # TODO: Finish porting emacs config over
-  programs.emacs = {
-    enable = true;
-    package = pkgs.emacsGcc;
-  };
+  # TODO: Finish porting emacs config over also the overlay isn't working via
+  # home-manager switch for some reason future me fix
+  # programs.emacs = {
+  #   enable = true;
+  #   package = pkgs.emacsGcc;
+  # };
 }
