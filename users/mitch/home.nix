@@ -22,6 +22,7 @@
     htop
     iotop
     jq
+    mercurial
     niv
     podman
     podman-compose

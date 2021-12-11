@@ -152,6 +152,8 @@ try_git()
 
   # Loop through the def(ault)branches looking for a git repo to clone
   ocwd=$(pwd)
+  # For this function who cares about these warnings
+  # shellcheck disable=SC2116 disable=SC2086
   for branch in $(echo ${defbranches}); do
     # If we git clone(d) and/or changed to that dir already, don't bother
     # looping, just break
@@ -219,6 +221,78 @@ wgh()
 bb()
 {
   try_git "https://bitbucket.org/${1}" "${2:-master main}"
+}
+
+# TODO Shamelessly copy/pasting from try_git, future me figure out a way to bridge the two
+try_hg()
+{
+  # assume https if input doesn't contain a protocol string :// otherwise treat
+  # it as golden and let hg complain or not
+  proto=${$(printf "%s" "${1}" | grep '://' > /dev/null 2>&1 && printf "%s" "${1}" | sed -e 's|[:]\/\/.*||g'):-https}
+  defbranches="${2:-master main}"
+  destination=${3:-$HOME/src}
+
+  hg_dir=$(printf "%s" "${1}" | sed -e 's|.*[:]\/\/||g')
+  rrepo="${proto}://${hg_dir}"
+
+  # strip user@, :NNN from input uri's
+  repo="${destination}/"$(printf "%s" "${hg_dir}" |
+    sed -e 's|.*\@||g' |
+    sed -e 's|\:[[:digit:]]\{1,\}\/|/|g' |
+    tr -d '~')
+
+  # Loop through the def(ault)branches looking for a git repo to clone
+  ocwd=$(pwd)
+  # For this function who cares about these warnings
+  # shellcheck disable=SC2116 disable=SC2086
+  for branch in $(echo ${defbranches}); do
+    # If we hg clone(d) and/or changed to that dir already, don't bother
+    # looping, just break
+    [ "${ocwd}" != "$(pwd)" ] && break
+
+    if [ ! -d "${repo}" ]; then
+      if hg identify "${rrepo}" > /dev/null 2>&1; then
+        install -dm755 "${repo}"
+        printf "hg clone %s %s\n" "${rrepo}" "${repo}" >&2
+        hg clone "${rrepo}" "${repo}" || rmdir "${repo}"
+      else
+        printf "%s doesn't look to be an hg repository\n" "${rrepo}" >&2
+        return 1
+      fi
+    fi
+
+    # TODO: does hg support workdirs like git? for now whatever
+    # Treat branch(es) "master" and "main" as special branches we don't treat
+    # as workdir clone directories.
+    # if [ "${branch}" != "master" ] && [ "${branch}" != "main" ]; then
+    #   wtdir="${repo}@${branch}"
+    #   if [ ! -d "${wtdir}" ]; then
+    #     if git branch -r --list 'origin/*' | grep -E "^\s+origin/${branch}$" > /dev/null 2>&1; then
+    #       git worktree add "${repo}@${branch}" "${branch}"
+    #     else
+    #       printf "%s at branch %s not present in repo %s\n" "${wtdir}" "${branch}" "${rrepo}"  >&2
+    #       return 1
+    #     fi
+    #   fi
+
+    #   # shellcheck disable=SC2164
+    #   cd "${wtdir}"
+    # fi
+
+    if [ -d "${repo}" ]; then
+      # shellcheck disable=SC2164
+      cd "${repo}"
+    fi
+  done
+
+  # If we didn't chdir() to the ${repo} let user know.
+  if [ "${ocwd}" = "$(pwd)" ] && [ "$(pwd)" != "${repo}" ]; then
+    printf "error: couldn't hg clone %s to %s\n" "${rrepo}" "${repo}" >&2
+    return 1
+  fi
+
+  # Otherwise act like cd and print out the dir we're in to stderr
+  printf "%s\n" "$(pwd)" | sed -e "s|$HOME|~|" >&2
 }
 
 # TODO: This needed anymore for macos?
