@@ -4,6 +4,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
     unstable.url = "github:NixOS/nixpkgs/master";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     # Follow same nixpkgs as the nixos release for the rest
     # Unless/until we find out that doesn't work
     emacs-overlay = {
@@ -20,7 +24,7 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, emacs-overlay, deploy-rs, ... }:
+  outputs = inputs@{ self, nixpkgs, unstable, sops-nix, emacs-overlay, home-manager, deploy-rs, ... }:
     let
       # for now we'll just do one nixos-system
       system = "x86_64-linux";
@@ -51,6 +55,7 @@
           inherit system;
           modules = [
             ./hosts/nexus/configuration.nix
+           sops-nix.nixosModules.sops
           ];
         };
       };

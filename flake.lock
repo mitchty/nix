@@ -24,11 +24,11 @@
     },
     "emacs-overlay": {
       "locked": {
-        "lastModified": 1639360854,
-        "narHash": "sha256-G49TuJUvpf+jyqyyfecUSfdVzYoc1hOVCXfJUoe5SYk=",
+        "lastModified": 1639391595,
+        "narHash": "sha256-0iC8N6pdu1HvJsmLD9BXw8ckuToUohWvD60+8843oIc=",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "0530bb0e8c1220c9b94c35f47084d780fb8cf132",
+        "rev": "a7f8ed2fb32539f18844f0d8670c1a95c988212e",
         "type": "github"
       },
       "original": {
@@ -96,16 +96,37 @@
         "emacs-overlay": "emacs-overlay",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
+        "sops-nix": "sops-nix",
         "unstable": "unstable"
+      }
+    },
+    "sops-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1638821683,
+        "narHash": "sha256-oyqALhGijy2ZQxFSACrcC+Z8MzYLiomKCr9FQXVZ47U=",
+        "owner": "Mic92",
+        "repo": "sops-nix",
+        "rev": "afe00100b16648c1d79e62926caacac561df93a5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Mic92",
+        "repo": "sops-nix",
+        "type": "github"
       }
     },
     "unstable": {
       "locked": {
-        "lastModified": 1639360282,
-        "narHash": "sha256-MT2QMZSNdYG1qsn9XPUPxFp9o5kAqD+j3lPK5aAgAUY=",
+        "lastModified": 1639411175,
+        "narHash": "sha256-a6mDf8d1/vf85QY1B/RQnnpKFrzbXvOIrrvwNnlIEPs=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "356656f14309070dddb51262ff5b51e6d300a17d",
+        "rev": "7fd3e067cd2929e1c0b59287b5b799ad7450f59d",
         "type": "github"
       },
       "original": {
