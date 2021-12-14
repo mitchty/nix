@@ -16,5 +16,5 @@ trap cleanup EXIT
 
 set -e
 nixos-rebuild build --flake .#
-nix build --show-trace ".#homeManagerConfigurations.${USER}.activationPackage"
+nix build --show-trace ".#homeConfigurations.${USER}.activationPackage"
 exit $?
