@@ -28,7 +28,6 @@
     # google-chrome
     htop
     iotop
-    jq
     mercurial
     niv
     podman
@@ -48,4 +47,7 @@
   #   enable = true;
   #   package = pkgs.emacsGcc;
   # };
+
+  # Stuff not worthy of its own .nix file
+  programs.jq.enable = true;
 }
