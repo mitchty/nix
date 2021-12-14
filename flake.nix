@@ -55,7 +55,7 @@
           inherit system;
           modules = [
             ./hosts/nexus/configuration.nix
-           sops-nix.nixosModules.sops
+            sops-nix.nixosModules.sops
           ];
         };
       };
