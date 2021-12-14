@@ -3,8 +3,10 @@
 {
   imports =
     [
-      # Include the results of the hardware scan.
+      # Ordering of imports is for understanding not alphanumeric sorted
       ./hardware-configuration.nix
+      ./nix.nix
+      ./network.nix
       ./pipewire.nix
     ];
 
@@ -68,7 +70,7 @@
   # Until nix 2.4 is shipped in a version of nixos, bit of hacks to get things
   # to work.
   nix = {
-    package = pkgs.nixUnstable;
+    package = pkgs.nix_2_4;
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
@@ -161,26 +163,10 @@
   # TODO: once pikvm is working maybe see if that is worth using instead
   services.xrdp.enable = true;
   services.xrdp.defaultWindowManager = "startplasma-x11";
-  networking.firewall.allowedTCPPorts = [ 3389 3350 5900 ];
-  networking.firewall.allowedUDPPortRanges = [{ from = 60000; to = 60010; }];
-  networking.networkmanager.enable = true;
-  networking.enableIPv6 = false;
 
   # This config is for nixos release 21.11
   system.stateVersion = "21.11";
 
-  # Clean /tmp at boot time
-  boot.cleanTmpDir = true;
-
-  # Enable ntp
-  services.timesyncd.enable = true;
-
-  # Save space not enabling docs
-  documentation.nixos.enable = false;
-
-  # gc old generations
-  nix.gc.automatic = true;
-  nix.gc.options = "--delete-older-than 60d";
 
   # And allow passwordless sudo for wheel
   security.sudo.extraConfig = ''
@@ -207,15 +193,6 @@
 
   # Use the latest packaged kernel rev with zfs support
   boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
-
-
-  # TODO: Lets re-enable ipv6 soon
-  boot.kernelParams = [ "ipv6.disable=1" ];
-
-  # Default queueing discipline will be controlled delay
-  boot.kernel.sysctl = {
-    "net.core.default_qdisc" = "fq_codel";
-  };
 
   # Loopback device/kernel module config for obs
   boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
