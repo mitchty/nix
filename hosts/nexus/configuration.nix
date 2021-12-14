@@ -13,13 +13,6 @@
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.devNodes = "/dev/disk/by-partuuid";
 
-  networking.interfaces.eno1.ipv4.addresses = [{
-    address = "10.10.10.10";
-    prefixLength = 24;
-  }];
-
-  networking.defaultGateway = "10.10.10.1";
-  networking.nameservers = [ "10.10.10.1" ];
   networking.hostId = "30d18215";
   networking.firewall.enable = false;
 
