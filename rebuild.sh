@@ -19,12 +19,6 @@ as_root() {
   fi
 }
 
-cleanup() {
-  rm -fr "${_dir}/result"
-}
-
-trap cleanup EXIT
-
 set -e
 as_root nixos-rebuild switch --flake .#
 home-manager switch --flake .
