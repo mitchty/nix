@@ -3,6 +3,22 @@
   security.rtkit.enable = true;
   hardware.pulseaudio.enable = false;
   programs.dconf.enable = true;
+  # Related to plasma/x we want pulse
+  nixpkgs.config = {
+    pulse = true; # TODO: needed anymore with pipewire?
+    packageOverrides = pkgs: {
+      linux = pkgs.linux.override {
+        extraConfig = ''
+          USB_CONFIGFS y
+          USB_CONFIGFS_F_UVC y
+          USB_CONFIGFS_F_UAC1 y
+          USB_CONFIGFS_F_UAC2 y
+          USB_GADGET y
+          USB_GADGETFS y
+        '';
+      };
+    };
+  };
 
   services.pipewire = {
     enable = true;
