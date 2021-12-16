@@ -1,4 +1,4 @@
-{ config, ... }: {
+{ config, pkgs, ... }: {
   # TODO: make this stuff into a module/option system so I can separate out the
   # video for linux loopback stuff from the kvm related stuff.
   # For the qemu-agent integration for kvm/qemu
@@ -22,4 +22,7 @@
     options v4l2loopback exclusive_caps=1 video_nr=9 card_label="obs"
   '';
 
+  nixpkgs.config.packageOverrides = pkgs: {
+    qemu = pkgs.qemu.override { gtkSupport = true; };
+  };
 }

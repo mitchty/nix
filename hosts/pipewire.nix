@@ -1,4 +1,6 @@
 { ... }: {
+  sound.enable = true;
+
   # TODO: lets try pipewire, this needs review with OBS...
   security.rtkit.enable = true;
   hardware.pulseaudio.enable = false;

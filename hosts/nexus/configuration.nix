@@ -5,11 +5,12 @@
     [
       # Ordering of imports is for understanding not alphanumeric sorted
       ./hardware-configuration.nix
-      ./nix.nix
-      ./network.nix
-      ./pipewire.nix
-      ./graphics.nix
-      ./virtualization.nix
+      ../nix.nix
+      ../network.nix
+      ../pipewire.nix
+      ../graphics.nix
+      ../virtualization.nix
+      ../console.nix
       ./zfs.nix
     ];
 
@@ -26,16 +27,6 @@
 
   # Non dhcp hostname
   networking.hostName = "nexus";
-
-  # Set your time zone.
-  time.timeZone = "America/Chicago";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-  console = {
-    font = "Lat2-Terminus16";
-    keyMap = "us";
-  };
 
   # zsh for a login shell, bash is silly
   programs.zsh.enable = true;
