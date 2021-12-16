@@ -138,7 +138,9 @@ try_git()
   # it as golden and let git complain or not
   proto=${$(printf "%s" "${1}" | grep '://' > /dev/null 2>&1 && printf "%s" "${1}" | sed -e 's|[:]\/\/.*||g'):-https}
   defbranches="${2:-master main}"
-  destination=${3:-$HOME/src}
+  # For wrapper functions, allow destination to be an env var iff unset and
+  # nonnull and $3 is present use $3 or as a fallback use $HOME/src
+  destination=${DEST:=${3:=$HOME/src}}
 
   git_dir=$(printf "%s" "${1}" | sed -e 's|.*[:]\/\/||g')
   rrepo="${proto}://${git_dir}"
@@ -211,11 +213,6 @@ mt()
 gh()
 {
   try_git "https://github.com/${1}" "${2:-master main}"
-}
-
-wgh()
-{
-  try_git "https://github.com/${1}" "${2:-master main}" "${HOME}/work/src"
 }
 
 bb()
@@ -293,6 +290,20 @@ try_hg()
 
   # Otherwise act like cd and print out the dir we're in to stderr
   printf "%s\n" "$(pwd)" | sed -e "s|$HOME|~|" >&2
+}
+
+# Wrapper functions to call whatever into a different prefix
+# aka gh foo/bar -> ~/src/github.com/foo/bar
+# work gh foo/bar -> ~/src/github.com/work/foo/bar
+# private gh foo/bar -> ~/src/github.com/private/foo/bar
+#
+# Note: this then means can't call them with the final arg for say gh/bb
+work() {
+  DEST="${HOME}/${0}/src" "$@"
+}
+
+private() {
+  DEST="${HOME}/${0}/src" "$@"
 }
 
 # TODO: This needed anymore for macos?
