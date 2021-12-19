@@ -12,16 +12,17 @@
 
     sops-nix = {
       url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "unstable";
     };
     # Follow same nixpkgs as the nixos release for the rest
     # Unless/until we find out that doesn't work
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "unstable";
     };
     home-manager = {
       url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "unstable";
     };
     deploy-rs = {
       url = "github:serokell/deploy-rs";
@@ -32,7 +33,7 @@
   outputs = inputs@{ self, nixpkgs, master, nix-darwin, unstable, sops-nix, emacs-overlay, home-manager, deploy-rs, ... }:
     let
       inherit (nix-darwin.lib) darwinSystem;
-      inherit (inputs.unstable.lib) attrValues makeOverridable optionalAttrs singleton;
+      inherit (inputs.unstable.lib) attrValues makeOverridable optionalAttrs singleton nixosSystem;
 
       nixpkgsConfig = {
         config = { allowUnfree = true; };
@@ -80,34 +81,40 @@
           }
         )
       ];
+      nixosModules = attrValues self.nixosModules ++ [
+        # ./nixos
+        home-manager.nixosModules.home-manager
+        (
+          { config, lib, pkgs, ... }:
+          let
+            inherit (config.users) primaryUser;
+          in
+          {
+            nixpkgs = nixpkgsConfig;
+            users.users.${primaryUser}.home = "/home/${primaryUser}";
+            home-manager.useGlobalPkgs = true;
+            home-manager.users.${primaryUser} = homeManagerCommonConfig;
+            nix.registry.my.flake = self;
+          }
+        )
+      ];
     in
     {
       darwinModules = {
-        users = import ./modules/darwin/users.nix;
+        users = import ./modules/users.nix;
       };
-      # homeConfigurations = {
-      #   # Shared home configuration between nixos/darwin
-      #   mitch = inputs.home-manager.lib.homeManagerConfiguration {
-      #     system = "x86_64-darwin";
-      #     homeDirectory = "/home/mitch";
-      #     username = "mitch";
-      #     configuration = { config, pkgs, ... }: {
-      #       imports = [
-      #         ./users/mitch/home.nix
-      #       ];
-      #     };
-      #   };
-      # };
-      # homeManagerModules = {
-      #   imports = [./users/mitch/home.nix
-      #             ];
-      # };
+
+      nixosModules = {
+        users = import ./modules/users.nix;
+      };
+
       darwinConfigurations = rec {
         # Bootstrap configs for later...
         bootstrap-intel = makeOverridable darwinSystem {
           system = "x86_64-darwin";
           modules = [ ./darwin/bootstrap.nix { nixpkgs = nixpkgsConfig; } ];
         };
+        # arm stuff for later?
         bootstrap-arm = bootstrap-intel.override { system = "aarch64-darwin"; };
         mb = darwinSystem {
           system = "x86_64-darwin";
@@ -124,10 +131,11 @@
           ];
         };
       };
+
       nixosConfigurations = {
-        nexus = unstable.lib.nixosSystem {
+        nexus = nixosSystem {
           system = "x86_64-linux";
-          modules = [
+          modules = nixosModules ++ [
             ./hosts/nexus/configuration.nix
             sops-nix.nixosModules.sops
           ];
@@ -138,6 +146,7 @@
       mitch = self.homeConfigurations.mitch.activationPackage;
       defaultpackage.x86_64-linux = self.mitch;
 
+      # TODO: More checks in place would be good
       deploy = {
         sshUser = "mitch";
         user = "root";
