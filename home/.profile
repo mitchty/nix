@@ -140,7 +140,7 @@ try_git()
   defbranches="${2:-master main}"
   # For wrapper functions, allow destination to be an env var iff unset and
   # nonnull and $3 is present use $3 or as a fallback use $HOME/src
-  destination=${DEST:=${3:=$HOME/src}}
+  destination=${DEST:=${3:=$HOME/src/pub}}
 
   git_dir=$(printf "%s" "${1}" | sed -e 's|.*[:]\/\/||g')
   rrepo="${proto}://${git_dir}"
@@ -227,7 +227,9 @@ try_hg()
   # it as golden and let hg complain or not
   proto=${$(printf "%s" "${1}" | grep '://' > /dev/null 2>&1 && printf "%s" "${1}" | sed -e 's|[:]\/\/.*||g'):-https}
   defbranches="${2:-master main}"
-  destination=${3:-$HOME/src}
+  # For wrapper functions, allow destination to be an env var iff unset and
+  # nonnull and $3 is present use $3 or as a fallback use $HOME/src
+  destination=${DEST:=${3:=$HOME/src/pub}}
 
   hg_dir=$(printf "%s" "${1}" | sed -e 's|.*[:]\/\/||g')
   rrepo="${proto}://${hg_dir}"
@@ -293,17 +295,17 @@ try_hg()
 }
 
 # Wrapper functions to call whatever into a different prefix
-# aka gh foo/bar -> ~/src/github.com/foo/bar
-# work gh foo/bar -> ~/src/github.com/work/foo/bar
-# private gh foo/bar -> ~/src/github.com/private/foo/bar
+# aka gh foo/bar -> ~/src/github.com/pub/foo/bar
+# wrk gh foo/bar -> ~/src/github.com/wrk/foo/bar
+# prv gh foo/bar -> ~/src/github.com/prv/foo/bar
 #
 # Note: this then means can't call them with the final arg for say gh/bb
-work() {
-  DEST="${HOME}/${0}/src" "$@"
+wrk() {
+  DEST="${HOME}/src/${0}" "$@"
 }
 
-private() {
-  DEST="${HOME}/${0}/src" "$@"
+prv() {
+  DEST="${HOME}/src/${0}" "$@"
 }
 
 # TODO: This needed anymore for macos?

@@ -20,7 +20,19 @@ as_root() {
 }
 
 set -e
-as_root nixos-rebuild switch --flake .#
-home-manager switch --flake .
+
+uname_s="$(uname -s)"
+args="--show-trace switch --flake .#"
+
+set -x
+# Rebuild based on system type
+if [[ "${uname_s}" = "Darwin" ]]; then
+  darwin-rebuild ${args}
+elif [[ "${uname_s}" = "Linux" ]]; then
+  as_root nixos-rebuild ${args}
+else
+  printf "fatal: not yet configured for an os type of %s" "${uname_s}"
+  exit 1
+fi
 
 exit $?

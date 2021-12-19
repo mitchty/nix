@@ -7,10 +7,10 @@ I am converting over all my home network to be as much in nixos+flakes as I can 
 I'm not sure anything here is useful for anyone but me but the intended usage here is to run something like:
 
 #+begin_src shell
-clear; cd $CHECKOUT && ./update.sh && ./test.sh && ./rebuild.sh
+./ci && ./rebuild
 #+end_src
 
 The 3 scripts function as:
- - update.sh  - Updates the flake.lock file
- - test.sh    - Runs a few nix ... build commands to make sure its worth running a rebuild
- - rebuild.sh - Runs nixos-rebuild and/or home manager activation scripts as needed
+ - bin/update.sh  - Updates the flake.lock file
+ - bin/ci.sh      - Wrapper around {darwin,nixos}-rebuild build
+ - bin/rebuild.sh - Wrapper around {darwin,nixos}-rebuild switch

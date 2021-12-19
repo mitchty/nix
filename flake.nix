@@ -3,7 +3,13 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
-    unstable.url = "github:NixOS/nixpkgs/master";
+    master.url = "github:NixOS/nixpkgs/master";
+    unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    # wip
+    darwin.url = "github:NixOS/nixpkgs/nixpkgs-21.11-darwin";
+    nix-darwin.url = "github:LnL7/nix-darwin";
+
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -15,8 +21,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
-      url = "github:nix-community/home-manager/release-21.11";
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-community/home-manager";
     };
     deploy-rs = {
       url = "github:serokell/deploy-rs";
@@ -24,35 +29,104 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, unstable, sops-nix, emacs-overlay, home-manager, deploy-rs, ... }:
+  outputs = inputs@{ self, nixpkgs, master, nix-darwin, unstable, sops-nix, emacs-overlay, home-manager, deploy-rs, ... }:
     let
-      # for now we'll just do one nixos-system
-      system = "x86_64-linux";
-      pkgs = import nixpkgs {
-        inherit system;
+      inherit (nix-darwin.lib) darwinSystem;
+      inherit (inputs.unstable.lib) attrValues makeOverridable optionalAttrs singleton;
+
+      nixpkgsConfig = {
+        config = { allowUnfree = true; };
+        # overlays = attrValues self.overlays ++ [
+        #   emacs-overlay.overlay
+        # ];
         overlays = [
           emacs-overlay.overlay
         ];
-        config = { allowUnfree = true; };
+        # TODO: later
+        # singleton (
+        #   # Sub in x86 version of packages that don't build on Apple Silicon yet
+        #   final: prev: (optionalAttrs (prev.stdenv.system == "aarch64-darwin") {
+        #     inherit (final.pkgs-x86)
+        #       idris2
+        #       nix-index
+        #       niv;
+        #   })
+        # );
       };
-      lib = nixpkgs.lib;
+
+      homeManagerStateVersion = "22.05";
+      homeManagerCommonConfig = {
+        # imports = attrValues self.homeManagerModules ++ [
+        imports = [
+          ./home
+          { home.stateVersion = homeManagerStateVersion; }
+        ];
+      };
+
+      nixDarwinModules = attrValues self.darwinModules ++ [
+        ./darwin
+        home-manager.darwinModules.home-manager
+        (
+          { config, lib, pkgs, ... }:
+          let
+            inherit (config.users) primaryUser;
+          in
+          {
+            nixpkgs = nixpkgsConfig;
+            users.users.${primaryUser}.home = "/Users/${primaryUser}";
+            home-manager.useGlobalPkgs = true;
+            home-manager.users.${primaryUser} = homeManagerCommonConfig;
+            nix.registry.my.flake = self;
+          }
+        )
+      ];
     in
     {
-      homeConfigurations = {
-        mitch = inputs.home-manager.lib.homeManagerConfiguration {
-          inherit system;
-          homeDirectory = "/home/mitch";
-          username = "mitch";
-          configuration = { config, pkgs, ... }: {
-            imports = [
-              ./users/mitch/home.nix
-            ];
-          };
+      darwinModules = {
+        users = import ./modules/darwin/users.nix;
+      };
+      # homeConfigurations = {
+      #   # Shared home configuration between nixos/darwin
+      #   mitch = inputs.home-manager.lib.homeManagerConfiguration {
+      #     system = "x86_64-darwin";
+      #     homeDirectory = "/home/mitch";
+      #     username = "mitch";
+      #     configuration = { config, pkgs, ... }: {
+      #       imports = [
+      #         ./users/mitch/home.nix
+      #       ];
+      #     };
+      #   };
+      # };
+      # homeManagerModules = {
+      #   imports = [./users/mitch/home.nix
+      #             ];
+      # };
+      darwinConfigurations = rec {
+        # Bootstrap configs for later...
+        bootstrap-intel = makeOverridable darwinSystem {
+          system = "x86_64-darwin";
+          modules = [ ./darwin/bootstrap.nix { nixpkgs = nixpkgsConfig; } ];
+        };
+        bootstrap-arm = bootstrap-intel.override { system = "aarch64-darwin"; };
+        mb = darwinSystem {
+          system = "x86_64-darwin";
+          modules = nixDarwinModules ++ [
+            {
+              users.primaryUser = "mitch";
+              networking.computerName = "mb";
+              networking.hostName = "mb";
+              networking.knownNetworkServices = [
+                "Wi-Fi"
+                "USB 10/100/1000 LAN"
+              ];
+            }
+          ];
         };
       };
       nixosConfigurations = {
-        nexus = lib.nixosSystem {
-          inherit system;
+        nexus = unstable.lib.nixosSystem {
+          system = "x86_64-linux";
           modules = [
             ./hosts/nexus/configuration.nix
             sops-nix.nixosModules.sops

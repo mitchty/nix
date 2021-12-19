@@ -4,11 +4,12 @@
     ./zsh.nix
     ./git.nix
     ./tmux.nix
+    ./syncthing.nix
   ];
 
   programs.home-manager.enable = true;
   home.username = "mitch";
-  home.homeDirectory = "/home/mitch";
+  # home.homeDirectory = "/home/mitch";
 
   home.packages = with pkgs; [
     ag
@@ -17,9 +18,10 @@
     curl
     docker
     docker-compose
-    dstat
+    #    dstat
+    emacs
     file
-    firefox
+    #    firefox
     git
     git-lfs
     gitAndTools.transcrypt
@@ -27,18 +29,18 @@
     # TODO: Figure out allowfreepredicate for home-manager
     # google-chrome
     htop
-    iotop
+    #    iotop
     mercurial
     niv
     podman
-    podman-compose
+    #    podman-compose
     syncthing
     tcpdump
     tmux
     vim
     wget
     xorg.xauth
-    xrdp
+    #    xrdp
   ];
 
   # TODO: Finish porting emacs config over also the overlay isn't working via

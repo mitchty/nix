@@ -1,0 +1,25 @@
+#!/usr/bin/env nix-shell
+#-*-mode: Shell-script; coding: utf-8;-*-
+#!nix-shell -i bash -p bash git
+# File: ci.sh
+_base=$(basename "$0")
+_dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
+export _base _dir
+
+cd "${_dir}" || exit 126
+
+set -e
+uname_s="$(uname -s)"
+args="--show-trace build --flake .#"
+
+# Rebuild based on system type
+if [[ "${uname_s}" = "Darwin" ]]; then
+  darwin-rebuild ${args}
+elif [[ "${uname_s}" = "Linux" ]]; then
+  as_root nixos-rebuild ${args}
+else
+  printf "fatal: not yet configured for an os type of %s" "${uname_s}"
+  exit 1
+fi
+
+exit $?
