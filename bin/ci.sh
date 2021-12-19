@@ -8,6 +8,15 @@ export _base _dir
 
 cd "${_dir}" || exit 126
 
+# Don't sudo when we don't need it sudo as root is... rather sad
+as_root() {
+  if [ "root" = "$(id -un)" ]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
+}
+
 set -e
 uname_s="$(uname -s)"
 args="--show-trace build --flake .#"
