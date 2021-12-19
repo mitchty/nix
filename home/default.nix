@@ -1,4 +1,7 @@
-{ config, pkgs, lib, ... }: {
+{ config, pkgs, lib, ... }:
+
+with pkgs;
+{
   imports = [
     ./sh.nix
     ./zsh.nix
@@ -10,8 +13,12 @@
   programs.home-manager.enable = true;
   home.username = "mitch";
 
-  # Common packages across all
-  home.packages = with pkgs; [
+  # Common packages across all os's
+  #
+  # TODO: should have a grouping or module setup where I can turn stuff on/off
+  # aka have something to control: is this a box for streaming? if so add
+  # obs-studio etc.. something akin to roles in ansible.
+  home.packages = [
     ag
     age
     bind
@@ -30,22 +37,22 @@
     mercurial
     niv
     podman
+    pv
     syncthing
     tcpdump
     tmux
     vim
     wget
     xorg.xauth
-    # ] ++ lib.optional pkgs.stdenv.isDarwin [
-    #   # Stuff only macos needs (future)
-  ] ++ lib.optional pkgs.stdenv.isLinux [
-    # Stuff that might only build/install/work on linux
+  ] ++ (if stdenv.isLinux then [
     dstat
     firefox
     iotop
     podman-compose
+    obs-studio
     xrdp
-  ];
+    # TODO: stdenv.isDarwin here when thats appropriate/needed for now darwin is empty list
+  ] else []);
 
   # TODO: Finish porting emacs config over also the overlay isn't working via
   # home-manager switch for some reason future me fix

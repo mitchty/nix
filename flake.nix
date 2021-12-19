@@ -81,7 +81,7 @@
           }
         )
       ];
-      nixosModules = attrValues self.nixosModules ++ [
+      nixOSModules = attrValues self.nixOSModules ++ [
         # ./nixos
         home-manager.nixosModules.home-manager
         (
@@ -104,7 +104,7 @@
         users = import ./modules/users.nix;
       };
 
-      nixosModules = {
+      nixOSModules = {
         users = import ./modules/users.nix;
       };
 
@@ -135,10 +135,12 @@
       nixosConfigurations = {
         nexus = nixosSystem {
           system = "x86_64-linux";
-          modules = nixosModules ++ [
+          modules = nixOSModules ++ [
             ./hosts/nexus/configuration.nix
             sops-nix.nixosModules.sops
-          ];
+          ] ++ [{
+            users.primaryUser = "mitch";
+          }];
         };
       };
 
