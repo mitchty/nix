@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, lib, ... }: {
   imports = [
     ./sh.nix
     ./zsh.nix
@@ -9,8 +9,8 @@
 
   programs.home-manager.enable = true;
   home.username = "mitch";
-  # home.homeDirectory = "/home/mitch";
 
+  # Common packages across all
   home.packages = with pkgs; [
     ag
     age
@@ -18,10 +18,8 @@
     curl
     docker
     docker-compose
-    #    dstat
     emacs
     file
-    #    firefox
     git
     git-lfs
     gitAndTools.transcrypt
@@ -29,18 +27,24 @@
     # TODO: Figure out allowfreepredicate for home-manager
     # google-chrome
     htop
-    #    iotop
     mercurial
     niv
     podman
-    #    podman-compose
     syncthing
     tcpdump
     tmux
     vim
     wget
     xorg.xauth
-    #    xrdp
+    # ] ++ lib.optional pkgs.stdenv.isDarwin [
+    #   # Stuff only macos needs (future)
+  ] ++ lib.optional pkgs.stdenv.isLinux [
+    # Stuff that might only build/install/work on linux
+    dstat
+    firefox
+    iotop
+    podman-compose
+    xrdp
   ];
 
   # TODO: Finish porting emacs config over also the overlay isn't working via
