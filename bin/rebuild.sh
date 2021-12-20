@@ -24,7 +24,6 @@ set -e
 uname_s="$(uname -s)"
 args="--show-trace switch --flake .#"
 
-set -x
 # Rebuild based on system type
 if [[ "${uname_s}" = "Darwin" ]]; then
   darwin-rebuild ${args}
