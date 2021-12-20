@@ -1,9 +1,4 @@
-{ config, pkgs, lib, ... }:
-
-let
-  unstable = import <nixos-unstable> { };
-in
-{
+{ config, pkgs, lib, ... }: {
   imports =
     [
       # Include the results of the hardware scan.
@@ -135,14 +130,9 @@ in
     networkmanager-openconnect
     networkmanagerapplet
     niv
-    unstable.nix
     openvpn
     openresolv
     # We want newer/more recent nixpkg versions of obs etc...
-    obs-studio
-    obs-v4l2sink
-    #unstable.obs-studio
-    #unstable.obs-v4l2sink
     pavucontrol
     # pulseaudio
     plasma-desktop
@@ -209,18 +199,7 @@ in
   networking.networkmanager.enable = true;
   networking.enableIPv6 = false;
 
-  # Non networkmanager setup, deal with this later
-  #  networking.wireless.enable = true;
-  #  networking.wireless.networks = {
-  #    newhotness = {
-  #      psk = "deadbeef";
-  #    };
-  #  };
-  #  networking.networkmanager.unmanaged = [
-  #    "*" "except:type:wwan" "except:type:gsm"
-  #  ];
-
-  system.stateVersion = "21.05";
+  system.stateVersion = "21.11";
 
   # Clean /tmp at boot time
   boot.cleanTmpDir = true;

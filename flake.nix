@@ -142,6 +142,15 @@
             users.primaryUser = "mitch";
           }];
         };
+        slaptop = nixosSystem {
+          system = "x86_64-linux";
+          modules = nixOSModules ++ [
+            ./hosts/slaptop/configuration.nix
+            sops-nix.nixosModules.sops
+          ] ++ [{
+            users.primaryUser = "mitch";
+          }];
+        };
       };
 
       # For home-manager to work
