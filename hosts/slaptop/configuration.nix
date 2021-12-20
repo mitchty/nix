@@ -3,6 +3,13 @@
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ../nix.nix
+      ../network.nix
+      ../pipewire.nix
+      ../graphics.nix
+      ../virtualization.nix
+      ../console.nix
+      ../users.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -25,25 +32,11 @@
   # Non dhcp hostname
   networking.hostName = "slaptop";
 
-  # Set your time zone.
-  time.timeZone = "America/Chicago";
-
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
   networking.interfaces.wlp82s0.useDHCP = true;
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  # };
 
   # Enable the Plasma 5 Desktop Environment.
   services.xserver.enable = true;
@@ -59,38 +52,12 @@
 
   # Configure keymap in X11
   services.xserver.layout = "us";
-  # services.xserver.xkbOptions = "eurosign:e";
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
   services.xserver.libinput.enable = true;
 
   # zsh for a login shell, bash is silly
   programs.zsh.enable = true;
-
-  # My normal user account
-  users.users.mitch = {
-    isNormalUser = true;
-    description = "Mitchell James Tishmack";
-    home = "/home/mitch";
-    createHome = true;
-    shell = pkgs.zsh;
-    extraGroups = [
-      "audio"
-      "docker"
-      "jackaudio"
-      "libvirtd"
-      "networkmanager"
-      "video"
-      "wheel"
-    ];
-  };
-
-  # TODO: figure this out
-  # Only what is defined, no manual crap
-  #  users.mutableUsers = false;
 
   # Lets let arm stuff run easily
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
@@ -156,23 +123,16 @@
     zsh
   ];
 
-  nixpkgs.config.packageOverrides = pkgs: {
-    qemu = pkgs.qemu.override { gtkSupport = true; };
-  };
+  # nixpkgs.config.packageOverrides = pkgs: {
+  #   qemu = pkgs.qemu.override { gtkSupport = true; };
+  # };
 
   # For flatpak apps like rocket.chat
   services.flatpak.enable = true;
 
-  # For the qemu-agent integration for kvm/qemu
-  services.qemuGuest.enable = true;
-
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
 
   # Enable the OpenSSH daemon.
   services.openssh = {
@@ -180,47 +140,16 @@
     permitRootLogin = "yes";
   };
 
-  # This no work with xquartz, why? who knows figure it out later future me if ever.
-  #  services.openssh.forwardX11 = true;
-  #  programs.ssh.forwardX11 = true;
-  #  programs.ssh.setXAuthLocation = true;
-
   # Try out xrdp instead for macos->nixos remoting
   services.xrdp.enable = true;
   services.xrdp.defaultWindowManager = "startplasma-x11";
-  networking.firewall.allowedTCPPorts = [ 3389 3350 5900 22000 ];
-  networking.firewall.allowedUDPPortRanges = [{ from = 21027; to = 21027; } { from = 22000; to = 22000; } { from = 60000; to = 60010; }];
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-  networking.networkmanager.enable = true;
-  networking.enableIPv6 = false;
 
   system.stateVersion = "21.11";
-
-  # Clean /tmp at boot time
-  boot.cleanTmpDir = true;
-
-  # Enable ntp
-  services.timesyncd.enable = true;
-
-  # Save space not enabling docs
-  documentation.nixos.enable = false;
-
-  # gc old generations
-  nix.gc.automatic = true;
-  nix.gc.options = "--delete-older-than 60d";
 
   # And allow passwordless sudo for wheel
   security.sudo.extraConfig = ''
     %wheel ALL=(root) NOPASSWD:ALL
   '';
-
-  # Capslock is control, I'm not a heathen.
-  services.xserver.xkbOptions = "ctrl:swapcaps";
 
   # Laptop power management, reduce noisy af fan noise of this laptop
   # Ref: https://linrunner.de/tlp/settings/introduction.html
@@ -244,60 +173,24 @@
 
   # TODO: someday use this when the bat charge stuff works on more than lenovo
   # laptops, LAAAAAMEE
-  # # Run tlp fullcharge to fully charge when wanted
-
-  # Use/setup libvirtd/docker
-  virtualisation.libvirtd.enable = true;
-  virtualisation.docker.enable = true;
+  # Run tlp fullcharge to fully charge when wanted
 
   # Use the latest packaged kernel rev
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  # Audio shenanigans, use the full pulse audio install, it seems to work.
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
-  hardware.pulseaudio.package = pkgs.pulseaudioFull.override { jackaudioSupport = true; };
-
-  services.jack = {
-    jackd.enable = true;
-    alsa.enable = false;
-    loopback = {
-      enable = true;
-    };
-  };
-
+  # TODO: Keep?
   # Also make sure that we have a virtualspeaker+monitor so audio can be routed
   # from obs to other apps
-  hardware.pulseaudio.extraConfig = ''
-    load-module module-null-sink sink_name=Virtual-Speaker sink_properties=device.description=Virtual-Speaker
-    load-module module-remap-source source_name=Remap-Source master=Virtual-Speaker.monitor
-  '';
-
-  # blah
-  boot.kernelParams = [ "ipv6.disable=1" ];
-
-  boot.kernel.sysctl = {
-    "net.core.default_qdisc" = "fq_codel";
-  };
-
-  # Loopback device/kernel module config for obs
-  boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
-  boot.kernelModules = with config.boot.kernelModules; [
-    "v4l2loopback"
-    "kvm_intel"
-  ];
-
-  # Top is the video loopback device options
-  # kvm_intel nested is set so we can nest vm's in kvm vm's
-  boot.extraModprobeConfig = ''
-    options kvm_intel nested=1
-    options v4l2loopback exclusive_caps=1 video_nr=9 card_label="obs"
-  '';
+  # hardware.pulseaudio.extraConfig = ''
+  #   load-module module-null-sink sink_name=Virtual-Speaker sink_properties=device.description=Virtual-Speaker
+  #   load-module module-remap-source source_name=Remap-Source master=Virtual-Speaker.monitor
+  # '';
 
   services.resolved = {
     enable = true;
     fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];
   };
+
   services.openvpn.servers = {
     fremont = {
       config = '' config /home/mitch/src/github.com/rancherlabs/fremont/VPN/Ranch01/ranch01-fremont-udp.ovpn '';
