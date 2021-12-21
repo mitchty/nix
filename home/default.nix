@@ -54,7 +54,7 @@ with pkgs;
     obs-studio
     xrdp
     # TODO: stdenv.isDarwin here when thats appropriate/needed for now darwin is empty list
-  ] else []);
+  ] else [ ]);
 
   # TODO: Finish porting emacs config over also the overlay isn't working via
   # home-manager switch for some reason future me fix
