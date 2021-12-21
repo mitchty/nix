@@ -14,4 +14,8 @@
   boot.kernel.sysctl = {
     "net.core.default_qdisc" = "fq_codel";
   };
+
+  # Some programs need SUID wrappers, can be configured further or are
+  # started in user sessions.
+  programs.mtr.enable = true;
 }
