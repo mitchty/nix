@@ -15,6 +15,7 @@
       ../pkgs.nix
       ../binfmt.nix
       ../shell.nix
+      ../desktop.nix
       ./zfs.nix
     ];
 
