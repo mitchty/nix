@@ -368,3 +368,16 @@ if [ "${EDITOR}" = "nano" ]; then
   EDITOR="vi"
   export EDITOR
 fi
+
+# Silly helper functions to run stuff on specific platforms only
+onlinux() {
+  if [[ "$(uname -s)" = "Linux" ]]; then
+    "$@"
+  fi
+}
+
+onmac() {
+  if [[ "$(uname -s)" = "Darwin" ]]; then
+    "$@"
+  fi
+}
