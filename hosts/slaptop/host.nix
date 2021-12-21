@@ -28,10 +28,6 @@
   networking.useDHCP = false;
   networking.interfaces.wlp82s0.useDHCP = true;
 
-  # nixpkgs.config.packageOverrides = pkgs: {
-  #   qemu = pkgs.qemu.override { gtkSupport = true; };
-  # };
-
   # TODO: Keep?
   # Also make sure that we have a virtualspeaker+monitor so audio can be routed
   # from obs to other apps

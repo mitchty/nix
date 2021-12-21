@@ -22,5 +22,6 @@
   # Non dhcp hostname
   networking.hostName = "slaptop";
 
+  # This config is for nixos release 21.11
   system.stateVersion = "21.11";
 }
