@@ -36,6 +36,7 @@ with pkgs;
     htop
     mercurial
     niv
+    openssl
     podman
     pv
     syncthing
@@ -49,6 +50,7 @@ with pkgs;
     firefox
     iotop
     podman-compose
+    powertop
     obs-studio
     xrdp
     # TODO: stdenv.isDarwin here when thats appropriate/needed for now darwin is empty list
