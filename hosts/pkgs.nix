@@ -18,6 +18,7 @@
     kmix
     libv4l
     libvirt
+    linuxPackages.cpupower
     linuxPackages.perf
     mosh
     networkmanager
@@ -32,7 +33,9 @@
     plasma-integration
     plasma-pa
     rtkit
+    s-tui
     sddm
+    strace
     tmux
     xorg.xauth
     yakuake
