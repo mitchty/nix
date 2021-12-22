@@ -25,6 +25,7 @@ with pkgs;
     curl
     docker
     docker-compose
+    du-dust
     emacs
     file
     git
@@ -45,6 +46,7 @@ with pkgs;
     vim
     wget
     xorg.xauth
+    xz
   ] ++ (if stdenv.isLinux then [
     dstat
     firefox
