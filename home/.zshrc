@@ -125,7 +125,11 @@ setopt prompt_subst
 
 precmd()
 {
-  [[ -d .git ]] && vcs_info
+  if [[ -d .git ]]; then
+    vcs_info
+  else
+    vcs_info_msg_0_=''
+  fi
 }
 
 # +N/-N upstream info
