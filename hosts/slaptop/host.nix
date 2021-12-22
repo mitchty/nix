@@ -43,7 +43,7 @@
 
   services.openvpn.servers = {
     fremont = {
-      config = '' config /home/mitch/src/github.com/rancherlabs/fremont/VPN/Ranch01/ranch01-fremont-udp.ovpn '';
+      config = '' config /home/mitch/src/wrk/github.com/rancherlabs/fremont/VPN/Ranch01/ranch01-fremont-udp.ovpn '';
       up = "${pkgs.openvpn}/libexec/update-systemd-resolved";
       down = "${pkgs.openvpn}/libexec/update-systemd-resolved";
     };
