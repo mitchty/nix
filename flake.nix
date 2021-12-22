@@ -8,10 +8,8 @@
 
     # wip
     darwin.url = "github:NixOS/nixpkgs/nixpkgs-21.11-darwin";
-    nix-darwin.url = "github:LnL7/nix-darwin";
-
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
+    nix-darwin = {
+      url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "unstable";
     };
     # Follow same nixpkgs as the nixos release for the rest
