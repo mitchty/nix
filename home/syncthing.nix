@@ -4,6 +4,7 @@
       #include .stglobalignore
     '';
     ".stglobalignore".text = ''
+      .git/COMMIT_EDITMSG
       (?d).DS_Store
       packer_cache
       result
