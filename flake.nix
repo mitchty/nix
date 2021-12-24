@@ -28,7 +28,7 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, master, nix-darwin, unstable, sops-nix, emacs-overlay, home-manager, deploy-rs, ... }:
+  outputs = inputs@{ self, nixpkgs, master, nix-darwin, unstable, emacs-overlay, home-manager, deploy-rs, ... }:
     let
       inherit (nix-darwin.lib) darwinSystem;
       inherit (inputs.unstable.lib) attrValues makeOverridable optionalAttrs singleton nixosSystem;
@@ -135,7 +135,6 @@
           system = "x86_64-linux";
           modules = nixOSModules ++ [
             ./hosts/nexus/configuration.nix
-            sops-nix.nixosModules.sops
           ] ++ [{
             users.primaryUser = "mitch";
           }];
@@ -144,7 +143,6 @@
           system = "x86_64-linux";
           modules = nixOSModules ++ [
             ./hosts/slaptop/configuration.nix
-            sops-nix.nixosModules.sops
           ] ++ [{
             users.primaryUser = "mitch";
           }];
