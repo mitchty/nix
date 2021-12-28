@@ -17,6 +17,7 @@
       ../shell.nix
       ../laptop.nix
       ./host.nix
+      ../hosts.nix
     ];
 
   # Non dhcp hostname

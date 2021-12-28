@@ -17,6 +17,7 @@
       ../shell.nix
       ../desktop.nix
       ../zfs.nix
+      ../hosts.nix
     ];
 
   # For zfs
