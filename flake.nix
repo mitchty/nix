@@ -22,13 +22,28 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "unstable";
     };
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     deploy-rs = {
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "unstable";
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, master, nix-darwin, unstable, emacs-overlay, home-manager, deploy-rs, ... }:
+  outputs =
+    inputs@{ self
+    , nixpkgs
+    , master
+    , nix-darwin
+    , unstable
+    , emacs-overlay
+    , home-manager
+    , nixos-generators
+    , deploy-rs
+    , ...
+    }:
     let
       inherit (nix-darwin.lib) darwinSystem;
       inherit (inputs.unstable.lib) attrValues makeOverridable optionalAttrs singleton nixosSystem;
@@ -98,6 +113,25 @@
       ];
     in
     {
+      packages.x86_64-linux = {
+        inherit unstable;
+        iso = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          format = "iso";
+        };
+        install-iso = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          format = "install-iso";
+        };
+        x86iso = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./iso/configuration.nix
+          ];
+          format = "install-iso";
+        };
+      };
+
       darwinModules = {
         users = import ./modules/users.nix;
       };
