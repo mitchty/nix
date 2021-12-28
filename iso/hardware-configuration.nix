@@ -24,12 +24,7 @@
   };
 
   fileSystems."/boot" = {
-    device = "/dev/nvme0n1p1";
-    fsType = "vfat";
-  };
-
-  fileSystems."/boot-bk" = {
-    device = "/dev/nvme1n1p1";
+    device = "/dev/sda1";
     fsType = "vfat";
   };
 

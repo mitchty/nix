@@ -7,23 +7,20 @@
     script = with pkgs; ''
       echo 'journalctl -fb -n100 -uinstall' >>~nixos/.bash_history
       set -eux
-      # partitioning
-      parted -s /dev/nvme0n1 -- mklabel gpt
-      parted -s /dev/nvme0n1 -- mkpart ESP fat32 1MiB 512MiB
-      parted -s /dev/nvme0n1 -- set 1 esp on
-      parted -s /dev/nvme0n1 -- mkpart primary 512MiB -8GiB
-
-      parted -s /dev/nvme1n1 -- mklabel gpt
-      parted -s /dev/nvme1n1 -- mkpart ESP fat32 1MiB 512MiB
-      parted -s /dev/nvme1n1 -- set 1 esp on
-      parted -s /dev/nvme1n1 -- mkpart primary 512MiB -8GiB
+      disk0=/dev/sda
+      disk0p1=$disk0'1'
+      disk0p2=$disk0'2'
+      parted -s $disk0 -- mklabel gpt
+      parted -s $disk0 -- mkpart ESP fat32 1MiB 512MiB
+      parted -s $disk0 -- set 1 esp on
+      parted -s $disk0 -- mkpart primary 512MiB -2M
 
       sync
 
       hostid="$(printf "00000000%x" "$(cksum /etc/machine-id | cut -d' ' -f1)" | tail -c8)"
 
       # zfs
-      zpool create -f -O xattr=sa -O acltype=posixacl -O compression=zstd -O atime=off zroot mirror /dev/nvme0n1p2 /dev/nvme1n1p2
+      zpool create -f -O xattr=sa -O acltype=posixacl -O compression=zstd -O atime=off zroot $disk0p2
       zfs create -o mountpoint=none zroot/local
       zfs create -o mountpoint=none zroot/safe
       zfs create -o mountpoint=legacy zroot/local/nix
@@ -33,13 +30,12 @@
       sync
 
       # efi nonsense
-      mkfs.vfat /dev/nvme0n1p1
-      mkfs.vfat /dev/nvme1n1p1
+      mkfs.vfat $disk0p1
 
       # mount all the crap
       mount -t zfs zroot/safe/root /mnt
-      mkdir /mnt/boot /mnt/boot-bk /mnt/etc /mnt/home /mnt/nix
-      mount -t vfat /dev/nvme0n1p1 /mnt/boot
+      mkdir /mnt/boot /mnt/etc /mnt/home /mnt/nix
+      mount -t vfat $disk0p1 /mnt/boot
       mount -t zfs zroot/safe/home /mnt/home
       mount -t zfs zroot/local/nix /mnt/nix
 
@@ -59,7 +55,7 @@
         --no-root-passwd \
         --cores 0
       echo 'Shutting off...'
-      ${systemd}/bin/shutdown now
+      ${systemd}/bin/systemctl reboot --firmware-setup || ${systemd}/bin/shutdown now
     '';
     environment = config.nix.envVars // {
       inherit (config.environment.sessionVariables) NIX_PATH;
