@@ -55,7 +55,8 @@ with pkgs;
     powertop
     obs-studio
     xrdp
-    # TODO: stdenv.isDarwin here when thats appropriate/needed for now darwin is empty list
+  ] else [ ]) ++ (if stdenv.isDarwin then [
+    yt-dlp
   ] else [ ]);
 
   # TODO: Finish porting emacs config over also the overlay isn't working via
