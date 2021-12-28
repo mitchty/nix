@@ -180,13 +180,13 @@ try_git()
         if git branch -r --list 'origin/*' | grep -E "^\s+origin/${branch}$" > /dev/null 2>&1; then
           git worktree add "${repo}@${branch}" "${branch}"
         else
-          printf "%s at branch %s not present in repo %s\n" "${wtdir}" "${branch}" "${rrepo}"  >&2
-          return 1
+          printf "%s at branch %s not present in repo %s\n" "${wtdir}" "${branch}" "${rrepo}" >&2
+          break
         fi
       fi
 
       # shellcheck disable=SC2164
-      cd "${wtdir}"
+      cd "${wtdir}" && break
     fi
 
     if [ -d "${repo}" ]; then
