@@ -308,6 +308,15 @@ prv() {
   DEST="${HOME}/src/${0}" "$@"
 }
 
+# To be lazy
+orgprv() {
+  prv mt org-mode/private
+}
+
+orgpub() {
+  mt org-mode/public
+}
+
 # TODO: This needed anymore for macos?
 # if [ ! -e ${HOME}/.nonix ]; then
 #   SSL_CERT_FILE="${HOME}/.nix-profile/etc/ssl/certs/ca-bundle.crt"
