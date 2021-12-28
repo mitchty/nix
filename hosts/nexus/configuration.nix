@@ -16,9 +16,10 @@
       ../binfmt.nix
       ../shell.nix
       ../desktop.nix
-      ./zfs.nix
+      ../zfs.nix
     ];
 
+  # For zfs
   networking.hostId = "30d18215";
 
   # Non dhcp hostname
