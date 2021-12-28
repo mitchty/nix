@@ -173,6 +173,15 @@
             users.primaryUser = "mitch";
           }];
         };
+        dfs1 = nixosSystem {
+          system = "x86_64-linux";
+          modules = nixOSModules ++ [
+            ./hosts/dfs1/configuration.nix
+          ] ++ [{
+            users.primaryUser = "mitch";
+          }];
+        };
+        # Work
         slaptop = nixosSystem {
           system = "x86_64-linux";
           modules = nixOSModules ++ [
