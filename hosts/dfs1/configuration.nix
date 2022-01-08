@@ -5,32 +5,22 @@
       ./hardware-configuration.nix
       ../nix.nix
       ../network.nix
-      ../pipewire.nix
-      ../virtualization.nix
       ../console.nix
       ../users.nix
       ../ssh.nix
       ../root.nix
       ../pkgs.nix
-      ../binfmt.nix
       ../shell.nix
-      ../desktop.nix
       ../zfs.nix
       ../hosts.nix
     ];
 
   # For zfs
-  config.networking.hostId = "30d18215";
+  networking.hostId = "96a61137";
 
-  # Non dhcp hostname
-  config.networking.hostName = "nexus";
+  # non dhcp hostname
+  networking.hostName = "dfs1";
 
   # This config is for nixos release 21.11
-  config.system.stateVersion = "21.11";
-
-  # This is an intel system, do "intel" stuff to it
-  config.services.role.intel.enable = true;
-
-  # We want gui stuff here
-  config.services.role.gui.enable = true;
+  system.stateVersion = "21.11";
 }

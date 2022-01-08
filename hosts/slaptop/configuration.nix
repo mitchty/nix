@@ -6,7 +6,6 @@
       ../nix.nix
       ../network.nix
       ../pipewire.nix
-      ../graphics.nix
       ../virtualization.nix
       ../console.nix
       ../users.nix

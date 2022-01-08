@@ -47,8 +47,11 @@ with pkgs;
     wget
     xorg.xauth
     xz
+    restic
   ] ++ (if stdenv.isLinux then [
     dstat
+    btop
+    tmuxp
     firefox
     iotop
     podman-compose

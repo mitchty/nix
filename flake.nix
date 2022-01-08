@@ -7,6 +7,14 @@
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     # wip
+    mitchty = {
+      url = "github:mitchty/nixos";
+      inputs.nixpkgs.follows = "unstable";
+    };
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.nixpkgs.follows = "unstable";
+    };
     darwin.url = "github:NixOS/nixpkgs/nixpkgs-21.11-darwin";
     nix-darwin = {
       url = "github:LnL7/nix-darwin";
@@ -26,6 +34,10 @@
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     deploy-rs = {
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "unstable";
@@ -36,11 +48,14 @@
     inputs@{ self
     , nixpkgs
     , master
-    , nix-darwin
     , unstable
+    , mitchty
+    , flake-utils
+    , nix-darwin
     , emacs-overlay
     , home-manager
     , nixos-generators
+    , agenix
     , deploy-rs
     , ...
     }:
@@ -95,8 +110,9 @@
         )
       ];
       nixOSModules = attrValues self.nixOSModules ++ [
-        # ./nixos
+        ./modules/nixos
         home-manager.nixosModules.home-manager
+        agenix.nixosModules.age
         (
           { config, lib, pkgs, ... }:
           let
