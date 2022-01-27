@@ -4,7 +4,8 @@ with lib;
 
 let
   cfg = config.services.role.lowmem;
-in {
+in
+{
   options.services.role.lowmem = {
     enable = mkEnableOption "Designate the system has low memory.";
   };

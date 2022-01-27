@@ -51,9 +51,9 @@ push_env()
 # host key changes.
 nukehost()
 {
-    for x in echo "$@"; do
-      sed -i -e "/$x/d" ~/.ssh/known_hosts
-    done
+  for x in echo "$@"; do
+    sed -i -e "/$x/d" ~/.ssh/known_hosts
+  done
 }
 
 # Cheap copy function to make copying a file via ssh from one host
@@ -366,7 +366,7 @@ alias g=git
 alias m=mosh
 alias tl='tmux ls'
 
-alias nfmt='nix-shell -p nixpkgs-fmt --run "find . -type f -name \*\.nix -exec nixpkgs-fmt {} \; -print"'
+alias nfmt='find . -type f -name \*\.nix -exec sh -c "nixpkgs-fmt --check {} > /dev/null 2>&1 || nixpkgs-fmt {}" \;'
 
 PATH="${PATH}:${HOME}/bin:${HOME}/.local/bin"
 export PATH

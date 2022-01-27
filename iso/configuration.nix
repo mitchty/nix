@@ -1,18 +1,22 @@
 { config, pkgs, ... }: {
   imports = [
-    #installer-only ./hardware-configuration.nix
+    ./hardware-configuration.nix
   ];
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.initrd.supportedFilesystems = [ "zfs" ];
-  boot.supportedFilesystems = [ "zfs" ];
-  boot.zfs.devNodes = "/dev/disk/by-partuuid";
+  boot.loader.grub.efiInstallAsRemovable = true;
+  boot.loader.grub.efiSupport = true;
+  boot.loader.grub.device = "nodev";
 
-  networking.hostName = "changeme";
+  # networking.hostName = "changeme";
   networking.firewall.enable = false;
 
   boot.kernelParams = [ "boot.shell_on_fail" ];
+  boot.supportedFilesystems = [ "zfs" "bcachefs" ];
+
+  # We want sysrq functions to work if there is an issue
+  boot.kernel.sysctl = {
+    "kernel.sysrq" = 1;
+  };
 
   users.users.root.initialPassword = "changeme";
 
@@ -31,4 +35,6 @@
   };
 
   system.stateVersion = "21.11";
+
+  # Generated stuff goes here...
 }

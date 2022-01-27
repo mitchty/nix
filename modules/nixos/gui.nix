@@ -4,13 +4,24 @@ with lib;
 
 let
   cfg = config.services.role.gui;
-in {
+in
+{
   options.services.role.gui = {
     enable = mkEnableOption "For now used to indicate a system is/n't one that has a graphical login.";
   };
 
   # TODO: need to do more modularization with this stuff, for now its copypasta.
   config = mkIf cfg.enable {
+    # Only allow certain unfree packages to install
+    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+      "google-chrome"
+    ];
+
+    # gooey stuff for qemu
+    nixpkgs.config.packageOverrides = pkgs: {
+      qemu = pkgs.qemu.override { gtkSupport = true; };
+    };
+
     environment.systemPackages = [
       pkgs.element-desktop
       pkgs.google-chrome
@@ -18,6 +29,8 @@ in {
       pkgs.kmix
       pkgs.libv4l
       pkgs.libvirt
+      pkgs.networkmanager
+      pkgs.networkmanager-openconnect
       pkgs.networkmanagerapplet
       pkgs.pavucontrol
       pkgs.pipewire

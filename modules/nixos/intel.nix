@@ -4,7 +4,8 @@ with lib;
 
 let
   cfg = config.services.role.intel;
-in {
+in
+{
   options.services.role.intel = {
     enable = mkEnableOption "Designate if the system is intel";
   };

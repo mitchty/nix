@@ -4,7 +4,8 @@ with lib;
 
 let
   cfg = config.services.role.nas;
-in {
+in
+{
   options.services.role.nas = {
     enable = mkEnableOption "Designate if something is/n't a nas server";
 

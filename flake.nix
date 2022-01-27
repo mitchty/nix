@@ -64,12 +64,18 @@
       inherit (inputs.unstable.lib) attrValues makeOverridable optionalAttrs singleton nixosSystem;
 
       nixpkgsConfig = {
-        config = { allowUnfree = true; };
         # overlays = attrValues self.overlays ++ [
         #   emacs-overlay.overlay
         # ];
         overlays = [
           emacs-overlay.overlay
+          # Until this is in nixpkgs lets be safe and apply the cve patch for polkit
+          (self: super:
+            rec {
+              polkit = super.polkit.overrideAttrs (old: rec {
+                patches = (old.patches or [ ]) ++ [ ./patches/polkit-cve-2021-4034.patch ];
+              });
+            })
         ];
         # TODO: later
         # singleton (
@@ -85,8 +91,7 @@
 
       homeManagerStateVersion = "22.05";
       homeManagerCommonConfig = {
-        # imports = attrValues self.homeManagerModules ++ [
-        imports = [
+        imports = attrValues self.homeManagerModules ++ [
           ./home
           { home.stateVersion = homeManagerStateVersion; }
         ];
@@ -139,10 +144,91 @@
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           format = "install-iso";
         };
-        x86iso = nixos-generators.nixosGenerate {
+        # test = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   format = "install-iso";
+        #   modules = [
+        #     ./iso/configuration.nix { inherit hostname; }
+        #   ];
+        # };
+        # Ok so building specific autoinstall iso's
+        #
+        # First one here is for the nuc which has two nvme drives. Note, I'm
+        # using by-id links for installation to ensure the layout is exactly as
+        # desired.
+        # autoinstallIsoNexus = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   modules = [
+        #     ./iso/configuration.nix
+        #     ./iso/iso.nix {
+        #       # wipefs device before installing
+        #       wipe = true;
+        #       # dd /dev/zero before installing (can take a looooong time)
+        #       zero = false;
+        #       devices = [
+        #         # nvme0n1
+        #         "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300325L"
+        #         # nvme1n1
+        #         "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300329W"
+        #       ];}
+        #   ];
+        #   format = "install-iso";
+        # };
+        autoinstallIsoDfs1 = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [
-            ./iso/configuration.nix
+            ./iso/iso.nix
+            {
+              autoinstall.hostName = "dfs1";
+              autoinstall.wipe = true;
+              autoinstall.zero = false;
+              # Slight hack to make the crappy ami bios easier to use via:
+              # systemtl reboot --firmware-setup
+              #
+              # This lets me setup the boot device order to use efi on the
+              # internal 16GiB ssd and also mirror to the usb3 ssd's
+              #
+              # Which lets me setup the boot order/options a bit easier given
+              # esc/del are sketch to get into the dumb bios setup for some
+              # reason.
+              #
+              # As to why esc/del DO NOT WORK randomly to get into setup, who
+              # knows.
+              autoinstall.dedicatedBoot = "/dev/disk/by-id/ata-Hoodisk_SSD_J7TTC7A11230120";
+              autoinstall.rootDevices = [
+                "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
+                "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
+              ];
+            }
+          ];
+          format = "install-iso";
+        };
+        autoinstallZeroIsoDfs1 = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./iso/iso.nix
+            {
+              autoinstall.hostName = "dfs1";
+              autoinstall.wipe = true;
+              autoinstall.zero = true;
+              # Slight hack to make the crappy ami bios easier to use via:
+              # systemtl reboot --firmware-setup
+              #
+              # This lets me setup the boot device order to use efi on the
+              # internal 16GiB ssd and also mirror to the usb3 ssd's
+              #
+              # Which lets me setup the boot order/options a bit easier given
+              # esc/del are sketch to get into the dumb bios setup for some
+              # reason.
+              #
+              # As to why esc/del DO NOT WORK randomly to get into setup, who
+              # knows.
+              autoinstall.dedicatedBoot = "/dev/disk/by-id/ata-Hoodisk_SSD_J7TTC7A11230120";
+              autoinstall.rootDevices = [
+                "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
+                "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
+              ];
+            }
           ];
           format = "install-iso";
         };
@@ -154,6 +240,10 @@
 
       nixOSModules = {
         users = import ./modules/users.nix;
+      };
+
+      homeManagerModules = {
+        # all = import ./modules/home-manager;
       };
 
       darwinConfigurations = rec {
@@ -214,7 +304,7 @@
 
       # TODO: More checks in place would be good
       deploy = {
-        sshUser = "mitch";
+        sshUser = "root";
         user = "root";
         autoRollback = false;
         magicRollback = false;
@@ -226,8 +316,26 @@
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
             };
           };
+          "dfs1" = {
+            hostname = "10.10.10.190";
+            profiles.system = {
+              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
+            };
+          };
+          # "slaptop" = {
+          #   hostname = "10.10.10.207";
+          #   profiles.system = {
+          #     path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."slaptop";
+          #   };
+          # };
         };
       };
       checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
-    };
+    }; # // flake-utils.lib.eachDefaultSystem (system:
+  #   let
+  #     pkgs = import nixpkgs { inherit system overlays; };
+  #     hm = home-manager.defaultPackage."${system}";
+  #   in {
+  #   }
+  # );
 }

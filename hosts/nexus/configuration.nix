@@ -3,6 +3,7 @@
     [
       # Ordering of imports is for understanding not alphanumeric sorted
       ./hardware-configuration.nix
+      ../sysrq.nix
       ../nix.nix
       ../network.nix
       ../pipewire.nix

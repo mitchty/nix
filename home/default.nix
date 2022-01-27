@@ -10,6 +10,7 @@ with pkgs;
     ./syncthing.nix
   ];
 
+  systemd.user = lib.mkIf stdenv.isLinux { startServices = "sd-switch"; };
   programs.home-manager.enable = true;
   home.username = "mitch";
 
@@ -26,17 +27,14 @@ with pkgs;
     docker
     docker-compose
     du-dust
-    emacs
     file
     git
     git-lfs
     gitAndTools.transcrypt
     glances
-    # TODO: Figure out allowfreepredicate for home-manager
-    # google-chrome
     htop
     mercurial
-    niv
+    nixpkgs-fmt
     openssl
     podman
     pv
@@ -45,22 +43,27 @@ with pkgs;
     tmux
     vim
     wget
-    xorg.xauth
     xz
     restic
-  ] ++ (if stdenv.isLinux then [
+    # Non gui linux stuff
+  ] ++ lib.optionals stdenv.isLinux [
     dstat
     btop
     tmuxp
-    firefox
     iotop
     podman-compose
     powertop
+    # Gui linux stuff
+  ] ++ lib.optional (stdenv.isLinux && config.services.role.gui.enable) [
+    emacs
+    firefox
     obs-studio
     xrdp
-  ] else [ ]) ++ (if stdenv.isDarwin then [
+    xorg.xauth
+    # macos only stuff
+  ] ++ lib.optionals stdenv.isDarwin [
     yt-dlp
-  ] else [ ]);
+  ];
 
   # TODO: Finish porting emacs config over also the overlay isn't working via
   # home-manager switch for some reason future me fix
