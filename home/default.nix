@@ -54,7 +54,8 @@ with pkgs;
     podman-compose
     powertop
     # Gui linux stuff
-  ] ++ lib.optional (stdenv.isLinux && config.services.role.gui.enable) [
+    # TODO: how do I get at the nixos config setup...?
+  # ] ++ lib.optional (stdenv.isLinux && config.services.role.gui.enable) [
     emacs
     firefox
     obs-studio

@@ -6,6 +6,18 @@ I am converting over all my home network to be as much in nixos+flakes as I can 
 
 I'm not sure anything here is useful for anyone but me but the intended usage here is to run something like:
 
+** New hotness
+
+So the flake has deploy targets setup already, to update/rebuild all configured nodes run:
+
+#+begin_src shell
+clear; nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .
+#+end_src
+
+And should be good to go. Caveats on how/where deploy-rs can deploy to aside.
+
+** Old and busted docs, should still work but meh
+
 #+begin_src shell
 ./ci && ./rebuild
 #+end_src

@@ -91,13 +91,17 @@
 
       homeManagerStateVersion = "22.05";
       homeManagerCommonConfig = {
-        imports = attrValues self.homeManagerModules ++ [
+        imports = attrValues {
+          # TODO: for the future...
+        } ++ [
           ./home
           { home.stateVersion = homeManagerStateVersion; }
         ];
       };
 
-      nixDarwinModules = attrValues self.darwinModules ++ [
+      nixDarwinModules = attrValues {
+        users = import ./modules/users.nix;
+      } ++ [
         ./darwin
         home-manager.darwinModules.home-manager
         (
@@ -114,7 +118,9 @@
           }
         )
       ];
-      nixOSModules = attrValues self.nixOSModules ++ [
+      nixOSModules = attrValues {
+        users = import ./modules/users.nix;
+      } ++ [
         ./modules/nixos
         home-manager.nixosModules.home-manager
         agenix.nixosModules.age
@@ -135,9 +141,8 @@
     in
     {
       packages.x86_64-linux = {
-        inherit unstable;
         iso = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          pkgs = unstable.nixpkgs.legacyPackages.x86_64-linux;
           format = "iso";
         };
         install-iso = nixos-generators.nixosGenerate {
@@ -234,18 +239,6 @@
         };
       };
 
-      darwinModules = {
-        users = import ./modules/users.nix;
-      };
-
-      nixOSModules = {
-        users = import ./modules/users.nix;
-      };
-
-      homeManagerModules = {
-        # all = import ./modules/home-manager;
-      };
-
       darwinConfigurations = rec {
         # Bootstrap configs for later...
         bootstrap-intel = makeOverridable darwinSystem {
@@ -298,11 +291,7 @@
         };
       };
 
-      # For home-manager to work
-      mitch = self.homeConfigurations.mitch.activationPackage;
-      defaultpackage.x86_64-linux = self.mitch;
-
-      # TODO: More checks in place would be good
+      # Deploy-rs targets/setup
       deploy = {
         sshUser = "root";
         user = "root";
@@ -322,6 +311,7 @@
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
             };
           };
+          # TODO: fails signature verification? Future me figure out
           # "slaptop" = {
           #   hostname = "10.10.10.207";
           #   profiles.system = {
@@ -330,6 +320,8 @@
           # };
         };
       };
+
+      # TODO: More checks in place would be good
       checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
     }; # // flake-utils.lib.eachDefaultSystem (system:
   #   let
