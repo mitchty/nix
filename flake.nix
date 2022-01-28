@@ -34,10 +34,6 @@
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    agenix = {
-      url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     deploy-rs = {
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "unstable";
@@ -55,13 +51,13 @@
     , emacs-overlay
     , home-manager
     , nixos-generators
-    , agenix
     , deploy-rs
     , ...
     }:
     let
       inherit (nix-darwin.lib) darwinSystem;
-      inherit (inputs.unstable.lib) attrValues makeOverridable optionalAttrs singleton nixosSystem;
+      inherit (inputs.unstable.lib) attrValues makeOverridable optionalAttrs singleton nixosSystem mkIf;
+      inherit (inputs.unstable.stdenv) isLinux;
 
       nixpkgsConfig = {
         # overlays = attrValues self.overlays ++ [
@@ -118,12 +114,12 @@
           }
         )
       ];
+
       nixOSModules = attrValues {
         users = import ./modules/users.nix;
       } ++ [
-        ./modules/nixos
         home-manager.nixosModules.home-manager
-        agenix.nixosModules.age
+        ./modules/nixos
         (
           { config, lib, pkgs, ... }:
           let
@@ -139,10 +135,12 @@
         )
       ];
     in
-    {
+      {
+      # what I *want* to do
+      # packages.x86_64-linux = mkIf isLinux {
       packages.x86_64-linux = {
         iso = nixos-generators.nixosGenerate {
-          pkgs = unstable.nixpkgs.legacyPackages.x86_64-linux;
+          pkgs = unstable.legacyPackages.x86_64-linux;
           format = "iso";
         };
         install-iso = nixos-generators.nixosGenerate {
