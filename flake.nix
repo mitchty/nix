@@ -65,13 +65,14 @@
         # ];
         overlays = [
           emacs-overlay.overlay
-          # Until this is in nixpkgs lets be safe and apply the cve patch for polkit
-          (self: super:
-            rec {
-              polkit = super.polkit.overrideAttrs (old: rec {
-                patches = (old.patches or [ ]) ++ [ ./patches/polkit-cve-2021-4034.patch ];
-              });
-            })
+          # No longer neeeded here for future me to use to copypasta new patches
+          # in if needed.
+          # (self: super:
+          #   rec {
+          #     polkit = super.polkit.overrideAttrs (old: rec {
+          #       patches = (old.patches or [ ]) ++ [ ./patches/polkit-cve-2021-4034.patch ];
+          #     });
+          #   })
         ];
         # TODO: later
         # singleton (
