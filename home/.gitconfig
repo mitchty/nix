@@ -24,11 +24,13 @@
   up = !git pull --rebase && git push
   wsd = diff --color-words --ignore-space-at-eol --ignore-space-change --ignore-all-space --histogram
   wd = diff --color-words
+  ds = diff --stat
+  dc = diff --cached
+  dcs = diff --cached --stat
   fa = fetch --all
   ci = commit
   cia = commit --all
   co = checkout
-  ds = diff --stat
   ba = branch --all
   b = branch
   st = status --short --branch
