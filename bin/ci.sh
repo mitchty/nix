@@ -25,7 +25,7 @@ args="--show-trace build --flake .#"
 if [[ "${uname_s}" = "Darwin" ]]; then
   darwin-rebuild ${args}
 elif [[ "${uname_s}" = "Linux" ]]; then
-  as_root nixos-rebuild ${args}
+  as_root nixos-rebuild --show-trace --verbose ${args}
 else
   printf "fatal: not yet configured for an os type of %s" "${uname_s}"
   exit 1

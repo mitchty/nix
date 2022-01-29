@@ -1,23 +1,15 @@
 { config, pkgs, lib, ... }: {
   imports =
     [
+      ./..
+
       # Ordering of imports is for understanding not alphanumeric sorted
       ./hardware-configuration.nix
-      ../sysrq.nix
-      ../nix.nix
-      ../network.nix
       ../pipewire.nix
       ../virtualization.nix
-      ../console.nix
-      ../users.nix
-      ../ssh.nix
-      ../root.nix
-      ../pkgs.nix
       ../binfmt.nix
-      ../shell.nix
       ../desktop.nix
       ../zfs.nix
-      ../hosts.nix
     ];
 
   # For zfs

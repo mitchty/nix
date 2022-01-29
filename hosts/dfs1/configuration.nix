@@ -1,18 +1,10 @@
 { config, pkgs, lib, ... }: {
   imports =
     [
+      ./..
+
       # Ordering of imports is for understanding not alphanumeric sorted
       ./hardware-configuration.nix
-      ../sysrq.nix
-      ../nix.nix
-      ../network.nix
-      ../console.nix
-      ../users.nix
-      ../ssh.nix
-      ../root.nix
-      ../pkgs.nix
-      ../shell.nix
-      ../hosts.nix
       # Samba is ASS it constantly coredumps on me when I try to use it
       # ../samba.nix
     ];

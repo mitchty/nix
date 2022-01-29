@@ -1,0 +1,11 @@
+keys:
+  - &user_mitch age1wq29cka9ryvdyrdlyxhuqturqpsf5c9djhdkeqkcex9pht39s9pspatxsc
+  - &host_nexus age19apnr33azl9nvqtvtc82ualcmzgc34y8yur7jfjtekqdkfard3tqk0jc3h
+  - &host_dfs1 age1wletqj32h3h469z0g5utmzvfq5lvzscvkdanme50zpfaxrzyuf4qmxap6l
+creation_rules:
+  - path_regex: secrets/[^/]+\.yaml$
+    key_groups:
+    - age:
+      - *user_mitch
+      - *host_nexus
+      - *host_dfs1

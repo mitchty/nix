@@ -38,6 +38,10 @@
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "unstable";
     };
+    sops = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "unstable";
+    };
   };
 
   outputs =
@@ -52,6 +56,7 @@
     , home-manager
     , nixos-generators
     , deploy-rs
+    , sops
     , ...
     }:
     let
@@ -96,9 +101,10 @@
         ];
       };
 
-      nixDarwinModules = attrValues {
-        users = import ./modules/users.nix;
-      } ++ [
+      nixDarwinModules = attrValues
+        {
+          users = import ./modules/users.nix;
+        } ++ [
         ./darwin
         home-manager.darwinModules.home-manager
         (
@@ -116,9 +122,11 @@
         )
       ];
 
-      nixOSModules = attrValues {
-        users = import ./modules/users.nix;
-      } ++ [
+      nixOSModules = attrValues
+        {
+          users = import ./modules/users.nix;
+        } ++ [
+        sops.nixosModules.sops
         home-manager.nixosModules.home-manager
         ./modules/nixos
         (
@@ -127,6 +135,11 @@
             inherit (config.users) primaryUser;
           in
           {
+            sops.defaultSopsFile = ./secrets/passwd.yaml;
+            sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+            sops.secrets."users/root" = { };
+            sops.secrets."users/mitch" = { };
+
             nixpkgs = nixpkgsConfig;
             users.users.${primaryUser}.home = "/home/${primaryUser}";
             home-manager.useGlobalPkgs = true;
@@ -136,7 +149,7 @@
         )
       ];
     in
-      {
+    {
       # what I *want* to do
       # packages.x86_64-linux = mkIf isLinux {
       packages.x86_64-linux = {
