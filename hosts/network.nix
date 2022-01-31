@@ -1,6 +1,9 @@
 { ... }: {
   networking.firewall.allowedTCPPorts = [ 3389 3350 5900 22000 ];
+
+  networking.firewall.allowedUDPPorts = [ 5353 ];
   networking.firewall.allowedUDPPortRanges = [{ from = 21027; to = 21027; } { from = 22000; to = 22000; } { from = 60000; to = 60010; }];
+
   networking.networkmanager.enable = true;
   networking.enableIPv6 = false;
 

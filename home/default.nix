@@ -22,6 +22,7 @@ with pkgs;
   home.packages = [
     ag
     age
+    avahi
     bind
     curl
     docker
@@ -55,7 +56,7 @@ with pkgs;
     powertop
     # Gui linux stuff
     # TODO: how do I get at the nixos config setup...?
-  # ] ++ lib.optional (stdenv.isLinux && config.services.role.gui.enable) [
+    # ] ++ lib.optional (stdenv.isLinux && config.services.role.gui.enable) [
     emacs
     firefox
     obs-studio
