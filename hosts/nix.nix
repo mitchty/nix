@@ -6,5 +6,11 @@
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
+    # Cleanup old generations we likely don't need
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 14d";
+    };
   };
 }
