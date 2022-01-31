@@ -375,7 +375,7 @@ alias nfmt='find . -type f -name \*\.nix -exec sh -c "nixpkgs-fmt --check {} > /
 
 # Some aliases to help with deploys/updates
 alias nix-update='clear; nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .'
-alias nix-update-check='clear; ./ci && nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .'
+alias nix-update-check='clear; gh mitchty/nix && ./bin/ci && nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .'
 alias nix-update-quick='clear; nix run github:serokell/deploy-rs -- -s .'
 
 # Home backup/rsync alias until I get restic working again.

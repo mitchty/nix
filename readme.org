@@ -21,10 +21,10 @@ And should be good to go. Caveats on how/where deploy-rs can deploy to aside.
 ** Old and busted docs, should still work but meh
 
 #+begin_src shell
-./ci && ./rebuild
+./bin/ci && ./bin/rebuild
 #+end_src
 
 The 3 scripts function as:
- - bin/update.sh  - Updates the flake.lock file
- - bin/ci.sh      - Wrapper around {darwin,nixos}-rebuild build
- - bin/rebuild.sh - Wrapper around {darwin,nixos}-rebuild switch
+ - bin/update  - Updates the flake.lock file
+ - bin/ci      - Wrapper around {darwin,nixos}-rebuild build
+ - bin/rebuild - Wrapper around {darwin,nixos}-rebuild switch
