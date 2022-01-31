@@ -150,105 +150,122 @@
       ];
     in
     {
-      # what I *want* to do
-      # packages.x86_64-linux = mkIf isLinux {
-      packages.x86_64-linux = {
-        iso = nixos-generators.nixosGenerate {
-          pkgs = unstable.legacyPackages.x86_64-linux;
-          format = "iso";
-        };
-        install-iso = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          format = "install-iso";
-        };
-        # test = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   format = "install-iso";
-        #   modules = [
-        #     ./iso/configuration.nix { inherit hostname; }
-        #   ];
-        # };
-        # Ok so building specific autoinstall iso's
-        #
-        # First one here is for the nuc which has two nvme drives. Note, I'm
-        # using by-id links for installation to ensure the layout is exactly as
-        # desired.
-        # autoinstallIsoNexus = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./iso/configuration.nix
-        #     ./iso/iso.nix {
-        #       # wipefs device before installing
-        #       wipe = true;
-        #       # dd /dev/zero before installing (can take a looooong time)
-        #       zero = false;
-        #       devices = [
-        #         # nvme0n1
-        #         "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300325L"
-        #         # nvme1n1
-        #         "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300329W"
-        #       ];}
-        #   ];
-        #   format = "install-iso";
-        # };
-        autoinstallIsoDfs1 = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            ./iso/iso.nix
-            {
-              autoinstall.hostName = "dfs1";
-              autoinstall.wipe = true;
-              autoinstall.zero = false;
-              # Slight hack to make the crappy ami bios easier to use via:
-              # systemtl reboot --firmware-setup
-              #
-              # This lets me setup the boot device order to use efi on the
-              # internal 16GiB ssd and also mirror to the usb3 ssd's
-              #
-              # Which lets me setup the boot order/options a bit easier given
-              # esc/del are sketch to get into the dumb bios setup for some
-              # reason.
-              #
-              # As to why esc/del DO NOT WORK randomly to get into setup, who
-              # knows.
-              autoinstall.dedicatedBoot = "/dev/disk/by-id/ata-Hoodisk_SSD_J7TTC7A11230120";
-              autoinstall.rootDevices = [
-                "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
-                "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
-              ];
-            }
-          ];
-          format = "install-iso";
-        };
-        autoinstallZeroIsoDfs1 = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            ./iso/iso.nix
-            {
-              autoinstall.hostName = "dfs1";
-              autoinstall.wipe = true;
-              autoinstall.zero = true;
-              # Slight hack to make the crappy ami bios easier to use via:
-              # systemtl reboot --firmware-setup
-              #
-              # This lets me setup the boot device order to use efi on the
-              # internal 16GiB ssd and also mirror to the usb3 ssd's
-              #
-              # Which lets me setup the boot order/options a bit easier given
-              # esc/del are sketch to get into the dumb bios setup for some
-              # reason.
-              #
-              # As to why esc/del DO NOT WORK randomly to get into setup, who
-              # knows.
-              autoinstall.dedicatedBoot = "/dev/disk/by-id/ata-Hoodisk_SSD_J7TTC7A11230120";
-              autoinstall.rootDevices = [
-                "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
-                "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
-              ];
-            }
-          ];
-          format = "install-iso";
-        };
+      install-sd = nixos-generators.nixosGenerate {
+        pkgs = nixpkgs.legacyPackages.aarch64-linux;
+        format = "sd-aarch64";
+      };
+      iso = nixos-generators.nixosGenerate {
+        pkgs = unstable.legacyPackages.x86_64-linux;
+        format = "iso";
+      };
+      install-iso = nixos-generators.nixosGenerate {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        format = "install-iso";
+      };
+      # install-vbox = nixos-generators.nixosGenerate {
+      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      #   format = "virtualbox";
+      # };
+      # install-vagrant = nixos-generators.nixosGenerate {
+      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      #   format = "vagrant";
+      # };
+      # install-vmware = nixos-generators.nixosGenerate {
+      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      #   format = "vmware";
+      # };
+      # install-lxc = nixos-generators.nixosGenerate {
+      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      #   format = "lxc";
+      # };
+
+      # test = nixos-generators.nixosGenerate {
+      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      #   format = "install-iso";
+      #   modules = [
+      #     ./iso/configuration.nix { inherit hostname; }
+      #   ];
+      # };
+      # Ok so building specific autoinstall iso's
+      #
+      # First one here is for the nuc which has two nvme drives. Note, I'm
+      # using by-id links for installation to ensure the layout is exactly as
+      # desired.
+      # autoinstallIsoNexus = nixos-generators.nixosGenerate {
+      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      #   modules = [
+      #     ./iso/configuration.nix
+      #     ./iso/iso.nix {
+      #       # wipefs device before installing
+      #       wipe = true;
+      #       # dd /dev/zero before installing (can take a looooong time)
+      #       zero = false;
+      #       devices = [
+      #         # nvme0n1
+      #         "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300325L"
+      #         # nvme1n1
+      #         "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300329W"
+      #       ];}
+      #   ];
+      #   format = "install-iso";
+      # };
+      autoinstallIsoDfs1 = nixos-generators.nixosGenerate {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        modules = [
+          ./iso/iso.nix
+          {
+            autoinstall.hostName = "dfs1";
+            autoinstall.wipe = true;
+            autoinstall.zero = false;
+            # Slight hack to make the crappy ami bios easier to use via:
+            # systemtl reboot --firmware-setup
+            #
+            # This lets me setup the boot device order to use efi on the
+            # internal 16GiB ssd and also mirror to the usb3 ssd's
+            #
+            # Which lets me setup the boot order/options a bit easier given
+            # esc/del are sketch to get into the dumb bios setup for some
+            # reason.
+            #
+            # As to why esc/del DO NOT WORK randomly to get into setup, who
+            # knows.
+            autoinstall.dedicatedBoot = "/dev/disk/by-id/ata-Hoodisk_SSD_J7TTC7A11230120";
+            autoinstall.rootDevices = [
+              "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
+              "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
+            ];
+          }
+        ];
+        format = "install-iso";
+      };
+      autoinstallZeroIsoDfs1 = nixos-generators.nixosGenerate {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        modules = [
+          ./iso/iso.nix
+          {
+            autoinstall.hostName = "dfs1";
+            autoinstall.wipe = true;
+            autoinstall.zero = true;
+            # Slight hack to make the crappy ami bios easier to use via:
+            # systemtl reboot --firmware-setup
+            #
+            # This lets me setup the boot device order to use efi on the
+            # internal 16GiB ssd and also mirror to the usb3 ssd's
+            #
+            # Which lets me setup the boot order/options a bit easier given
+            # esc/del are sketch to get into the dumb bios setup for some
+            # reason.
+            #
+            # As to why esc/del DO NOT WORK randomly to get into setup, who
+            # knows.
+            autoinstall.dedicatedBoot = "/dev/disk/by-id/ata-Hoodisk_SSD_J7TTC7A11230120";
+            autoinstall.rootDevices = [
+              "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
+              "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
+            ];
+          }
+        ];
+        format = "install-iso";
       };
 
       darwinConfigurations = rec {
@@ -323,7 +340,16 @@
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
             };
           };
-          # TODO: fails signature verification? Future me figure out
+          # TODO: Fails grub install for some reason, probably just need to rebuild the stupid thing
+          # [deploy] [INFO] Activating profile `system` for node `slaptop`
+          # [activate] [INFO] Activating profile
+          # updating GRUB 2 menu...
+          # installing the GRUB 2 boot loader on /dev/disk/by-uuid/5996-2431...
+          # Installing for i386-pc platform.
+          # /nix/store/k337pspx293idb80340jhkyfvxfq21q8-grub-2.06/sbin/grub-install: warning: File system `fat' doesn't support embedding.
+          # /nix/store/k337pspx293idb80340jhkyfvxfq21q8-grub-2.06/sbin/grub-install: warning: Embedding is not possible.  GRUB can only be installed in this setup by using blocklists.  However, blocklists are UNRELIABLE and their use is discouraged..
+          # /nix/store/k337pspx293idb80340jhkyfvxfq21q8-grub-2.06/sbin/grub-install: error: will not proceed with blocklists.
+          # /nix/store/mdafvgivvfw45hnw3vnch0006x90aa0q-install-grub.pl: installation of GRUB on /dev/disk/by-uuid/5996-2431 failed: Inappropriate ioctl for device
           # "slaptop" = {
           #   hostname = "10.10.10.207";
           #   profiles.system = {
