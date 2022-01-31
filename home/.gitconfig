@@ -19,6 +19,9 @@
   old = red reverse
   new = green reverse
 
+[diff]
+  algorithm = histogram
+
 [alias]
   begin = !git init && git commit --allow-empty -m 'Initial empty commit'
   up = !git pull --rebase && git push
