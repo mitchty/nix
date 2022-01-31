@@ -14,5 +14,8 @@ in
   config = mkIf cfg.enable {
     # As much as I hate zram, with 2GiB of memory, it helps.
     zramSwap.enable = true;
+
+    # Help out low memory systems by garbage collecting earlier
+    environment.variables.GC_INITIAL_HEAP_SIZE = "1M";
   };
 }
