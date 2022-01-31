@@ -366,17 +366,23 @@ alias g=git
 alias m=mosh
 alias tl='tmux ls'
 
+# Seriously don't get how syncthing constantly breaks stuff when I only make
+# changes on ONE machine.
+alias watdidstbreak='find . -type f -name "*sync-conflict*" -print'
+
+# Run nixpkgs-fmt and format things iff there are changes.
 alias nfmt='find . -type f -name \*\.nix -exec sh -c "nixpkgs-fmt --check {} > /dev/null 2>&1 || nixpkgs-fmt {}" \;'
+
+# Some aliases to help with deploys/updates
+alias nix-update='clear; nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .'
+alias nix-update-check='clear; ./ci && nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .'
+alias nix-update-quick='clear; nix run github:serokell/deploy-rs -- -s .'
+
+# Home backup/rsync alias until I get restic working again.
+alias hb='rsync -e "ssh -T -c aes128-ctr -o Compression=no -x" --exclude .cache --exclude target/debug --exclude target/release --exclude packer_cache --exclude baloo/index --delete-excluded --progress --delete -Havz $HOME root@10.10.10.190:/mnt/rsync/$(uname -n)'
 
 PATH="${PATH}:${HOME}/bin:${HOME}/.local/bin"
 export PATH
-
-# For now lets not use the terribad nano editor
-# TODO: probably emacsclient this up...
-if [ "${EDITOR}" = "nano" ]; then
-  EDITOR="vi"
-  export EDITOR
-fi
 
 # Silly helper functions to run stuff on specific platforms only
 onlinux() {
