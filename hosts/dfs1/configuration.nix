@@ -2,7 +2,7 @@
   imports =
     [
       ./..
-
+      ../kernel.nix
       # Ordering of imports is for understanding not alphanumeric sorted
       ./hardware-configuration.nix
       # Samba is ASS it constantly coredumps on me when I try to use it
