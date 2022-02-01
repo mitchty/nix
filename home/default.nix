@@ -35,17 +35,21 @@ with pkgs;
     glances
     htop
     mercurial
+    ncdu
+    nix-prefetch-git
     nixpkgs-fmt
     openssl
     podman
     pv
+    restic
+    ripgrep
     syncthing
     tcpdump
+    tldr
     tmux
     vim
     wget
     xz
-    restic
     # Non gui linux stuff
   ] ++ lib.optionals stdenv.isLinux [
     dstat
