@@ -1,13 +1,51 @@
 { config, pkgs, lib, ... }: with lib; {
-  # I want my magic sysrq triggers to work
-  config.boot.kernel.sysctl = {
-    "kernel.sysrq" = 1;
-  };
+  config = {
+    # No docs on the install iso
+    documentation.enable = false;
+    documentation.nixos.enable = false;
 
-  # Packages
-  config.environment.systemPackages = with pkgs; [
-    pkgs.ed
-  ];
+    # Make the default password blank for installing
+    users.users.nixos = {
+      isNormalUser = true;
+      initialHashedPassword = "";
+    };
+
+    # Same as root
+    users.users.root.initialHashedPassword = "";
+
+    # Autologin to the nixos install user on getty
+    services.getty.autologinUser = "nixos";
+
+    # Let me ssh in by default
+    services.openssh = {
+      enable = true;
+      permitRootLogin = "yes";
+    };
+
+    # Don't flush to the backing store
+    environment.etc."systemd/pstore.conf".text = ''
+      [PStore]
+      Unlink=no
+    '';
+
+    # Don't log failed connections
+    networking.firewall.logRefusedConnections = mkDefault false;
+
+    # I want my magic sysrq triggers to work
+    boot.kernel.sysctl = {
+      "kernel.sysrq" = 1;
+    };
+
+    # Give our installer a bit more by default to be more useful.
+    system.extraDependencies = with pkgs; [
+      busybox
+      curl
+      jq
+      stdenv
+      stdenvNoCC
+      vim
+    ];
+  };
 
   options = {
     autoinstall = {
@@ -93,10 +131,10 @@
               # Then pv's
               for pv in $(pvs --noheadings | awk '{print $1}'); do
                 printf "removing pv $pv\n"
-                 pvremove $pv
+                pvremove $pv
               done
 
-              # Finally stop any md devices and zero the md superblocks if any
+              # Finally stopzz any md devices and zero the md superblocks if any
               if [[ -e /proc/mdstat ]]; then
                 mdstat=/tmp/mdstat.$$
                 cp /proc/mdstat $mdstat
@@ -223,7 +261,7 @@
             udevadm control --start-exec-queue
 
             # Sync of raid array can happen after reboot/boot, lets not have it take
-            # iops from the install
+            # iops away from the install
             echo 0 > /proc/sys/dev/raid/speed_limit_max
 
             # Get our swap going
@@ -254,7 +292,7 @@
               dev="$disk-part2"
               mkfs.vfat $dev
               mntpt=/mnt/boot
-              if [[ "$idx" != "0" ]]; then
+              if [[ "0" != "$idx" ]]; then
                 mirrorboots="$mirrorboots $disk"
                 mntpt="$mntpt$idx"
               fi
@@ -272,29 +310,33 @@
             # First up, save what the dhcp config got saved with
             # Note we ignore the configuration.nix from nixos-generate-config with our
             # own, we just use the generated hardware-configuration file for its uuid links.
-            install -D ${./configuration.nix} /mnt/etc/nixos/configuration.nix
-            install -D ${./configuration.nix} /tmp
+            nixos-cfg=/mnt/etc/nixos/configuration.nix
+            install -D ${./configuration.nix} $nixos-cfg
+            install -D $nixos-cfg original-$nixos-cfg
 
             # First up insert the hostname and hostid we generated
-            sed -i '$i  networking.hostName = "'${config.autoinstall.hostName}'";' /mnt/etc/nixos/configuration.nix
-            sed -i '$i  networking.hostId = "'$hostid'";' /mnt/etc/nixos/configuration.nix
+            sed -i '$i  networking.hostName = "'${config.autoinstall.hostName}'";' $nixos-cfg
+            sed -i '$i  networking.hostId = "'$hostid'";' $nixos-cfg
 
             # and finally setup the mirrored boot devices
             idx=0
-            sed -i '$i  boot.loader.grub.mirroredBoots = [' /mnt/etc/nixos/configuration.nix
+            sed -i '$i  boot.loader.grub.mirroredBoots = [' $nixos-cfg
             for disk in $disks; do
               path="/boot"
-              if [[ "$idx" = "0" ]]; then
-                sed -i '$i    { devices = [ "nodev" ]; path = "'$path'"; }' /mnt/etc/nixos/configuration.nix
+
+              if [[ "0" = "$idx" ]]; then
+                out="$path"
               else
-                sed -i '$i    { devices = [ "nodev" ]; path = "'$path$idx'"; }' /mnt/etc/nixos/configuration.nix
+                out="$out$idx"
               fi
+
+              sed -i '$i    { devices = [ "nodev" ]; path = "'$out'"; }' $nixos-cfg
+
               idx=$((idx+1))
             done
-            sed -i '$i  ];' /mnt/etc/nixos/configuration.nix
+            sed -i '$i  ];' $nixos-cfg
 
-            /run/current-system/sw/bin/nixos-install --system $(nix-build -I nixos-config=/mnt/etc/nixos/configuration.nix '<nixpkgs/nixos>' -A system --no-out-link) --no-root-passwd --cores 0
-            echo 10 > /proc/sys/dev/raid/speed_limit_max
+            /run/current-system/sw/bin/nixos-install --system $(nix-build -I nixos-config=$nixos-cfg '<nixpkgs/nixos>' -A system --no-out-link) --no-root-passwd --cores 0
 
             # If efi booted reboot into firmware setup, otherwise power off
             ${systemd}/bin/systemctl reboot --firmware-setup || ${systemd}/bin/shutdown now

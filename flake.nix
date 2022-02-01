@@ -212,7 +212,7 @@
       autoinstallIsoDfs1 = nixos-generators.nixosGenerate {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         modules = [
-          ./iso/iso.nix
+          ./iso/autoinstall.nix
           {
             autoinstall.hostName = "dfs1";
             autoinstall.wipe = true;
@@ -241,7 +241,7 @@
       autoinstallZeroIsoDfs1 = nixos-generators.nixosGenerate {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         modules = [
-          ./iso/iso.nix
+          ./iso/autoinstall.nix
           {
             autoinstall.hostName = "dfs1";
             autoinstall.wipe = true;
