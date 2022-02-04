@@ -28,10 +28,12 @@ with pkgs;
     docker
     docker-compose
     du-dust
+    dropwatch
     file
     git
     git-lfs
     gitAndTools.transcrypt
+    gist
     glances
     htop
     mercurial
@@ -50,6 +52,7 @@ with pkgs;
     vim
     wget
     xz
+    unzip
     # Non gui linux stuff
   ] ++ lib.optionals stdenv.isLinux [
     dstat
