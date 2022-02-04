@@ -79,4 +79,13 @@ with pkgs;
   # Stuff not worthy of its own .nix file
   programs.jq.enable = true;
   programs.nix-index.enable = true;
+  programs.direnv = {
+    enable = true;
+    enableBashIntegration = true;
+    enableFishIntegration = false;
+    enableZshIntegration = true;
+    nix-direnv = {
+      enable = true;
+    };
+  };
 }
