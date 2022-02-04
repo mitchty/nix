@@ -379,7 +379,7 @@ alias nix-update-check='clear; gh mitchty/nix && ./bin/ci && nix flake check --s
 alias nix-update-quick='clear; nix run github:serokell/deploy-rs -- -s .'
 
 # Home backup/rsync alias until I get restic working again.
-alias hb='rsync -e "ssh -T -c aes128-ctr -o Compression=no -x" --exclude .cache --exclude target/debug --exclude target/release --exclude packer_cache --exclude baloo/index --delete-excluded --progress --delete -Havz $HOME root@10.10.10.190:/mnt/rsync/$(uname -n)'
+alias hb='rsync -e "ssh -T -c aes128-ctr -o Compression=no -x" --exclude .cache --exclude target/debug --exclude target/release --exclude packer_cache --exclude baloo/index --delete-excluded --progress --delete -Havz $HOME root@dfs1.local:/mnt/rsync/$(uname -n)'
 
 PATH="${PATH}:${HOME}/bin:${HOME}/.local/bin"
 export PATH
