@@ -21,7 +21,7 @@
         retain	daily	31
       '';
       cronIntervals = {
-        hourly = "35 1,3,5,7,9,11 * * *";
+        hourly = "35 1,5,9,12 * * *";
         daily = "10 0 * * *";
       };
     };
