@@ -3,9 +3,15 @@
   # lazy until I get home-manager setup. Also not sure which of these I want to
   # be in home-manager and not...
   environment.systemPackages = with pkgs; [
+    btop
+    dropwatch
+    dstat
+    iotop
+    jq
     linuxPackages.cpupower
     linuxPackages.perf
     mosh
+    powertop
     s-tui
     strace
     thin-provisioning-tools

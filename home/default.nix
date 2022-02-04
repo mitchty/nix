@@ -28,7 +28,6 @@ with pkgs;
     docker
     docker-compose
     du-dust
-    dropwatch
     file
     git
     git-lfs
@@ -55,12 +54,8 @@ with pkgs;
     unzip
     # Non gui linux stuff
   ] ++ lib.optionals stdenv.isLinux [
-    dstat
-    btop
-    tmuxp
-    iotop
     podman-compose
-    powertop
+    tmuxp
     # Gui linux stuff
     # TODO: how do I get at the nixos config setup...?
     # ] ++ lib.optional (stdenv.isLinux && config.services.role.gui.enable) [
