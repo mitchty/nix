@@ -1,7 +1,7 @@
 { pkgs, lib, ... }: {
   imports = [
     ./bootstrap.nix
-    ../hosts/nix.nix
+    ../hosts/nix-basic.nix
   ];
   programs.nix-index.enable = true;
 
