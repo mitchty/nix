@@ -1,0 +1,7 @@
+session_name: mb
+start_directory: ~/
+windows:
+- window_name: sh
+  focus: True
+  panes:
+    - pane
