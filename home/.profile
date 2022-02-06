@@ -365,6 +365,7 @@ alias kille='emacsclient -e "(kill-emacs)"'
 alias g=git
 alias m=mosh
 alias tl='tmux ls'
+alias res='. ~/.profile'
 
 # Seriously don't get how syncthing constantly breaks stuff when I only make
 # changes on ONE machine.
