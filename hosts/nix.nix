@@ -16,5 +16,10 @@
       dates = "weekly";
       options = "--delete-older-than 14d";
     };
+
+    # Lets things download in parallel
+    extraOptions = ''
+      binary-caches-parallel-connections = 5
+    '';
   };
 }
