@@ -14,9 +14,7 @@
   boot.kernelParams = [ "ipv6.disable=1" ];
 
   # Default queueing discipline will be controlled delay
-  boot.kernel.sysctl = {
-    "net.core.default_qdisc" = "fq_codel";
-  };
+  boot.kernel.sysctl."net.core.default_qdisc" = "fq_codel";
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
