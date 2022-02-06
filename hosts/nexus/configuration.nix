@@ -10,6 +10,7 @@
       ../binfmt.nix
       ../desktop.nix
       ../zfs.nix
+      ../userscompat.nix
     ];
 
   # For zfs
