@@ -48,6 +48,7 @@ with pkgs;
     tcpdump
     tldr
     tmux
+    tmuxp
     vim
     wget
     xz
@@ -55,7 +56,6 @@ with pkgs;
     # Non gui linux stuff
   ] ++ lib.optionals stdenv.isLinux [
     podman-compose
-    tmuxp
     # Gui linux stuff
     # TODO: how do I get at the nixos config setup...?
     # ] ++ lib.optional (stdenv.isLinux && config.services.role.gui.enable) [
