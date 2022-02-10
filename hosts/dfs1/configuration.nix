@@ -7,6 +7,7 @@
       ./hardware-configuration.nix
       # Samba is ASS it constantly coredumps on me when I try to use it
       # ../samba.nix
+      ../zfs-grub.nix
     ];
 
   config = {
