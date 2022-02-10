@@ -148,6 +148,15 @@
           }
         )
       ];
+
+      dfs1Autoinstall = {
+        autoinstall.hostName = "dfs1";
+        autoinstall.dedicatedBoot = "/dev/disk/by-id/ata-Hoodisk_SSD_J7TTC7A11230120";
+        autoinstall.rootDevices = [
+          "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
+          "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
+        ];
+      };
     in
     {
       install-sd = nixos-generators.nixosGenerate {
@@ -209,63 +218,30 @@
       #   ];
       #   format = "install-iso";
       # };
-      autoinstallIsoDfs1 = nixos-generators.nixosGenerate {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        modules = [
-          ./iso/autoinstall.nix
-          {
-            autoinstall.hostName = "dfs1";
-            autoinstall.wipe = true;
-            autoinstall.zero = false;
-            # Slight hack to make the crappy ami bios easier to use via:
-            # systemtl reboot --firmware-setup
-            #
-            # This lets me setup the boot device order to use efi on the
-            # internal 16GiB ssd and also mirror to the usb3 ssd's
-            #
-            # Which lets me setup the boot order/options a bit easier given
-            # esc/del are sketch to get into the dumb bios setup for some
-            # reason.
-            #
-            # As to why esc/del DO NOT WORK randomly to get into setup, who
-            # knows.
-            autoinstall.dedicatedBoot = "/dev/disk/by-id/ata-Hoodisk_SSD_J7TTC7A11230120";
-            autoinstall.rootDevices = [
-              "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
-              "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
-            ];
-          }
-        ];
-        format = "install-iso";
-      };
-      autoinstallZeroIsoDfs1 = nixos-generators.nixosGenerate {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        modules = [
-          ./iso/autoinstall.nix
-          {
-            autoinstall.hostName = "dfs1";
-            autoinstall.wipe = true;
-            autoinstall.zero = true;
-            # Slight hack to make the crappy ami bios easier to use via:
-            # systemtl reboot --firmware-setup
-            #
-            # This lets me setup the boot device order to use efi on the
-            # internal 16GiB ssd and also mirror to the usb3 ssd's
-            #
-            # Which lets me setup the boot order/options a bit easier given
-            # esc/del are sketch to get into the dumb bios setup for some
-            # reason.
-            #
-            # As to why esc/del DO NOT WORK randomly to get into setup, who
-            # knows.
-            autoinstall.dedicatedBoot = "/dev/disk/by-id/ata-Hoodisk_SSD_J7TTC7A11230120";
-            autoinstall.rootDevices = [
-              "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
-              "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
-            ];
-          }
-        ];
-        format = "install-iso";
+      packages.x86_64-linux = {
+        isoDfs1 = nixos-generators.nixosGenerate {
+          pkgs = unstable.legacyPackages.x86_64-linux;
+          modules = [
+            ./iso/autoinstall.nix
+            dfs1Autoinstall
+            {
+              autoinstall.wipe = true;
+            }
+          ];
+          format = "install-iso";
+        };
+        isoZeroDfs1 = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./iso/autoinstall.nix
+            dfs1Autoinstall
+            {
+              autoinstall.wipe = true;
+              autoinstall.zero = true;
+            }
+          ];
+          format = "install-iso";
+        };
       };
 
       darwinConfigurations = rec {
