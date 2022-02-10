@@ -374,10 +374,16 @@ alias watdidstbreak='find . -type f -name "*sync-conflict*" -print'
 # Run nixpkgs-fmt and format things iff there are changes.
 alias nfmt='find . -type f -name \*\.nix -exec sh -c "nixpkgs-fmt --check {} > /dev/null 2>&1 || nixpkgs-fmt {}" \;'
 
-# Some aliases to help with deploys/updates
-alias nix-update='clear; nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .'
-alias nix-update-check='clear; gh mitchty/nix && ./bin/ci && nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .'
-alias nix-update-quick='clear; nix run github:serokell/deploy-rs -- -s .'
+# silly function to make running deploy-rs easier
+deploy() {
+  (
+    gh mitchty/nix
+    clear
+    set +ex
+    [ "$1" = "check" ] && nix flake check --show-trace
+    nix run github:serokell/deploy-rs -- -s .
+  )
+}
 
 # Home backup/rsync alias until I get restic working again.
 alias hb='rsync -e "ssh -T -c aes128-ctr -o Compression=no -x" --exclude .cache --exclude target/debug --exclude target/release --exclude packer_cache --exclude baloo/index --delete-excluded --progress --delete -Havz $HOME root@dfs1.local:/mnt/rsync/$(uname -n)'
