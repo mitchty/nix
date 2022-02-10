@@ -403,3 +403,12 @@ onmac() {
     "$@"
   fi
 }
+
+iso() {
+  (
+    set +ex
+    [ -f $2 ] && rm -f $2
+    nix build .#$1
+    cp ./result/**/*.iso $2
+  )
+}
