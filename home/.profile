@@ -379,7 +379,7 @@ deploy() {
   (
     gh mitchty/nix
     clear
-    set +ex
+    set -ex
     [ "$1" = "check" ] && nix flake check --show-trace
     nix run github:serokell/deploy-rs -- -s .
   )
@@ -405,10 +405,17 @@ onmac() {
 }
 
 iso() {
+  runtime=$(date +%Y-%m-%d-%H:%M:%S)
+
   (
-    set +ex
-    [ -f $2 ] && rm -f $2
-    nix build .#$1
-    cp ./result/**/*.iso $2
+    set -ex
+    for x in "$@"; do
+      nix build .#${x}
+      install -dm755 iso
+      install -m600 ./result/**/*.iso "iso/${x}@${runtime}.iso"
+    done
+
+    # Make sure we don't have duplicate iso files
+    [ -d iso ] && nix-shell -p rdfind --run 'rdfind -deterministic true -deleteduplicates true -makeresultsfile false iso'
   )
 }
