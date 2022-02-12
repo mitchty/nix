@@ -24,6 +24,8 @@ with pkgs;
     age
     avahi
     bind
+    btop
+    coreutils
     curl
     docker
     docker-compose
