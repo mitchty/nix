@@ -220,9 +220,9 @@
       # };
       packages.x86_64-linux = {
         isoDfs1 = nixos-generators.nixosGenerate {
-          pkgs = unstable.legacyPackages.x86_64-linux;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [
-            ./iso/autoinstall.nix
+            ./modules/iso/autoinstall-lvm.nix
             dfs1Autoinstall
             {
               autoinstall.wipe = true;
@@ -233,7 +233,7 @@
         isoZeroDfs1 = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [
-            ./iso/autoinstall.nix
+            ./modules/iso/autoinstall-lvm.nix
             dfs1Autoinstall
             {
               autoinstall.wipe = true;
