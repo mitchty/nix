@@ -410,12 +410,15 @@ iso() {
   (
     set -ex
     for x in "$@"; do
-      nix build .#${x}
+      nix build .#iso${x}
       install -dm755 iso
-      install -m444 ./result/**/*.iso "iso/${x}@${runtime}.iso"
+      lnsrc="iso/${x}@${runtime}.iso"
+      lndst="iso/${x}.iso"
+      install -m444 ./result/**/*.iso ${lnsrc}
+      ln -sf ${lnsrc} ${lndst}
     done
 
-    # Make sure we don't have duplicate iso files
-    [ -d iso ] && nix-shell -p rdfind --run 'rdfind -deterministic true -deleteduplicates true -makeresultsfile false iso'
+    # Make sure we don't have duplicate iso files, or if we do make them hardlinks
+    [ -d iso ] && nix-shell -p rdfind --run 'rdfind -deterministic true -makeresultsfile false -makehardlinks true iso'
   )
 }
