@@ -7,6 +7,7 @@ with pkgs;
     ./zsh.nix
     ./git.nix
     ./tmux.nix
+    ./btop.nix
     ./syncthing.nix
   ];
 
@@ -24,7 +25,6 @@ with pkgs;
     age
     avahi
     bind
-    btop
     coreutils
     curl
     docker
