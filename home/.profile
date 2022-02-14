@@ -412,7 +412,7 @@ iso() {
     for x in "$@"; do
       nix build .#${x}
       install -dm755 iso
-      install -m600 ./result/**/*.iso "iso/${x}@${runtime}.iso"
+      install -m444 ./result/**/*.iso "iso/${x}@${runtime}.iso"
     done
 
     # Make sure we don't have duplicate iso files
