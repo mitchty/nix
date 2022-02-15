@@ -135,10 +135,14 @@
             inherit (config.users) primaryUser;
           in
           {
-            sops.defaultSopsFile = ./secrets/passwd.yaml;
-            sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-            sops.secrets."users/root" = { };
-            sops.secrets."users/mitch" = { };
+            sops = {
+              age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+              secrets."users/root" = { };
+              secrets."users/mitch" = { };
+
+              # https://github.com/Mic92/sops-nix/issues/65#issuecomment-929082304
+              gnupg.sshKeyPaths = [ ];
+            };
 
             nixpkgs = nixpkgsConfig;
             users.users.${primaryUser}.home = "/home/${primaryUser}";
@@ -150,6 +154,7 @@
       ];
 
       dfs1Autoinstall = {
+        autoinstall.flavor = "zfs";
         autoinstall.hostName = "dfs1";
         autoinstall.dedicatedBoot = "/dev/disk/by-id/ata-Hoodisk_SSD_J7TTC7A11230120";
         autoinstall.rootDevices = [
@@ -222,7 +227,7 @@
         isoDfs1 = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [
-            ./modules/iso/autoinstall-lvm.nix
+            ./modules/iso/autoinstall.nix
             dfs1Autoinstall
             {
               autoinstall.wipe = true;
@@ -233,7 +238,7 @@
         isoZeroDfs1 = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [
-            ./modules/iso/autoinstall-lvm.nix
+            ./modules/iso/autoinstall.nix
             dfs1Autoinstall
             {
               autoinstall.wipe = true;

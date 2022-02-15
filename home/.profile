@@ -415,7 +415,7 @@ iso() {
       lnsrc="iso/${x}@${runtime}.iso"
       lndst="iso/${x}.iso"
       install -m444 ./result/**/*.iso ${lnsrc}
-      ln -sf ${lnsrc} ${lndst}
+      ln -f ${lnsrc} ${lndst}
     done
 
     # Make sure we don't have duplicate iso files, or if we do make them hardlinks

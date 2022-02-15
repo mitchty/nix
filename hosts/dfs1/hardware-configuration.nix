@@ -9,49 +9,56 @@
       (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
-  boot.initrd.availableKernelModules = [ "xhci_pci" "ehci_pci" "ahci" "usbhid" "usb_storage" "uas" "sd_mod" "sr_mod" ];
-  boot.initrd.kernelModules = [ "dm-snapshot" ];
+  boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usbhid" "usb_storage" "uas" "sd_mod" "sr_mod" ];
+  boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
     {
-      device = "/dev/disk/by-uuid/868cf7a2-1893-437c-a067-dc69aeb6aaf5";
-      fsType = "xfs";
+      device = "zroot/os/root";
+      fsType = "zfs";
+    };
+
+  fileSystems."/nix" =
+    {
+      device = "zroot/os/nix";
+      fsType = "zfs";
     };
 
   fileSystems."/var" =
     {
-      device = "/dev/disk/by-uuid/f6ec3ad6-5608-4753-b9de-f65a791569a8";
-      fsType = "xfs";
+      device = "/nix";
+      fsType = "none";
+      options = [ "bind" ];
     };
 
   fileSystems."/home" =
     {
-      device = "/dev/disk/by-uuid/7c413d14-debd-4093-ab4b-5987cc81e92a";
-      fsType = "xfs";
+      device = "zroot/user/home";
+      fsType = "zfs";
     };
 
   fileSystems."/boot" =
     {
-      device = "/dev/disk/by-uuid/7755-7544";
+      device = "/dev/disk/by-uuid/2485-006C";
       fsType = "vfat";
     };
 
   fileSystems."/boot1" =
     {
-      device = "/dev/disk/by-uuid/7757-8D17";
+      device = "/dev/disk/by-uuid/2486-47C3";
       fsType = "vfat";
     };
 
   fileSystems."/boot2" =
     {
-      device = "/dev/disk/by-uuid/7758-9D2A";
+      device = "/dev/disk/by-uuid/2487-6AEF";
       fsType = "vfat";
     };
 
   swapDevices =
-    [{ device = "/dev/disk/by-uuid/e586a42b-2153-4f87-b995-d7c524747916"; }];
+    [{ device = "/dev/disk/by-uuid/66d3b9af-23d3-41f8-9985-b1c6579c13d8"; }];
 
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

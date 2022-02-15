@@ -61,6 +61,6 @@
     };
 
     # For iotop
-    kernelParams = [ "delayacct" ];
+    kernelParams = [ "delayacct" "boot.shell_on_fail" ];
   };
 }

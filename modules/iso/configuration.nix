@@ -11,7 +11,7 @@
   networking.firewall.enable = false;
 
   boot.kernelParams = [ "boot.shell_on_fail" ];
-  boot.supportedFilesystems = [ "zfs" "bcachefs" ];
+  boot.supportedFilesystems = [ "zfs" "bcachefs" "xfs" ];
 
   # We want sysrq functions to work if there is an issue
   boot.kernel.sysctl = {
