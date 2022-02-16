@@ -10,16 +10,19 @@
       ../zfs-grub.nix
     ];
 
-  system.stateVersion = "21.11";
+  config = {
 
-  # Generated stuff goes here...
-  networking.hostName = "dfs1";
-  networking.hostId = "133320cd";
-  boot.loader.grub.mirroredBoots = [
-    { devices = [ "nodev" ]; path = "/boot"; }
-    { devices = [ "nodev" ]; path = "/boot1"; }
-    { devices = [ "nodev" ]; path = "/boot2"; }
-  ];
+    system.stateVersion = "21.11";
+
+    # Generated stuff goes here...
+    networking.hostName = "dfs1";
+    networking.hostId = "23ee5d32";
+    boot.loader.grub.mirroredBoots = [
+      { devices = [ "nodev" ]; path = "/boot"; }
+      { devices = [ "nodev" ]; path = "/boot1"; }
+      { devices = [ "nodev" ]; path = "/boot2"; }
+    ];
+  };
 
   # This is an intel system, do "intel" stuff to it
   config.services.role.intel.enable = true;

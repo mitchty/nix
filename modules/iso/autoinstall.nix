@@ -415,9 +415,9 @@ in
 
               mount -t zfs zroot/os/root /mnt
 
-              install -dm755 /mnt/var /mnt/home /mnt/nix
+              install -dm755 /mnt/var /mnt/nix /mnt/home
               mount -t zfs zroot/os/nix /mnt/nix
-              mount -t zfs zroot/os/nix /mnt/var
+              mount -t zfs zroot/os/var /mnt/var
 
               mount -t zfs zroot/user/home /mnt/home
             fi

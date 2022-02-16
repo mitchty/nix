@@ -28,9 +28,8 @@
 
   fileSystems."/var" =
     {
-      device = "/nix";
-      fsType = "none";
-      options = [ "bind" ];
+      device = "zroot/os/var";
+      fsType = "zfs";
     };
 
   fileSystems."/home" =
@@ -41,24 +40,24 @@
 
   fileSystems."/boot" =
     {
-      device = "/dev/disk/by-uuid/2485-006C";
+      device = "/dev/disk/by-uuid/0152-B20B";
       fsType = "vfat";
     };
 
   fileSystems."/boot1" =
     {
-      device = "/dev/disk/by-uuid/2486-47C3";
+      device = "/dev/disk/by-uuid/0154-A780";
       fsType = "vfat";
     };
 
   fileSystems."/boot2" =
     {
-      device = "/dev/disk/by-uuid/2487-6AEF";
+      device = "/dev/disk/by-uuid/0155-AC67";
       fsType = "vfat";
     };
 
   swapDevices =
-    [{ device = "/dev/disk/by-uuid/66d3b9af-23d3-41f8-9985-b1c6579c13d8"; }];
+    [{ device = "/dev/disk/by-uuid/ef8306b6-fb02-4acd-8320-1d74dffc0b5d"; }];
 
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

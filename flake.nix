@@ -136,6 +136,7 @@
           in
           {
             sops = {
+              defaultSopsFile = ./secrets/passwd.yaml;
               age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
               secrets."users/root" = { };
               secrets."users/mitch" = { };
