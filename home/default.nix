@@ -37,6 +37,7 @@ with pkgs;
     gist
     glances
     htop
+    jless
     mercurial
     ncdu
     nix-prefetch-git
@@ -66,6 +67,7 @@ with pkgs;
     obs-studio
     xrdp
     xorg.xauth
+    zpool-iostat-viz
     # macos only stuff
   ] ++ lib.optionals stdenv.isDarwin [
     yt-dlp
