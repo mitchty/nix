@@ -36,8 +36,15 @@ ISO=${ISO:-example.iso}
 # note we are calling whatever command -v curl/jq/etc.. found directly to avoid
 # recursion
 curl() {
-  printf "\ncurl $@" >&2
+  printf "curl $@" >&2
   ${CURL} --insecure --user $USER:$PASS --silent "$@"
+  printf "\n" >&2
+}
+
+post() {
+  printf "post $@" >&2
+  ${CURL} -X POST --insecure --user $USER:$PASS --silent "$@"
+  printf "\n" >&2
 }
 
 jq() {
@@ -51,25 +58,22 @@ set -e
 
 # Disconnect msd if needed
 if [[ $(curl ${HOST}/api/msd | jq '.result.drive.connected') = "true" ]]; then
-  curl ${HOST}/api/msd/set_connected?connected=0 -X POST
+  post ${HOST}/api/msd/set_connected?connected=0
 fi
 
-# First up, detach any/all iso files
-curl ${HOST}/api/msd | jq '.result.storage.images[].name'
-
-# Delete any old iso's
+# First up, remove any/all iso files
 for iso in $(curl ${HOST}/api/msd | jq -Mr '.result.storage.images[].name'); do
-  curl ${HOST}/api/msd/remove?image=${iso} -X POST
+  post ${HOST}/api/msd/remove?image=${iso}
 done
 
 # Reset the msd while we're here
-curl ${HOST}/api/msd/reset -X POST
+post ${HOST}/api/msd/reset
 
 # Upload the iso
-curl ${HOST}/api/msd/write?image=$(basename ${ISO}) -X POST --data-binary @${ISO}
+post ${HOST}/api/msd/write?image=$(basename ${ISO}) --data-binary @${ISO}
 
 # Set the msd to use it (quoted due to the &)
-curl "${HOST}/api/msd/set_params?image=$(basename ${ISO})&cdrom=1" -X POST
+post "${HOST}/api/msd/set_params?image=$(basename ${ISO})&cdrom=1"
 
 # Then connect it
-curl ${HOST}/api/msd/set_connected?connected=1 -X POST
+post ${HOST}/api/msd/set_connected?connected=1
