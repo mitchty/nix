@@ -1,30 +1,38 @@
-* My nix flake for system setup
+* My home network nix flake setup
 
-This is all a work in progress so if you use anything from here, caveat emptor.
+  So my goal with all this is to get as much into a NixOS layout for home. Now that Flakes are "kinda/sorta" out it seems the best time to convert everything over to flakes.
 
-I am converting over all my home network to be as much in nixos+flakes as I can get. I have macos and nixos working on a few systems. More to do however.
+** Potent Notables
 
-I'm not sure anything here is useful for anyone but me but the intended usage here is to run something like:
+   So what in here is worth looking at exactly? Well this is a combined NixOS and x86 Macos setup with home manager. That is, while its incomplete I manage both my macos laptop and any/all NixOS nodes from this shared flake repo.
 
-** New hotness
+   There is also iso generation and autoinstall setup as well, for that reference [[file:modules/iso/autoinstall.nix][this autoinstall module]]. As well as the generators in [[file:flake.nix][flake.nix]] (search for iso).
 
-So the flake has deploy targets setup already, to update/rebuild all configured nodes run:
+   My current setup is basically build an iso that will autoinstall nixos onto a system then poweroff/reboot and from there I can pivot that install into this install via deploy-rs.
+
+   On the deploy-rs note, the flake file also has those.
+
+   I am also using or rather trying to use sops to handle secrets like passwords etc...
+
+** Rough usage
+
+   So the flake has deploy targets setup already for deploy-rs, to update/rebuild all NixOS nodes run:
 
 #+begin_src shell
 clear; nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .
 #+end_src
 
-Note: this is the *nix-update* alias in `home/.profile`.
-
-And should be good to go. Caveats on how/where deploy-rs can deploy to aside.
-
-** Old and busted docs, should still work but meh
+   Or use the wrapper function in [[file:home/.profile][.profile]]:
 
 #+begin_src shell
-./bin/ci && ./bin/rebuild
+deploy
 #+end_src
 
-The 3 scripts function as:
- - bin/update  - Updates the flake.lock file
- - bin/ci      - Wrapper around {darwin,nixos}-rebuild build
- - bin/rebuild - Wrapper around {darwin,nixos}-rebuild switch
+   To run a deploy with a *nix flake check* run:
+
+#+begin_src shell
+deploy check
+#+end_src
+
+
+And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Aka that without builder setup cannot deploy to a macos system from linux. This is on my TODO list to fix at some point.
