@@ -165,47 +165,7 @@
       };
     in
     {
-      install-sd = nixos-generators.nixosGenerate {
-        pkgs = nixpkgs.legacyPackages.aarch64-linux;
-        format = "sd-aarch64";
-      };
-      iso = nixos-generators.nixosGenerate {
-        pkgs = unstable.legacyPackages.x86_64-linux;
-        format = "iso";
-      };
-      install-iso = nixos-generators.nixosGenerate {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        format = "install-iso";
-      };
-      # install-vbox = nixos-generators.nixosGenerate {
-      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      #   format = "virtualbox";
-      # };
-      # install-vagrant = nixos-generators.nixosGenerate {
-      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      #   format = "vagrant";
-      # };
-      # install-vmware = nixos-generators.nixosGenerate {
-      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      #   format = "vmware";
-      # };
-      # install-lxc = nixos-generators.nixosGenerate {
-      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      #   format = "lxc";
-      # };
-
-      # test = nixos-generators.nixosGenerate {
-      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      #   format = "install-iso";
-      #   modules = [
-      #     ./iso/configuration.nix { inherit hostname; }
-      #   ];
-      # };
-      # Ok so building specific autoinstall iso's
-      #
-      # First one here is for the nuc which has two nvme drives. Note, I'm
-      # using by-id links for installation to ensure the layout is exactly as
-      # desired.
+      # TODO: Rebuild nexus via autoinstall
       # autoinstallIsoNexus = nixos-generators.nixosGenerate {
       #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
       #   modules = [
@@ -225,6 +185,14 @@
       #   format = "install-iso";
       # };
       packages.x86_64-linux = {
+        sdGenericAarch64 = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.aarch64-linux;
+          format = "sd-aarch64";
+        };
+        isoGeneric = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          format = "install-iso";
+        };
         isoDfs1 = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [

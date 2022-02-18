@@ -415,10 +415,29 @@ iso() {
     set -ex
     for x in "$@"; do
       nix build .#iso${x}
-      install -dm755 iso
-      lnsrc="iso/${x}@${runtime}.iso"
-      lndst="iso/${x}.iso"
+      install -dm755 img
+      lnsrc="img/${x}@${runtime}.iso"
+      lndst="img/${x}.iso"
       install -m444 ./result/**/*.iso ${lnsrc}
+      ln -f ${lnsrc} ${lndst}
+    done
+
+    # Make sure we don't have duplicate iso files, or if we do make them hardlinks
+    [ -d iso ] && nix-shell -p rdfind --run 'rdfind -deterministic true -makeresultsfile false -makehardlinks true iso'
+  )
+}
+
+sdimg() {
+  runtime=$(date +%Y-%m-%d-%H:%M:%S)
+
+  (
+    set -ex
+    for x in "$@"; do
+      nix build .#sd${x}
+      install -dm755 img
+      lnsrc="img/${x}@${runtime}.img.zst"
+      lndst="img/${x}.img.zst"
+      install -m444 ./result/**/*.img.zst ${lnsrc}
       ln -f ${lnsrc} ${lndst}
     done
 
