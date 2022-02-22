@@ -6,7 +6,6 @@
     master.url = "github:NixOS/nixpkgs/master";
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
-    # wip
     mitchty = {
       url = "github:mitchty/nixos";
       inputs.nixpkgs.follows = "unstable";
@@ -22,10 +21,6 @@
     };
     # Follow same nixpkgs as the nixos release for the rest
     # Unless/until we find out that doesn't work
-    emacs-overlay = {
-      url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "unstable";
-    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "unstable";
@@ -42,6 +37,14 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "unstable";
     };
+    emacs = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "unstable";
+    };
+    rust = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "unstable";
+    };
   };
 
   outputs =
@@ -52,24 +55,34 @@
     , mitchty
     , flake-utils
     , nix-darwin
-    , emacs-overlay
     , home-manager
     , nixos-generators
     , deploy-rs
     , sops
+    , emacs
+    , rust
     , ...
     }:
     let
       inherit (nix-darwin.lib) darwinSystem;
-      inherit (inputs.unstable.lib) attrValues makeOverridable optionalAttrs singleton nixosSystem mkIf;
-      inherit (inputs.unstable.stdenv) isLinux;
+      inherit (nixpkgs.lib) attrValues makeOverridable optionalAttrs singleton nixosSystem mkIf;
+
+      x86-linux = "x86_64-linux";
+      stable = import nixpkgs {
+        system = x86-linux;
+      };
+
+      homeDir = system: user: with nixpkgs.legacyPackages.${system}.stdenv;
+        if isDarwin then
+          "/Users/${user}"
+        else if isLinux then
+          "/home/${user}"
+        else "";
 
       nixpkgsConfig = {
-        # overlays = attrValues self.overlays ++ [
-        #   emacs-overlay.overlay
-        # ];
         overlays = [
-          emacs-overlay.overlay
+          rust.overlay
+          emacs.overlay
           # No longer neeeded here for future me to use to copypasta new patches
           # in if needed.
           # (self: super:
@@ -105,18 +118,31 @@
         {
           users = import ./modules/users.nix;
         } ++ [
-        ./darwin
+        sops.nixosModule
         home-manager.darwinModules.home-manager
+        ./darwin
         (
           { config, lib, pkgs, ... }:
           let
             inherit (config.users) primaryUser;
           in
           {
+            sops = {
+              defaultSopsFile = ./secrets/passwd.yaml;
+              age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+              secrets."users/mitch" = { };
+
+              # https://github.com/Mic92/sops-nix/issues/65#issuecomment-929082304
+              gnupg.sshKeyPaths = [ ];
+            };
+
             nixpkgs = nixpkgsConfig;
-            users.users.${primaryUser}.home = "/Users/${primaryUser}";
+            users.users.${primaryUser}.home = homeDir "x86_64-darwin" primaryUser;
             home-manager.useGlobalPkgs = true;
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
+            home-manager.extraSpecialArgs = {
+              inherit inputs nixpkgs;
+            };
             nix.registry.my.flake = self;
           }
         )
@@ -146,9 +172,12 @@
             };
 
             nixpkgs = nixpkgsConfig;
-            users.users.${primaryUser}.home = "/home/${primaryUser}";
+            users.users.${primaryUser}.home = homeDir "x86_64-linux" primaryUser;
             home-manager.useGlobalPkgs = true;
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
+            home-manager.extraSpecialArgs = {
+              inherit inputs nixpkgs;
+            };
             nix.registry.my.flake = self;
           }
         )
@@ -186,7 +215,8 @@
       # };
       packages.x86_64-linux = {
         sdGenericAarch64 = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.aarch64-linux;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux.pkgsCross.aarch64-multiplatform;
+          modules = [ "${stable.path}/nixos/modules/profiles/minimal.nix" ];
           format = "sd-aarch64";
         };
         isoGeneric = nixos-generators.nixosGenerate {
@@ -243,13 +273,14 @@
       };
 
       nixosConfigurations = {
-        nexus = nixosSystem {
+        nexus = (makeOverridable nixosSystem) {
           system = "x86_64-linux";
           modules = nixOSModules ++ [
             ./hosts/nexus/configuration.nix
           ] ++ [{
             users.primaryUser = "mitch";
           }];
+          specialArgs = { unstable = unstable.legacyPackages.${x86-linux}; };
         };
         dfs1 = nixosSystem {
           system = "x86_64-linux";
@@ -258,6 +289,7 @@
           ] ++ [{
             users.primaryUser = "mitch";
           }];
+          specialArgs = { unstable = unstable.legacyPackages.${x86-linux}; };
         };
         # Work
         slaptop = nixosSystem {
@@ -267,6 +299,7 @@
           ] ++ [{
             users.primaryUser = "mitch";
           }];
+          specialArgs = { unstable = unstable.legacyPackages.${x86-linux}; };
         };
       };
 
