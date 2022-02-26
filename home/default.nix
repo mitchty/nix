@@ -55,6 +55,8 @@
     xz
     # Non gui linux stuff
   ] ++ lib.optionals stdenv.isLinux [
+    rclone
+
     # Testing packages that I may/not upstream any changes to nixpkgs
     inputs.mitchty.packages.${pkgs.system}.garage
     inputs.mitchty.packages.${pkgs.system}.seaweedfs
