@@ -6,9 +6,11 @@
 
     kernelPatches = pkgs.lib.singleton {
       name = "Custom extra kernel config + maybe patches at some point";
-      patch = [
-        ../patches/CVE-2022-0435.patch
-      ];
+      # Patch finally upstream
+      patch = null;
+      # patch = [
+      #   ../patches/CVE-2022-0435.patch
+      # ];
       # TODO: Validate all these CONFIG_ options make sense
       # The default nixpkgs kernel has these as modules, but whatever just
       # compile them in statically
