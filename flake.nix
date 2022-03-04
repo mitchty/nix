@@ -291,16 +291,6 @@
           }];
           specialArgs = { unstable = unstable.legacyPackages.${x86-linux}; };
         };
-        # Work
-        slaptop = nixosSystem {
-          system = "x86_64-linux";
-          modules = nixOSModules ++ [
-            ./hosts/slaptop/configuration.nix
-          ] ++ [{
-            users.primaryUser = "mitch";
-          }];
-          specialArgs = { unstable = unstable.legacyPackages.${x86-linux}; };
-        };
       };
 
       # Deploy-rs targets/setup
@@ -318,25 +308,17 @@
             };
           };
           "dfs1" = {
+            # hostname = "dfs1.local";
             hostname = "10.10.10.190";
+
             profiles.system = {
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
             };
           };
-          # TODO: Fails grub install for some reason, probably just need to rebuild the stupid thing
-          # [deploy] [INFO] Activating profile `system` for node `slaptop`
-          # [activate] [INFO] Activating profile
-          # updating GRUB 2 menu...
-          # installing the GRUB 2 boot loader on /dev/disk/by-uuid/5996-2431...
-          # Installing for i386-pc platform.
-          # /nix/store/k337pspx293idb80340jhkyfvxfq21q8-grub-2.06/sbin/grub-install: warning: File system `fat' doesn't support embedding.
-          # /nix/store/k337pspx293idb80340jhkyfvxfq21q8-grub-2.06/sbin/grub-install: warning: Embedding is not possible.  GRUB can only be installed in this setup by using blocklists.  However, blocklists are UNRELIABLE and their use is discouraged..
-          # /nix/store/k337pspx293idb80340jhkyfvxfq21q8-grub-2.06/sbin/grub-install: error: will not proceed with blocklists.
-          # /nix/store/mdafvgivvfw45hnw3vnch0006x90aa0q-install-grub.pl: installation of GRUB on /dev/disk/by-uuid/5996-2431 failed: Inappropriate ioctl for device
-          # "slaptop" = {
-          #   hostname = "10.10.10.207";
+          # "mb" = {
+          #   hostname = "mb.local";
           #   profiles.system = {
-          #     path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."slaptop";
+          #     path = deploy-rs.lib.x86_64-darwin.activate. self.darwinConfigurations."mb";
           #   };
           # };
         };
