@@ -379,12 +379,12 @@ deploy() {
   (
     gh mitchty/nix
     clear
-    set -ex
+    set -e
     [ "$1" = "check" ] && nix flake check --show-trace
     if [[ "$(uname -s)" = "Linux" ]]; then
       nix run github:serokell/deploy-rs -- -s .
     else
-      ./bin/ci && ./bin/rebuild
+      darwin-rebuild switch --flake .#
     fi
   )
 }
