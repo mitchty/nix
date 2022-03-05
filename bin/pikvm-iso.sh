@@ -28,9 +28,9 @@ fi
 CURL=$(command -v ${CURL})
 JQ=$(command -v ${JQ})
 
-HOST=${HOST:-https://127.0.0.1}
-USER=${USER:-admin}
-PASS=${PASS:-admin}
+KVMHOST=${KVMHOST:-https://127.0.0.1}
+KVMUSER=${KVMUSER:-admin}
+KVMPASS=${KVMPASS:-admin}
 ISO=${ISO:-example.iso}
 
 # Helper functions to reduce the amount of args we pass in on each curl/jq call,
@@ -38,13 +38,13 @@ ISO=${ISO:-example.iso}
 # recursion
 curl() {
   printf "curl $@" >&2
-  ${CURL} --insecure --user $USER:$PASS --silent "$@"
+  ${CURL} --insecure --user $KVMUSER:$KVMPASS --silent "$@"
   printf "\n" >&2
 }
 
 post() {
   printf "post $@" >&2
-  ${CURL} -X POST --insecure --user $USER:$PASS --silent "$@"
+  ${CURL} -X POST --insecure --user $KVMUSER:$KVMPASS --silent "$@"
   printf "\n" >&2
 }
 
@@ -53,27 +53,27 @@ jq() {
 }
 
 disconnect_drive() {
-  post ${HOST}/api/msd/set_connected?connected=0
+  post ${KVMHOST}/api/msd/set_connected?connected=0
 }
 
 remove_image() {
-  post ${HOST}/api/msd/remove?image="$@"
+  post ${KVMHOST}/api/msd/remove?image="$@"
 }
 
 reset_msd() {
-  post ${HOST}/api/msd/reset
+  post ${KVMHOST}/api/msd/reset
 }
 
 write_image() {
-  post ${HOST}/api/msd/write?image=$(basename "$@") --data-binary @"$@"
+  post ${KVMHOST}/api/msd/write?image=$(basename "$@") --data-binary @"$@"
 }
 
 set_params_image() {
-  post "${HOST}/api/msd/set_params?image=$(basename $@)&cdrom=1"
+  post "${KVMHOST}/api/msd/set_params?image=$(basename $@)&cdrom=1"
 }
 
 set_connected() {
-  post ${HOST}/api/msd/set_connected?connected=1
+  post ${KVMHOST}/api/msd/set_connected?connected=1
 }
 
 # If anything is amiss exit before work
@@ -82,13 +82,13 @@ set_connected() {
 set -e
 
 # Disconnect msd if needed
-if [[ $(curl ${HOST}/api/msd | jq '.result.drive.connected') = "true" ]]; then
+if [[ $(curl ${KVMHOST}/api/msd | jq '.result.drive.connected') = "true" ]]; then
   disconnect_drive
 fi
 
 # iff clean was passed clean up all existing images.
 if [[ "clean" = "$@" ]]; then
-  for iso in $(curl ${HOST}/api/msd | jq -Mr '.result.storage.images[].name'); do
+  for iso in $(curl ${KVMHOST}/api/msd | jq -Mr '.result.storage.images[].name'); do
     remove_image ${iso}
   done
 fi
