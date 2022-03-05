@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
+#!nix-shell -i bash -p bash jq curl
 # File: pikvm-iso.sh
 # Copyright: 2022 Mitchell Tishmack
 # Description: Simple wrapper around pikvm api to upload an iso image after
@@ -51,6 +52,30 @@ jq() {
   ${JQ} -Mr "$@"
 }
 
+disconnect_drive() {
+  post ${HOST}/api/msd/set_connected?connected=0
+}
+
+remove_image() {
+  post ${HOST}/api/msd/remove?image="$@"
+}
+
+reset_msd() {
+  post ${HOST}/api/msd/reset
+}
+
+write_image() {
+  post ${HOST}/api/msd/write?image=$(basename "$@") --data-binary @"$@"
+}
+
+set_params_image() {
+  post "${HOST}/api/msd/set_params?image=$(basename $@)&cdrom=1"
+}
+
+set_connected() {
+  post ${HOST}/api/msd/set_connected?connected=1
+}
+
 # If anything is amiss exit before work
 [ $ok -ne 0 ] && exit $ok
 
@@ -58,22 +83,24 @@ set -e
 
 # Disconnect msd if needed
 if [[ $(curl ${HOST}/api/msd | jq '.result.drive.connected') = "true" ]]; then
-  post ${HOST}/api/msd/set_connected?connected=0
+  disconnect_drive
 fi
 
-# First up, remove any/all iso files
-for iso in $(curl ${HOST}/api/msd | jq -Mr '.result.storage.images[].name'); do
-  post ${HOST}/api/msd/remove?image=${iso}
-done
+# iff clean was passed clean up all existing images.
+if [[ "clean" = "$@" ]]; then
+  for iso in $(curl ${HOST}/api/msd | jq -Mr '.result.storage.images[].name'); do
+    remove_image ${iso}
+  done
+fi
 
 # Reset the msd while we're here
-post ${HOST}/api/msd/reset
+reset_msd
 
 # Upload the iso
-post ${HOST}/api/msd/write?image=$(basename ${ISO}) --data-binary @${ISO}
+write_image "${ISO}"
 
 # Set the msd to use it (quoted due to the &)
-post "${HOST}/api/msd/set_params?image=$(basename ${ISO})&cdrom=1"
+set_params_image "${ISO}"
 
 # Then connect it
-post ${HOST}/api/msd/set_connected?connected=1
+set_connected
