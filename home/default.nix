@@ -18,32 +18,35 @@
   # aka have something to control: is this a box for streaming? if so add
   # obs-studio etc.. something akin to roles in ansible.
   home.packages = with pkgs; [
-    ag
-    age
     avahi
     bind
     coreutils
     curl
     docker
     du-dust
+    entr
     file
     gist
     git
     git-lfs
-    gitAndTools.transcrypt
     htop
+    inputs.mitchty.packages.${pkgs.system}.hwatch     # TODO: Keep or no?
     inputs.unstable.legacyPackages.${pkgs.system}.jless
-    # TODO: Keep or no?
-    inputs.mitchty.packages.${pkgs.system}.hwatch
+    less
     mercurial
+    minio-client
     ncdu
     nix-prefetch-git
     nixpkgs-fmt
     openssl
     podman
     pv
+    rclone
     restic
     ripgrep
+    sops
+    s3cmd
+    silver-searcher
     syncthing
     tcpdump
     tldr
@@ -55,14 +58,14 @@
     xz
     # Non gui linux stuff
   ] ++ lib.optionals stdenv.isLinux [
-    rclone
-
     # Testing packages that I may/not upstream any changes to nixpkgs
     inputs.mitchty.packages.${pkgs.system}.garage
     inputs.mitchty.packages.${pkgs.system}.seaweedfs
 
     # Normal nixpkgs stuff
     podman-compose
+
+    lshw
     # Gui linux stuff
     # TODO: how do I get at the nixos config setup...?
     # ] ++ lib.optional (stdenv.isLinux && config.services.role.gui.enable) [
