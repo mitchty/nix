@@ -128,9 +128,17 @@
           in
           {
             sops = {
-              defaultSopsFile = ./secrets/passwd.yaml;
               age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+
+              defaultSopsFile = ./secrets/default.yaml;
+
               secrets."users/mitch" = { };
+
+              secrets = {
+                "restic/RESTIC_PASSWORD" = { };
+                "restic/AWS_ACCESS_KEY" = { };
+                "restic/AWS_SECRET_KEY" = { };
+              };
 
               # https://github.com/Mic92/sops-nix/issues/65#issuecomment-929082304
               gnupg.sshKeyPaths = [ ];
@@ -162,10 +170,20 @@
           in
           {
             sops = {
-              defaultSopsFile = ./secrets/passwd.yaml;
               age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-              secrets."users/root" = { };
-              secrets."users/mitch" = { };
+
+              defaultSopsFile = ./secrets/default.yaml;
+
+              secrets = {
+                "users/root" = { };
+                "users/mitch" = { };
+              };
+
+              secrets = {
+                "restic/RESTIC_PASSWORD" = { };
+                "restic/AWS_ACCESS_KEY" = { };
+                "restic/AWS_SECRET_KEY" = { };
+              };
 
               # https://github.com/Mic92/sops-nix/issues/65#issuecomment-929082304
               gnupg.sshKeyPaths = [ ];
@@ -302,15 +320,13 @@
 
         nodes = {
           "nexus" = {
-            hostname = "10.10.10.200";
+            hostname = "nexus.local";
             profiles.system = {
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
             };
           };
           "dfs1" = {
-            # hostname = "dfs1.local";
-            hostname = "10.10.10.190";
-
+            hostname = "dfs1.local";
             profiles.system = {
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
             };
