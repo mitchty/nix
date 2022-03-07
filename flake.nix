@@ -106,9 +106,10 @@
 
       homeManagerStateVersion = "22.05";
       homeManagerCommonConfig = {
-        imports = attrValues {
-          # TODO: for the future...
-        } ++ [
+        imports = attrValues
+          {
+            # TODO: for the future...
+          } ++ [
           ./home
           { home.stateVersion = homeManagerStateVersion; }
         ];

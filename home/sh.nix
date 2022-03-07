@@ -11,8 +11,8 @@
   # .profile is mostly the same between nixos/macos
   # home.file.".profile".text = lib.strings.fileContents ./.profile + "\n" + lib.strings.optionalString pkgs.stdenv.isDarwin lib.strings.fileContents ./.profile-darwin;
   home.file.".profile".text = pkgs.lib.strings.concatStringsSep "\n" ([
-      (pkgs.lib.strings.fileContents ./.profile)
-    ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
-      (pkgs.lib.strings.fileContents ./.profile-darwin)
+    (pkgs.lib.strings.fileContents ./.profile)
+  ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
+    (pkgs.lib.strings.fileContents ./.profile-darwin)
   ]);
 }
