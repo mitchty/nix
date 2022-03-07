@@ -29,8 +29,9 @@
     gist
     git
     git-lfs
+    gnumake
     htop
-    inputs.mitchty.packages.${pkgs.system}.hwatch     # TODO: Keep or no?
+    inputs.mitchty.packages.${pkgs.system}.hwatch # TODO: Keep or no?
     inputs.unstable.legacyPackages.${pkgs.system}.jless
     less
     mercurial
