@@ -1,8 +1,10 @@
-{ pkgs, lib, ... }: {
+{ config, pkgs, lib, ... }: {
   imports = [
     ./bootstrap.nix
-    ../hosts/nix-basic.nix
+    ../../hosts/nix-basic.nix
+    ./restic.nix
   ];
+
   programs.nix-index.enable = true;
 
   # Minimal setup of what we want installed outside of home-manager

@@ -37,6 +37,8 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "unstable";
     };
+    # TODO: Follow to see if/when this gets to a usable state
+    # sops-darwin.url = "github:4825764518/sops-nix/darwin";
     emacs = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "unstable";
@@ -119,32 +121,14 @@
         {
           users = import ./modules/users.nix;
         } ++ [
-        sops.nixosModule
         home-manager.darwinModules.home-manager
-        ./darwin
+        ./modules/darwin
         (
           { config, lib, pkgs, ... }:
           let
             inherit (config.users) primaryUser;
           in
           {
-            sops = {
-              age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-
-              defaultSopsFile = ./secrets/default.yaml;
-
-              secrets."users/mitch" = { };
-
-              secrets = {
-                "restic/RESTIC_PASSWORD" = { };
-                "restic/AWS_ACCESS_KEY" = { };
-                "restic/AWS_SECRET_KEY" = { };
-              };
-
-              # https://github.com/Mic92/sops-nix/issues/65#issuecomment-929082304
-              gnupg.sshKeyPaths = [ ];
-            };
-
             nixpkgs = nixpkgsConfig;
             users.users.${primaryUser}.home = homeDir "x86_64-darwin" primaryUser;
             home-manager.useGlobalPkgs = true;
@@ -153,6 +137,13 @@
               inherit inputs nixpkgs;
             };
             nix.registry.my.flake = self;
+
+            services.restic = {
+              enable = true;
+              repo = "s3:http://10.10.10.190:8333/restic";
+              # TODO: Future if/when sops works on macos
+              # resticPassword = pkgs.lib.readFile config.sops.secrets."restic/RESTIC_PASSWORD".path;
+            };
           }
         )
       ];

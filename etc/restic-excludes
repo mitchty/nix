@@ -1,0 +1,156 @@
+# macos specific things we never need to backup
+.DS_Store
+.DocumentRevisions-V100
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.Trash
+.fseventsd
+
+# Caches is a macos thing but there is a ton of em, ignore anything with that
+# dir name
+Caches
+
+# linux-isms we might manage to hit
+.caches
+
+# Postgres db temp files
+pg_stat_tmp
+
+# Presume any dir named tmp is temporary and ignoring it
+tmp
+
+# Don't backup the docker qcow image, its gihugic and we don't need it needlessly
+# filling up backups
+Docker.qcow2
+
+# TODO: *.o /*.a blanket excludes? Not sure on this tbh, some stuff might
+# include .a files normally and we should back those up, thinking like musl
+# somehow... eh
+
+# Rust build temp directories we don't need to backup
+target/release
+target/debug
+
+# .cargo is huge
+.cargo/registry/index
+.cargo/registry/cache
+.cargo/registry/src
+
+# Python compiled junk, just ignore the stupid compiled bytecode
+*.pyc
+
+# vim turds it leaves all over the place, even animals learn to poop in a corner
+*.swp
+*.un~
+
+# emacs/vim turds just in case my configuration isn't working
+*.~
+
+# emacs tmp files it might create while a file is open
+~*
+
+.emacs.d/semanticdb/*.cache
+
+# Exclude Onedrive stuff
+OneDrive*
+
+# SIP says no and gives errors on these so just exclude em, we can't back it up
+# anyway to improve the backup/output logs to not have errors on open() calls
+#
+# Note ~/{Desktop,Documents,Downloads} fail only when run via launchd
+#
+# Its not critical I back that crap up though so no big deal.
+Desktop
+Documents
+Downloads
+Library/Accounts
+Library/Application\ Support/AddressBook
+Library/Application\ Support/CallHistoryDB
+Library/Application\ Support/CallHistoryTransactions
+Library/Application\ Support/CloudDocs/session/db
+Library/Application\ Support/CrashReporter
+Library/Application\ Support/FileProvider
+Library/Application\ Support/Google/Chrome/*/*/*/*.log
+Library/Application\ Support/Knowledge
+Library/Application\ Support/MobileSync
+Library/Application\ Support/com.apple.TCC
+Library/Application\ Support/com.apple.ap.promotedcontentd
+Library/Application\ Support/com.apple.avfoundation/Frecents
+Library/Application\ Support/com.apple.sharedfilelist
+Library/Application\ Support/iPhone\ Simulator
+Library/Application\ Support/obs-studio/logs/*.txt
+Library/Assistant/SiriVocabulary
+Library/Autosave\ Information
+Library/Biome
+Library/Calendars
+Library/Caches
+Library/Containers
+Library/Cookies
+Library/CoreFollowUp
+Library/Developer
+Library/DuetExpertCenter
+Library/Google/GoogleSoftwareUpdate
+Library/Group\ Containers/
+Library/HomeKit
+Library/IdentityServices
+Library/Logs
+Library/Mail
+Library/Messages
+Library/Metadata/CoreSpotlight
+Library/Metadata/com.apple.IntelligentSuggestions
+Library/News
+Library/PersonalizationPortrait
+Library/Photos/Libraries/Syndication.photoslibrary
+Library/Preferences/com.apple.AddressBook.plist*
+Library/Preferences/com.apple.homed.notbackedup.plist
+Library/Preferences/com.apple.homed.plist
+Library/Preferences/com.apple.mail-shared.plist
+Library/Reminders
+Library/Safari
+Library/Safari
+Library/Sharing
+Library/Shortcuts
+Library/StatusKit
+Library/Suggestions
+Library/studentd
+Pictures/Photos\ Library.photoslibrary
+
+# Caches that aren't obvious, don't need to back this changing junk up
+# Mostly all electron crap for signal/slack or chromiumish based crap
+Library/Application\ Support/*/*/*/GPUCache
+Library/Application\ Support/*/*/GPUCache
+Library/Application\ Support/*/Cache
+Library/Application\ Support/*/Code\ Cache
+Library/Application\ Support/*/GPUCache
+Library/Application\ Support/*/Local\ Storage/leveldb/*.log
+Library/Application\ Support/*/Service\ Worker/Cache
+Library/Application\ Support/*/Service\ Worker/CacheStorage
+
+# And some silly log file dir/logs
+Library/Application\ Support/*/*/*.log
+Library/Application\ Support/*/logs/*.log
+Library/Application\ Support/*/logs/log*
+Library/Application\ Support/*/logs/log*
+
+# Not sure what most of this junk is but there is a lot of "new" and "removed" files
+# and I don't need that in my life/backups
+Containers/com.apple.ScreenTimeWidgetApplication.ScreenTimeWidgetExtension
+Containers/com.apple.news.widget
+Library/Containers/com.apple.routined
+Library/Containers/com.apple.weather.widget
+Library/Containers/com.bitwarden.desktop
+Library/Group\ Containers/group.com.apple.weather
+Library/Weather
+
+# This is a kde index cache, we don't need to back it up
+.local/share/baloo/index
+
+# And the linux equivalents of some of the above chromium-isms and logs
+.config/*/*/*.log
+.config/*/*/*/GPUCache
+.config/*/*/GPUCache
+.config/*/GPUCache
+.cache/nix/eval-cache*
+
+#fin
