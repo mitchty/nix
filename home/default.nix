@@ -53,6 +53,7 @@
     tldr
     tmux
     tmuxp
+    transcrypt
     unzip
     vim
     wget
