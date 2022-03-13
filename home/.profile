@@ -1,5 +1,7 @@
 # -*- mode: Shell-script; -*-
-# Common .profile
+
+# TODO: Do I really need this anymore? If I build node specific files with nix I
+# could just customize this at the derivation level
 _uname=$(uname)
 _uname_n=$(uname -n)
 _hostname=$(hostname)
@@ -423,7 +425,7 @@ iso() {
     done
 
     # Make sure we don't have duplicate iso files, or if we do make them hardlinks
-    [ -d iso ] && nix-shell -p rdfind --run 'rdfind -deterministic true -makeresultsfile false -makehardlinks true iso'
+    [ -d img ] && nix-shell -p rdfind --run 'rdfind -deterministic true -makeresultsfile false -makehardlinks true img'
   )
 }
 
@@ -442,6 +444,6 @@ sdimg() {
     done
 
     # Make sure we don't have duplicate iso files, or if we do make them hardlinks
-    [ -d iso ] && nix-shell -p rdfind --run 'rdfind -deterministic true -makeresultsfile false -makehardlinks true iso'
+    [ -d img ] && nix-shell -p rdfind --run 'rdfind -deterministic true -makeresultsfile false -makehardlinks true img'
   )
 }
