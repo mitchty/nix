@@ -37,13 +37,13 @@ ISO=${ISO:-example.iso}
 # note we are calling whatever command -v curl/jq/etc.. found directly to avoid
 # recursion
 curl() {
-  printf "curl $@" >&2
+  printf "curl $@\n" >&2
   ${CURL} --insecure --user $KVMUSER:$KVMPASS --silent "$@"
   printf "\n" >&2
 }
 
 post() {
-  printf "post $@" >&2
+  printf "post $@\n" >&2
   ${CURL} -X POST --insecure --user $KVMUSER:$KVMPASS --silent "$@"
   printf "\n" >&2
 }
@@ -88,7 +88,7 @@ fi
 
 # iff clean was passed clean up all existing images.
 if [[ "clean" = "$@" ]]; then
-  for iso in $(curl ${KVMHOST}/api/msd | jq -Mr '.result.storage.images[].name'); do
+  for iso in $(curl ${KVMHOST}/api/msd | jq '.result.storage.images[].name'); do
     remove_image ${iso}
   done
 fi
