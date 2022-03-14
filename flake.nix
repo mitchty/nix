@@ -290,7 +290,10 @@
           ] ++ [{
             users.primaryUser = "mitch";
           }];
-          specialArgs = { unstable = unstable.legacyPackages.${x86-linux}; };
+          specialArgs = {
+            inherit inputs;
+            unstable = unstable.legacyPackages.${x86-linux};
+          };
         };
         dfs1 = nixosSystem {
           system = "x86_64-linux";
@@ -299,7 +302,10 @@
           ] ++ [{
             users.primaryUser = "mitch";
           }];
-          specialArgs = { unstable = unstable.legacyPackages.${x86-linux}; };
+          specialArgs = {
+            inherit inputs;
+            unstable = unstable.legacyPackages.${x86-linux};
+          };
         };
       };
 
