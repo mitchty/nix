@@ -447,3 +447,29 @@ sdimg() {
     [ -d img ] && nix-shell -p rdfind --run 'rdfind -deterministic true -makeresultsfile false -makehardlinks true img'
   )
 }
+
+# Until Git Diff Equal
+# Because syncthing is SLOW (seconds....) to sync, compare local changes to a remote and only return when they're equal.
+#
+# Only really useful if/when not using entr for stuff.
+ugde() {
+  (
+    iam=$(hostname)
+    ours=$(gh mitchty/nix && git diff | sha256sum)
+
+    for host in mb nexus; do
+      if [[ ! "${host}" = "${iam}" ]]; then
+        dots=0
+        until [[ $(ssh ${host}.local "cd ~/src/pub/github.com/mitchty/nix && git diff 2>/dev/null | sha256sum") = "${ours}" ]]; do
+          sleep 1
+          printf '.' >&2
+          dots=$((dots+1))
+        done
+        if [[ $dots -gt 0 ]]; then
+          printf '\n' >&2
+        fi
+        return 0
+      fi
+    done
+  )
+}
