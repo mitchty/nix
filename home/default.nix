@@ -61,8 +61,9 @@
     # Non gui linux stuff
   ] ++ lib.optionals stdenv.isLinux [
     # Testing packages that I may/not upstream any changes to nixpkgs
-    inputs.mitchty.packages.${pkgs.system}.garage
     inputs.mitchty.packages.${pkgs.system}.seaweedfs
+
+    inputs.unstable.legacyPackages.${pkgs.system}.traitor
 
     # Normal nixpkgs stuff
     podman-compose
@@ -71,19 +72,15 @@
     # Gui linux stuff
     # TODO: how do I get at the nixos config setup...?
     # ] ++ lib.optional (stdenv.isLinux && config.services.role.gui.enable) [
-    glances
     docker-compose
     firefox
-    obs-studio
-    xrdp
     xorg.xauth
     # macos only stuff
   ] ++ lib.optionals stdenv.isDarwin [
     yt-dlp
   ];
 
-  # TODO: Finish porting emacs config over also the overlay isn't working via
-  # home-manager switch for some reason future me fix
+  # TODO: Finish porting emacs config over future me fix
   programs.emacs = {
     enable = true;
     package = pkgs.emacsGcc;
