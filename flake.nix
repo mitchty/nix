@@ -138,11 +138,8 @@
             };
             nix.registry.my.flake = self;
 
-            services.restic = {
+            services.nix-index = {
               enable = true;
-              repo = "s3:http://10.10.10.190:8333/restic";
-              # TODO: Future if/when sops works on macos
-              # resticPassword = pkgs.lib.readFile config.sops.secrets."restic/RESTIC_PASSWORD".path;
             };
           }
         )
@@ -277,6 +274,12 @@
                 "Wi-Fi"
                 "USB 10/100/1000 LAN"
               ];
+              services.restic = {
+                enable = true;
+                repo = "s3:http://10.10.10.190:8333/restic";
+                # TODO: Future if/when sops works on macos
+                # resticPassword = pkgs.lib.readFile config.sops.secrets."restic/RESTIC_PASSWORD".path;
+              };
             }
           ];
         };

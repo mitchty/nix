@@ -49,7 +49,6 @@
     s3cmd
     silver-searcher
     syncthing
-    tcpdump
     tldr
     tmux
     tmuxp
@@ -60,6 +59,8 @@
     xz
     # Non gui linux stuff
   ] ++ lib.optionals stdenv.isLinux [
+    tcpdump
+
     # Testing packages that I may/not upstream any changes to nixpkgs
     inputs.mitchty.packages.${pkgs.system}.seaweedfs
 
@@ -88,7 +89,6 @@
 
   # Stuff not worthy of its own .nix file
   programs.jq.enable = true;
-  programs.nix-index.enable = true;
   programs.direnv = {
     enable = true;
     enableBashIntegration = true;
