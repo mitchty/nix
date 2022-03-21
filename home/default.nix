@@ -10,7 +10,6 @@
 
   systemd.user = lib.mkIf pkgs.stdenv.isLinux { startServices = "sd-switch"; };
   programs.home-manager.enable = true;
-  home.username = "mitch";
 
   # Common packages across all os's
   #
