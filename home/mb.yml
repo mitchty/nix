@@ -5,3 +5,11 @@ windows:
   focus: True
   panes:
     - pane
+- window_name: deploy
+  panes:
+    - ssh -t nexus.local 'deploy'
+    - deploy
+- window_name: btop
+  panes:
+    - ssh -t nexus.local 'btop'
+    - btop
