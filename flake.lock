@@ -1,5 +1,46 @@
 {
   "nodes": {
+    "agenix": {
+      "inputs": {
+        "nixpkgs": [
+          "unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1646845404,
+        "narHash": "sha256-JENXFCI2HVqi0whBzt7MAW9PX3ziEaYqBhMux+4g+VM=",
+        "owner": "ryantm",
+        "repo": "agenix",
+        "rev": "764c975e74bce2f89a5106b68ec48e2b586f893c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ryantm",
+        "repo": "agenix",
+        "type": "github"
+      }
+    },
+    "agenix-darwin": {
+      "inputs": {
+        "nixpkgs": [
+          "unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1647231873,
+        "narHash": "sha256-Cv8fmwBgZACU65lze8paK7KLNKGWkBSUHHugJ0qSqSg=",
+        "owner": "montchr",
+        "repo": "agenix",
+        "rev": "22eb9841849c41eb661dc3a796313e725f2d40ea",
+        "type": "github"
+      },
+      "original": {
+        "owner": "montchr",
+        "ref": "darwin-support",
+        "repo": "agenix",
+        "type": "github"
+      }
+    },
     "darwin": {
       "locked": {
         "lastModified": 1647089892,
@@ -245,6 +286,8 @@
     },
     "root": {
       "inputs": {
+        "agenix": "agenix",
+        "agenix-darwin": "agenix-darwin",
         "darwin": "darwin",
         "deploy-rs": "deploy-rs",
         "emacs": "emacs",
