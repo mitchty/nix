@@ -47,6 +47,14 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "unstable";
     };
+    agenix-darwin = {
+      url = "github:montchr/agenix/darwin-support";
+      inputs.nixpkgs.follows = "unstable";
+    };
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "unstable";
+    };
   };
 
   outputs =
@@ -63,6 +71,8 @@
     , sops
     , emacs
     , rust
+    , agenix-darwin
+    , agenix
     , ...
     }:
     let
@@ -123,12 +133,39 @@
         } ++ [
         home-manager.darwinModules.home-manager
         ./modules/darwin
+        agenix-darwin.nixosModules.age
         (
           { config, lib, pkgs, ... }:
           let
             inherit (config.users) primaryUser;
           in
           {
+            age.secrets = {
+              test = {
+                file = ./secrets/test.age;
+                owner = "mitch";
+                group = "staff";
+              };
+
+              "restic/env/RESTIC_PASSWORD" = {
+                file = ./secrets/restic/env/RESTIC_PASSWORD.age;
+                owner = "mitch";
+                group = "staff";
+              };
+
+              "restic/env/AWS_ACCESS_KEY" = {
+                file = ./secrets/restic/env/AWS_ACCESS_KEY.age;
+                owner = "mitch";
+                group = "staff";
+              };
+
+              "restic/env/AWS_SECRET_KEY" = {
+                file = ./secrets/restic/env/AWS_SECRET_KEY.age;
+                owner = "mitch";
+                group = "staff";
+              };
+            };
+
             nixpkgs = nixpkgsConfig;
             users.users.${primaryUser}.home = homeDir "x86_64-darwin" primaryUser;
             home-manager.useGlobalPkgs = true;
@@ -264,6 +301,9 @@
         # arm stuff for later?
         bootstrap-arm = bootstrap-intel.override { system = "aarch64-darwin"; };
         mb = darwinSystem {
+          specialArgs = {
+            inherit inputs;
+          };
           system = "x86_64-darwin";
           modules = nixDarwinModules ++ [
             {
@@ -277,8 +317,9 @@
               services.restic = {
                 enable = true;
                 repo = "s3:http://10.10.10.190:8333/restic";
-                # TODO: Future if/when sops works on macos
-                # resticPassword = pkgs.lib.readFile config.sops.secrets."restic/RESTIC_PASSWORD".path;
+                # resticPassword = builtins.readFile age.secrets."restic/env/RESTIC_PASSWORD".path;
+                # s3Access = builtins.readFile age.secrets."restic/env/AWS_ACCESS_KEY".file;
+                # s3Secret = builtins.readFile age.secrets."restic/env/AWS_SECRET_KEY".file;
               };
             }
           ];

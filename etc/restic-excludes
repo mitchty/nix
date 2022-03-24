@@ -57,13 +57,6 @@ OneDrive*
 
 # SIP says no and gives errors on these so just exclude em, we can't back it up
 # anyway to improve the backup/output logs to not have errors on open() calls
-#
-# Note ~/{Desktop,Documents,Downloads} fail only when run via launchd
-#
-# Its not critical I back that crap up though so no big deal.
-Desktop
-Documents
-Downloads
 Library/Accounts
 Library/Application\ Support/AddressBook
 Library/Application\ Support/CallHistoryDB

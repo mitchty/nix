@@ -34,7 +34,6 @@ let
     } >> $EXCLUDES
   '';
 
-  resticEnv = pkgs.writeScript "restic-env.sh" (builtins.readFile ../../secrets/crypt/restic-env.sh);
   resticExcludes = pkgs.writeText "excludes" (builtins.readFile ../../etc/restic-excludes);
 in
 {
@@ -75,34 +74,6 @@ in
           Path to backup, defaults to ~/$HOME
         '';
       };
-
-      # For the future...
-      # resticPassword = mkOption {
-      #   type = types.nullOr types.str;
-      #   default = null;
-      #   example = "somepassword";
-      #   description = ''
-      #     The RESTIC_PASSWORD env variable
-      #   '';
-      # };
-
-      # s3Access = mkOption {
-      #   type = types.nullOr types.str;
-      #   default = null;
-      #   example = "somestring";
-      #   description = ''
-      #     The AWS_ACCESS_KEY env variable
-      #   '';
-      # };
-
-      # s3Secret = mkOption {
-      #   type = types.nullOr types.str;
-      #   default = null;
-      #   example = "somelongerstring";
-      #   description = ''
-      #     The AWS_SECRET_KEY env variable
-      #   '';
-      # };
     };
   };
 
@@ -110,22 +81,34 @@ in
     environment.systemPackages = with pkgs; [ restic ];
     launchd.user.agents.restic-backup = {
       script = ''
-        #!${pkgs.bash}
+        #!/bin/bash
+        # Note: /bin/bash so that I can add /bin/bash in security so
+        # ~/Desktop... can be backed up via launchd
         #-*-mode: Shell-script; coding: utf-8;-*-
         : > ${cfg.logDir}/restic-backup-stderr.log
 
         # Don't bother backing up if we're not on a/c
         if command -v pmset > /dev/null 2>&1 && ! pmset -g ps | grep AC > /dev/null 2>&1; then
-          printf "not on a/c, not bothering to backup\n" >&2
+          printf "fatal: not on a/c, not bothering to backup\n" >&2
           exit 1
         fi
 
-        if ! grep OK ${resticEnv}; then
-          printf "env file doesn't appear to be decrypted\n" >&2
-          exit 1
+        # Hack here as the activation script order has launchd before any of the
+        # secret generation, so if we are doing a deploy we need to wait a bit
+        # before we can expect these files (symlinks really) to exist.
+        # Only applicable as RunAtLoad = true
+        sleep 10
+
+        if [ ! -f ${config.age.secrets."restic/env/RESTIC_PASSWORD".path} ] &&
+           [ ! -f ${config.age.secrets."restic/env/AWS_ACCESS_KEY".path} ] &&
+           [ ! -f ${config.age.secrets."restic/env/AWS_SECRET_KEY".path} ]; then
+          printf "fatal: cannot find env files\n" >&2
+          exit 2
         fi
 
-        source ${resticEnv}
+        export RESTIC_PASSWORD=$(cat ${config.age.secrets."restic/env/RESTIC_PASSWORD".path});
+        export AWS_ACCESS_KEY=$(cat ${config.age.secrets."restic/env/AWS_ACCESS_KEY".path});
+        export AWS_SECRET_KEY=$(cat ${config.age.secrets."restic/env/AWS_SECRET_KEY".path});
 
         EXCLUDES=$(mktemp /tmp/restic-backup-XXXXX)
 
@@ -153,15 +136,11 @@ in
       serviceConfig = {
         Label = "net.mitchty.restic-backup";
         LowPriorityIO = true;
-        ProcessType = "Background";
-        StandardOutPath = "${cfg.logDir}/restic-backup.log";
-        StandardErrorPath = "${cfg.logDir}/restic-backup-stderr.log";
+        ProcessType = "Adaptive";
         RunAtLoad = true;
+        StandardErrorPath = "${cfg.logDir}/restic-backup-stderr.log";
+        StandardOutPath = "${cfg.logDir}/restic-backup.log";
         StartInterval = 3600;
-        # Once sops or age works on macos we want to replace the env setup with this...
-        # EnvironmentVariables = {
-        #   RESTIC_PASSWORD = "${cfg.resticPassword}";
-        # };
       };
     };
     launchd.user.agents.restic-prune = {
@@ -170,16 +149,20 @@ in
         #-*-mode: Shell-script; coding: utf-8;-*-
         : > ${cfg.logDir}/restic-prune-stderr.log
 
-        if ! grep OK ${resticEnv}; then
-          printf "env file doesn't appear to be decrypted\n" >&2
-          exit 1
+        if [ ! -f ${config.age.secrets."restic/env/RESTIC_PASSWORD".path} ] &&
+           [ ! -f ${config.age.secrets."restic/env/AWS_ACCESS_KEY".path} ] &&
+           [ ! -f ${config.age.secrets."restic/env/AWS_SECRET_KEY".path} ]; then
+          printf "fatal: cannot find env files\n" >&2
+          exit 2
         fi
 
-        source ${resticEnv}
+        export RESTIC_PASSWORD=$(cat ${config.age.secrets."restic/env/RESTIC_PASSWORD".path});
+        export AWS_ACCESS_KEY=$(cat ${config.age.secrets."restic/env/AWS_ACCESS_KEY".path});
+        export AWS_SECRET_KEY=$(cat ${config.age.secrets."restic/env/AWS_SECRET_KEY".path});
 
         {
           restic forget --verbose --tag auto --group-by 'paths,tags' --keep-hourly 24 --keep-daily 14 --keep-weekly 4 --keep-monthly 6 --keep-yearly 10 --repo ${cfg.repo}
-          restic prune --verbose --repo s3:http://10.10.10.190:8333/restic
+          restic prune --verbose --repo ${cfg.repo}
           restic cache --cleanup
         } | ts
 
@@ -194,9 +177,9 @@ in
         Label = "net.mitchty.restic-prune";
         LowPriorityIO = true;
         ProcessType = "Background";
-        StandardOutPath = "${cfg.logDir}/restic-prune.log";
-        StandardErrorPath = "${cfg.logDir}/restic-prune-stderr.log";
         RunAtLoad = false;
+        StandardErrorPath = "${cfg.logDir}/restic-prune-stderr.log";
+        StandardOutPath = "${cfg.logDir}/restic-prune.log";
         StartInterval = 36000;
         # Once sops or age works on macos we want to replace the env setup with this...
         # EnvironmentVariables = {
