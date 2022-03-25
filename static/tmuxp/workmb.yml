@@ -1,0 +1,13 @@
+session_name: workmb
+start_directory: ~/
+windows:
+- window_name: sh
+  focus: True
+  panes:
+    - pane
+- window_name: deploy
+  panes:
+    - deploy
+- window_name: btop
+  panes:
+    - btop
