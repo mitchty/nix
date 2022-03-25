@@ -140,32 +140,6 @@
             inherit (config.users) primaryUser;
           in
           {
-            age.secrets = {
-              test = {
-                file = ./secrets/test.age;
-                owner = "mitch";
-                group = "staff";
-              };
-
-              "restic/env/RESTIC_PASSWORD" = {
-                file = ./secrets/restic/env/RESTIC_PASSWORD.age;
-                owner = "mitch";
-                group = "staff";
-              };
-
-              "restic/env/AWS_ACCESS_KEY" = {
-                file = ./secrets/restic/env/AWS_ACCESS_KEY.age;
-                owner = "mitch";
-                group = "staff";
-              };
-
-              "restic/env/AWS_SECRET_KEY" = {
-                file = ./secrets/restic/env/AWS_SECRET_KEY.age;
-                owner = "mitch";
-                group = "staff";
-              };
-            };
-
             nixpkgs = nixpkgsConfig;
             users.users.${primaryUser}.home = homeDir "x86_64-darwin" primaryUser;
             home-manager.useGlobalPkgs = true;
@@ -235,6 +209,26 @@
           "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
           "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
         ];
+      };
+
+      resticSecrets = {
+        "restic/env/RESTIC_PASSWORD" = {
+          file = ./secrets/restic/env/RESTIC_PASSWORD.age;
+          owner = "mitch";
+          group = "staff";
+        };
+
+        "restic/env/AWS_ACCESS_KEY" = {
+          file = ./secrets/restic/env/AWS_ACCESS_KEY.age;
+          owner = "mitch";
+          group = "staff";
+        };
+
+        "restic/env/AWS_SECRET_KEY" = {
+          file = ./secrets/restic/env/AWS_SECRET_KEY.age;
+          owner = "mitch";
+          group = "staff";
+        };
       };
     in
     {
@@ -307,6 +301,7 @@
           system = "x86_64-darwin";
           modules = nixDarwinModules ++ [
             {
+              age.secrets = resticSecrets;
               users.primaryUser = "mitch";
               networking.computerName = "mb";
               networking.hostName = "mb";
@@ -317,10 +312,20 @@
               services.restic = {
                 enable = true;
                 repo = "s3:http://10.10.10.190:8333/restic";
-                # resticPassword = builtins.readFile age.secrets."restic/env/RESTIC_PASSWORD".path;
-                # s3Access = builtins.readFile age.secrets."restic/env/AWS_ACCESS_KEY".file;
-                # s3Secret = builtins.readFile age.secrets."restic/env/AWS_SECRET_KEY".file;
               };
+            }
+          ];
+        };
+        workmb = darwinSystem {
+          system = "x86_64-darwin";
+          modules = nixDarwinModules ++ [
+            {
+              users.primaryUser = "tishmack";
+              networking.computerName = "workmb";
+              networking.hostName = "workmb";
+              networking.knownNetworkServices = [
+                "Wi-Fi"
+              ];
             }
           ];
         };
