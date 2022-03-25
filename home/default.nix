@@ -25,6 +25,7 @@
     du-dust
     entr
     file
+    gcc11
     gist
     git
     git-lfs
