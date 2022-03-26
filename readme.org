@@ -22,7 +22,7 @@
 clear; nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .
 #+end_src
 
-   Or use the wrapper function in [[file:home/.profile][.profile]]:
+   Or use the wrapper function in [[file:static/home/profile][.profile]]:
 
 #+begin_src shell
 deploy
@@ -36,3 +36,16 @@ deploy check
 
 
 And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Aka that without builder setup cannot deploy to a macos system from linux. This is on my TODO list to fix at some point.
+
+** Layout
+
+   Since I'm trying to document things a bit more a bit of layout convention explanation:
+
+   - [[file:bin/][bin]]     Simply a directory for any pertinent scripts that use this repo. Note none of these scripts end up in */nix/store*.
+   - [[file:home/][home]]    home-manager configuratin, unified across macos and nixos.
+   - [[file:hosts/][hosts]]   Host specific data, e.g. mostly generated nix configuration files.
+   - [[file:img/][img]]     Nixos specific directory where iso or disk image outputs get dumped.
+   - [[file:modules/][modules]] General directory for any modules for nixos, nix-darwin, and home-manager. Should be intended to encompass "stuff with options". Also includes the img autoinstall module used for iso builds.
+   - [[file:patches/][patches]] Any patch files that may be needed for things like CVE's that might not yet be upstream yet in nixpkgs or anywhere else.
+   - [[file:secrets/][secrets]] Any secret related data for age and/or git-transcript. Basically "private junk hiding in plain sight".
+   - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use.

@@ -40,6 +40,6 @@
     };
 
     # Everything we can't define ^^thataway^^
-    initExtra = builtins.readFile ./.zshrc;
+    initExtra = builtins.readFile ../static/home/zshrc;
   };
 }

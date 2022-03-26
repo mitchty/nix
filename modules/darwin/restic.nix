@@ -34,7 +34,7 @@ let
     } >> $EXCLUDES
   '';
 
-  resticExcludes = pkgs.writeText "excludes" (builtins.readFile ../../etc/restic-excludes);
+  resticExcludes = pkgs.writeText "excludes" (builtins.readFile ../../static/restic/excludes);
 in
 {
   options = {

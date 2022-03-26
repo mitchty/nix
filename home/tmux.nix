@@ -4,7 +4,7 @@
     keyMode = "vi";
     # This no worky doing in tmux.conf
     # prefix = "C-\\";
-    extraConfig = builtins.readFile ./tmux.conf;
+    extraConfig = builtins.readFile ../static/tmux/tmux.conf;
   };
 
   # Setup some tmuxp configs
