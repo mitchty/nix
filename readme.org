@@ -12,8 +12,6 @@
 
    On the deploy-rs note, the flake file also has those.
 
-   I am also using or rather trying to use sops to handle secrets like passwords etc...
-
 ** Rough usage
 
    So the flake has deploy targets setup already for deploy-rs, to update/rebuild all NixOS nodes run:

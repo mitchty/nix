@@ -33,12 +33,6 @@
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "unstable";
     };
-    sops = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "unstable";
-    };
-    # TODO: Follow to see if/when this gets to a usable state
-    # sops-darwin.url = "github:4825764518/sops-nix/darwin";
     emacs = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "unstable";
@@ -68,7 +62,6 @@
     , home-manager
     , nixos-generators
     , deploy-rs
-    , sops
     , emacs
     , rust
     , agenix-darwin
@@ -100,7 +93,7 @@
           # (self: super:
           #   rec {
           #     polkit = super.polkit.overrideAttrs (old: rec {
-          #       patches = (old.patches or [ ]) ++ [ ./patches/polkit-cve-2021-4034.patch ];
+          #       patches = (old.patches or [ ]) ++ [ ./patches/CVE-2021-4034.patch ];
           #     });
           #   })
         ];
@@ -114,6 +107,17 @@
         #       niv;
         #   })
         # );
+        # Default roles is empty intentionally
+        # defaultRoles = [ ];
+
+        # mkNixOSSystem = { hostname, system, roles, users }: nixosSystem {
+        #   system = "x86_64-linux";
+        #   modules = nixOSModules ++ [
+        #     ./hosts/nexus/configuration.nix
+        #   ] ++ [{
+        #     users.primaryUser = "mitch";
+        #   }];
+        # };
       };
 
       homeManagerStateVersion = "22.05";
@@ -160,8 +164,8 @@
         {
           users = import ./modules/users.nix;
         } ++ [
-        sops.nixosModules.sops
         home-manager.nixosModules.home-manager
+        agenix.nixosModules.age
         ./modules/nixos
         (
           { config, lib, pkgs, ... }:
@@ -169,26 +173,7 @@
             inherit (config.users) primaryUser;
           in
           {
-            sops = {
-              age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-
-              defaultSopsFile = ./secrets/default.yaml;
-
-              secrets = {
-                "users/root" = { };
-                "users/mitch" = { };
-              };
-
-              secrets = {
-                "restic/RESTIC_PASSWORD" = { };
-                "restic/AWS_ACCESS_KEY" = { };
-                "restic/AWS_SECRET_KEY" = { };
-              };
-
-              # https://github.com/Mic92/sops-nix/issues/65#issuecomment-929082304
-              gnupg.sshKeyPaths = [ ];
-            };
-
+            age.secrets = passwdSecrets;
             nixpkgs = nixpkgsConfig;
             users.users.${primaryUser}.home = homeDir "x86_64-linux" primaryUser;
             home-manager.useGlobalPkgs = true;
@@ -230,6 +215,15 @@
           group = "staff";
         };
       };
+
+      passwdSecrets = {
+        "passwd/root" = {
+          file = ./secrets/passwd/root.age;
+        };
+        "passwd/mitch" = {
+          file = ./secrets/passwd/mitch.age;
+        };
+      };
     in
     {
       # TODO: Rebuild nexus via autoinstall
@@ -251,9 +245,21 @@
       #   ];
       #   format = "install-iso";
       # };
+
+      diskImages = {
+        rpi4 = nixpkgs.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            # "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64-new-kernel.nix"
+            # ./machines/ether/image.nix
+            # ./machines/ether/hardware.nix
+            # ./machines/ether/configuration.nix
+          ];
+        };
+      };
       packages.x86_64-linux = {
         sdGenericAarch64 = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux.pkgsCross.aarch64-multiplatform;
+          pkgs = unstable.legacyPackages.x86_64-linux.pkgsCross.aarch64-multiplatform;
           modules = [ "${stable.path}/nixos/modules/profiles/minimal.nix" ];
           format = "sd-aarch64";
         };

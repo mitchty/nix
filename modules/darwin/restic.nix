@@ -181,10 +181,6 @@ in
         StandardErrorPath = "${cfg.logDir}/restic-prune-stderr.log";
         StandardOutPath = "${cfg.logDir}/restic-prune.log";
         StartInterval = 36000;
-        # Once sops or age works on macos we want to replace the env setup with this...
-        # EnvironmentVariables = {
-        #   RESTIC_PASSWORD = "${cfg.resticPassword}";
-        # };
       };
     };
   };

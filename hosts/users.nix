@@ -3,15 +3,12 @@ let
   pubKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7";
 in
 {
-  config.sops.secrets."users/root".neededForUsers = true;
-  config.sops.secrets."users/mitch".neededForUsers = true;
-
   # TODO: can home-manager sort this out now?
   # My normal user account
   config.users = {
     users = {
       root = {
-        passwordFile = config.sops.secrets."users/root".path;
+        passwordFile = config.age.secrets."passwd/root".path;
       };
       mitch = {
         isNormalUser = true;
@@ -19,7 +16,7 @@ in
         home = "/home/mitch";
         createHome = true;
         shell = pkgs.zsh;
-        passwordFile = config.sops.secrets."users/mitch".path;
+        passwordFile = config.age.secrets."passwd/mitch".path;
         extraGroups = [
           "audio"
           "docker"
