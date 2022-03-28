@@ -99,16 +99,12 @@ in
         # Only applicable as RunAtLoad = true
         sleep 10
 
-        if [ ! -f ${config.age.secrets."restic/env/RESTIC_PASSWORD".path} ] &&
-           [ ! -f ${config.age.secrets."restic/env/AWS_ACCESS_KEY".path} ] &&
-           [ ! -f ${config.age.secrets."restic/env/AWS_SECRET_KEY".path} ]; then
-          printf "fatal: cannot find env files\n" >&2
+        if [ ! -f ${config.age.secrets."restic/env.sh".path} ]; then
+          printf "fatal: cannot find env file\n" >&2
           exit 2
+        else
+          source ${config.age.secrets."restic/env.sh".path}
         fi
-
-        export RESTIC_PASSWORD=$(cat ${config.age.secrets."restic/env/RESTIC_PASSWORD".path});
-        export AWS_ACCESS_KEY=$(cat ${config.age.secrets."restic/env/AWS_ACCESS_KEY".path});
-        export AWS_SECRET_KEY=$(cat ${config.age.secrets."restic/env/AWS_SECRET_KEY".path});
 
         EXCLUDES=$(mktemp /tmp/restic-backup-XXXXX)
 
@@ -149,16 +145,12 @@ in
         #-*-mode: Shell-script; coding: utf-8;-*-
         : > ${cfg.logDir}/restic-prune-stderr.log
 
-        if [ ! -f ${config.age.secrets."restic/env/RESTIC_PASSWORD".path} ] &&
-           [ ! -f ${config.age.secrets."restic/env/AWS_ACCESS_KEY".path} ] &&
-           [ ! -f ${config.age.secrets."restic/env/AWS_SECRET_KEY".path} ]; then
-          printf "fatal: cannot find env files\n" >&2
+        if [ ! -f ${config.age.secrets."restic/env.sh".path} ]; then
+          printf "fatal: cannot find env file\n" >&2
           exit 2
+        else
+          source ${config.age.secrets."restic/env.sh".path}
         fi
-
-        export RESTIC_PASSWORD=$(cat ${config.age.secrets."restic/env/RESTIC_PASSWORD".path});
-        export AWS_ACCESS_KEY=$(cat ${config.age.secrets."restic/env/AWS_ACCESS_KEY".path});
-        export AWS_SECRET_KEY=$(cat ${config.age.secrets."restic/env/AWS_SECRET_KEY".path});
 
         {
           restic forget --verbose --tag auto --group-by 'paths,tags' --keep-hourly 24 --keep-daily 14 --keep-weekly 4 --keep-monthly 6 --keep-yearly 10 --repo ${cfg.repo}
