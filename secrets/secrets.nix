@@ -14,8 +14,9 @@ let
 
   workhosts = [ workmb ];
 
-  git = [ mb nexus workmb ];
-  restic = homeusers ++ homehosts;
+  # TODO: Remove dfs1 from here this is a hack for now
+  git = [ mb nexus workmb dfs1 ];
+  restic = [ mb nexus ];
 
   allnixos = [ dfs1 nexus ];
 
@@ -29,10 +30,9 @@ in
   # Just a canary file to know if things are working
   "canary.age".publicKeys = everything;
 
-  # Using env vars for launchd atm, systemd probably will share same fate.
-  "restic/env/RESTIC_PASSWORD.age".publicKeys = restic;
-  "restic/env/AWS_ACCESS_KEY.age".publicKeys = restic;
-  "restic/env/AWS_SECRET_KEY.age".publicKeys = restic;
+  # Using an env file that the launchd script sources, hopefully systemd can use
+  # this directly as an env file
+  "restic/env.sh.age".publicKeys = restic;
 
   # For authenticated git push/pull mainly.
   "git/netrc.age".publicKeys = git;

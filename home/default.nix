@@ -1,4 +1,4 @@
-{ config, pkgs, lib, inputs, ... }: {
+{ config, pkgs, lib, inputs, age, ... }: {
   imports = [
     ./sh.nix
     ./zsh.nix
@@ -7,6 +7,10 @@
     ./btop.nix
     ./syncthing.nix
   ];
+
+  # Note: mkoutofstoresymlink is here cause I don't want the age decrypted
+  # secret in /nix/store, /nix/store/... can simply symlink to the file in /run.
+  home.file.".canary".source = config.lib.file.mkOutOfStoreSymlink age.secrets.canary.path;
 
   systemd.user = lib.mkIf pkgs.stdenv.isLinux { startServices = "sd-switch"; };
   programs.home-manager.enable = true;

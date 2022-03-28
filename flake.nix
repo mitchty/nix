@@ -150,6 +150,7 @@
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
             home-manager.extraSpecialArgs = {
               inherit inputs nixpkgs;
+              age = config.age;
             };
             nix.registry.my.flake = self;
 
@@ -165,21 +166,21 @@
           users = import ./modules/users.nix;
         } ++ [
         home-manager.nixosModules.home-manager
-        agenix.nixosModules.age
         ./modules/nixos
+        agenix.nixosModules.age
         (
           { config, lib, pkgs, ... }:
           let
             inherit (config.users) primaryUser;
           in
           {
-            age.secrets = passwdSecrets;
             nixpkgs = nixpkgsConfig;
             users.users.${primaryUser}.home = homeDir "x86_64-linux" primaryUser;
             home-manager.useGlobalPkgs = true;
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
             home-manager.extraSpecialArgs = {
               inherit inputs nixpkgs;
+              age = config.age;
             };
             nix.registry.my.flake = self;
           }
@@ -196,23 +197,24 @@
         ];
       };
 
-      resticSecrets = {
-        "restic/env/RESTIC_PASSWORD" = {
-          file = ./secrets/restic/env/RESTIC_PASSWORD.age;
+      canarySecret = {
+        canary = {
+          file = ./secrets/canary.age;
           owner = "mitch";
-          group = "staff";
         };
+      };
 
-        "restic/env/AWS_ACCESS_KEY" = {
-          file = ./secrets/restic/env/AWS_ACCESS_KEY.age;
+      gitSecret = {
+        "git/netrc" = {
+          file = ./secrets/git/netrc.age;
           owner = "mitch";
-          group = "staff";
         };
+      };
 
-        "restic/env/AWS_SECRET_KEY" = {
-          file = ./secrets/restic/env/AWS_SECRET_KEY.age;
+      resticSecret = {
+        "restic/env.sh" = {
+          file = ./secrets/restic/env.sh.age;
           owner = "mitch";
-          group = "staff";
         };
       };
 
@@ -305,35 +307,32 @@
             inherit inputs;
           };
           system = "x86_64-darwin";
-          modules = nixDarwinModules ++ [
-            {
-              age.secrets = resticSecrets;
-              users.primaryUser = "mitch";
-              networking.computerName = "mb";
-              networking.hostName = "mb";
-              networking.knownNetworkServices = [
-                "Wi-Fi"
-                "USB 10/100/1000 LAN"
-              ];
-              services.restic = {
-                enable = true;
-                repo = "s3:http://10.10.10.190:8333/restic";
-              };
-            }
-          ];
+          modules = nixDarwinModules ++ [{
+            age.secrets = canarySecret // gitSecret // resticSecret;
+            users.primaryUser = "mitch";
+            networking.computerName = "mb";
+            networking.hostName = "mb";
+            networking.knownNetworkServices = [
+              "Wi-Fi"
+              "USB 10/100/1000 LAN"
+            ];
+            services.restic = {
+              enable = true;
+              repo = "s3:http://10.10.10.190:8333/restic";
+            };
+          }];
         };
         workmb = darwinSystem {
           system = "x86_64-darwin";
-          modules = nixDarwinModules ++ [
-            {
-              users.primaryUser = "tishmack";
-              networking.computerName = "workmb";
-              networking.hostName = "workmb";
-              networking.knownNetworkServices = [
-                "Wi-Fi"
-              ];
-            }
-          ];
+          modules = nixDarwinModules ++ [{
+            age.secrets = canarySecret // gitSecret;
+            users.primaryUser = "tishmack";
+            networking.computerName = "workmb";
+            networking.hostName = "workmb";
+            networking.knownNetworkServices = [
+              "Wi-Fi"
+            ];
+          }];
         };
       };
 
@@ -343,6 +342,7 @@
           modules = nixOSModules ++ [
             ./hosts/nexus/configuration.nix
           ] ++ [{
+            age.secrets = canarySecret // gitSecret // resticSecret // passwdSecrets;
             users.primaryUser = "mitch";
           }];
           specialArgs = {
@@ -355,6 +355,7 @@
           modules = nixOSModules ++ [
             ./hosts/dfs1/configuration.nix
           ] ++ [{
+            age.secrets = canarySecret // gitSecret // passwdSecrets;
             users.primaryUser = "mitch";
           }];
           specialArgs = {
