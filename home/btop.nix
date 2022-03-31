@@ -1,6 +1,6 @@
-{ pkgs, ... }: {
-  home.packages = [
-    pkgs.btop
+{ inputs, pkgs, ... }: {
+  home.packages = with inputs.unstable.legacyPackages.${pkgs.system}; [
+    btop
   ];
 
   # Basically btop defaults but we ignore /boot:/boot* filesystems
