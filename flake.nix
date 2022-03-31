@@ -10,29 +10,18 @@
       url = "github:mitchty/nixos";
       inputs.nixpkgs.follows = "unstable";
     };
-    flake-utils = {
-      url = "github:numtide/flake-utils";
-      inputs.nixpkgs.follows = "unstable";
-    };
+    flake-utils.url = "github:numtide/flake-utils";
     darwin.url = "github:NixOS/nixpkgs/nixpkgs-21.11-darwin";
     nix-darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "unstable";
     };
-    # Follow same nixpkgs as the nixos release for the rest
-    # Unless/until we find out that doesn't work
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "unstable";
-    };
+    home-manager.url = "github:nix-community/home-manager";
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    deploy-rs = {
-      url = "github:serokell/deploy-rs";
-      inputs.nixpkgs.follows = "unstable";
-    };
+    deploy-rs.url = "github:serokell/deploy-rs";
     emacs = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "unstable";
