@@ -137,7 +137,7 @@
         } ++ [
         home-manager.darwinModules.home-manager
         ./modules/darwin
-        agenix-darwin.nixosModules.age
+        agenix-darwin.darwinModules.age
         (
           { config, lib, pkgs, ... }:
           let
