@@ -1,0 +1,5 @@
+* Static files
+
+  This dir exists for any "static" configuration/text files or just files in general that might be shared/used across systems in the flake.
+
+  Aka think */etc* file contents or fragments. Or say *.gitconfig* contents for home-manager or tmux configuration etc that kinda rubbish.
