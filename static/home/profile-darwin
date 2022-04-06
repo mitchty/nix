@@ -1,4 +1,4 @@
 # -*- mode: Shell-script; -*-
 
 # macos specific
-alias oe="open -a $(readlink ~/.nix-profile/bin/emacs)"
+alias oe="open -a \$(readlink ~/.nix-profile/bin/emacs)"

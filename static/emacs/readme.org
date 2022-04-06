@@ -8,7 +8,6 @@
 #+PROPERTY: header-args :mkdirp yes
 #+PROPERTY: header-args :comments no
 #+PROPERTY: header-args :results replace
-#+PROPERTY: header-args :tangle tmp/.emacs.d/init.el
 
 * prelude
 
@@ -16,45 +15,18 @@ Startup related tasks/setup that might be used later on.
 
 *** emacs package setup
 
-Setup the builtin emacs package manager.
-
-#+BEGIN_SRC emacs-lisp :tangle tmp/.emacs.d/init.el :mkdirp yes
-(require 'package)
-(package-initialize)
-#+END_SRC
-
 This is out of place but to catch the gui elements early.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (when (not (window-system))
   (menu-bar-mode -1))
 #+END_SRC
 
-Add in standard package archive urls. Marmalade is gone as its ssl cert expired in 2018, so don't think its even worth using.
-
-#+BEGIN_SRC emacs-lisp
-(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
-(add-to-list 'package-archives '("stable-melpa" . "https://stable.melpa.org/packages/") t)
-(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
-#+END_SRC
-
-*** tangle functions
-
-Duplicated from tangle.el just to make using org easier.
-
-TODO: make this stuff work sanely in emacs org mode and via external tangling. Not tangled for now.
-
-#+BEGIN_SRC emacs-lisp
-(defun tangle/yn (p) (if (bound-and-true-p p) "yes" "no"))
-(defun tangle/file (file p) (if (bound-and-true-p p) (concat "tmp/" file) "no"))
-#+END_SRC
-
 *** emacs gc speedup
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (defun my-minibuffer-setup-hook ()
   (setq gc-cons-threshold most-positive-fixnum))
 
@@ -75,37 +47,14 @@ Then, before doing *ANY* package initialization, make use-package setup/use org 
 
 Actual org configuration is done later in another use-package block.
 
-#+BEGIN_SRC emacs-lisp
-(unless (package-installed-p 'use-package)
-  (progn
-    (require 'cl)
-    (setq load-path (remove-if (lambda (x) (string-match-p "org$" x)) load-path))
-    (package-refresh-contents)
-    (package-install 'use-package)
-    (package-initialize)
-    ))
-
+#+BEGIN_SRC emacs-lisp :tangle yes
 (require 'use-package)
 (setq use-package-verbose t)
-
-(use-package org
-  :ensure org-plus-contrib
-  :pin org)
-#+END_SRC
-
-*** auto-package-update
-
-Make updating use-package installed package.el packages easy peasy.
-
-#+BEGIN_SRC emacs-lisp
-(use-package auto-package-update
-  :ensure t
-  :defer t)
 #+END_SRC
 
 *** match end of string function
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (defun string/ends-with (string suffix)
   "Return t if STRING ends with SUFFIX."
   (and (string-match (rx-to-string `(: ,suffix eos) t)
@@ -118,7 +67,7 @@ Make updating use-package installed package.el packages easy peasy.
 
 Not having to start *emacs* with *--debug-init* is useful.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (setq-default debug-on-error t)
 #+END_SRC
 
@@ -126,7 +75,7 @@ Not having to start *emacs* with *--debug-init* is useful.
 
 Start up the emacs server if it isn't running.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (load "server")
 (unless (server-running-p) (server-start))
 #+END_SRC
@@ -137,7 +86,7 @@ Sick of solarized, going back to good old black on white minimalism like paper.
 
 TODO: Maybe get this to go dark automagically?
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package minimal-theme
   :ensure t
   :config (load-theme 'minimal-light t))
@@ -147,7 +96,7 @@ TODO: Maybe get this to go dark automagically?
 
 Make it easier to determine what os we're running on.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (defvar on-mswindows (string-match "windows" (symbol-name system-type))
   "Am I running under windows?")
 (defvar on-osx (string-match "darwin" (symbol-name system-type))
@@ -160,7 +109,7 @@ Make it easier to determine what os we're running on.
 
 Like the startup screen and the echo hooey.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
   (custom-set-variables
    '(inhibit-startup-screen t)
    '(inhibit-startup-message t)
@@ -173,7 +122,7 @@ Like the startup screen and the echo hooey.
 
 Keep temporary stuff isolated from everyone else. It infects everything otherwise. As bad as the .DS_Store files on osx.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (custom-set-variables
  '(temporary-file-directory "/tmp")
  '(backup-directory-alist `((".*" . ,temporary-file-directory)))
@@ -192,7 +141,7 @@ Keep temporary stuff isolated from everyone else. It infects everything otherwis
 
 Update files in open buffers as they're changed on disk, freaking annoying without this on.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (custom-set-variables '(global-auto-revert-mode t))
 #+END_SRC
 
@@ -200,7 +149,7 @@ Update files in open buffers as they're changed on disk, freaking annoying witho
 
 Use dired-x.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
 #+END_SRC
 
@@ -208,7 +157,7 @@ Use dired-x.
 
 For those rare times I use it, make it a bit less derp on output.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 (setq ediff-split-window-function 'split-window-horizontally)
 #+END_SRC
@@ -217,7 +166,7 @@ For those rare times I use it, make it a bit less derp on output.
 
 Trailing whitespace is not normally useful. Remove it always on save in the *before-save-hook*.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 #+END_SRC
 
@@ -225,12 +174,12 @@ Trailing whitespace is not normally useful. Remove it always on save in the *bef
 
 Because its derp to have to chmod 755 stuff after I save. Honestly, do it for me kthxbai.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 #+END_SRC
 
 *** misc text related
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (put 'upcase-region 'disabled nil)
 #+END_SRC
 *** line wrap
@@ -239,7 +188,7 @@ Line wrapping is useful. Enable it globally for a start.
 
 Need word-wrap so kill line kills the line, not the displayed line.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (global-visual-line-mode t)
 (custom-set-variables '(word-wrap t))
 #+END_SRC
@@ -248,7 +197,7 @@ Need word-wrap so kill line kills the line, not the displayed line.
 
 So if we don't know, call it text-mode.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (custom-set-variables '(default-major-mode 'text-mode))
 #+END_SRC
 
@@ -256,14 +205,14 @@ So if we don't know, call it text-mode.
 
 utf8 is the best. Default to it.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package unicode-escape
   :init
   (set-language-environment "UTF-8")
   :ensure t)
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (custom-set-variables '(locale-coding-system 'utf-8))
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
@@ -275,14 +224,14 @@ utf8 is the best. Default to it.
 
 If I selected text, delete the selection, I probably meant it emacs.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (delete-selection-mode 1)
 #+END_SRC
 *** line width
 
 80 char line columns not 72.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (custom-set-variables '(fill-column 80))
 #+END_SRC
 
@@ -291,7 +240,7 @@ If I selected text, delete the selection, I probably meant it emacs.
 Double spacing after a line isn't needed. We aren't animals emacs, we have
 computers.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (set-default 'sentence-end-double-space nil)
 #+END_SRC
 
@@ -301,14 +250,14 @@ Improve the performance of emacs with files that contain long lines. Disable
 left to right and right to left in the same buffer support. Until or if I learn
 a language that needs this I can deal with it then.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (setq-default bidi-paragraph-direction 'left-to-right)
 #+END_SRC
 
 Also disable this algorithm, which may unbalance ()'s in bidirectional language
 detection. But again as I don't use/speak/read them. Ok tradeoff.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (if (version<= "27.1" emacs-version)
     (progn
       (setq bidi-inhibit-bpa t)
@@ -321,7 +270,7 @@ Ref: https://200ok.ch/posts/2020-09-29_comprehensive_guide_on_handling_long_line
 
 Semi related to the above, make the sentence endings a bit more code-ish.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (custom-set-variables
  '(sentence-end "[.?!][]\"')]*\\($\\|\t\\| \\)[ \t\n]*")
  '(sentence-end-double-space nil)
@@ -334,7 +283,7 @@ Two seems sensible, cause well, tabs are evil incarnate.
 
 Lets use a tab width of 2 by default.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (custom-set-variables '(default-tab-width 2))
 #+END_SRC
 
@@ -342,7 +291,7 @@ Lets use a tab width of 2 by default.
 
 Customize whitespace mode to make tabs obvious as boxes, and to highlight lines over 80 characters in length.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (require 'whitespace)
 
 (setq whitespace-style '(face tabs trailing))
@@ -366,19 +315,19 @@ I have no idea how to label these.
 
 Highlight parens.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (show-paren-mode)
 #+END_SRC
 
 Typing out *yes* or *no* is stupid.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (fset 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 
 Disable the stupid prompt added in 23.2 that asks if you want to kill a buffer with a process attached. Yes, obviously, shut up and do it.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (setq kill-buffer-query-functions
       (remq 'process-kill-buffer-query-function kill-buffer-query-functions))
 #+END_SRC
@@ -387,7 +336,7 @@ TESTING tooltip mode
 
 Puts all tooltips in the echo arear.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (tooltip-mode -1)
 (custom-set-variables
  '(tooltip-use-echo-area t))
@@ -397,7 +346,7 @@ TESTING redisplay
 
 Have emacs not redraw the display before processing input events.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (custom-set-variables
  '(redisplay-dont-pause t))
 #+END_SRC
@@ -408,7 +357,7 @@ Have emacs not redraw the display before processing input events.
 
 On osx, don't ever display the gui dialog box. Taken from http://superuser.com/questions/125569/how-to-fix-emacs-popup-dialogs-on-mac-os-x
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (when (and on-osx (window-system))
   (defadvice yes-or-no-p (around prevent-dialog activate)
     "Prevent yes-or-no-p from activating a dialog"
@@ -425,7 +374,7 @@ On osx, don't ever display the gui dialog box. Taken from http://superuser.com/q
 
 Command should be meta on cocoa emacs like the old carbon/macports version.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (when (and on-osx (window-system))
   (custom-set-variables
    '(mac-command-key-is-meta t)
@@ -441,14 +390,14 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
 
 Global key bindings.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
   (global-set-key (kbd "C-x ,") 'kill-whole-line)
   (global-set-key (kbd "C-x C-m") 'compile)
 #+END_SRC
 
 *** x copy/paste
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (when (and on-linux (window-system))
   (progn
     (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
@@ -461,11 +410,11 @@ Global key bindings.
 
 Trying something new here.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (setq default-frame-alist
       (append (list
                '(right-fringe . 0)
-               '(font . "Comic Code 14")
+               ;; '(font . "Comic Code 14")
                '(min-height . 1)
                '(height     . 42)
                '(foreground-color . "#333333")
@@ -482,14 +431,14 @@ gui emacs session.
 TODO is this doesn't loop through the gui fonts right and set based on the alist
 order of the first matching font in macos.
 
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp :tangle yes
 (defvar my/gui-fonts
   '(
-    "ComicCode"
-    "Comic Code"
-    "PragmataPro"
-    "Pragmata Pro" ;; Seems to register differently on osx than X
-    "Source Code Pro"
+    ;; "ComicCode"
+    ;; "Comic Code"
+    ;; "PragmataPro"
+    ;; "Pragmata Pro" ;; Seems to register differently on osx than X
+    ;; "Source Code Pro"
     "Menlo"
     "Monaco"
     )
@@ -508,7 +457,7 @@ order of the first matching font in macos.
 
    Enable mouse mode for the console and use the mousewheel if possible.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (unless window-system
   (require 'mouse)
   (xterm-mouse-mode t)
@@ -530,7 +479,7 @@ All the packages I use.
 
 If editorconfig is around use it.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package editorconfig
   :ensure t
   :config
@@ -539,7 +488,7 @@ If editorconfig is around use it.
 
 *** tramp
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package tramp
   :defer 5
   :custom
@@ -553,7 +502,7 @@ If editorconfig is around use it.
 
 Turns out that someone wrote this exact thing already. Yay get to drop my own crap.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package exec-path-from-shell
   :ensure t
   :if (memq window-system '(mac ns))
@@ -566,7 +515,7 @@ Turns out that someone wrote this exact thing already. Yay get to drop my own cr
 
 Use the silver searcher for quick searches.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package ag
   :ensure t
   :defer 10
@@ -575,7 +524,7 @@ Use the silver searcher for quick searches.
 
 *** osx-clipboard-mode
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package osx-clipboard
   :if (memq window-system '(mac ns))
   :ensure t
@@ -588,7 +537,7 @@ Use the silver searcher for quick searches.
 Using some hacked together minimal mode line stuff now, spaceline too too much
 oomph with all the crap it did.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (defun my-flycheck-lighter (state)
   "formats the mode-line fycheck error/warning/note junk"
   (let* ((counts (flycheck-count-errors flycheck-current-errors))
@@ -598,14 +547,7 @@ oomph with all the crap it did.
     (if (or errorp running) (format "•%s" err))))
 #+END_SRC
 
-TODO: Use or ditch?
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package org-protocol-capture-html
-  :after quelpa-use-package
-  :quelpa (org-protocol-capture-html :repo "alphapapa/org-protocol-capture-html" :fetcher github))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package quelpa-use-package
   :ensure t)
 (use-package s :ensure t)
@@ -646,7 +588,7 @@ TODO: Use or ditch?
 
 *** yasnippet
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package yasnippet
   :ensure t
   :init
@@ -665,7 +607,7 @@ TODO: Use or ditch?
 
 Note that not all these functions are defined at package install time
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package semantic
   :ensure t
   :config
@@ -682,7 +624,7 @@ Note that not all these functions are defined at package install time
 
 *** expand-region
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package expand-region
   :ensure t
   :bind ("C-]" . er/expand-region))
@@ -692,7 +634,7 @@ Note that not all these functions are defined at package install time
 
 Switching to ivy mode+swiper
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package projectile
   :ensure t
   :init
@@ -728,7 +670,7 @@ Switching to ivy mode+swiper
 
 Make git not ass to use. At least in emacs. magit is the best git interface... in the world.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package magit
   :ensure t
   :commands (magit-init
@@ -752,23 +694,11 @@ Make git not ass to use. At least in emacs. magit is the best git interface... i
 And add TODO detection to the magit buffer. That way they get bubbled up to the
 top to look at.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package magit-todos
   :ensure t
   :after magit
   :hook (magit-mode . magit-todos-mode))
-#+END_SRC
-
-*** autopair
-
-Highlight matching ()'s []'s etc...
-
-#+BEGIN_SRC emacs-lisp
-(use-package autopair
-  :ensure t
-  :custom
-  (autopair-blink 'nil)
-  )
 #+END_SRC
 
 *** TODO org-mode                                        :validation:testing:
@@ -778,56 +708,7 @@ Org-mode keybindings and settings, pretty sparse really.
 Todo is to figure out what needs to happen for the capture templates and
 validate the agenda changes.
 
-#+BEGIN_SRC emacs-lisp
-;; (defun org-roam-monolith-capture-date-file(path &optional extension)
-;;   (mkdir-base-path path)
-;;   (format "%s/%s%s" base (format-time-string "%Y-%m-%d:%H:%M:%S")
-;;           ))
-
-;; (defun org-roam-monolith-base-path(path)
-;;   (expand-file-name (concat path (format-time-string "/%Y/%B"))))
-
-;; (defun org-roam-monolith-mkdir-base-path(path)
-;;   (mkdir (base-path path) t))
-
-;; (defun org-roam-monolith-file-extension(extension)
-;;   (if (eq extension nil) ""
-;;     (if (string-match-p "\\." extension)
-;;         extension
-;;       (concat "." extension))))
-
-;; (defun org-roam-monolith-ref-url(url path)
-;;   (setq base (org-roam-monolith-base-path path))
-;;   ;; (setq file-string (format-time-string "%Y-%m-%d:%H:%M:%S"))
-;;   (setq file-string "test")
-;;   (org-roam-monolith-mkdir-base-path(base))
-;;   (setq file-prefix (format "%s/%s" base, file-string))
-;;   (setq title (org-web-tools--html-title url))
-;;   (setq )
-;;   (append-to-file
-;;    (format "#+TITLE: %s\n#+ROAM_KEY: %s\n\n Monolith archive [[%s][%s]]\n" title url
-;;              title url (mt/insert-url-as-org url))
-;;      nil
-;;      reffile)
-;;     (find-file-other-window reffile)
-;;   )
-
-;; (defun mt/roam-ref-url()
-;;   (interactive)
-;;   (progn
-;;     (setq url (read-string "url: "))
-;;     (setq reffile (capture-date-file "~/src/org/ref/url"))
-;;     (append-to-file
-;;      (format "#+TITLE: %s\n#+ROAM_KEY: %s\n\n\n* Content\n%s"
-;;              (org-web-tools--html-title url) url (mt/insert-url-as-org url))
-;;      nil
-;;      reffile)
-;;     (find-file-other-window reffile)))
-
-
-;; (defun mt/insert-url-as-org(url)
-;;   (org-web-tools--html-to-org-with-pandoc
-;;    (org-web-tools--get-url url)))
+#+BEGIN_SRC emacs-lisp :tangle yes
 (defun capture-file-extension(extension)
   (if (eq extension nil) ""
     (if (string-match-p "\\." extension)
@@ -841,8 +722,6 @@ validate the agenda changes.
   (format "%s/%s%s" prefix file-name (capture-file-extension extension)))
 
 (use-package org
-  :ensure org-plus-contrib
-  :pin org
   :bind (("C-c a" . org-agenda)
          ("C-c b" . org-iswitchb)
          ("C-c c" . org-capture)
@@ -934,50 +813,11 @@ validate the agenda changes.
      )))
 #+END_SRC
 
-**** Org-roam testing
-
-Ref:
-- https://github.com/org-roam/org-roam
-- https://www.orgroam.com/manual/
-
-Starting out simple..ish.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package org-roam
- :after org
- :ensure t
- :hook after-init
- :custom
- (org-roam-directory "~/src/org")
- (org-roam-index-file "~/src/org/roam.org")
- (org-roam-tag-sources '(prop all-directories))
- (org-roam-capture-templates
-  '(("d" "default" plain (function org-roam--capture-get-point)
-        "%?"
-        :file-name "~/src/org/${slug}"
-        :unnarrowed t
-        :head "#+TITLE: ${title}\n")))
- (org-roam-capture-ref-templates
-  '(("r" "ref" plain (function org-roam-capture--get-point)
-     "%?"
-     :file-name "~/src/org/ref/${slug}")
-     :unnarrowed t
-     :head "#+TITLE: ${title}\n#+ROAM_KEY: ${ref}\n- source :: ${ref}\n"))
- :bind
- (:map org-roam-mode-map
-       (("C-c n l" . org-roam)
-        ("C-c n f" . org-roam-find-file)
-        ("C-c n g" . org-roam-graph))
-       :map org-mode-map
-       (("C-c n i" . org-roam-insert))
-       (("C-c n I" . org-roam-insert-immediate))))
-#+END_SRC
-
 **** TODO org babel ob-async testing                             :validation:
 
 Validate that this installs from scratch fine, blocking babel executions is ass.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package ob-async
   :after org
   :ensure t)
@@ -987,7 +827,7 @@ Validate that this installs from scratch fine, blocking babel executions is ass.
 
 Figure out the customization needed here. Note that org-habit isn't a feature we can use-package against.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (add-to-list 'org-modules 'org-habit)
 (custom-set-variables
  '(org-habit-graph-column 44)
@@ -999,7 +839,7 @@ Figure out the customization needed here. Note that org-habit isn't a feature we
 
 https://github.com/integral-dw/org-superstar-mode
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package org-bullets
   :after org
   :ensure t
@@ -1032,37 +872,11 @@ https://github.com/integral-dw/org-superstar-mode
   )
 #+END_SRC
 
-TODO: testing
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package org-num
-  :load-path "lisp/"
-  :after org
-  :hook (org-mode . org-num-mode))
-#+END_SRC
-
-**** TODO Keep ox-latex in org setup?                     :validation:broken:
-
-Its tangle is set to no...
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(require 'ox-latex)
-ox-latex
-
-(unless (boundp 'org-latex-classes)
-  (setq org-latex-classes nil))
-nil
-
-(add-to-list 'org-latex-classes
-             '("article"
-               "\\documentclass{article}"
-               ("\\section{%s}" . "\\section*{%s}")))
-#+END_SRC
-
 *** flycheck
 
 Flycheck for on the fly checking of code.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package flycheck
   :ensure t
   :custom
@@ -1070,47 +884,11 @@ Flycheck for on the fly checking of code.
   :hook (prog-mode . flycheck-mode))
 #+END_SRC
 
-TODO: see if this is better for error messages
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package pos-tip
-  :after flycheck
-  :hook
-  (flycheck-mode . flycheck-pos-tip-mode))
-#+END_SRC
-
-**** TODO pkg-config lib stuff for flycheck                          :broken:
-
-Need to vet this, used it more when I did more c. But its handy for non standard pkg-config
-setups.
-
-Not tangled into the config intentionally.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(defun pkg-config-add-lib-cflags (pkg-config-lib)
-  "This function will add necessary header file path of a
-  specified by `pkg-config-lib' to `flycheck-clang-include-path', which make it
-  completionable by auto-complete-clang"
-  (interactive "spkg-config lib: ")
-  (if (executable-find "pkg-config")
-      (if (= (shell-command
-              (format "pkg-config %s" pkg-config-lib))
-             0)
-          (setq flycheck-clang-include-path
-                (append flycheck-clang-include-path
-                        (split-string
-                         (shell-command-to-string
-                          (format "pkg-config --cflags-only-I %s"
-                                  pkg-config-lib)))))
-        (message "Error, pkg-config lib %s not found." pkg-config-lib))
-    (message "Error: pkg-config tool not found.")))
-#+END_SRC
-
 *** TODO auto-complete not tangled                        :validation:broken:
 
 Auto complete functionality is nice to have.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package auto-complete
   :ensure t
   :init
@@ -1124,7 +902,7 @@ Auto complete functionality is nice to have.
 
 Helpfully inserts matching parens, can be a pita too.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package smartparens
   :ensure t
   :hook (prog-mode . smartparens-mode))
@@ -1134,7 +912,7 @@ Helpfully inserts matching parens, can be a pita too.
 
 Makes matching parens easier.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package rainbow-delimiters
   :ensure t
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -1144,7 +922,7 @@ Makes matching parens easier.
 
 Make buffer names unique based on their directory and not have <N> or other nonsense.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (require 'uniquify)
 (custom-set-variables '(uniquify-buffer-name-style 'post-forward))
 #+END_SRC
@@ -1155,7 +933,7 @@ REMOVE ME && TODO IF THIS WORKS
 
 Saves buffers like with auto-save but on focus loss, when idle etc...
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package super-save
   :ensure t
   :config
@@ -1165,19 +943,9 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
   )
 #+END_SRC
 
-*** TODO fic-mode                                                    :broken:
-
-Highlight TODO/FIXME type messages in comments.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package fic-mode
-  :ensure t
-  :hook (prog-mode . fic-mode))
-#+END_SRC
-
 *** git gutter
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package git-gutter
   :ensure t
   :config
@@ -1187,7 +955,7 @@ Highlight TODO/FIXME type messages in comments.
 
 *** clang-format
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package clang-format
   :ensure t
   :bind (([C-M-tab] . clang-format-region))
@@ -1196,36 +964,18 @@ Highlight TODO/FIXME type messages in comments.
 
 *** hideshow
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package hideshow
   :ensure t
   :bind ("C-c s" . hs-toggle-hiding)
   )
 #+END_SRC
 
-*** TODO ggtags                                                      :broken:
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package ggtags
-  :ensure t)
-#+END_SRC
-
-*** company-mode
-
-Completion tips.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package company
-  :ensure t
-  :hook
-  (after-init . global-company-mode))
-#+END_SRC
-
 *** yaml-mode
 
 For.. yaml
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package yaml-mode
   :ensure t)
 #+END_SRC
@@ -1234,157 +984,26 @@ For.. yaml
 
 So I write gooder. Me fail English? Thats unpossible.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package writegood-mode
   :ensure t)
 #+END_SRC
 
 *** rust-mode
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package rust-mode
   :commands rust-mode
   :defer t)
 #+END_SRC
-*** TODO python-mode                                                 :broken:
-
-Compress down python configuration a bit.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package python
-  :after company-mode
-  :commands python-mode
-  :mode ("\\.py\\'" . python-mode)
-  :config
-  (add-hook 'python-mode-hook'
-            (lambda ()
-              (push '("lambda" . ?λ) prettify-symbols-alist)
-              (push '("<=" . ?≤) prettify-symbols-alist)
-              (push '(">=" . ?≥) prettify-symbols-alist)
-              (push '("==" . ?≡) prettify-symbols-alist)
-              (push '("/=" . ?≢) prettify-symbols-alist)
-              (push '("&&" . ?∧) prettify-symbols-alist)
-              (push '("||" . ?∨) prettify-symbols-alist)
-              (push '("not" . ?¬) prettify-symbols-alist)
-              (push '("None" . ?⊥) prettify-symbols-alist)
-              (prettify-symbols-mode)
-              )
-            )
-  )
-
-(use-package company-anaconda
-  :after python
-  :config
-  (add-to-list 'company-backends 'company-anaconda)
-  (add-hook 'python-mode-hook 'anaconda-mode)
-
-  )
-(use-package pytest
-  :after python
-  :bind ("C-c t" . pytest-one)
-  )
-
-(use-package pymacs :after python)
-#+END_SRC
-
-*** haskell-mode
-
-Need to make haskell source be all pretty.
-
-#+BEGIN_SRC emacs-lisp
-(use-package haskell-mode
-  :defer t
-  :config
-  (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-  (add-hook 'haskell-mode-hook'
-            (lambda ()
-              (push '("()" . ?∅) prettify-symbols-alist)
-              (push '("\\" . ?λ) prettify-symbols-alist)
-              (push '("pi" . ?π) prettify-symbols-alist)
-              (push '("=>" . ?⇒) prettify-symbols-alist)
-              (push '("->" . ?→) prettify-symbols-alist)
-              (push '("<-" . ?←) prettify-symbols-alist)
-              (push '("<=" . ?≤) prettify-symbols-alist)
-              (push '(">=" . ?≥) prettify-symbols-alist)
-              (push '("==" . ?≡) prettify-symbols-alist)
-              (push '("/=" . ?≢) prettify-symbols-alist)
-              (push '("!!" . "‼") prettify-symbols-alist)
-              (push '("&&" . ?∧) prettify-symbols-alist)
-              (push '("||" . ?∨) prettify-symbols-alist)
-              (push '("~>" . ?⇝) prettify-symbols-alist)
-              (push '("-<" . ?↢) prettify-symbols-alist)
-              (push '("not" . ?¬) prettify-symbols-alist)
-              (push '("forall" . ?∀) prettify-symbols-alist)
-              (push '("sqrt" . ?√) prettify-symbols-alist)
-              (push '("undefined" . ?⊥) prettify-symbols-alist)
-              (prettify-symbols-mode)
-              )
-            )
-  (add-to-list 'completion-ignored-extensions ".hi")
-  :custom
-  (haskell-program-name "ghci")
-  (haskell-process-type 'cabal-repl)
-  (haskell-tags-on-save t)
-  )
-(use-package dante
-  :after haskell-mode
-  :config
-  (add-hook 'haskell-mode-hook 'dante-mode)
-  )
-(use-package hindent
-  :if (executable-find "hindent")
-  :after haskell-mode
-  :config
-  (add-hook 'haskell-mode-hook 'hindent-mode)
-  )
-(use-package flycheck-haskell :after haskell-mode)
-(use-package flycheck-hdevtools
-        :after haskell-mode
-        :config
-        (add-hook 'haskell-mode-hook 'flycheck-mode)
-        )
-(use-package ghc
-  :if (executable-find "ghc-mod")
-  :after haskell-mode
-  :config
-  (autoload 'ghc-init "ghc" nil t)
-  (autoload 'ghc-debug "ghc" nil t)
-  (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
-  )
-#+END_SRC
 
 *** idris-mode
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package idris-mode
   :defer t
   :config
   (add-to-list 'completion-ignored-extensions ".ibc")
-  (add-hook 'idris-mode-hook'
-            (lambda ()
-              (push '("()" . ?∅) prettify-symbols-alist)
-              (push '("\\" . ?λ) prettify-symbols-alist)
-              (push '("pi" . ?π) prettify-symbols-alist)
-              (push '("=>" . ?⇒) prettify-symbols-alist)
-              (push '("->" . ?→) prettify-symbols-alist)
-              (push '("<-" . ?←) prettify-symbols-alist)
-              (push '("<=" . ?≤) prettify-symbols-alist)
-              (push '(">=" . ?≥) prettify-symbols-alist)
-              (push '("==" . ?≡) prettify-symbols-alist)
-              (push '("/=" . ?≢) prettify-symbols-alist)
-              (push '("!!" . "‼") prettify-symbols-alist)
-              (push '("&&" . ?∧) prettify-symbols-alist)
-              (push '("||" . ?∨) prettify-symbols-alist)
-              (push '("~>" . ?⇝) prettify-symbols-alist)
-              (push '("-<" . ?↢) prettify-symbols-alist)
-              (push '("not" . ?¬) prettify-symbols-alist)
-              (push '("forall" . ?∀) prettify-symbols-alist)
-              (push '("sqrt" . ?√) prettify-symbols-alist)
-              (push '("undefined" . ?⊥) prettify-symbols-alist)
-              (prettify-symbols-mode)
-              )
-            )
   )
 #+END_SRC
 
@@ -1392,7 +1011,7 @@ Need to make haskell source be all pretty.
 
 Make undo more useful, and treelike.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package undo-tree
   :ensure t
   :config
@@ -1408,23 +1027,12 @@ Make undo more useful, and treelike.
   )
 #+END_SRC
 
-*** color-identifiers-mode
-
-Color variables for easy identification, its like a rainbow puked over
-everything opened in prog-mode-hook.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package color-identifiers-mode
-  :defer t
-  :hook (prog-mode . color-identifiers-mode))
-#+END_SRC
-
 *** idle-highlight-mode
 
 Highlight a variable when you're selecting it, helps in reviewing code to see
 where it exists.
 
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package idle-highlight-mode
   :hook (prog-mode . idle-highlight-mode))
 #+END_SRC
@@ -1433,7 +1041,7 @@ where it exists.
 
 Instead of text might as well get a decent mode hook going here.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package nixos-options
   :defer t)
 (use-package company-nixos-options
@@ -1450,13 +1058,12 @@ Instead of text might as well get a decent mode hook going here.
         (lambda (command) (apply 'nix-shell-command (nix-current-sandbox) command))
         flycheck-executable-find
         (lambda (cmd) (nix-executable-find (nix-current-sandbox) cmd)))
-  (add-to-list 'company-backends 'company-nixos-options)
   )
 #+END_SRC
 
 *** docker-mode
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package dockerfile-mode
   :defer t)
 #+END_SRC
@@ -1465,7 +1072,7 @@ Instead of text might as well get a decent mode hook going here.
 
 Switch to rtags, or maybe even nuke entirely?
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package xcscope
   :defer t
   :config (cscope-setup))
@@ -1473,7 +1080,7 @@ Switch to rtags, or maybe even nuke entirely?
 
 *** rg
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package rg
   :ensure t
   :defer t)
@@ -1486,7 +1093,7 @@ Common mode defaults I think are sensible.
 
 ***** c
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
   (add-to-list 'auto-mode-alist '("\\.[chm]\\'" . c-mode))
 (add-hook 'c-mode-common-hook
           '(lambda ()
@@ -1507,33 +1114,9 @@ Common mode defaults I think are sensible.
              ))
 #+END_SRC
 
-***** TODO elisp                                                     :broken:
-
-Why is this broken? Figure out why its tangle is no.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(add-hook 'emacs-lisp-hook
-          (lambda ()
-            (define-key emacs-lisp-map
-              "\C-x\C-e" 'pp-eval-last-sexp)
-            (define-key emacs-lisp-map
-              "\r" 'reindent-then-newline-and-indent)))
-#+END_SRC
-
-***** python-mode
-
-#+BEGIN_SRC emacs-lisp
-(add-hook 'python-mode-hook
-          '(lambda ()
-             (flycheck-select-checker 'python-flake8)
-             )
-          )
-
-#+END_SRC
-
 ***** shell
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (autoload 'sh--mode "sh-mode" "mode for shell stuff" t)
 
 (add-to-list 'auto-mode-alist '("\\.sh$\\'" . sh-mode))
@@ -1550,7 +1133,7 @@ Why is this broken? Figure out why its tangle is no.
 
 ***** perl
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (fset 'perl-mode 'cperl-mode)
 
 (add-hook 'cperl-mode-hook
@@ -1575,20 +1158,20 @@ Use auto-insert-mode to insert in templates for blank files.
 So first up, add auto-insert to *find-file-hooks* so we insert straight away. Also
 setup the copyright bit to minimally put in name.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (add-hook 'find-file-hooks 'auto-insert)
 (defvar auto-insert-copyright (user-full-name))
 #+END_SRC
 
 Create *auto-insert-alist* so all the mode lists are the same
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (defvar auto-insert-alist '(()))
 #+END_SRC
 
 ***** c
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (setq auto-insert-alist
       (append
        '(
@@ -1611,7 +1194,7 @@ Create *auto-insert-alist* so all the mode lists are the same
 #+END_SRC
 
 ***** elisp
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (setq auto-insert-alist
       (append
        '(
@@ -1629,7 +1212,7 @@ Create *auto-insert-alist* so all the mode lists are the same
 
 ***** python
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (setq auto-insert-alist
       (append
        '(((python-mode . "python")
@@ -1647,7 +1230,7 @@ Create *auto-insert-alist* so all the mode lists are the same
 
 ***** shell
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (setq auto-insert-alist
       (append
        '(
@@ -1673,7 +1256,7 @@ Note: this is at the end so that anything that might get eval()'d from the deskt
 
 Desktop saving of session information handy to keep the same buffers between sessions.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (defun desktop-setup ()
 
 (require 'desktop)
@@ -1700,7 +1283,7 @@ Desktop saving of session information handy to keep the same buffers between ses
 
 Load this up last to allow for local customization if needed and to keep from custom writing to the init.el file.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
 #+END_SRC

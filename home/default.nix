@@ -1,4 +1,17 @@
-{ config, pkgs, lib, inputs, age, ... }: {
+{ config, pkgs, lib, inputs, age, ... }:
+let
+  emacsWithConfig = (pkgs.emacsWithPackagesFromUsePackage {
+    config = ../static/emacs/readme.org;
+    package = pkgs.emacsGcc;
+    alwaysEnsure = true;
+    extraEmacsPackages = epkgs: [
+      epkgs.use-package
+      epkgs.org
+      pkgs.gcc11
+    ];
+  });
+in
+{
   imports = [
     ./sh.nix
     ./zsh.nix
@@ -87,10 +100,21 @@
   # TODO: Finish porting emacs config over future me fix
   programs.emacs = {
     enable = true;
-    package = pkgs.emacsGcc;
+    package = emacsWithConfig;
+  };
+  home.file = {
+    ".emacs.d/init.el" = {
+      source = ../static/emacs/init.el;
+      recursive = true;
+    };
+    ".emacs.d/readme.org" = {
+      source = ../static/emacs/readme.org;
+      recursive = true;
+    };
   };
 
-  # Stuff not worthy of its own .nix file
+  # Programs not (yet) worthy of their own .nix setup
+  programs.go.enable = true;
   programs.jq.enable = true;
   programs.direnv = {
     enable = true;

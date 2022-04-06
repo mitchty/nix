@@ -141,7 +141,7 @@
 # Default username and email to use if not overridden. Note, this only applies to
 # where I actually do any commits.
 
-# My layout is ~/src/domain/... Not all domains might end up getting thrown in
+# My layout is ~/src/pub/domain/... Not all domains might end up getting thrown in
 # here. Adjust what username/email gets used. Git 2.13+ only. Mostly for work
 # related stuff.
 [user]
