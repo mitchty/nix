@@ -406,15 +406,14 @@ Global key bindings.
   )
 #+END_SRC
 * appearance
-*** TODO fonts setup doesn't work                                    :broken:
+*** fonts setup
 
-Trying something new here.
+Set the default frame list values, then iff in a window system set the fonts in reverse order of preference
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (setq default-frame-alist
       (append (list
                '(right-fringe . 0)
-               ;; '(font . "Comic Code 14")
                '(min-height . 1)
                '(height     . 42)
                '(foreground-color . "#333333")
@@ -425,32 +424,25 @@ Trying something new here.
                '(menu-bar-lines . 0))))
 #+END_SRC
 
-List of fonts in order of preference. Set preferred font list when we're in a
-gui emacs session.
-
-TODO is this doesn't loop through the gui fonts right and set based on the alist
-order of the first matching font in macos.
+List of fonts in order of preference. Set preferred font list when we're in a gui emacs session. Note order of the list is in reverse so we set the least desired fonts and end with the more desired if available
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(defvar my/gui-fonts
-  '(
-    ;; "ComicCode"
-    ;; "Comic Code"
-    ;; "PragmataPro"
-    ;; "Pragmata Pro" ;; Seems to register differently on osx than X
-    ;; "Source Code Pro"
-    "Menlo"
-    "Monaco"
-    )
-  )
 (with-no-warnings
-  (when window-system
-    (if (find-font (font-spec :name (car my/gui-fonts)))
-        (progn (set-frame-font (car my/gui-fonts))
-               (set-face-attribute 'default nil :height 180))
-      (progn (set-gui-font (cdr my/gui-fonts))))
-    )
-  )
+  (mapcar (lambda (element)
+	    (when (and window-system (find-font (font-spec :name element))
+		       (progn (set-frame-font element)
+			      (set-face-attribute 'default nil :height 180))
+		       )))
+	  '(
+	    "Monaco"
+	    "Menlo"
+	    "Source Code Pro"
+	    "Pragmata Pro" ;; Seems to register differently on osx than X
+	    "PragmataPro"
+	    "Comic Code"
+	    "ComicCode"
+	    )
+	  ))
 #+END_SRC
 
 *** tty
