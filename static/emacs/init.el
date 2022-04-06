@@ -1,5 +1,6 @@
 ;; Just enough to load the "real" init file
 (require 'org)
+(require 'use-package)
 (defvar my/init-el (concat user-emacs-directory "readme.el"))
 
 (find-file (concat user-emacs-directory "readme.org"))

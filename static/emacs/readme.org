@@ -603,25 +603,6 @@ oomph with all the crap it did.
   )
 #+END_SRC
 
-*** semantic
-
-Note that not all these functions are defined at package install time
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package semantic
-  :ensure t
-  :config
-  (add-to-list 'semantic-default-submodes 'global-semantic-stickyfunc-mode)
-  (custom-set-variables
-   '(global-semantic-decoration-mode t)
-   '(global-semantic-highlight-func-mode t)
-   '(global-semantic-idle-scheduler-mode t)
-   '(global-semantic-idle-local-symbol-highlight-mode t)
-   )
-  :init
-  (semantic-mode t))
-#+END_SRC
-
 *** expand-region
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -721,6 +702,8 @@ validate the agenda changes.
   (setq file-name (format-time-string "%Y-%m-%d:%H:%M:%S"))
   (format "%s/%s%s" prefix file-name (capture-file-extension extension)))
 
+(use-package ob-go)
+
 (use-package org
   :bind (("C-c a" . org-agenda)
          ("C-c b" . org-iswitchb)
@@ -740,7 +723,7 @@ validate the agenda changes.
              (C . t)
              (ditaa . t)
              (emacs-lisp . t)
-             (haskell . t)
+             (go . t)
              (latex . t)
              (perl . t)
              (python . t)
@@ -962,15 +945,6 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
   )
 #+END_SRC
 
-*** hideshow
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package hideshow
-  :ensure t
-  :bind ("C-c s" . hs-toggle-hiding)
-  )
-#+END_SRC
-
 *** yaml-mode
 
 For.. yaml
@@ -1005,6 +979,12 @@ So I write gooder. Me fail English? Thats unpossible.
   :config
   (add-to-list 'completion-ignored-extensions ".ibc")
   )
+#+END_SRC
+
+*** go-mode
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package go-mode :defer t)
 #+END_SRC
 
 *** undo-tree
@@ -1312,4 +1292,22 @@ Iffy.... Does some jank ass wack stuff in fullscreen mode on cocoa emacs in maco
    '((top . 10))))
   ;;    (width . 0.7)
   ;;    (left . 0.5))))
+#+END_SRC
+
+Ref:
+
+- https://github.com/jrosdahl/fancy-dabbrev
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package fancy-dabbrev
+  :config
+  (setq fancy-dabbrev-preview-delay 0.1)
+  (setq fancy-dabbrev-expansion-on-preview-only t)
+  (setq fancy-dabbrev-indent-command 'tab-to-tab-stop)
+  ;; :bind
+  ;; ("C-1" . #'fancy-dabbrev-forward)
+  ;; ("C-2" . #'fancy-dabbrev-backward)
+  :hook ((prog-mode . fancy-dabbrev-mode)
+         (org-mode . fancy-dabbrev-mode))
+  )
 #+END_SRC
