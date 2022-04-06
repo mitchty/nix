@@ -473,3 +473,12 @@ ugde() {
     done
   )
 }
+
+# Because stuff sometimes fails, retry Until Success
+us() {
+  ok=1
+  until $ok; do
+    "$@"
+    ok=$?
+  done
+}
