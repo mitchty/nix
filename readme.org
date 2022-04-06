@@ -2,6 +2,13 @@
 
   So my goal with all this is to get as much into a NixOS layout for home. Now that Flakes are "kinda/sorta" out it seems the best time to convert everything over to flakes.
 
+** Nix resources
+
+  Because nix isn't exactly a "common" thing to encounter as a programming language/package manager...
+
+  - https://learnxinyminutes.com/docs/nix/
+  - https://teu5us.github.io/nix-lib.html
+
 ** Potent Notables
 
    So what in here is worth looking at exactly? Well this is a combined NixOS and x86 Macos setup with home manager. That is, while its incomplete I manage both my macos laptop and any/all NixOS nodes from this shared flake repo.
@@ -47,3 +54,34 @@ And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Ak
    - [[file:patches/][patches]] Any patch files that may be needed for things like CVE's that might not yet be upstream yet in nixpkgs or anywhere else.
    - [[file:secrets/][secrets]] Any secret related data for age and/or git-transcript. Basically "private junk hiding in plain sight".
    - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use.
+
+
+* Todo's
+
+** Pipewire
+
+  Refs:
+  - https://nixos.wiki/wiki/PipeWire
+  - https://wiki.archlinux.org/title/PipeWire
+  - https://github.com/NixOS/nixpkgs/issues/102547
+
+  Need to get pipewire tested again, probably via this to do things simple first to see if newer pipewire is less fiddly:
+
+#+begin_src conf
+services.pipewire = {
+  enable = true;
+  alsa.enable = true;
+  alsa.support32Bit = true;
+  jack.enable = true;
+  pulse.enable = true;
+  socketActivation = true;
+};
+programs.dconf.enable = true;
+services.gnome.at-spi2-core.enable = true;
+#+end_src
+
+** Network booting?
+
+  Might be fun to look into for a pi4 k8s cluster or something.
+
+  https://github.com/DeterminateSystems/nix-netboot-serve
