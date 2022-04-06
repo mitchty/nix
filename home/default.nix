@@ -47,6 +47,7 @@ in
     git
     git-lfs
     gnumake
+    gron
     htop
     inputs.mitchty.packages.${pkgs.system}.hwatch # TODO: Keep or no?
     jless
@@ -54,7 +55,8 @@ in
     mercurial
     minio-client
     ncdu
-    nix-prefetch-git
+    nix-prefetch-scripts
+    nix-prefetch-github
     nixpkgs-fmt
     openssl
     p7zip
