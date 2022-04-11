@@ -11,3 +11,4 @@
 ,*.swp
 ,*.[oa]
 ,*.hi
+.*.~undo-tree~

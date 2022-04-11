@@ -1,3 +1,6 @@
+[core]
+  excludesFile = ~/.gitignore
+
 [pager]
   color = true
 
