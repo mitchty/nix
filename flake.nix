@@ -321,6 +321,9 @@
             networking.knownNetworkServices = [
               "Wi-Fi"
             ];
+            services.work = {
+              enable = true;
+            };
           }];
         };
       };
