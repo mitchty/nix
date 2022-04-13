@@ -980,9 +980,10 @@ Make undo more useful, and treelike.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package undo-tree
-  :ensure t
+  :defer t
   :config
   (global-undo-tree-mode)
+  (setq undo-tree-auto-save-history nil)
   (defadvice undo-tree-visualize (around undo-tree-split-side-by-side activate)
     "Split undo-tree side-by-side"
     (let ((split-height-threshold nil)
