@@ -37,21 +37,6 @@ This is out of place but to catch the gui elements early.
 (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
 #+END_SRC
 
-*** use-package bootstrap
-
-This configuration is using *use-package* extensively. Install it early so we can use it elsewhere.
-
-First strip out any existing org load-path prior to package initialization, but only if use-package isn't installed. If we always remove all org load-path entries from the load path entirely after they're installed we can cause bad behavior on restarts.
-
-Then, before doing *ANY* package initialization, make use-package setup/use org from the package repos and pin it so that other packages can't muck that up if/when they install.
-
-Actual org configuration is done later in another use-package block.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(require 'use-package)
-(setq use-package-verbose t)
-#+END_SRC
-
 *** match end of string function
 
 #+BEGIN_SRC emacs-lisp :tangle yes
