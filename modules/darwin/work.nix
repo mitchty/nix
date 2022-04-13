@@ -4,6 +4,51 @@ with lib;
 
 let
   cfg = config.services.work;
+  fakesha = lib.fakeSha256;
+  uri = "http://car.dev.cray.com/artifactory";
+
+  # Note: both these derivations depend on vpn to work might be an issue for
+  # future me with build offloading at some point. Sorry future me.
+  vshasta = pkgs.stdenv.mkDerivation
+    rec {
+      name = "vshasta-${version}";
+
+      # Nix version is bogus, just picking the YYYY.mm.DD this derivation was last
+      # updated.
+      version = "2022.04.13";
+
+      src = pkgs.fetchurl {
+        url = "${uri}/vshasta/cli/latest/darwin-amd64/vshasta";
+        sha256 = "sha256-LQPQt4f6Yu54Ep+LS0GZ6dfS2wti5FUk1QREhiTTjsc=";
+      };
+
+      # We don't need to do anything but install from src ^^
+      phases = [ "installPhase" ];
+
+      installPhase = ''
+        install -m755 -D $src $out/bin/vshasta
+      '';
+    };
+  craypc = pkgs.stdenv.mkDerivation
+    rec {
+      name = "craypc-${version}";
+
+      # Nix version is bogus, just picking the YYYY.mm.DD this derivation was last
+      # updated.
+      version = "2022.04.13";
+
+      src = pkgs.fetchurl {
+        url = "${uri}/internal/craypc/latest/macos-amd64/craypc";
+        sha256 = "sha256-7eSzttb1dUbuQeP5CCsgOKbsfELq141z6D9iCBocMN0=";
+      };
+
+      # We don't need to do anything but install from src ^^
+      phases = [ "installPhase" ];
+
+      installPhase = ''
+        install -m755 -D $src $out/bin/craypc
+      '';
+    };
 in
 {
   options = {
@@ -18,11 +63,13 @@ in
     };
   };
 
-  # TODO: How the F do I do a derivation in here for internal binaries?
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       google-cloud-sdk
       pulumi-bin
+    ] ++ [
+      craypc
+      vshasta
     ];
   };
 }
