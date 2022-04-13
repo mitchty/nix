@@ -917,7 +917,7 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package clang-format
-  :ensure t
+  :defer t
   :bind (([C-M-tab] . clang-format-region))
   )
 #+END_SRC
@@ -943,8 +943,7 @@ Make markdown pretty(er/ish)
 So I write gooder. Me fail English? Thats unpossible.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package writegood-mode
-  :ensure t)
+(use-package writegood-mode :defer t)
 #+END_SRC
 
 *** rust-mode
