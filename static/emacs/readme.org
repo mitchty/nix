@@ -927,8 +927,15 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
 For.. yaml
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package yaml-mode
-  :ensure t)
+(use-package yaml-mode :defer t)
+#+END_SRC
+
+*** markdown-mode
+
+Make markdown pretty(er/ish)
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package markdown-mode :defer t)
 #+END_SRC
 
 *** writegood-mode
