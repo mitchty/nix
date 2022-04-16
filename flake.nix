@@ -309,6 +309,9 @@
               enable = true;
               repo = "s3:http://10.10.10.190:8333/restic";
             };
+            services.mitchty = {
+              enable = true;
+            };
           }];
         };
         workmb = darwinSystem {

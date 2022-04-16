@@ -1,0 +1,11 @@
+#!/bin/sh
+if [ -z "${1}" ]; then
+  printf "usage: close app_name\n  no application to close provided\n"
+  exit 1
+fi
+
+osascript <<END
+tell application "${1}"
+    quit
+end tell
+END

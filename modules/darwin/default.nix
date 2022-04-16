@@ -4,6 +4,7 @@
     ../../hosts/nix-basic.nix
     ./restic.nix
     ./nix-index.nix
+    ./mitchty.nix
   ];
 
   config = {
