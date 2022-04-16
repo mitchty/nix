@@ -15,7 +15,7 @@ let
   workhosts = [ workmb ];
 
   # TODO: Remove dfs1 from here this is a hack for now
-  git = [ mb nexus workmb dfs1 ];
+  git = [ mb nexus workmb dfs1 ] ++ homeusers;
   restic = [ mb nexus ];
 
   allnixos = [ dfs1 nexus ];
