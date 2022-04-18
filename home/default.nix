@@ -2,12 +2,11 @@
 let
   emacsWithConfig = (pkgs.emacsWithPackagesFromUsePackage {
     config = ../static/emacs/readme.org;
-    package = pkgs.emacsGcc;
+    package = pkgs.emacsNativeComp;
     alwaysEnsure = true;
     extraEmacsPackages = epkgs: [
       epkgs.use-package
       epkgs.org
-      pkgs.gcc11
     ];
   });
 in
