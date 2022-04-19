@@ -212,6 +212,7 @@ If I selected text, delete the selection, I probably meant it emacs.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (delete-selection-mode 1)
 #+END_SRC
+
 *** line width
 
 80 char line columns not 72.
@@ -242,7 +243,9 @@ a language that needs this I can deal with it then.
 Also disable this algorithm, which may unbalance ()'s in bidirectional language
 detection. But again as I don't use/speak/read them. Ok tradeoff.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+Note: tangle is off cause there isn't much need for this anymore with the flake setup.
+
+#+BEGIN_SRC emacs-lisp :tangle no
 (if (version<= "27.1" emacs-version)
     (progn
       (setq bidi-inhibit-bpa t)

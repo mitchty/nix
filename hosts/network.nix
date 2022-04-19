@@ -1,5 +1,5 @@
 { ... }: {
-  networking.firewall.allowedTCPPorts = [ 3389 3350 5900 22000 ];
+  networking.firewall.allowedTCPPorts = [ 3389 3350 5900 22000 3900 3901 3902 9333 8080 8888 8333 ];
 
   networking.firewall.allowedUDPPorts = [ 5353 ];
   networking.firewall.allowedUDPPortRanges = [{ from = 21027; to = 21027; } { from = 22000; to = 22000; } { from = 60000; to = 60010; }];

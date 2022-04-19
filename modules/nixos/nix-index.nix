@@ -18,27 +18,27 @@ in
 
     systemd.user.services.nix-index = {
       Unit = {
-      Description = "Update nix-index cache";
+        Description = "Update nix-index cache";
+      };
+
+      Service = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.nix-index}/bin/nix-index";
+      };
     };
 
-    Service = {
-      Type = "oneshot";
-      ExecStart = "${pkgs.nix-index}/bin/nix-index";
-    };
-  };
+    systemd.user.timers.nix-index = {
+      Install = { WantedBy = [ "timers.target" ]; };
 
-  systemd.user.timers.nix-index = {
-    Install = { WantedBy = [ "timers.target" ]; };
+      Unit = {
+        Description = "Update nix-index cache";
+      };
 
-    Unit = {
-      Description = "Update nix-index cache";
+      Timer = {
+        OnCalendar = "weekly";
+        Persistent = true;
+      };
     };
-
-    Timer = {
-      OnCalendar = "weekly";
-      Persistent = true;
-    };
-  };
   };
 }
 # { config, lib, pkgs, ... }:

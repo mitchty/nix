@@ -27,16 +27,29 @@ in
   systemd.user = lib.mkIf pkgs.stdenv.isLinux { startServices = "sd-switch"; };
   programs.home-manager.enable = true;
 
+  # TODO: fonts...
+  # fonts = {
+  #   enableFontDir = true;
+  #   fonts = with pkgs; [
+  #     overpass
+  #     alegreya
+  #     alegreya-sans
+  #     emacs-all-the-icons-fonts
+  #     sf-mono-liga-bin
+  #   ];
+  # };
   # Common packages across all os's
   #
   # TODO: should have a grouping or module setup where I can turn stuff on/off
   # aka have something to control: is this a box for streaming? if so add
   # obs-studio etc.. something akin to roles in ansible.
   home.packages = with inputs.unstable.legacyPackages.${pkgs.system}; [
+    act
     avahi
     bind
     coreutils
     curl
+    dasel
     docker
     du-dust
     entr
@@ -48,15 +61,17 @@ in
     gnumake
     gron
     htop
+    inputs.agenix.packages.${pkgs.system}.agenix
     inputs.mitchty.packages.${pkgs.system}.hwatch # TODO: Keep or no?
     jless
     less
     mercurial
     minio-client
     ncdu
-    nix-prefetch-scripts
     nix-prefetch-github
+    nix-prefetch-scripts
     nixpkgs-fmt
+    nvd
     openssl
     p7zip
     pbzip2

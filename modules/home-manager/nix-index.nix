@@ -3,118 +3,88 @@
 with lib;
 
 let
-  cfg = config.services.role.nix-index;
+  cfg = config.modules.services.nix-index;
+  inherit (pkgs.stdenv.targetPlatform) isDarwin;
 in
 {
-  options.services.role.nix-index = {
-    enable = mkEnableOption "For now used to indicate a system is/n't one that has a graphical login.";
-  };
+  options.modules.services.nix-index =
+    {
+      enable = mkEnableOption "For now used to indicate a system is/n't one that has a graphical login.";
 
-  # TODO: need to do more modularization with this stuff, for now its copypasta.
-  config = mkIf cfg.enable {
-    programs.nix-index.enable = mkDefault true;
-
-    user.home = {
-      systemd.user = {
-        timers.nix-index = {
-          Unit.Description = "Nix Index Update Timer";
-          Unit.RefuseManualStart = "no";
-          Timer.OnCalendar = "weekly";
-          Timer.Persistent = true;
-          Timer.Unit = "nix-index.service";
-          Install.WantedBy = [ "timers.target" ];
-        };
+      # Only applicable/used in darwin
+      logDir = mkOption {
+        type = types.nullOr types.path;
+        default = "/Users/mitch/Library/Logs";
+        example = "~/Library/Logs";
+        description = ''
+          Base log directory, only applicable to macos.
+        '';
       };
     };
+  # pkgs.lib.last (pkgs.lib.splitString "-" pkgs.system)
+  config =
+    let
+      common = {
+        path = [ pkgs.restic pkgs.moreutils pkgs.coreutils pkgs.gnugrep ];
+      };
+    in
+    # mkIf cfg.enable (mkMerge [
+      #   (if isDarwin then {
+      #     launchd.user.agents.nix-index = {
+      #     script = ''
+      #             #!${pkgs.bash}
+      #             #-*-mode: Shell-script; coding: utf-8;-*-
+      #             : > ${cfg.logDir}/nix-index-stderr.log
+      #             ${pkgs.nix-index}/bin/nix-index
+      #             date
+      #             printf 'fin\n' >&2
+      #             exit 0
+      #     '';
 
-    # systemd.user.services.nixIndex = {
-    #   Unit = {
-    #     Description = "Update nix-index cache";
-    #   };
+      #     # low priority io cause the backup doesn't need to take precedence for any i/o operations
+      #     serviceConfig = {
+      #       Label = "net.mitchty.nix-index";
+      #       LowPriorityIO = true;
+      #       ProcessType = "Background";
+      #       StandardOutPath = "${cfg.logDir}/nix-index.log";
+      #       StandardErrorPath = "${cfg.logDir}/nix-index-stderr.log";
+      #       StartInterval = 86400;
+      #       # Why does this fail?
+      #       # StartCalendarInterval = {WeekDay = 0; Hour = 6; Minute = 35;};
+      #     };
+      #     };
+      #   } // common else {
+      #   systemd.user.services.nix-index = {
+      #     Unit = {
+      #       Description = "Index Nix packages for search with nix-locate";
+      #     };
 
-    #   Service = {
-    #     Type = "oneshot";
-    #     ExecStart = "${pkgs.nix-index}/bin/nix-index";
-    #   };
-    # };
-#     systemd.services.update-locatedb =
-#       { description = "Update Locate Database";
-#         path  = [ pkgs.su ];
-#         script =
-#           ''
-#             mkdir -m 0755 -p $(dirname ${toString cfg.output})
-#             exec updatedb \
-#               --localuser=${cfg.localuser} \
-#               ${optionalString (!cfg.includeStore) "--prunepaths='/nix/store'"} \
-#               --output=${toString cfg.output} ${concatStringsSep " " cfg.extraFlags}
-#           '';
-#       };
-    # systemd.user.timers.nix-index = {
-    #   Install = { WantedBy = [ "timers.target" ]; };
+      #     Service = {
+      #       Type = "simple";
+      #       ExecStart = "${pkgs.nix-index}/bin/nix-index";
+      #     };
 
-    #   Unit = {
-    #     Description = "Update nix-index cache";
-    #   };
+      #     Install = {
+      #       WantedBy = [ "default.target" ];
+      #     };
+      #   };
 
-    #   Timer = {
-    #     OnCalendar = "weekly";
-    #     Persistent = true;
-    #   };
-    # };
-  };
-}
-# { config, lib, pkgs, ... }:
+      #   systemd.user.timers.nix-index =
+      #     {
+      #       Unit = {
+      #         Description = "Run nix-index service periodically";
+      #       };
 
-# with lib;
+      #       Timer = {
+      #         Persistent = true;
+      #         WakeSystem = false;
+      #         # Run the service once a day
+      #         OnUnitActiveSec = 86400;
+      #       };
 
-# let
-#   cfg = config.services.locate;
-# in {
-#   options.services.locate = {
-#     enable = mkOption {
-#       type = types.bool;
-#       default = false;
-#       description = ''
-#         If enabled, NixOS will periodically update the database of
-#         files used by the locate command.
-#       '';
-#     };
-
-#     interval = mkOption {
-#       type = types.str;
-#       default = "02:15";
-#       example = "hourly";
-#       description = ''
-#         Update the locate database at this interval. Updates by
-#         default at 2:15 AM every day.
-
-#         The format is described in
-#         systemd.time(7).
-#       '';
-#     };
-
-#     # Other options omitted for documentation
-#   };
-
-#   config = {
-#     systemd.services.update-locatedb =
-#       { description = "Update Locate Database";
-#         path  = [ pkgs.su ];
-#         script =
-#           ''
-#             mkdir -m 0755 -p $(dirname ${toString cfg.output})
-#             exec updatedb \
-#               --localuser=${cfg.localuser} \
-#               ${optionalString (!cfg.includeStore) "--prunepaths='/nix/store'"} \
-#               --output=${toString cfg.output} ${concatStringsSep " " cfg.extraFlags}
-#           '';
-#       };
-
-#     systemd.timers.update-locatedb = mkIf cfg.enable
-#       { description = "Update timer for locate database";
-#         partOf      = [ "update-locatedb.service" ];
-#         wantedBy    = [ "timers.target" ];
-#         timerConfig.OnCalendar = cfg.interval;
-#       };
-#   };
-# }
+      #       Install = {
+      #         WantedBy = [ "default.target" ];
+      #       };
+      #     };
+      #   } // common )]);
+      }
