@@ -1019,16 +1019,10 @@ Instead of text might as well get a decent mode hook going here.
   :defer t)
 #+END_SRC
 
-**** TODO nix-mode                                                   :broken:
+**** nix-mode
 
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package nix-mode
-  :config
-  (setq flycheck-command-wrapper-function
-        (lambda (command) (apply 'nix-shell-command (nix-current-sandbox) command))
-        flycheck-executable-find
-        (lambda (cmd) (nix-executable-find (nix-current-sandbox) cmd)))
-  )
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package nix-mode :defer t)
 #+END_SRC
 
 *** docker-mode
