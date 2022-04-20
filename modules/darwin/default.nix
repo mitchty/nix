@@ -5,6 +5,7 @@
     ./restic.nix
     ./nix-index.nix
     ./mitchty.nix
+    ./work.nix
   ];
 
   config = {
