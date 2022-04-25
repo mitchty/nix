@@ -62,11 +62,13 @@ in
     gron
     htop
     inputs.agenix.packages.${pkgs.system}.agenix
-    inputs.mitchty.packages.${pkgs.system}.hwatch # TODO: Keep or no?
+    inputs.mitchty.packages.${pkgs.system}.hwatch
+    inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
     jless
     less
     mercurial
     minio-client
+    moreutils
     ncdu
     nix-prefetch-github
     nix-prefetch-scripts
@@ -83,10 +85,12 @@ in
     restic
     ripgrep
     s3cmd
+    shellcheck
+    shellspec
+    shfmt
     silver-searcher
     syncthing
     tldr
-    tmuxp
     transcrypt
     unzip
     vim
