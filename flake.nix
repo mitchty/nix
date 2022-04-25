@@ -5,39 +5,22 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
     master.url = "github:NixOS/nixpkgs/master";
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-
-    mitchty = {
-      url = "github:mitchty/nixos";
-      inputs.nixpkgs.follows = "unstable";
-    };
+    mitchty.url = "github:mitchty/nixos";
     flake-utils.url = "github:numtide/flake-utils";
     darwin.url = "github:NixOS/nixpkgs/nixpkgs-21.11-darwin";
-    nix-darwin = {
-      url = "github:LnL7/nix-darwin";
-      inputs.nixpkgs.follows = "unstable";
-    };
+    nix-darwin.url = "github:LnL7/nix-darwin";
     home-manager.url = "github:nix-community/home-manager";
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nixos-generators.url = "github:nix-community/nixos-generators";
     deploy-rs.url = "github:serokell/deploy-rs";
-    emacs = {
-      url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "unstable";
-    };
+    emacs.url = "github:nix-community/emacs-overlay";
+    agenix-darwin.url = "github:montchr/agenix/darwin-support";
+    agenix.url = "github:ryantm/agenix";
     rust = {
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "unstable";
     };
-    agenix-darwin = {
-      url = "github:montchr/agenix/darwin-support";
-      inputs.nixpkgs.follows = "unstable";
-    };
-    agenix = {
-      url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "unstable";
-    };
+    # TODO: Why does 28.xxx not work?
+    # pulumi.url = "github:NixOS/nixpkgs/21299f3dd3ff475f19bc8933f30ebb6a135799f1";
   };
 
   outputs =
