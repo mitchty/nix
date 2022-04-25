@@ -568,7 +568,7 @@ oomph with all the crap it did.
 
 *** yasnippet
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package yasnippet
   :ensure t
   :init
