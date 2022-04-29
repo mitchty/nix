@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+#-*-mode: Shell-script; coding: utf-8;-*-
+# File: gohome.sh
+thing="${1}"
+shift
+id="${1:-0}"
+
+osascript <<FIN
+tell application "System Events" to tell window ${id} of process "${thing}"
+    set position to {100, 100}
+end tell
+FIN

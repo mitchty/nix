@@ -310,6 +310,9 @@
             services.work = {
               enable = true;
             };
+            services.mitchty = {
+              enable = true;
+            };
           }];
         };
       };

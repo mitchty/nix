@@ -13,6 +13,10 @@ let
   notify = (pkgs.writeScriptBin "notify" (builtins.readFile ../../static/src/notify)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
+
+  gohome = (pkgs.writeScriptBin "gohome" (builtins.readFile ../../static/src/gohome)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
 in
 {
   options = {
@@ -30,6 +34,7 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       close
+      gohome
       notify
     ];
   };
