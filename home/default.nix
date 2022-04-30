@@ -41,6 +41,7 @@ in
     coreutils
     curl
     dasel
+    deadnix
     docker
     du-dust
     entr
