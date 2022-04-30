@@ -26,6 +26,7 @@
   algorithm = histogram
 
 [alias]
+  bage = for-each-ref --sort='authordate:iso8601' --format=' %(color:green)%(authordate:relative)%09%(color:white)%(refname:short)' refs/heads
   begin = !git init && git commit --allow-empty -m 'Initial empty commit'
   up = !git pull --rebase && git push
   wsd = diff --color-words --ignore-space-at-eol --ignore-space-change --ignore-all-space --histogram
