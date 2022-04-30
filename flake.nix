@@ -126,6 +126,41 @@
             };
             nix.registry.my.flake = self;
 
+            fonts = {
+              enableFontDir = true;
+              # Need to move these derivations somewhere better
+              fonts = [
+                (pkgs.stdenv.mkDerivation rec {
+                  pname = "comiccode";
+                  version = "0.0.0";
+                  nativeBuildInputs = [ pkgs.unzip ];
+                  src = ./secrets/crypt/comic-code.zip;
+                  sourceRoot = ".";
+                  buildPhase = ''
+                    find -name \*.otf
+                  '';
+                  installPhase = ''
+                    install -dm755 $out/share/fonts/opentype/ComicCode
+                    find -name \*.otf -exec mv {} $out/share/fonts/opentype/ComicCode \;
+                  '';
+                })
+                (pkgs.stdenv.mkDerivation rec {
+                  pname = "pragmatapro";
+                  version = "0.0.0";
+                  nativeBuildInputs = [ pkgs.unzip ];
+                  src = ./secrets/crypt/pragmata-pro.zip;
+                  sourceRoot = ".";
+                  buildPhase = ''
+                    find -name \*.ttf
+                  '';
+                  installPhase = ''
+                    install -dm755 $out/share/fonts/truetype/PragmataPro
+                    find -name \*.ttf -exec mv {} $out/share/fonts/truetype/PragmataPro \;
+                  '';
+                })
+              ];
+            };
+
             services.nix-index = {
               enable = true;
             };

@@ -27,17 +27,8 @@ in
   systemd.user = lib.mkIf pkgs.stdenv.isLinux { startServices = "sd-switch"; };
   programs.home-manager.enable = true;
 
-  # TODO: fonts...
-  # fonts = {
-  #   enableFontDir = true;
-  #   fonts = with pkgs; [
-  #     overpass
-  #     alegreya
-  #     alegreya-sans
-  #     emacs-all-the-icons-fonts
-  #     sf-mono-liga-bin
-  #   ];
-  # };
+  fonts.fontconfig.enable = true;
+
   # Common packages across all os's
   #
   # TODO: should have a grouping or module setup where I can turn stuff on/off
