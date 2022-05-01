@@ -100,6 +100,7 @@
           } ++ [
           ./home
           { home.stateVersion = homeManagerStateVersion; }
+	  ./modules/home-manager
         ];
       };
 

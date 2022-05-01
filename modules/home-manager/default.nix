@@ -10,5 +10,6 @@ rec {
   imports = [
     # ./${sys}
     # ./nix-index.nix
+    ./bin.nix
   ];
 }
