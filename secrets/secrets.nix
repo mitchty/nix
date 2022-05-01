@@ -18,9 +18,6 @@ let
   git = [ mb nexus workmb dfs1 ] ++ homeusers;
   restic = [ mb nexus ];
 
-  # Only use one of these at a time, so these are all that needs to decrypt the font files.
-  fonts = [ mb nexus workmb ];
-
   allnixos = [ dfs1 nexus ];
 
   # Some secrets should be usable everywhere
@@ -43,8 +40,4 @@ in
   # nixos specific
   "passwd/root.age".publicKeys = allnixos;
   "passwd/mitch.age".publicKeys = allnixos;
-
-  # My paid for fonts
-  "font/comic-code.zip.age".publicKeys = fonts;
-  "font/pragmata-pro.zip.age".publicKeys = fonts;
 }
