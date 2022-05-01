@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ config, ... }: {
   # TODO: make this stuff into a module/option system so I can separate out the
   # video for linux loopback stuff from the kvm related stuff.
   # For the qemu-agent integration for kvm/qemu

@@ -1,4 +1,4 @@
-{ config, pkgs, lib, age, ... }: {
+{ config, pkgs, ... }: {
   imports = [
     ./bootstrap.nix
     ../../hosts/nix-basic.nix

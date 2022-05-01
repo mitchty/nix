@@ -26,10 +26,8 @@
   outputs =
     inputs@{ self
     , nixpkgs
-    , master
     , unstable
     , mitchty
-    , flake-utils
     , nix-darwin
     , home-manager
     , nixos-generators
@@ -42,7 +40,7 @@
     }:
     let
       inherit (nix-darwin.lib) darwinSystem;
-      inherit (nixpkgs.lib) attrValues makeOverridable optionalAttrs singleton nixosSystem mkIf;
+      inherit (nixpkgs.lib) attrValues makeOverridable nixosSystem;
 
       x86-linux = "x86_64-linux";
       stable = import nixpkgs {
@@ -112,7 +110,7 @@
         ./modules/darwin
         agenix-darwin.darwinModules.age
         (
-          { config, lib, pkgs, ... }:
+          { config, pkgs, ... }:
           let
             inherit (config.users) primaryUser;
           in
@@ -128,7 +126,7 @@
             nix.registry.my.flake = self;
 
             fonts = {
-              enableFontDir = true;
+              fontDir.enable = true;
               # Need to move these derivations somewhere better
               fonts = [
                 (pkgs.stdenv.mkDerivation rec {
@@ -177,7 +175,7 @@
         ./modules/nixos
         agenix.nixosModules.age
         (
-          { config, lib, pkgs, ... }:
+          { config, ... }:
           let
             inherit (config.users) primaryUser;
           in
@@ -412,7 +410,7 @@
       };
 
       # TODO: More checks in place would be good
-      checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
+      checks = builtins.mapAttrs (deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
     }; # // flake-utils.lib.eachDefaultSystem (system:
   #   let
   #     pkgs = import nixpkgs { inherit system overlays; };

@@ -3,7 +3,7 @@
 #
 # The scripts are still kept as-is mostly and just read into the store at flake
 # build time.
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 
 let
   dns = (pkgs.writeScriptBin "dns" (builtins.readFile ../../static/src/dns)).overrideAttrs (old: {

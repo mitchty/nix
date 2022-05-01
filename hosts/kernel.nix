@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ pkgs, ... }: {
   boot = {
     # Be nice to have crash dumps if things go sideways, which they are with
     # dm-integrity, dm-cache, dm-etc....

@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }: {
+{ pkgs, ... }: {
   nix.binaryCaches = [
     "https://cache.nixos.org/"
   ];
