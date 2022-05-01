@@ -1142,8 +1142,7 @@ Create *auto-insert-alist* so all the mode lists are the same
          ((c-mode . "c")
           nil
           "/*\n"
-          "File: " (file-name-nondirectory buffer-file-name) "\n"
-          "Copyright: " (substring (current-time-string) -4) " " auto-insert-copyright "\n"
+	  "SPDX-License-Identifier: BlueOak-1.0.0\n"
           "Description: " _ "\n"
           "*/\n"
           "#include <stdio.h>\n"
@@ -1165,8 +1164,7 @@ Create *auto-insert-alist* so all the mode lists are the same
          ((emacs-lisp-mode . "elisp")
           nil
           ";;-*-mode: emacs-lisp; coding: utf-8;-*-\n"
-          ";; File: " (file-name-nondirectory buffer-file-name) "\n"
-          ";; Copyright: " (substring (current-time-string) -4) " " auto-insert-copyright "\n"
+	  ";; SPDX-License-Identifier: BlueOak-1.0.0\n"
           ";; Description: " _ "\n"
           )
          )
@@ -1183,8 +1181,7 @@ Create *auto-insert-alist* so all the mode lists are the same
           nil
           "#!/usr/bin/env python\n"
           "# -*-mode: Python; coding: utf-8;-*-\n"
-          "# File: " (file-name-nondirectory buffer-file-name) "\n"
-          "# Copyright: " (substring (current-time-string) -4) " " auto-insert-copyright "\n"
+	  "# SPDX-License-Identifier: BlueOak-1.0.0\n"
           "# Description: " _ "\n\n"
           )
          )
@@ -1202,8 +1199,7 @@ Create *auto-insert-alist* so all the mode lists are the same
           nil
           "#!/usr/bin/env sh\n"
           "#-*-mode: Shell-script; coding: utf-8;-*-\n"
-          "# File: " (file-name-nondirectory buffer-file-name) "\n"
-          "# Copyright: " (substring (current-time-string) -4) " " auto-insert-copyright "\n"
+	  "# SPDX-License-Identifier: BlueOak-1.0.0\n"
           "# Description: " _ "\n"
           "_base=$(basename \"$0\")\n"
           "_dir=$(cd -P -- \"$(dirname -- \"$(command -v -- \"$0\")\")\" && pwd -P || exit 126)\n"
