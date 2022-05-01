@@ -53,6 +53,7 @@ in
     htop
     inputs.agenix.packages.${pkgs.system}.agenix
     inputs.mitchty.packages.${pkgs.system}.hwatch
+    inputs.mitchty.packages.${pkgs.system}.hatools
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
     jless
     less
