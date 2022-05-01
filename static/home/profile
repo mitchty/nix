@@ -1,4 +1,5 @@
-# -*- mode: Shell-script; -*-
+#!/usr/bin/env sh
+#-*-mode: Shell-script; coding: utf-8;-*-
 
 # TODO: Do I really need this anymore? If I build node specific files with nix I
 # could just customize this at the derivation level
@@ -376,14 +377,17 @@ alias watdidstbreak='find . -type f -name "*sync-conflict*" -print'
 # Run nixpkgs-fmt and format things iff there are changes.
 alias nfmt='find . -type f -name \*\.nix -exec sh -c "nixpkgs-fmt --check {} > /dev/null 2>&1 || nixpkgs-fmt {}" \;'
 
+# Find dead code in nix files
+alias nded='find . -type f -name \*\.nix -exec deadnix {} \+'
+
 # silly function to make running deploy-rs easier
 deploy() {
   (
     gh mitchty/nix
     clear
     set -e
-    [ "$1" = "check" ] && nix flake check --show-trace
-    if [[ "$(uname -s)" = "Linux" ]]; then
+    [ "check" = "$1" ] && nix flake check --show-trace
+    if [ "Linux" = "$(uname -s)" ]; then
       nix run github:serokell/deploy-rs -- -s .
     else
       darwin-rebuild switch --flake .#
@@ -399,13 +403,13 @@ export PATH
 
 # Silly helper functions to run stuff on specific platforms only
 onlinux() {
-  if [[ "$(uname -s)" = "Linux" ]]; then
+  if [ "Linux" = "$(uname -s)" ]; then
     "$@"
   fi
 }
 
 onmac() {
-  if [[ "$(uname -s)" = "Darwin" ]]; then
+  if [ "Darwin" = "$(uname -s)" ]; then
     "$@"
   fi
 }
@@ -458,14 +462,14 @@ ugde() {
     ours=$(gh mitchty/nix && git diff | sha256sum)
 
     for host in mb nexus; do
-      if [[ ! "${host}" = "${iam}" ]]; then
+      if [ ! "{iam}" = "${host}" ]; then
         dots=0
-        until [[ $(ssh ${host}.local "cd ~/src/pub/github.com/mitchty/nix && git diff 2>/dev/null | sha256sum") = "${ours}" ]]; do
+        until [ $(ssh ${host}.local "cd ~/src/pub/github.com/mitchty/nix && git diff 2>/dev/null | sha256sum") = "${ours}" ]; do
           sleep 1
           printf '.' >&2
           dots=$((dots+1))
         done
-        if [[ $dots -gt 0 ]]; then
+        if [ $dots -gt 0 ]; then
           printf '\n' >&2
         fi
         return 0
@@ -476,9 +480,13 @@ ugde() {
 
 # Because stuff sometimes fails, retry Until Success
 us() {
-  ok=1
-  until $ok; do
-    "$@"
-    ok=$?
+  until $@; do
+    sleep $(randsec)
   done
+}
+
+# Random amount of seconds, if not provided presumes up to 5 seconds
+randsec() {
+  lim="${1:-5}"
+  echo $(( $(awk 'BEGIN{"date +%N"|getline rseed;srand(rseed);close("date +%N");print rand()}') * ${lim}))
 }
