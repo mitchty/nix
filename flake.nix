@@ -7,8 +7,11 @@
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     mitchty.url = "github:mitchty/nixos";
     flake-utils.url = "github:numtide/flake-utils";
-    darwin.url = "github:NixOS/nixpkgs/nixpkgs-21.11-darwin";
-    nix-darwin.url = "github:LnL7/nix-darwin";
+    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-21.11-darwin";
+    darwin = {
+      url = "github:LnL7/nix-darwin";
+      inputs.nixpkgs.follows = "unstable";
+    };
     home-manager.url = "github:nix-community/home-manager";
     nixos-generators.url = "github:nix-community/nixos-generators";
     deploy-rs.url = "github:serokell/deploy-rs";
@@ -28,7 +31,7 @@
     , nixpkgs
     , unstable
     , mitchty
-    , nix-darwin
+    , darwin
     , home-manager
     , nixos-generators
     , deploy-rs
@@ -39,7 +42,7 @@
     , ...
     }:
     let
-      inherit (nix-darwin.lib) darwinSystem;
+      inherit (darwin.lib) darwinSystem;
       inherit (nixpkgs.lib) attrValues makeOverridable nixosSystem;
 
       x86-linux = "x86_64-linux";
