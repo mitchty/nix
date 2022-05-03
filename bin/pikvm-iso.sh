@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env nix-shell
 #-*-mode: Shell-script; coding: utf-8;-*-
 #!nix-shell -i bash -p bash jq curl
 # File: pikvm-iso.sh
@@ -15,12 +15,12 @@ JQ=${JQ:-jq}
 ok=0
 
 # Validate we have the commands needed to run successfully, curl and jq
-if ! command -v ${CURL} &> /dev/null; then
+if ! command -v "${CURL}" > /dev/null 2>&1; then
   printf "Did not find curl as '${CURL}' on PATH, this script cannot run without curl\n" >&2
   ok=1
 fi
 
-if ! command -v ${JQ} &> /dev/null; then
+if ! command -v ${JQ} > /dev/null 2>&1; then
   printf "Did not find jq as '${JQ}' on PATH, this script cannot run without jq\n" >&2
   ok=1
 fi
@@ -82,12 +82,12 @@ set_connected() {
 set -e
 
 # Disconnect msd if needed
-if [[ $(curl ${KVMHOST}/api/msd | jq '.result.drive.connected') = "true" ]]; then
+if [ "true" = "$(curl ${KVMHOST}/api/msd | jq '.result.drive.connected')" ]; then
   disconnect_drive
 fi
 
 # iff clean was passed clean up all existing images.
-if [[ "clean" = "$@" ]]; then
+if [ "clean" = "$*" ]; then
   for iso in $(curl ${KVMHOST}/api/msd | jq '.result.storage.images[].name'); do
     remove_image ${iso}
   done
