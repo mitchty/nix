@@ -65,9 +65,6 @@ in
 
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
-      # openstackclient we only pull from knowing a working setup due to
-      # https://github.com/NixOS/nixpkgs/pull/166297
-      inputs.nixpkgs.legacyPackages.${pkgs.system}.openstackclient
       google-cloud-sdk
       craypc
       vshasta
