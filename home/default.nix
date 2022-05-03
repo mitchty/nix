@@ -40,7 +40,6 @@ in
     curl
     dasel
     deadnix
-    docker
     du-dust
     entr
     file
@@ -96,6 +95,7 @@ in
     inputs.mitchty.packages.${pkgs.system}.seaweedfs
     traitor
 
+    docker
     docker-compose
     firefox
     lshw
