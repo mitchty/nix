@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
-# File: gohome.sh
 thing="${1}"
 shift
 id="${1:-0}"

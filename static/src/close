@@ -1,11 +1,14 @@
-#!/bin/sh
-if [ -z "${1}" ]; then
+#!/usr/bin/env sh
+#-*-mode: Shell-script; coding: utf-8;-*-
+app="${1}"
+
+if [ -z "${app}" ]; then
   printf "usage: close app_name\n  no application to close provided\n"
   exit 1
 fi
 
 osascript <<END
-tell application "${1}"
+tell application "${app}"
     quit
 end tell
 END

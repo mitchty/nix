@@ -1,12 +1,11 @@
 #!/usr/bin/env sh
-#
+#-*-mode: Shell-script; coding: utf-8;-*-
 # Dumb wrapper around osascript to make macos notifications easy to create.
-#
 message=${1:-"no message"}; shift
 extra=""
 
-if [ -n "$@" ]; then
-  extra="with title \"$@\""
+if [ -n "$*" ]; then
+  extra="with title \"$*\""
 fi
 
 osascript <<END
