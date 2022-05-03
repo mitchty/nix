@@ -11,5 +11,6 @@ rec {
     # ./${sys}
     # ./nix-index.nix
     ./bin.nix
+    ./registry.nix
   ];
 }
