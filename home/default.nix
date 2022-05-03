@@ -57,6 +57,7 @@ in
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
     jless
     less
+    mapcidr
     mercurial
     minio-client
     moreutils
@@ -79,6 +80,7 @@ in
     shellcheck
     shellspec
     shfmt
+    sipcalc
     silver-searcher
     syncthing
     tldr
