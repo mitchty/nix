@@ -11,4 +11,5 @@
 ,*.swp
 ,*.[oa]
 ,*.hi
+.direnv
 .*.~undo-tree~
