@@ -28,7 +28,8 @@ in
     // {
       ".config/nix/registry.json".text = registry;
     };
-  home.sessionVariables.NIX_PATH = "nixpkgs=${config.home.homeDirectory}/.nix-inputs/self$\{NIX_PATH:+:$NIX_PATH}";
+  # This don't work with tmux! Pour quoi?
+  # home.sessionVariables.NIX_PATH = "nixpkgs=${config.home.homeDirectory}/.nix-inputs/self$\{NIX_PATH:+:$NIX_PATH}";
   home.activation.useFlakeChannels = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.nix-defexpr
     $DRY_RUN_CMD ln -s $VERBOSE_ARG /dev/null $HOME/.nix-defexpr

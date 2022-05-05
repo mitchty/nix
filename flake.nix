@@ -99,7 +99,6 @@
           {
             # TODO: for the future...
           } ++ [
-          ./home
           { home.stateVersion = homeManagerStateVersion; }
           ./modules/home-manager
         ];

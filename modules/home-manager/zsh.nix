@@ -1,4 +1,11 @@
-{ ... }: {
+{ config, ... }:
+let
+  shenanigans = ''
+      if ! echo $NIX_PATH | grep nixpkgs=; then
+        export NIX_PATH="nixpkgs=${config.home.homeDirectory}/.nix-inputs/self:$NIX_PATH"
+      fi
+    '';
+in {
   # Options ref:
   # https://github.com/nix-community/home-manager/blob/master/modules/programs/zsh.nix
   programs.zsh = {
@@ -40,6 +47,6 @@
     };
 
     # Everything we can't define ^^thataway^^
-    initExtra = builtins.readFile ../static/home/zshrc;
+    initExtra = (builtins.readFile ../../static/home/zshrc) + shenanigans;
   };
 }
