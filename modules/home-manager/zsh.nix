@@ -47,6 +47,6 @@ in {
     };
 
     # Everything we can't define ^^thataway^^
-    initExtra = (builtins.readFile ../../static/home/zshrc) + shenanigans;
+    initExtra = (builtins.readFile ../../static/home/zshrc) + (builtins.readFile ../../static/src/lib.sh) + shenanigans;
   };
 }
