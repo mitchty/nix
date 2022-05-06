@@ -1,7 +1,7 @@
 { config, ... }:
 let
   shenanigans = ''
-      if ! echo $NIX_PATH | grep nixpkgs=; then
+      if ! echo $NIX_PATH | grep nixpkgs= > /dev/null 2>&1; then
         export NIX_PATH="nixpkgs=${config.home.homeDirectory}/.nix-inputs/self:$NIX_PATH"
       fi
     '';
