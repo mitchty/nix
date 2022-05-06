@@ -20,8 +20,5 @@ in
     ./nas.nix
     ./lowmem.nix
     ./gui.nix
-
-    # Work related
-    ./vpn.nix
   ];
 }
