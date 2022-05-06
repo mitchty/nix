@@ -320,16 +320,6 @@ orgpub() {
   mt org-mode/public
 }
 
-# TODO: This needed anymore for macos?
-# if [ ! -e ${HOME}/.nonix ]; then
-#   SSL_CERT_FILE="${HOME}/.nix-profile/etc/ssl/certs/ca-bundle.crt"
-#   GIT_SSL_CAINFO=$SSL_CERT_FILE
-#   export SSL_CERT_FILE
-#   export GIT_SSL_CAINFO
-# fi
-#
-#if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh # added by Nix installer
-
 t()
 {
   if [ -z "$1" ]; then
