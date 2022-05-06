@@ -205,24 +205,24 @@
         ];
       };
 
-      canarySecret = {
+      canarySecret = user: {
         canary = {
           file = ./secrets/canary.age;
-          owner = "mitch";
+          owner = user;
         };
       };
 
-      gitSecret = {
+      gitSecret = user: {
         "git/netrc" = {
           file = ./secrets/git/netrc.age;
-          owner = "mitch";
+          owner = user;
         };
       };
 
-      resticSecret = {
+      resticSecret = user: {
         "restic/env.sh" = {
           file = ./secrets/restic/env.sh.age;
-          owner = "mitch";
+          owner = user;
         };
       };
 
@@ -316,8 +316,11 @@
           };
           system = "x86_64-darwin";
           modules = nixDarwinModules ++ [{
-            age.secrets = canarySecret // gitSecret // resticSecret;
-            users.primaryUser = "mitch";
+            users = {
+              primaryUser = "mitch";
+              primaryGroup = "staff";
+            };
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch";
             networking.computerName = "mb";
             networking.hostName = "mb";
             networking.knownNetworkServices = [
@@ -336,8 +339,11 @@
         workmb = darwinSystem {
           system = "x86_64-darwin";
           modules = nixDarwinModules ++ [{
-            age.secrets = canarySecret // gitSecret;
-            users.primaryUser = "tishmack";
+            users = {
+              primaryUser = "tishmack";
+              primaryGroup = "staff";
+            };
+            age.secrets = canarySecret "tishmack" // gitSecret "tishmack";
             networking.computerName = "workmb";
             networking.hostName = "workmb";
             networking.knownNetworkServices = [
@@ -359,8 +365,11 @@
           modules = nixOSModules ++ [
             ./hosts/nexus/configuration.nix
           ] ++ [{
-            age.secrets = canarySecret // gitSecret // resticSecret // passwdSecrets;
-            users.primaryUser = "mitch";
+            users = {
+              primaryUser = "mitch";
+              primaryGroup = "users";
+            };
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch" // passwdSecrets "mitch";
           }];
           specialArgs = {
             inherit inputs;
@@ -372,8 +381,11 @@
           modules = nixOSModules ++ [
             ./hosts/dfs1/configuration.nix
           ] ++ [{
-            age.secrets = canarySecret // gitSecret // passwdSecrets;
-            users.primaryUser = "mitch";
+            users = {
+              primaryUser = "mitch";
+              primaryGroup = "users";
+            };
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets "mitch";
           }];
           specialArgs = {
             inherit inputs;
