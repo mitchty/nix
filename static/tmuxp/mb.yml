@@ -5,6 +5,9 @@ windows:
   focus: True
   panes:
     - pane
+- window_name: syncthing
+  panes:
+    - syncthing
 - window_name: deploy
   panes:
     - ssh -t nexus.local 'deploy'

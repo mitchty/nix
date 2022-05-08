@@ -11,3 +11,6 @@ windows:
 - window_name: btop
   panes:
     - btop
+- window_name: wip
+  panes:
+    - pane
