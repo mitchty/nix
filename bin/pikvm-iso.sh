@@ -76,15 +76,17 @@ set_connected() {
   post ${KVMHOST}/api/msd/set_connected?connected=1
 }
 
+drive_is_connected() {
+  [ "true" = curl ${KVMHOST}/api/msd | jq '.result.drive.connected' ]
+}
+
 # If anything is amiss exit before work
-[ $ok -ne 0 ] && exit $ok
+! [ $ok ] && exit $ok
 
 set -e
 
 # Disconnect msd if needed
-if [ "true" = "$(curl ${KVMHOST}/api/msd | jq '.result.drive.connected')" ]; then
-  disconnect_drive
-fi
+drive_is_connected && disconnect_drive
 
 # iff clean was passed clean up all existing images.
 if [ "clean" = "$*" ]; then
