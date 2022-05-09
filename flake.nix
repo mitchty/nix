@@ -369,7 +369,7 @@
               primaryUser = "mitch";
               primaryGroup = "users";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch" // passwdSecrets "mitch";
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch" // passwdSecrets;
           }];
           specialArgs = {
             inherit inputs;
@@ -385,7 +385,7 @@
               primaryUser = "mitch";
               primaryGroup = "users";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets "mitch";
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
           }];
           specialArgs = {
             inherit inputs;
