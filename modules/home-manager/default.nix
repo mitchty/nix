@@ -11,6 +11,27 @@ let
       epkgs.org
     ];
   });
+
+  # Old scripts I have laying around future me purge as appropriate
+  cidr = (pkgs.writeScriptBin "cidr" (builtins.readFile ../../static/src/cidr)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+
+  diskhog = (pkgs.writeScriptBin "diskhog" (builtins.readFile ../../static/src/diskhog)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+
+  gecos = (pkgs.writeScriptBin "gecos" (builtins.readFile ../../static/src/gecos)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+
+  ifinfo = (pkgs.writeScriptBin "ifinfo" (builtins.readFile ../../static/src/ifinfo)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+
+  whoson = (pkgs.writeScriptBin "whoson" (builtins.readFile ../../static/src/whoson)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
 in
 {
   imports = [
@@ -115,6 +136,12 @@ in
 
     # macos only stuff (until I find something only macos empty...)
     # ] ++ lib.optionals stdenv.isDarwin [
+  ] ++ [
+    cidr
+    diskhog
+    gecos
+    ifinfo
+    whoson
   ];
 
   # TODO: Finish porting emacs config over future me fix
