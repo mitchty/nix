@@ -1,13 +1,6 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
 
-# TODO: Do I really need this anymore? If I build node specific files with nix I
-# could just customize this at the derivation level
-_uname=$(uname)
-_uname_n=$(uname -n)
-_hostname=$(hostname)
-export _uname _uname_n _hostname
-
 # Cheap copy function to make copying a file via ssh from one host
 # to another less painful, use pipeviewer to give some idea as to progress.
 sshcopy() {
@@ -84,7 +77,7 @@ t() {
   if [ -z "$1" ]; then
     echo "Supply a tmux session name to connect to/create"
   else
-    tmux has-session -t "$1" 2>/dev/null || tmux new-session -d -s "$1"
+    tmux has-session -t "$1" 2> /dev/null || tmux new-session -d -s "$1"
     tmux attach-session -d -t "$1"
   fi
 }
@@ -160,7 +153,7 @@ iso() {
       install -dm755 img
       lnsrc="img/${x}@${runtime}.iso"
       lndst="img/${x}.iso"
-      install -m444 "$(find result -type f -name \"*.iso\")" "${lnsrc}"
+      install -m444 "$(find result -type f -name '*.iso')" "${lnsrc}"
       ln -f "${lnsrc}" "${lndst}"
     done
 
@@ -179,7 +172,7 @@ sdimg() {
       install -dm755 img
       lnsrc="img/${x}@${runtime}.img.zst"
       lndst="img/${x}.img.zst"
-      install -m444 "$(find result -type f -name \"*.img.zst\")" "${lnsrc}"
+      install -m444 "$(find result -type f -name '"*.img.zst')" "${lnsrc}"
       ln -f "${lnsrc}" "${lndst}"
     done
 
@@ -200,10 +193,10 @@ ugde() {
     for host in mb nexus; do
       if [ ! "${iam}" = "${host}" ]; then
         dots=0
-        until [ "$(ssh ${host}.local \"cd ~/src/pub/github.com/mitchty/nix && git diff 2>/dev/null | sha256sum\")" = "${ours}" ]; do
+        until [ "$(ssh ${host}.local 'cd ~/src/pub/github.com/mitchty/nix && git diff 2> /dev/null | sha256sum')" = "${ours}" ]; do
           sleep 1
           printf '.' >&2
-          dots=$((dots+1))
+          dots=$((dots + 1))
         done
         if [ $dots -gt 0 ]; then
           printf '\n' >&2
