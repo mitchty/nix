@@ -58,8 +58,8 @@ in
     gron
     htop
     inputs.agenix.packages.${pkgs.system}.agenix
-    inputs.mitchty.packages.${pkgs.system}.hwatch
     inputs.mitchty.packages.${pkgs.system}.hatools
+    inputs.mitchty.packages.${pkgs.system}.hwatch
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
     jless
     less
@@ -86,8 +86,8 @@ in
     shellcheck
     shellspec
     shfmt
-    sipcalc
     silver-searcher
+    sipcalc
     syncthing
     tldr
     transcrypt
