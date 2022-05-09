@@ -10,8 +10,7 @@ export _uname _uname_n _hostname
 
 # Cheap copy function to make copying a file via ssh from one host
 # to another less painful, use pipeviewer to give some idea as to progress.
-sshcopy()
-{
+sshcopy() {
   if [ -z "$1" ] || [ -z "$2" ]; then
     echo "Usage: copy source:/file/location destination:/file/location"
   else
@@ -31,8 +30,7 @@ sshcopy()
 }
 
 # extract function to automate being lazy at extracting archives.
-extract()
-{
+extract() {
   if [ -f "$1" ]; then
     case ${1} in
       ,*.tar.bz2|*.tbz2|*.tbz)  bunzip2 -c "$1" | tar xvf -;;
@@ -55,14 +53,12 @@ extract()
 
 # Tcsh compatibility so I can be a lazy bastard and paste things directly
 # if/when I need to.
-setenv()
-{
+setenv() {
   export "$1=$2"
 }
 
 # Just to be lazy, set/unset the DEBUG env variable used in my scripts
-debug()
-{
+debug() {
   if [ -z "$DEBUG" ]; then
     if [ -z "$1" ]; then
       echo Setting DEBUG to "$1"
@@ -77,16 +73,14 @@ debug()
   fi
 }
 
-login_shell()
-{
+login_shell() {
   [ "$-" = "*i*" ]
 }
 
 # TODO: figure out a way to concatenate things based on roles like git tmux
 # etc... for now whatever.
 
-t()
-{
+t() {
   if [ -z "$1" ]; then
     echo "Supply a tmux session name to connect to/create"
   else
