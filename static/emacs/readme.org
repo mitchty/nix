@@ -1291,3 +1291,10 @@ Ref:
          (org-mode . fancy-dabbrev-mode))
   )
 #+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package eglot
+  :defer t)
+
+;; (add-hook 'foo-mode-hook 'eglot-ensure)
+#+END_SRC

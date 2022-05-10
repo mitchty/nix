@@ -142,6 +142,13 @@ in
     gecos
     ifinfo
     whoson
+    # testing nursery...
+  ] ++ [
+    gopls
+    pyright
+    rust-analyzer
+    rnix-lsp
+    yaml-language-server
   ];
 
   # TODO: Finish porting emacs config over future me fix
