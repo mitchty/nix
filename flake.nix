@@ -12,7 +12,7 @@
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "unstable";
     };
-    home-manager.url = "github:nix-community/home-manager";
+    home-manager.url = "github:nix-community/home-manager/release-21.11";
     nixos-generators.url = "github:nix-community/nixos-generators";
     deploy-rs.url = "github:serokell/deploy-rs";
     emacs.url = "github:nix-community/emacs-overlay";
@@ -93,7 +93,7 @@
         # };
       };
 
-      homeManagerStateVersion = "22.05";
+      homeManagerStateVersion = "21.11";
       homeManagerCommonConfig = {
         imports = attrValues
           {
