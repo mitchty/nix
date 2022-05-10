@@ -1,6 +1,6 @@
-{ inputs, pkgs, ... }: {
+{ pkgs, ... }: {
   nix = {
-    package = inputs.unstable.legacyPackages.${pkgs.system}.nixFlakes;
+    package = pkgs.nixFlakes;
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
