@@ -6,10 +6,13 @@
 
   Because nix isn't exactly a "common" thing to encounter as a programming language/package manager...
 
+  - https://nixos.org/guides/nix-pills/
+  - https://nix.dev/
   - https://github.com/tazjin/nix-1p
   - https://learnxinyminutes.com/docs/nix/
   - https://teu5us.github.io/nix-lib.html
   - https://ryantm.github.io/nixpkgs/functions/library/strings/
+  - https://wiki.nikitavoloboev.xyz/operating-systems/linux/nixos
 
 ** Potent Notables
 
