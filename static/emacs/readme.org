@@ -127,7 +127,9 @@ Keep temporary stuff isolated from everyone else. It infects everything otherwis
 Update files in open buffers as they're changed on disk, freaking annoying without this on.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(custom-set-variables '(global-auto-revert-mode t))
+(custom-set-variables
+ '(global-auto-revert-mode t)
+ '(auto-revert-remote-files t))
 #+END_SRC
 
 *** dired
