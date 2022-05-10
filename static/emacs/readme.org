@@ -1205,7 +1205,8 @@ Create *auto-insert-alist* so all the mode lists are the same
           "# Description: " _ "\n"
           "_base=$(basename \"$0\")\n"
           "_dir=$(cd -P -- \"$(dirname -- \"$(command -v -- \"$0\")\")\" && pwd -P || exit 126)\n"
-          "export _base _dir\n"
+          "export _base _dir\n\n"
+	  "set \"${SETOPTS:--eu}\"\n"
           )
          )
        auto-insert-alist)
