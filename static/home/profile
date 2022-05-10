@@ -122,21 +122,6 @@ alias nfmt='find . -type f -name \*\.nix -exec sh -c "nixpkgs-fmt --check {} > /
 # Find dead code in nix files
 alias nded='find . -type f -name \*\.nix -exec deadnix {} \+'
 
-# silly function to make running deploy-rs easier
-deploy() {
-  (
-    gh mitchty/nix
-    clear
-    set -e
-    [ "check" = "$1" ] && nix flake check --show-trace
-    if [ "Linux" = "$(uname -s)" ]; then
-      nix run github:serokell/deploy-rs -- -s .
-    else
-      darwin-rebuild switch --flake .#
-    fi
-  )
-}
-
 # Home backup/rsync alias until I get restic working again.
 alias hb='rsync -e "ssh -T -c aes128-ctr -o Compression=no -x" --exclude .cache --exclude target/debug --exclude target/release --exclude packer_cache --exclude baloo/index --delete-excluded --progress --delete -Havz $HOME root@dfs1.local:/mnt/rsync/$(uname -n)'
 
