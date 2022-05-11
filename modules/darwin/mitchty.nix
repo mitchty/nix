@@ -17,6 +17,25 @@ let
   gohome = (pkgs.writeScriptBin "gohome" (builtins.readFile ../../static/src/gohome)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
+
+  stats = pkgs.stdenv.mkDerivation rec {
+    pname = "stats";
+    version = "2.7.17";
+
+    buildInputs = [ pkgs.undmg ];
+    sourceRoot = ".";
+    phases = [ "unpackPhase" "installPhase" ];
+    installPhase = ''
+      mkdir -p "$out/Applications"
+      cp -r Stats.app "$out/Applications/Stats.app"
+    '';
+
+    src = pkgs.fetchurl {
+      name = "Stats.dmg";
+      url = "https://github.com/exelban/stats/releases/download/v${version}/Stats.dmg";
+      sha256 = "sha256-N4RiI8OtdtIhiYo/grg77UzTcQY8+nLphtyUyP3n1g8=";
+    };
+  };
 in
 {
   options = {
@@ -36,6 +55,7 @@ in
       close
       gohome
       notify
+      stats
     ];
   };
 }
