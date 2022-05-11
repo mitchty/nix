@@ -128,25 +128,6 @@ alias hb='rsync -e "ssh -T -c aes128-ctr -o Compression=no -x" --exclude .cache 
 PATH="${PATH}:${HOME}/bin:${HOME}/.local/bin"
 export PATH
 
-sdimg() {
-  runtime=$(date +%Y-%m-%d-%H:%M:%S)
-
-  (
-    set -ex
-    for x in "$@"; do
-      nix build ".#sd${x}"
-      install -dm755 img
-      lnsrc="img/${x}@${runtime}.img.zst"
-      lndst="img/${x}.img.zst"
-      install -m444 "$(find result -type f -name '"*.img.zst')" "${lnsrc}"
-      ln -f "${lnsrc}" "${lndst}"
-    done
-
-    # Make sure we don't have duplicate iso files, or if we do make them hardlinks
-    [ -d img ] && nix-shell -p rdfind --run 'rdfind -deterministic true -makeresultsfile false -makehardlinks true img'
-  )
-}
-
 # Until Git Diff Equal
 # Because syncthing is SLOW (seconds....) to sync, compare local changes to a remote and only return when they're equal.
 #
