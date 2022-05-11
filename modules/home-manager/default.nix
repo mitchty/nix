@@ -84,6 +84,7 @@ in
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
     jless
     less
+    manix
     mapcidr
     mercurial
     minio-client
