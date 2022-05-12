@@ -2,6 +2,8 @@
 with lib;
 
 let
+  # TODO: figure out a way to import based on this...
+  # sys = pkgs.lib.last (pkgs.lib.splitString "-" pkgs.system);
   emacsWithConfig = (pkgs.emacsWithPackagesFromUsePackage {
     config = ../../static/emacs/readme.org;
     package = pkgs.emacsNativeComp;
@@ -59,9 +61,12 @@ in
   # aka have something to control: is this a box for streaming? if so add
   # obs-studio etc.. something akin to roles in ansible.
   home.packages = with inputs.unstable.legacyPackages.${pkgs.system}; [
+    (pkgs.hiPrio gcc11) # Both this and clang provide c++ executable, so prefer gcc's for no reason than because
     act
     avahi
     bind
+    clang
+    clang-tools
     coreutils
     curl
     dasel
@@ -71,7 +76,6 @@ in
     du-dust
     entr
     file
-    gcc11
     gist
     git
     git-lfs

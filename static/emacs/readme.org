@@ -1297,7 +1297,14 @@ Ref:
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package eglot
+  :hook ((python-mode . eglot-ensure)
+	 (go-mode . eglot-ensure)
+	 (nix-mode . eglot-ensure)
+	 (yaml-mode . eglot-ensure)
+	 (rust-mode . eglot-ensure))
   :defer t)
+#+END_SRC
 
-;; (add-hook 'foo-mode-hook 'eglot-ensure)
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package reformatter)
 #+END_SRC
