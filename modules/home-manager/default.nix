@@ -103,7 +103,6 @@ in
     p7zip
     pbzip2
     pigz
-    podman
     pv
     rage
     rclone
@@ -134,6 +133,7 @@ in
     docker-compose
     firefox
     lshw
+    podman
     podman-compose
     tcpdump
     xorg.xauth
@@ -149,6 +149,7 @@ in
     gecos
     ifinfo
     whoson
+    inputs.nixpkgs-darwin.legacyPackages.${pkgs.system}.podman
     # testing nursery...
   ] ++ [
     ccls
