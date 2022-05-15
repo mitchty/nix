@@ -140,16 +140,15 @@ in
     # Gui linux stuff
     # TODO: how do I get at the nixos config setup...?
     # ] ++ lib.optional (stdenv.isLinux && config.services.role.gui.enable) [
-
-    # macos only stuff (until I find something only macos empty...)
-    # ] ++ lib.optionals stdenv.isDarwin [
+    # macos specific stuff
+  ] ++ lib.optionals stdenv.isDarwin [
+    inputs.nixpkgs-darwin.legacyPackages.${pkgs.system}.podman
   ] ++ [
     cidr
     diskhog
     gecos
     ifinfo
     whoson
-    inputs.nixpkgs-darwin.legacyPackages.${pkgs.system}.podman
     # testing nursery...
   ] ++ [
     ccls
