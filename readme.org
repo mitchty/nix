@@ -14,6 +14,14 @@
   - https://ryantm.github.io/nixpkgs/functions/library/strings/
   - https://wiki.nikitavoloboev.xyz/operating-systems/linux/nixos
 
+  NixOS option search, for when you want to know what you can set.
+  https://search.nixos.org/options
+
+  Home-manager equivalent.
+  https://rycee.gitlab.io/home-manager/options.html
+
+  A nice cli that searches both is https://github.com/mlvzk/manix
+
 ** Potent Notables
 
    So what in here is worth looking at exactly? Well this is a combined NixOS and x86 Macos setup with home manager. That is, while its incomplete I manage both my macos laptop and any/all NixOS nodes from this shared flake repo.
@@ -43,7 +51,6 @@ deploy
 #+begin_src shell
 deploy check
 #+end_src
-
 
 And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Aka that without builder setup cannot deploy to a macos system from linux. This is on my TODO list to fix at some point.
 
@@ -90,3 +97,19 @@ services.gnome.at-spi2-core.enable = true;
   Might be fun to look into for a pi4 k8s cluster or something.
 
   https://github.com/DeterminateSystems/nix-netboot-serve
+
+* Random notes
+
+Cause I forget and this is a readme so why not stick it here:
+
+List out nixos generations as root:
+
+#+begin_src sh
+nix-env --list-generations --profile /nix/var/nix/profiles/system
+#+end_src
+
+Switch/rollback to prior generation, also as root:
+
+#+begin_src sh
+nixos-rebuild switch --rollback
+#+end_src
