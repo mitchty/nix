@@ -86,6 +86,7 @@ in
     inputs.mitchty.packages.${pkgs.system}.hatools
     inputs.mitchty.packages.${pkgs.system}.hwatch
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
+    inputs.rust.packages.${pkgs.system}.rust
     jless
     less
     manix
@@ -108,6 +109,7 @@ in
     rclone
     restic
     ripgrep
+    rust-analyzer
     s3cmd
     shellcheck
     shellspec
@@ -149,6 +151,7 @@ in
     whoson
     # testing nursery...
   ] ++ [
+    ccls
     gopls
     pyright
     rust-analyzer

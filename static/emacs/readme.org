@@ -1298,10 +1298,11 @@ Ref:
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package eglot
   :hook ((python-mode . eglot-ensure)
-	 (go-mode . eglot-ensure)
-	 (nix-mode . eglot-ensure)
-	 (yaml-mode . eglot-ensure)
-	 (rust-mode . eglot-ensure))
+	       (cc-mode . eglot-ensure)
+	       (go-mode . eglot-ensure)
+	       (nix-mode . eglot-ensure)
+	       (yaml-mode . eglot-ensure)
+	       (rust-mode . eglot-ensure))
   :defer t)
 #+END_SRC
 
