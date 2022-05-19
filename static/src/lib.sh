@@ -7,20 +7,6 @@
 # TODO: add tests for this in shellspec, for now just yeeted this from random
 # disparate shell I have lying around.
 
-# Portably generate a random integer, can't depend on $RANDOM everywhere,
-# especially since I am not a fan of the bash.
-randint() {
-  awk "BEGIN{\"date +%N\"|getline rseed;srand(rseed);close(\"date +%N\");printf \"%i\n\", (rand()*${1-10})}"
-}
-
-# Because stuff sometimes fails, retry Until Success, this is just a silly
-# wrapper around until/sleep but I do it so often...
-us() {
-  until "$@"; do
-    sleep "$(randint)"
-  done
-}
-
 # Silly functions to make certain filtering easier/be lazy.
 nocomments() {
   grep -Ev '^[#].*'
@@ -90,24 +76,26 @@ push_env() {
 # Remove a line matched in $HOME/.ssh/known_hosts for when there are legit
 # host key changes.
 nukehost() {
-  for x in echo "$@"; do
+  for x in "$@"; do
     sed -i -e "/$x/d" ~/.ssh/known_hosts
   done
 }
 
 # Git wrapper fn used like pushd/popd in that on success, you're in a dir/checkout
-
 try_git() {
   # assume https if input doesn't contain a protocol string :// otherwise treat
   # it as golden and let git complain or not
-  uproto=$(printf "%s" "${1}" | grep '://' > /dev/null 2>&1 && printf "%s" "${1}" | sed -e 's|[:]\/\/.*||g')
+  uri="${1}"
+  shift
+  uproto=$(printf "%s" "${uri}" | grep '://' > /dev/null 2>&1 && printf "%s" "${uri}" | sed -e 's|[:]\/\/.*||g')
   proto=${uproto:-https}
-  defbranches="${2:-master main}"
+  defbranches="${1:-master main}"
+  shift > /dev/null 2>&1
   # For wrapper functions, allow destination to be an env var iff unset and
   # nonnull and $3 is present use $3 or as a fallback use $HOME/src
-  destination=${DEST:=${3:=$HOME/src/pub}}
+  destination=${DEST:-${1:-$HOME/src/pub}}
 
-  git_dir=$(printf "%s" "${1}" | sed -e 's|.*[:]\/\/||g')
+  git_dir=$(printf "%s" "${uri}" | sed -e 's|.*[:]\/\/||g')
   rrepo="${proto}://${git_dir}"
 
   # strip user@, :NNN, and .git from input uri's
@@ -186,14 +174,17 @@ bb() {
 try_hg() {
   # assume https if input doesn't contain a protocol string :// otherwise treat
   # it as golden and let hg complain or not
-  uproto=$(printf "%s" "${1}" | grep '://' > /dev/null 2>&1 && printf "%s" "${1}" | sed -e 's|[:]\/\/.*||g')
+  uri="${1}"
+  uproto=$(printf "%s" "${uri}" | grep '://' > /dev/null 2>&1 && printf "%s" "${uri}" | sed -e 's|[:]\/\/.*||g')
+  shift
   proto=${uproto:-https}
-  defbranches="${2:-master main}"
+  defbranches="${1:-master main}"
+  shift > /dev/null 2>&1
   # For wrapper functions, allow destination to be an env var iff unset and
   # nonnull and $3 is present use $3 or as a fallback use $HOME/src
-  destination=${DEST:=${3:=$HOME/src/pub}}
+  destination=${DEST:-${1:-$HOME/src/pub}}
 
-  hg_dir=$(printf "%s" "${1}" | sed -e 's|.*[:]\/\/||g')
+  hg_dir=$(printf "%s" "${uri}" | sed -e 's|.*[:]\/\/||g')
   rrepo="${proto}://${hg_dir}"
 
   # strip user@, :NNN from input uri's
@@ -277,6 +268,20 @@ orgprv() {
 
 orgpub() {
   mt org-mode/public
+}
+
+# Portably generate a random integer, can't depend on $RANDOM everywhere,
+# especially since I am not a fan of the bash.
+randint() {
+  awk "BEGIN{\"date +%N\"|getline rseed;srand(rseed);close(\"date +%N\");printf \"%i\n\", (rand()*${1-10})}"
+}
+
+# Because stuff sometimes fails, retry Until Success, this is just a silly
+# wrapper around until/sleep but I do it so often...
+us() {
+  until "$@"; do
+    sleep "$(randint)"
+  done
 }
 
 # Retry N times some command/thing, requires the limit to be first arg.
