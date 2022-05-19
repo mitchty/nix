@@ -6,7 +6,7 @@ _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 
-SETOPTS="${SETOPTS:--eu}"
+set "${SETOPTS:--eu}"
 
 cd "${_dir}/.." || exit 126
 
@@ -16,7 +16,7 @@ for x in "$@"; do
   install -dm755 img
   lnsrc="img/${x}@${runtime}.img.zst"
   lndst="img/${x}.img.zst"
-  install -m444 "$(find result -type f -name '"*.img.zst')" "${lnsrc}"
+  install -m444 "$(find -L result -type f -name '"*.img.zst')" "${lnsrc}"
   ln -f "${lnsrc}" "${lndst}"
 done
 
