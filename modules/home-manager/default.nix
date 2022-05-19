@@ -127,8 +127,6 @@ in
   ] ++ lib.optionals stdenv.isLinux [
     # Testing packages that I may/not upstream any changes to nixpkgs
     inputs.mitchty.packages.${pkgs.system}.seaweedfs
-    traitor
-
     docker
     docker-compose
     firefox
@@ -136,6 +134,8 @@ in
     podman
     podman-compose
     tcpdump
+    tio
+    traitor
     xorg.xauth
     # Gui linux stuff
     # TODO: how do I get at the nixos config setup...?
@@ -154,8 +154,8 @@ in
     ccls
     gopls
     pyright
-    rust-analyzer
     rnix-lsp
+    rust-analyzer
     yaml-language-server
   ];
 
