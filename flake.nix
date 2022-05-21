@@ -22,8 +22,6 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "unstable";
     };
-    # TODO: Why does 28.xxx not work?
-    # pulumi.url = "github:NixOS/nixpkgs/21299f3dd3ff475f19bc8933f30ebb6a135799f1";
   };
 
   outputs =
