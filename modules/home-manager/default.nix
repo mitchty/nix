@@ -115,6 +115,7 @@ in
     shfmt
     silver-searcher
     sipcalc
+    sshpass
     syncthing
     tldr
     transcrypt
