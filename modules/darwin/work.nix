@@ -5,50 +5,46 @@ with lib;
 let
   cfg = config.services.work;
   fakesha = lib.fakeSha256;
-  uri = "http://car.dev.cray.com/artifactory";
+  uri = "https://artifactory.algol60.net/artifactory/vshasta-support-generic-local/stable";
+
+  # Nix version for vshasta/craypc is bogus, just picking the YYYY.mm.DD this
+  # derivation was last updated.
+  datever = "2022.06.02";
 
   # Note: both these derivations depend on vpn to work might be an issue for
   # future me with build offloading at some point. Sorry future me.
-  vshasta = pkgs.stdenv.mkDerivation
-    rec {
-      name = "vshasta-${version}";
+  vshasta = pkgs.stdenv.mkDerivation rec {
+    name = "vshasta-${version}";
+    version = datever;
 
-      # Nix version is bogus, just picking the YYYY.mm.DD this derivation was last
-      # updated.
-      version = "2022.04.13";
-
-      src = pkgs.fetchurl {
-        url = "${uri}/vshasta/cli/latest/darwin-amd64/vshasta";
-        sha256 = "sha256-LQPQt4f6Yu54Ep+LS0GZ6dfS2wti5FUk1QREhiTTjsc=";
-      };
-
-      # We don't need to do anything but install from src ^^
-      phases = [ "installPhase" ];
-
-      installPhase = ''
-        install -m755 -D $src $out/bin/vshasta
-      '';
+    src = pkgs.fetchurl {
+      url = "${uri}/vshasta/darwin-amd64/vshasta";
+      sha256 = "sha256-DsWwsHq92a7tkPhq+DRyqO3MqtjLbl8ha1FopWHPQFU=";
     };
-  craypc = pkgs.stdenv.mkDerivation
-    rec {
-      name = "craypc-${version}";
 
-      # Nix version is bogus, just picking the YYYY.mm.DD this derivation was last
-      # updated.
-      version = "2022.04.13";
+    # We don't need to do anything but install from src ^^
+    phases = [ "installPhase" ];
 
-      src = pkgs.fetchurl {
-        url = "${uri}/internal/craypc/latest/macos-amd64/craypc";
-        sha256 = "sha256-7eSzttb1dUbuQeP5CCsgOKbsfELq141z6D9iCBocMN0=";
-      };
+    installPhase = ''
+      install -m755 -D $src $out/bin/vshasta
+    '';
+  };
+  craypc = pkgs.stdenv.mkDerivation rec {
+    name = "craypc-${version}";
+    version = datever;
 
-      # We don't need to do anything but install from src ^^
-      phases = [ "installPhase" ];
-
-      installPhase = ''
-        install -m755 -D $src $out/bin/craypc
-      '';
+    src = pkgs.fetchurl {
+      url = "${uri}/craypc/latest/macos-amd64/craypc";
+      sha256 = "sha256-egOemDFw16H+S1mzCeMEK33FQDvzWCvVIDXYwHw7rU8=";
     };
+
+    # We don't need to do anything but install from src ^^
+    phases = [ "installPhase" ];
+
+    installPhase = ''
+      install -m755 -D $src $out/bin/craypc
+    '';
+  };
 in
 {
   options = {
@@ -66,6 +62,7 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       google-cloud-sdk
+    ] ++ [
       craypc
       vshasta
     ];
