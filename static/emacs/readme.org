@@ -932,7 +932,9 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
 For.. yaml
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package yaml-mode :defer t)
+(use-package yaml-mode :defer t
+  :hook (yaml-mode . whitespace-mode)
+  )
 #+END_SRC
 
 *** markdown-mode
@@ -940,7 +942,10 @@ For.. yaml
 Make markdown pretty(er/ish)
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package markdown-mode :defer t)
+(use-package markdown-mode
+  :defer t
+  :hook (markdown-mode . whitespace-mode)
+  )
 #+END_SRC
 
 *** writegood-mode
@@ -1024,14 +1029,19 @@ Instead of text might as well get a decent mode hook going here.
 **** nix-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package nix-mode :defer t)
+(use-package nix-mode
+  :defer t
+  :hook (nix-mode . whitespace-mode)
+  )
 #+END_SRC
 
 *** docker-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package dockerfile-mode
-  :defer t)
+  :defer t
+  :hook (dockerfile-mode . whitespace-mode)
+  )
 #+END_SRC
 
 *** TODO cscope or rtags or nuke                         :testing:validation:
