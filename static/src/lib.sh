@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
+# SPDX-License-Identifier: BlueOak-1.0.0
 #
 # General library utility functions I end up re-writing all over the damn place
 # in random scripts I create. No more! Shared library it is for once.
@@ -162,7 +163,7 @@ mt() {
   try_git "ssh://gitea@git.mitchty.net:2222/${1}" "${2:-master}"
 }
 
-gh() {
+gi() {
   try_git "https://github.com/${1}" "${2:-master main}"
 }
 
@@ -248,9 +249,9 @@ try_hg() {
 }
 
 # Wrapper functions to call whatever into a different prefix
-# aka gh foo/bar -> ~/src/github.com/pub/foo/bar
-# wrk gh foo/bar -> ~/src/github.com/wrk/foo/bar
-# prv gh foo/bar -> ~/src/github.com/prv/foo/bar
+# aka gi foo/bar -> ~/src/github.com/pub/foo/bar
+# wrk gi foo/bar -> ~/src/github.com/wrk/foo/bar
+# prv gi foo/bar -> ~/src/github.com/prv/foo/bar
 #
 # Note: this then means can't call them with the final arg for say gh/bb
 wrk() {

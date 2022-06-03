@@ -76,6 +76,7 @@ in
     du-dust
     entr
     file
+    gh
     gist
     git
     git-lfs

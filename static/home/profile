@@ -135,7 +135,7 @@ export PATH
 ugde() {
   (
     iam=$(hostname)
-    ours=$(gh mitchty/nix && git diff | sha256sum)
+    ours=$(gi mitchty/nix && git diff | sha256sum)
 
     for host in mb nexus; do
       if [ ! "${iam}" = "${host}" ]; then
