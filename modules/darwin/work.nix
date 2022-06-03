@@ -63,6 +63,7 @@ in
     environment.systemPackages = with pkgs; [
       google-cloud-sdk
     ] ++ [
+      inputs.mitchty.packages.${pkgs.system}.jira-cli
       craypc
       vshasta
     ];

@@ -341,6 +341,7 @@
           }];
         };
         workmb = darwinSystem {
+          inherit inputs;
           system = "x86_64-darwin";
           modules = nixDarwinModules ++ [{
             users = {
