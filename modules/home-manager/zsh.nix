@@ -1,10 +1,11 @@
 { config, ... }:
 let
+  nixpkgs-path = "nixpkgs=${config.home.homeDirectory}/.nix-inputs/nixpkgs";
   shenanigans = ''
-      if ! echo $NIX_PATH | grep nixpkgs= > /dev/null 2>&1; then
-        export NIX_PATH="nixpkgs=${config.home.homeDirectory}/.nix-inputs/self:$NIX_PATH"
-      fi
-    '';
+    if ! echo $NIX_PATH | grep ${nixpkgs-path} > /dev/null 2>&1; then
+      export NIX_PATH="${nixpkgs-path}:$NIX_PATH"
+    fi
+  '';
 in {
   # Options ref:
   # https://github.com/nix-community/home-manager/blob/master/modules/programs/zsh.nix
