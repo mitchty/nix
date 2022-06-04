@@ -28,6 +28,10 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "unstable";
     };
+    dnsblacklist = {
+      url = "github:notracking/hosts-blocklists";
+      flake = false;
+    };
   };
 
   outputs =
@@ -43,6 +47,7 @@
     , rust
     , agenix-darwin
     , agenix
+    , dnsblacklist
     , ...
     }:
     let
@@ -240,26 +245,6 @@
       };
     in
     {
-      # TODO: Rebuild nexus via autoinstall
-      # autoinstallIsoNexus = nixos-generators.nixosGenerate {
-      #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      #   modules = [
-      #     ./iso/configuration.nix
-      #     ./iso/iso.nix {
-      #       # wipefs device before installing
-      #       wipe = true;
-      #       # dd /dev/zero before installing (can take a looooong time)
-      #       zero = false;
-      #       devices = [
-      #         # nvme0n1
-      #         "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300325L"
-      #         # nvme1n1
-      #         "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300329W"
-      #       ];}
-      #   ];
-      #   format = "install-iso";
-      # };
-
       diskImages = {
         rpi4 = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
@@ -408,17 +393,18 @@
 
         nodes = {
           "nexus" = {
-            hostname = "nexus.local";
+            hostname = "nexus.home.arpa";
             profiles.system = {
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
             };
           };
-          "dfs1" = {
-            hostname = "dfs1.local";
-            profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
-            };
-          };
+          # "dfs1" = {
+          #   hostname = "dfs1.home.arpa";
+          #   # hostname = "10.10.10.190";
+          #   profiles.system = {
+          #     path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
+          #   };
+          # };
           # "mb" = {
           #   hostname = "mb.local";
           #   profiles.system = {

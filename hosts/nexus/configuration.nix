@@ -13,12 +13,6 @@
       ../userscompat.nix
     ];
 
-  # For zfs
-  config.networking.hostId = "30d18215";
-
-  # Non dhcp hostname
-  config.networking.hostName = "nexus";
-
   # This config is for nixos release 21.11
   config.system.stateVersion = "21.11";
 
@@ -27,4 +21,22 @@
 
   # We want gui stuff here
   config.services.role.gui.enable = true;
+
+  # Play the part of a dns server for a bit...
+  config.services.role.dns = {
+    enable = true;
+    serveLocalZones = true;
+  };
+
+  # Due to ^^^ we're setting our ip statically
+  config = {
+    networking = {
+      hostName = "nexus";
+      hostId = "30d18215";
+      defaultGateway = "10.10.10.1";
+      interfaces.eno1.ipv4.addresses = [{ address = "10.10.10.2"; prefixLength = 24; }];
+      interfaces.eno1.useDHCP = false;
+      nameservers = [ "127.0.0.1" "1.1.1.1" ];
+    };
+  };
 }
