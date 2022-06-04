@@ -11,13 +11,15 @@ let
     10.10.10.3 dfs1.home.arpa dfs1
     10.10.10.10 pikvm.home.arpa pikvm
     10.10.10.20 mb.home.arpa mb
-    10.10.10.111 workmb.home.arpa workmb
+    10.10.10.30 iphone.home.arpa iphone
+    10.10.10.31 ipad.home.arpa ipad
+
+    10.10.10.99 workmb.home.arpa workmb
   '');
 in
 {
   options.services.role.dns = {
-    enable = mkEnableOption "Run unbound dns";
-    serveLocalZones = mkEnableOption "Serve local zone files";
+    enable = mkEnableOption "Run dnsmasq dns+dhcp";
   };
 
   config = mkIf cfg.enable {
@@ -45,13 +47,16 @@ in
         # Forgot...
         bogus-priv
 
-        # For below so we can do dig name and let it resolve to host.home.apa
-        expand-hosts
+        # expand-hosts will bring in crap like 127.0.0.2 for nexus, I SAID NO,
+        # bad option go home
+        no-hosts
+
+        # dns hosts
         addn-hosts=${extrahosts}
 
         # Define our range for dhcp
         interface=eno1
-        dhcp-range=eno1,10.10.10.10,10.10.10.127,24h
+        dhcp-range=eno1,10.10.10.3,10.10.10.127,24h
 
         # interface=wg0
 
@@ -63,8 +68,8 @@ in
         # Set default gateway
         dhcp-option=eno1,3,10.10.10.1
 
-        # Set DNS server
-        dhcp-option=eno1,6,10.10.10.2,1.1.1.1
+        # Set DNS servers sent to dhcp hosts
+        dhcp-option=eno1,6,10.10.10.2
 
         # For future
         # dhcp-boot=pxelinux.0
@@ -80,7 +85,10 @@ in
 
         dhcp-host=a0:ce:c8:ce:43:48,mb,10.10.10.20
 
-        dhcp-host=88:66:5a:56:92:d6,workmb,10.10.10.111
+        dhcp-host=3e:34:2b:0d:97:bc,iphone,10.10.10.30
+        dhcp-host=c2:84:0f:47:5e:60,ipad,10.10.10.31
+
+        dhcp-host=88:66:5a:56:92:d6,workmb,10.10.10.99
 
         # Also setup the dns blacklist
         conf-file=${inputs.dnsblacklist}/dnsmasq/dnsmasq.blacklist.txt

@@ -6,7 +6,8 @@ let
       export NIX_PATH="${nixpkgs-path}:$NIX_PATH"
     fi
   '';
-in {
+in
+{
   # Options ref:
   # https://github.com/nix-community/home-manager/blob/master/modules/programs/zsh.nix
   programs.zsh = {

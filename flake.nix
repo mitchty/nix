@@ -310,12 +310,19 @@
               primaryGroup = "staff";
             };
             age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch";
-            networking.computerName = "mb";
-            networking.hostName = "mb";
-            networking.knownNetworkServices = [
-              "Wi-Fi"
-              "USB 10/100/1000 LAN"
-            ];
+            # Since I use this host for working on all this crap, need a get out
+            # of jail free card on dns, but nice for it to search home.arpa by
+            # default too so I can be lazy.
+            networking = {
+              computerName = "mb";
+              hostName = "mb";
+              dns = [ "10.10.10.2" "1.1.1.1" ];
+              search = [ "home.arpa" ];
+              knownNetworkServices = [
+                "Wi-Fi"
+                "USB 10/100/1000 LAN"
+              ];
+            };
             services.restic = {
               enable = true;
               repo = "s3:http://10.10.10.190:8333/restic";
@@ -398,13 +405,12 @@
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
             };
           };
-          # "dfs1" = {
-          #   hostname = "dfs1.home.arpa";
-          #   # hostname = "10.10.10.190";
-          #   profiles.system = {
-          #     path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
-          #   };
-          # };
+          "dfs1" = {
+            hostname = "dfs1.home.arpa";
+            profiles.system = {
+              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
+            };
+          };
           # "mb" = {
           #   hostname = "mb.local";
           #   profiles.system = {

@@ -25,7 +25,6 @@
   # Play the part of a dns server for a bit...
   config.services.role.dns = {
     enable = true;
-    serveLocalZones = true;
   };
 
   # Due to ^^^ we're setting our ip statically
@@ -36,7 +35,9 @@
       defaultGateway = "10.10.10.1";
       interfaces.eno1.ipv4.addresses = [{ address = "10.10.10.2"; prefixLength = 24; }];
       interfaces.eno1.useDHCP = false;
-      nameservers = [ "127.0.0.1" "1.1.1.1" ];
+      # Use internal dnsmasq by default, has all the dns blacklists and stuff,
+      # should be the fastest as well as its local network.
+      nameservers = [ "127.0.0.1" "1.1.1.1" "8.8.8.8" ];
     };
   };
 }
