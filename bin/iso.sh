@@ -12,7 +12,7 @@ cd "${_dir}/.." || exit 126
 
 runtime=$(date +%Y-%m-%d-%H:%M:%S)
 for x in "$@"; do
-  nix build ".#iso${x}"
+  nix build "${NIXOPTS-}" ".#iso${x}"
   install -dm755 img
   lnsrc="img/${x}@${runtime}.iso"
   lndst="img/${x}.iso"

@@ -140,7 +140,7 @@ ugde() {
     for host in mb nexus; do
       if [ ! "${iam}" = "${host}" ]; then
         dots=0
-        until [ "$(ssh ${host}.local 'cd ~/src/pub/github.com/mitchty/nix && git diff 2> /dev/null | sha256sum')" = "${ours}" ]; do
+        until [ "$(ssh ${host}.home.arpa 'cd ~/src/pub/github.com/mitchty/nix && git diff 2> /dev/null | sha256sum')" = "${ours}" ]; do
           sleep 1
           printf '.' >&2
           dots=$((dots + 1))
