@@ -29,8 +29,7 @@ in
   home.activation.useFlakeChannels = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.nix-defexpr
     $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.nix-channels
-    $DRY_RUN_CMD install -dm755 $VERBOSE_ARG $HOME/.nix-defexpr
-    $DRY_RUN_CMD ln -s $VERBOSE_ARG /dev/null $HOME/.nix-defexpr/channels
+    $DRY_RUN_CMD ln -s $VERBOSE_ARG /dev/null $HOME/.nix-defexpr
     $DRY_RUN_CMD ln -s $VERBOSE_ARG /dev/null $HOME/.nix-channels
     $DRY_RUN_CMD ln -sf $VERBOSE_ARG /dev/null $HOME/.config/nixpkgs
   '';
