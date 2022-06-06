@@ -20,6 +20,11 @@ in
 {
   options.services.role.dns = {
     enable = mkEnableOption "Run dnsmasq dns+dhcp";
+    blacklist = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Whether to include a dns blacklist or not";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -34,6 +39,10 @@ in
       enable = true;
       servers = [ "1.1.1.1" "8.8.8.8" ];
       extraConfig = ''
+        # I like logs, lets have more of em
+        log-queries
+        log-dhcp
+
         # Setup what domain we're serving home.arpa basically for internal according to the rfc
         local=/${homedomain}/
         domain=${homedomain}
@@ -89,8 +98,9 @@ in
         dhcp-host=c2:84:0f:47:5e:60,ipad,10.10.10.31
 
         dhcp-host=88:66:5a:56:92:d6,workmb,10.10.10.99
+      '' + optionalString (cfg.blacklist) ''
 
-        # Also setup the dns blacklist
+        # Also setup the dns blacklist if enabled
         conf-file=${inputs.dnsblacklist}/dnsmasq/dnsmasq.blacklist.txt
       '';
     };
