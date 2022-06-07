@@ -122,6 +122,12 @@ Keep temporary stuff isolated from everyone else. It infects everything otherwis
  )
 #+END_SRC
 
+Just in case the temp file dir doesn't exist, make it or emacs startup will be short lived indeed.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(make-directory temporary-file-directory :parents)
+#+END_SRC
+
 *** auto revert
 
 Update files in open buffers as they're changed on disk, freaking annoying without this on.
