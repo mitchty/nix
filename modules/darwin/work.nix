@@ -62,6 +62,7 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       google-cloud-sdk
+      yq-go
     ] ++ [
       inputs.mitchty.packages.${pkgs.system}.jira-cli
       craypc
