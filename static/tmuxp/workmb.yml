@@ -11,6 +11,9 @@ windows:
 - window_name: btop
   panes:
     - btop
+- window_name: yolo
+  panes:
+    - . ~/src/pub/github.com/mitchty/nix/static/src/ssh.sh
 - window_name: wip
   panes:
     - pane
