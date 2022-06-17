@@ -61,6 +61,7 @@ in
 
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
+      kubernetes-helm
       google-cloud-sdk
       yq-go
     ] ++ [
