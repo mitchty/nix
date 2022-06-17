@@ -17,4 +17,14 @@ if [ "${stats_cur}" != "${stats_found}" ]; then
   ok=$(( ok + 1 ))
 fi
 
+swiftbar_cur="v1.4.3"
+swiftbar_found="$(curl --silent 'https://api.github.com/repos/swiftbar/SwiftBar/releases/latest' | jq -r '.tag_name')"
+
+ok=0
+
+if [ "${swiftbar_cur}" != "${swiftbar_found}" ]; then
+  printf "swiftbar out of date have %s latest is %s\n" "${swiftbar_cur}" "${swiftbar_found}" >&2
+  ok=$(( ok + 1 ))
+fi
+
 exit $ok

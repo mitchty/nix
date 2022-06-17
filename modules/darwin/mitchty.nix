@@ -35,7 +35,7 @@ let
     sourceRoot = ".";
     phases = [ "unpackPhase" "installPhase" ];
     installPhase = ''
-      mkdir -p "$out/Applications"
+      install -dm755 "$out/Applications"
       cp -r Stats.app "$out/Applications/Stats.app"
     '';
 
@@ -43,6 +43,26 @@ let
       name = "Stats.dmg";
       url = "https://github.com/${uname}/${pname}/releases/download/v${version}/Stats.dmg";
       sha256 = "sha256-SpQrkrEhdQboG+9+kxE0XRNvwwARG2WD4PJNMiyi20c=";
+    };
+  };
+
+  swiftbar = pkgs.stdenv.mkDerivation rec {
+    pname = "swiftbar";
+    gname = "SwiftBar";
+    version = "1.4.3";
+
+    buildInputs = [ pkgs.unzip ];
+    sourceRoot = ".";
+    phases = [ "unpackPhase" "installPhase" ];
+    installPhase = ''
+      install -dm755 "$out/Applications"
+      cp -r ${gname}.app "$out/Applications/${gname}.app"
+    '';
+
+    src = pkgs.fetchurl {
+      name = "SwiftBar.zip";
+      url = "https://github.com/${pname}/${gname}/releases/download/v${version}/${gname}.zip";
+      sha256 = "sha256-IP/lWahb0ouG912XvaWR3nDL1T3HrBZ2E8pp/WbHGgQ=";
     };
   };
 in
@@ -67,6 +87,12 @@ in
       outdated
       stats
       wtf
+      swiftbar
     ];
+
+    system.activationScripts.postActivation.text = ''
+      printf "modules:darwin:mitchty: macos shenanigans\n" >&2
+      install -dm755 ~/.cache/swiftbar
+    '';
   };
 }
