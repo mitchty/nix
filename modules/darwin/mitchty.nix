@@ -28,7 +28,8 @@ let
 
   stats = pkgs.stdenv.mkDerivation rec {
     pname = "stats";
-    version = "2.7.17";
+    uname = "exelban";
+    version = "2.7.21";
 
     buildInputs = [ pkgs.undmg ];
     sourceRoot = ".";
@@ -40,8 +41,8 @@ let
 
     src = pkgs.fetchurl {
       name = "Stats.dmg";
-      url = "https://github.com/exelban/stats/releases/download/v${version}/Stats.dmg";
-      sha256 = "sha256-N4RiI8OtdtIhiYo/grg77UzTcQY8+nLphtyUyP3n1g8=";
+      url = "https://github.com/${uname}/${pname}/releases/download/v${version}/Stats.dmg";
+      sha256 = "sha256-SpQrkrEhdQboG+9+kxE0XRNvwwARG2WD4PJNMiyi20c=";
     };
   };
 in
