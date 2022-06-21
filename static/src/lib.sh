@@ -277,12 +277,64 @@ randint() {
   awk "BEGIN{\"date +%N\"|getline rseed;srand(rseed);close(\"date +%N\");printf \"%i\n\", (rand()*${1-10})}"
 }
 
+# Just a convenient way to do a random sleep
+rsleep() {
+  sleep $(randint ${1-30})
+}
+
 # Because stuff sometimes fails, retry Until Success, this is just a silly
 # wrapper around until/sleep but I do it so often...
 us() {
+  hookinit "$@"
   until "$@"; do
+    hookiter "$@"
     sleep "$(randint)"
   done
+  hookok "$@"
+}
+
+# Function/thing to run in retry/randretry/backoff/us on init, can be used to
+# print out a "I"m gonna do a thing message or whatever.
+LIMITERINITFN=${LIMITERINITFN-}
+
+# Used by the functions to call some other function on retry/etc... startup, for
+# stuff like an announcement "i'm about to do a thing" printf
+#
+# will send the entire arguments
+hookinit() {
+  if [ -n "${LIMITERINITFN}" ]; then
+    eval "${LIMITERINITFN} $*"
+  fi
+}
+
+# Function/thing to call on each iteration
+LIMITERFN=${LIMITERFN-}
+
+# Each time a retry iterates we call this with the iteration data and pass in the function that called it too
+#
+# Similar to the init hook, aka retry limit iter args...
+hookiter() {
+  if [ -n "${LIMITERFN}" ]; then
+    eval "${LIMITERFN} $*"
+  fi
+}
+
+# Function/thing to call on failure
+LIMITERFAILFN=${LIMITERFAILFN-}
+
+hookfail() {
+  if [ -n "${LIMITERFAILFN}" ]; then
+    eval "${LIMITERFAILFN} $*"
+  fi
+}
+
+# Function/thing to call on success
+LIMITEROKFN=${LIMITEROKFN-}
+
+hookok() {
+  if [ -n "${LIMITEROKFN}" ]; then
+    eval "${LIMITEROKFN} $*"
+  fi
 }
 
 # Retry N times some command/thing, requires the limit to be first arg.
@@ -290,23 +342,31 @@ us() {
 # On success running thing within the limit set, returns 0
 # otherwise returns limit reached so that failures can propogate.
 retry() {
+  hookinit "$@"
+
   limit=${1-1}
   shift
 
   iter=0
   until [ "${iter}" -ge "${limit}" ] || "$@"; do
     iter=$((iter + 1))
+    hookiter "${0}" "${limit}" "${iter}" "$@"
   done
 
   if [ "${iter}" = "${limit}" ]; then
+    hookfail "${0}" "${limit}" "${iter}" "$@"
     return "${limit}"
   fi
+
+  hookok "${0}" "${limit}" "${iter}" "$@"
   return 0
 }
 
 # Similar to the above but will sleep between retries a random integer value
 # from 0 to the limit passed between each run.
 randretry() {
+  hookinit "$@"
+
   limit=${1-1}
   shift
   interval=${1-5}
@@ -317,12 +377,17 @@ randretry() {
     iter=$((iter + 1))
     # For this use case the quotes aren't helpful here
     #shellcheck disable=SC2046 disable=SC2086
-    sleep $(randint ${interval})
+    nap="$(randint ${interval})"
+    hookiter "${0}" "${limit}" "${nap}" "$@"
+    sleep "${nap}"
   done
 
   if [ "${iter}" = "${limit}" ]; then
+    hookfail "${0}" "${limit}" "${iter}" "$@"
     return "${limit}"
   fi
+
+  hookok "${0}" "${limit}" "${iter}" "$@"
   return 0
 }
 
