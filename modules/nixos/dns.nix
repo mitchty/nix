@@ -65,7 +65,7 @@ in
 
         # Define our range for dhcp
         interface=eno1
-        dhcp-range=eno1,10.10.10.3,10.10.10.127,24h
+        dhcp-range=eno1,10.10.10.3,10.10.10.127,1h
 
         # interface=wg0
 
