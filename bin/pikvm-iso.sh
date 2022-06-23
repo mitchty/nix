@@ -31,7 +31,6 @@ JQ=$(command -v ${JQ})
 KVMHOST=${KVMHOST:-https://127.0.0.1}
 KVMUSER=${KVMUSER:-admin}
 KVMPASS=${KVMPASS:-admin}
-ISO=${ISO:-example.iso}
 
 # Helper functions to reduce the amount of args we pass in on each curl/jq call,
 # note we are calling whatever command -v curl/jq/etc.. found directly to avoid
@@ -76,20 +75,20 @@ set_connected() {
   post ${KVMHOST}/api/msd/set_connected?connected=1
 }
 
-drive_is_connected() {
-  [ "true" = curl ${KVMHOST}/api/msd | jq '.result.drive.connected' ]
-}
-
 # If anything is amiss exit before work
 ! [ $ok ] && exit $ok
 
 set -e
 
 # Disconnect msd if needed
-drive_is_connected && disconnect_drive
+if [ "true" = "$(curl ${KVMHOST}/api/msd | jq '.result.drive.connected')" ]; then
+  disconnect_drive
+fi
 
-# iff clean was passed clean up all existing images.
-if [ "clean" = "$*" ]; then
+# iff clean or clear was passed as first arg clean up all existing images, both
+# cause I forget what the option is...
+if [ "clean" = "$1" ] || [ "clear" = "$1" ]; then
+  shift
   for iso in $(curl ${KVMHOST}/api/msd | jq '.result.storage.images[].name'); do
     remove_image ${iso}
   done
@@ -98,11 +97,17 @@ fi
 # Reset the msd while we're here
 reset_msd
 
-# Upload the iso
-write_image "${ISO}"
+# Upload the images
+for img in "$@"; do
+  write_image "${img}"
+done
 
-# Set the msd to use it (quoted due to the &)
-set_params_image "${ISO}"
+# Set the msd to use it (quoted due to the &), note only the last img is set obviously
+for img in "$@"; do
+  set_params_image "${img}"
+done
 
 # Then connect it
-set_connected
+if [ "" != "$*" ]; then
+  set_connected
+fi
