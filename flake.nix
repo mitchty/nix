@@ -14,10 +14,13 @@
       inputs.nixpkgs.follows = "unstable";
     };
 
-    # TODO: Future me fix so I can get updates to emacs 28.1 again via the
-    # overlay. Figure out how to overlay this so emacs overlay works again.
-    # https://github.com/lyderichti59/nixpkgs/commit/e2fa180f56918615d27fef71db14a0f79c60560b#diff-2d2a51ad7a5932155a18be815414a465f12097519b4192b8fe0b03cff4ca1252
-    emacs.url = "github:nix-community/emacs-overlay/d969a968ee668d3ed646e056710c13f2efb9073a";
+    # TODO: Set this up as an overlay or pr it to nixpkgs
+    # https://github.com/lyderichti59/nixpkgs/commit/e2fa180f56918615d27fef71db14a0f79c60560b
+    nixpkgs-mitchty.url = "github:/mitchty/nixpkgs/mitchty";
+    emacs = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "nixpkgs-mitchty";
+    };
 
     home-manager.url = "github:nix-community/home-manager/release-21.11";
     nixos-generators.url = "github:nix-community/nixos-generators";
