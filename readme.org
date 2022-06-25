@@ -59,6 +59,7 @@ And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Ak
    Since I'm trying to document things a bit more a bit of layout convention explanation:
 
    - [[file:bin/][bin]]     Simply a directory for any pertinent scripts that use this repo. Note none of these scripts end up in */nix/store*.
+   - [[file:src/][src]]     Source for stuff in bin.
    - [[file:home/][home]]    home-manager configuratin, unified across macos and nixos.
    - [[file:hosts/][hosts]]   Host specific data, e.g. mostly generated nix configuration files.
    - [[file:img/][img]]     Nixos specific directory where iso or disk image outputs get dumped.
