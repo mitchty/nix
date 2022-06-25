@@ -26,12 +26,12 @@ let
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
 
-  stats = pkgs.stdenv.mkDerivation rec {
+  stats = with pkgs; stdenv.mkDerivation rec {
     pname = "stats";
     uname = "exelban";
-    version = "2.7.21";
+    version = "2.7.22";
 
-    buildInputs = [ pkgs.undmg ];
+    buildInputs = [ undmg ];
     sourceRoot = ".";
     phases = [ "unpackPhase" "installPhase" ];
     installPhase = ''
@@ -39,10 +39,10 @@ let
       cp -r Stats.app "$out/Applications/Stats.app"
     '';
 
-    src = pkgs.fetchurl {
+    src = fetchurl {
       name = "Stats.dmg";
       url = "https://github.com/${uname}/${pname}/releases/download/v${version}/Stats.dmg";
-      sha256 = "sha256-SpQrkrEhdQboG+9+kxE0XRNvwwARG2WD4PJNMiyi20c=";
+      sha256 = "sha256-lWaQbuG29FXvizf5xItnJ80OSt2pBw7F4mQS6y+7NMI=";
     };
   };
 
