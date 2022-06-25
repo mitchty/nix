@@ -207,6 +207,22 @@
         )
       ];
 
+      # Autoinstall vars
+
+      # vm autoinstall test runners, note no by-id links cause qemu doens't get them
+      simpleAutoinstall = {
+        autoinstall = {
+          flavor = "zfs";
+          hostName = "simple";
+          rootDevices = [
+            "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001"
+          ];
+          bootSize = "512MiB";
+          swapSize = "512MiB";
+        };
+      };
+
+      # Current nas box, needs a rebuild once dfs2/3 are working
       dfs1Autoinstall = {
         autoinstall.flavor = "zfs";
         autoinstall.hostName = "dfs1";
@@ -214,6 +230,26 @@
         autoinstall.rootDevices = [
           "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
           "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
+        ];
+      };
+
+      # NixOS router, I'm sick of naming things cute names
+      routerAutoinstall = {
+        autoinstall.flavor = "zfs";
+        autoinstall.hostName = "router";
+        autoinstall.rootDevices = [
+          "/dev/disk/by-id/ata-mSATA_3TE7_YCA12110130170016"
+        ];
+      };
+
+      # NixOS nexus system, does most of the heavy lifting, needs a
+      # rebuild/restore too once the "final" dfs backup stuffs working
+      nexusAutoinstall = {
+        autoinstall.flavor = "zfs";
+        autoinstall.hostName = "nexus";
+        autoinstall.rootDevices = [
+          "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300325L"
+          "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300329W"
         ];
       };
 
@@ -260,9 +296,21 @@
         };
       };
       packages.x86_64-linux = {
+        vmSimple = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            simpleAutoinstall
+            {
+              autoinstall.debug = true;
+              autoinstall.wipe = true;
+            }
+          ];
+          format = "vm-nogui";
+        };
         sdGenericAarch64 = nixos-generators.nixosGenerate {
-          pkgs = unstable.legacyPackages.x86_64-linux.pkgsCross.aarch64-multiplatform;
-          modules = [ "${stable.path}/nixos/modules/profiles/minimal.nix" ];
+          pkgs = nixpkgs.legacyPackages.x86_64-linux.pkgsCross.aarch64-multiplatform;
+          modules = [ "${nixpkgs.legacyPackages.aarch64-linux.path}/nixos/modules/profiles/minimal.nix" ];
           format = "sd-aarch64";
         };
         isoGeneric = nixos-generators.nixosGenerate {
@@ -285,6 +333,54 @@
           modules = [
             ./modules/iso/autoinstall.nix
             dfs1Autoinstall
+            {
+              autoinstall.wipe = true;
+              autoinstall.zero = true;
+            }
+          ];
+          format = "install-iso";
+        };
+        isoRouter = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            routerAutoinstall
+            {
+              autoinstall.debug = true;
+              autoinstall.wipe = true;
+            }
+          ];
+          format = "install-iso";
+        };
+        isoZeroRouter = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            routerAutoinstall
+            {
+              autoinstall.debug = true;
+              autoinstall.wipe = true;
+              autoinstall.zero = true;
+            }
+          ];
+          format = "install-iso";
+        };
+        isoNexus = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            nexusAutoinstall
+            {
+              autoinstall.wipe = true;
+            }
+          ];
+          format = "install-iso";
+        };
+        isoZeroNexus = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            nexusAutoinstall
             {
               autoinstall.wipe = true;
               autoinstall.zero = true;
@@ -328,7 +424,7 @@
             };
             services.restic = {
               enable = true;
-              repo = "s3:http://10.10.10.190:8333/restic";
+              repo = "s3:http://dfs1.home.arpa:8333/restic";
             };
             services.mitchty = {
               enable = true;
@@ -425,7 +521,16 @@
 
       # TODO: More checks in place would be good
       checks = builtins.mapAttrs (deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
-    }; # // flake-utils.lib.eachDefaultSystem (system:
+    }; #  // forAllSystems (system:
+  #   let pkgs = nixpkgsFor.${system};
+  #   in {
+  #     default = pkgs.mkShell {
+  #       buildInputs = with pkgs; [ go gopls goimports go-tools ];
+  #     };
+  # });
+
+  # devShell = forAllSystems (system: self.devShells.${system}.default); # //
+  # flake-utils.lib.eachDefaultSystem (system:
   #   let
   #     pkgs = import nixpkgs { inherit system overlays; };
   #     hm = home-manager.defaultPackage."${system}";
