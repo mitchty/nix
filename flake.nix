@@ -22,7 +22,7 @@
       inputs.nixpkgs.follows = "nixpkgs-mitchty";
     };
 
-    home-manager.url = "github:nix-community/home-manager/release-21.11";
+    home-manager.url = "github:nix-community/home-manager/release-22.05";
     nixos-generators.url = "github:nix-community/nixos-generators";
     deploy-rs.url = "github:serokell/deploy-rs";
     agenix-darwin.url = "github:montchr/agenix/darwin-support";
