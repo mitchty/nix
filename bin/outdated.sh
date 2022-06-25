@@ -1,4 +1,5 @@
-#!/usr/bin/env sh
+#!/usr/bin/env nix-shell
+#!nix-shell -i bash -p bash coreutils curl jq
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
 # Description: Check for out of date stuff in my nix setup

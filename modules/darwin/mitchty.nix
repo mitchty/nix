@@ -18,10 +18,6 @@ let
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
 
-  outdated = (pkgs.writeScriptBin "outdated" (builtins.readFile ../../static/src/outdated.sh)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
   wtf = (pkgs.writeScriptBin "wtf" (builtins.readFile ../../static/src/wtf.sh)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
@@ -84,10 +80,9 @@ in
       close
       gohome
       notify
-      outdated
       stats
-      wtf
       swiftbar
+      wtf
     ];
 
     system.activationScripts.postActivation.text = ''

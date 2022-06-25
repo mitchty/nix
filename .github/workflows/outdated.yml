@@ -1,0 +1,22 @@
+name: Check for outdated upstream stuff
+on:
+  push:
+    paths:
+      - 'bin/outdated**'
+  schedule:
+    - cron: "15 1 * * 0"
+  workflow_dispatch:
+jobs:
+  outdated:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: cachix/install-nix-action@v17
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - run: ./bin/outdated
