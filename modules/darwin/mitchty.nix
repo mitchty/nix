@@ -25,7 +25,7 @@ let
   stats = with pkgs; stdenv.mkDerivation rec {
     pname = "stats";
     uname = "exelban";
-    version = "2.7.22";
+    version = "2.7.23";
 
     buildInputs = [ undmg ];
     sourceRoot = ".";
@@ -38,7 +38,7 @@ let
     src = fetchurl {
       name = "Stats.dmg";
       url = "https://github.com/${uname}/${pname}/releases/download/v${version}/Stats.dmg";
-      sha256 = "sha256-lWaQbuG29FXvizf5xItnJ80OSt2pBw7F4mQS6y+7NMI=";
+      sha256 = "sha256-t79ipa9fO66bCp6vMgeYre6XCjCg9WQ6Cpi0iz0CLJE=";
     };
   };
 
