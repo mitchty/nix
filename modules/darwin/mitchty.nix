@@ -42,12 +42,12 @@ let
     };
   };
 
-  swiftbar = pkgs.stdenv.mkDerivation rec {
+  swiftbar = with pkgs; stdenv.mkDerivation rec {
     pname = "swiftbar";
     gname = "SwiftBar";
     version = "1.4.3";
 
-    buildInputs = [ pkgs.unzip ];
+    buildInputs = [ unzip ];
     sourceRoot = ".";
     phases = [ "unpackPhase" "installPhase" ];
     installPhase = ''
@@ -55,7 +55,7 @@ let
       cp -r ${gname}.app "$out/Applications/${gname}.app"
     '';
 
-    src = pkgs.fetchurl {
+    src = fetchurl {
       name = "SwiftBar.zip";
       url = "https://github.com/${pname}/${gname}/releases/download/v${version}/${gname}.zip";
       sha256 = "sha256-IP/lWahb0ouG912XvaWR3nDL1T3HrBZ2E8pp/WbHGgQ=";
