@@ -13,6 +13,16 @@ Caches
 
 # linux-isms we might manage to hit
 .caches
+.cache
+
+# I don't care about less history
+.lesshst
+
+# This is basically another Trash dir
+.local/share/Trash
+
+# Go nonsense
+go/pkg/mod/cache
 
 # Postgres db temp files
 pg_stat_tmp
