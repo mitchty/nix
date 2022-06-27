@@ -53,14 +53,17 @@ target/debug
 # vim turds it leaves all over the place, even animals learn to poop in a corner
 *.swp
 *.un~
+.viminfo
 
 # emacs/vim turds just in case my configuration isn't working
 *.~
 
 # emacs tmp files it might create while a file is open
 ~*
-
 .emacs.d/semanticdb/*.cache
+
+# zsh temp files that can be regenerated
+.zcompdump
 
 # Exclude Onedrive stuff
 OneDrive*
@@ -73,6 +76,7 @@ Library/Application\ Support/CallHistoryDB
 Library/Application\ Support/CallHistoryTransactions
 Library/Application\ Support/CloudDocs/session/db
 Library/Application\ Support/CrashReporter
+Library/Application\ Support/Dock/desktoppicture.db
 Library/Application\ Support/FileProvider
 Library/Application\ Support/Google/Chrome/*/*/*/*.log
 Library/Application\ Support/Knowledge
