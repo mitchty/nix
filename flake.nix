@@ -207,6 +207,22 @@
         )
       ];
 
+      # Autoinstall vars
+
+      # vm autoinstall test runners, note no by-id links cause qemu doens't get them
+      simpleAutoinstall = {
+        autoinstall = {
+          flavor = "zfs";
+          hostName = "simple";
+          rootDevices = [
+            "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001"
+          ];
+          bootSize = "512MiB";
+          swapSize = "512MiB";
+        };
+      };
+
+      # Current nas box, needs a rebuild once dfs2/3 are working
       dfs1Autoinstall = {
         autoinstall.flavor = "zfs";
         autoinstall.hostName = "dfs1";
@@ -214,6 +230,29 @@
         autoinstall.rootDevices = [
           "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
           "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
+        ];
+      };
+
+      # NixOS router, I'm sick of naming things cute names
+      gwAutoinstall = {
+        autoinstall = {
+          osSize = "108GiB";
+          flavor = "single";
+          hostName = "gw";
+          rootDevices = [
+            "/dev/disk/by-id/ata-KINGSTON_SA400M8120G_50026B7684B2F04E"
+          ];
+        };
+      };
+
+      # NixOS nexus system, does most of the heavy lifting, needs a
+      # rebuild/restore too once the "final" dfs backup stuffs working
+      nexusAutoinstall = {
+        autoinstall.flavor = "zfs";
+        autoinstall.hostName = "nexus";
+        autoinstall.rootDevices = [
+          "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300325L"
+          "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300329W"
         ];
       };
 
@@ -260,38 +299,98 @@
         };
       };
       packages.x86_64-linux = {
-        sdGenericAarch64 = nixos-generators.nixosGenerate {
-          pkgs = unstable.legacyPackages.x86_64-linux.pkgsCross.aarch64-multiplatform;
-          modules = [ "${stable.path}/nixos/modules/profiles/minimal.nix" ];
-          format = "sd-aarch64";
-        };
-        isoGeneric = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          format = "install-iso";
-        };
-        isoDfs1 = nixos-generators.nixosGenerate {
+        vmSimple = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [
             ./modules/iso/autoinstall.nix
-            dfs1Autoinstall
+            simpleAutoinstall
             {
+              autoinstall.debug = true;
+              autoinstall.wipe = true;
+            }
+          ];
+          format = "vm-nogui";
+        };
+        isoGw = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            gwAutoinstall
+            {
+              autoinstall.debug = true;
               autoinstall.wipe = true;
             }
           ];
           format = "install-iso";
         };
-        isoZeroDfs1 = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            ./modules/iso/autoinstall.nix
-            dfs1Autoinstall
-            {
-              autoinstall.wipe = true;
-              autoinstall.zero = true;
-            }
-          ];
-          format = "install-iso";
-        };
+        # sdGenericAarch64 = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux.pkgsCross.aarch64-multiplatform;
+        #   modules = [ "${nixpkgs.legacyPackages.aarch64-linux.path}/nixos/modules/profiles/minimal.nix" ];
+        #   format = "sd-aarch64";
+        # };
+        # isoGeneric = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   format = "install-iso";
+        # };
+        # isoDfs1 = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   modules = [
+        #     ./modules/iso/autoinstall.nix
+        #     dfs1Autoinstall
+        #     {
+        #       autoinstall.wipe = true;
+        #     }
+        #   ];
+        #   format = "install-iso";
+        # };
+        # isoZeroDfs1 = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   modules = [
+        #     ./modules/iso/autoinstall.nix
+        #     dfs1Autoinstall
+        #     {
+        #       autoinstall.wipe = true;
+        #       autoinstall.zero = true;
+        #     }
+        #   ];
+        #   format = "install-iso";
+        # };
+        # isoZeroRouter = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   modules = [
+        #     ./modules/iso/autoinstall.nix
+        #     routerAutoinstall
+        #     {
+        #       autoinstall.debug = true;
+        #       autoinstall.wipe = true;
+        #       autoinstall.zero = true;
+        #     }
+        #   ];
+        #   format = "install-iso";
+        # };
+        # isoNexus = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   modules = [
+        #     ./modules/iso/autoinstall.nix
+        #     nexusAutoinstall
+        #     {
+        #       autoinstall.wipe = true;
+        #     }
+        #   ];
+        #   format = "install-iso";
+        # };
+        # isoZeroNexus = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   modules = [
+        #     ./modules/iso/autoinstall.nix
+        #     nexusAutoinstall
+        #     {
+        #       autoinstall.wipe = true;
+        #       autoinstall.zero = true;
+        #     }
+        #   ];
+        #   format = "install-iso";
+        # };
       };
 
       darwinConfigurations = rec {
@@ -376,6 +475,22 @@
             unstable = unstable.legacyPackages.${x86-linux};
           };
         };
+        gw = (makeOverridable nixosSystem) {
+          system = "x86_64-linux";
+          modules = nixOSModules ++ [
+            ./hosts/gw/configuration.nix
+          ] ++ [{
+            users = {
+              primaryUser = "mitch";
+              primaryGroup = "users";
+            };
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
+          }];
+          specialArgs = {
+            inherit inputs;
+            unstable = unstable.legacyPackages.${x86-linux};
+          };
+        };
         dfs1 = nixosSystem {
           system = "x86_64-linux";
           modules = nixOSModules ++ [
@@ -406,6 +521,12 @@
             hostname = "nexus.home.arpa";
             profiles.system = {
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
+            };
+          };
+          "gw" = {
+            hostname = "gw.home.arpa";
+            profiles.system = {
+              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."gw";
             };
           };
           "dfs1" = {

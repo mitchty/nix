@@ -1,40 +1,64 @@
-{ pkgs, ... }: {
+{ config, pkgs, ... }:
+let
+  pubKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7";
+in
+{
   imports = [
     ./hardware-configuration.nix
   ];
 
-  boot.loader.grub.efiInstallAsRemovable = true;
-  boot.loader.grub.efiSupport = true;
-  boot.loader.grub.device = "nodev";
-
-  # networking.hostName = "changeme";
-  networking.firewall.enable = false;
-
-  boot.kernelParams = [ "boot.shell_on_fail" ];
-  boot.supportedFilesystems = [ "zfs" "bcachefs" "xfs" ];
-
-  # We want sysrq functions to work if there is an issue
-  boot.kernel.sysctl = {
-    "kernel.sysrq" = 1;
+  boot = {
+    kernelParams = [
+      "boot.shell_on_fail"
+      "iomem=relaxed"
+      "intel-spi.writeable=1"
+    ];
+    supportedFilesystems = [
+      "zfs"
+      "xfs"
+    ];
+    loader = {
+      grub = {
+        efiSupport = true;
+        efiInstallAsRemovable = true;
+        device = "nodev";
+      };
+    };
+    kernel.sysctl = {
+      # We want sysrq functions to work if there is an issue
+      "kernel.sysrq" = 1;
+      # Be kind(er) to low memory systems
+      "vm.overcommit_memory" = "1";
+    };
+    extraModulePackages = with config.boot.kernelPackages; [ acpi_call chipsec zfs ];
   };
 
-  users.users.root.initialPassword = "changeme";
+  networking.firewall.enable = false;
+
+  environment = {
+    variables = {
+      # Since we have no swap, have the heap be a bit less extreme
+      GC_INITIAL_HEAP_SIZE = "1M";
+    };
+  };
 
   services.openssh = {
     enable = true;
     permitRootLogin = "yes";
   };
 
+  users.users.root.openssh.authorizedKeys.keys = [ pubKey ];
+
   users.mutableUsers = false;
 
   nix = {
-    package = pkgs.nix_2_4;
+    package = pkgs.nixFlakes;
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
   };
 
-  system.stateVersion = "21.11";
+  system.stateVersion = "22.05";
 
   # Generated stuff goes here...
 }

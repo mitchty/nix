@@ -17,6 +17,7 @@ in
         createHome = true;
         shell = pkgs.zsh;
         passwordFile = config.age.secrets."passwd/mitch".path;
+        group = "users";
         extraGroups = [
           "audio"
           "docker"

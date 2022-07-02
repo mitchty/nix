@@ -6,9 +6,12 @@ let
   autoinstallsh = (pkgs.writeScriptBin "autoinstall" (builtins.readFile ./autoinstall.sh)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
+  pubKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7";
 in
 {
   config = {
+    system.stateVersion = "22.05";
+
     # BIG TODO: merge the runtime config and this autoinstall setup
     boot.initrd.kernelModules = modules;
     boot.initrd.availableKernelModules = modules;
@@ -16,7 +19,7 @@ in
 
     services.lvm.boot.thin.enable = true;
 
-    boot.kernelParams = [ "delayacct" ] ++ [ "console=ttyS0,115200n8" ];
+    boot.kernelParams = [ "boot.shell_on_fail" "console=ttyS0,115200" "console=tty0" "iomem=relaxed" "intel-spi.writeable=1" "delayacct" ];
     boot.loader.grub.extraConfig = "
       serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1
       terminal_input serial
@@ -42,17 +45,17 @@ in
     documentation.enable = false;
     documentation.nixos.enable = false;
 
-    # Make the default password blank for installing
-    users.users.nixos = {
-      isNormalUser = true;
-      initialHashedPassword = "";
+    # Make the default password blank for installation needs, also add pub ssh key.
+    users = {
+      users.nixos.isNormalUser = true;
+      extraUsers = {
+        root.openssh.authorizedKeys.keys = [ pubKey ];
+        nixos.openssh.authorizedKeys.keys = [ pubKey ];
+      };
     };
 
-    # Same as root
-    users.users.root.initialHashedPassword = "";
-
     # Autologin to the nixos install user on getty
-    services.getty.autologinUser = "nixos";
+    services.getty.autologinUser = mkForce "root";
 
     # Let me ssh in by default
     services.openssh = {
@@ -66,31 +69,42 @@ in
       Unlink=no
     '';
 
-    # Don't log failed connections
-    networking.firewall.logRefusedConnections = mkDefault false;
+    networking = {
+      # Don't log failed connections
+      firewall.logRefusedConnections = mkDefault false;
+      hostName = "autoinstall";
+    };
 
     # I want my magic sysrq triggers to work
     boot.kernel.sysctl = {
       "kernel.sysrq" = 1;
     };
 
+    environment = {
+      variables = {
+        # Since we have no swap, have the heap be a bit less extreme
+        GC_INITIAL_HEAP_SIZE = "1M";
+      };
+    };
     # Give our installer a bit more by default to be more useful.
-    system.extraDependencies = with pkgs; [
+    environment.systemPackages = with pkgs; [
       btop
       busybox
+      coreutils
       curl
+      dmidecode
       dropwatch
       iotop
       jq
       linuxPackages.cpupower
       linuxPackages.perf
+      flashrom
       lvm2
       lvm2.bin
       mdadm
       parted
       powertop
       stdenv
-      stdenvNoCC
       strace
       tcpdump
       thin-provisioning-tools
@@ -118,13 +132,18 @@ in
       };
       bootSize = mkOption {
         type = types.str;
-        default = "1GiB";
+        default = "512MiB";
         description = "/boot size";
       };
       swapSize = mkOption {
         type = types.str;
         default = "2GiB";
         description = "swap size";
+      };
+      osSize = mkOption {
+        type = types.str;
+        default = "10GiB";
+        description = "size of / partition/whatever basically";
       };
       wipe = mkOption {
         type = types.bool;
@@ -141,16 +160,16 @@ in
         default = "";
         description = "If there should be a dedicated /boot device fill this in with the device name.";
       };
-      # nop for now, well untested at best
+      # Needs a lot more testing somehow, vm's?
       flavor = mkOption {
-        type = types.enum [ "zfs" "lvm" ];
+        type = types.enum [ "single" "zfs" "lvm" ];
         default = "zfs";
-        description = "Specify the disk layout type";
+        description = "Specify the disk layout type, single = no zfs mirroring or lvm mirroring";
       };
     };
   };
   config.systemd.services.autoinstall = {
-    description = "Auatomatically Bootstrap a NixOS installation";
+    description = "NixOS Autoinstall";
     wantedBy = [ "multi-user.target" ];
     after = [ "network.target" "polkit.service" ];
     path = with pkgs; [
@@ -171,6 +190,7 @@ in
       dedicatedboot = "${config.autoinstall.dedicatedBoot}";
       bootsize = "${config.autoinstall.bootSize}";
       swapsize = "${config.autoinstall.swapSize}";
+      ossize = "${config.autoinstall.osSize}";
       host = "${config.autoinstall.hostName}";
       configuration = ./configuration.nix;
     };
