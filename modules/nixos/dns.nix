@@ -15,6 +15,7 @@ let
     10.10.10.31 ipad.home.arpa ipad
 
     10.10.10.99 workmb.home.arpa workmb
+    10.10.10.100 gw.home.arpa gw
   '');
 in
 {
@@ -98,6 +99,8 @@ in
         dhcp-host=c2:84:0f:47:5e:60,ipad,10.10.10.31
 
         dhcp-host=88:66:5a:56:92:d6,workmb,10.10.10.99
+
+        dhcp-host=64:62:66:21:22:f8,gw,10.10.10.100
       '' + optionalString (cfg.blacklist) ''
 
         # Also setup the dns blacklist if enabled
