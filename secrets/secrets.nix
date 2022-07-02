@@ -2,7 +2,7 @@ let
   # User keys
   mitch = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV";
 
-  ageadmins = [mitch];
+  ageadmins = [ mitch ];
 
   # Host keys
   gw = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0EYJsNFz7dWxdRSID5E5Qq/l+i17nNYoJKLAv4jG06";
