@@ -20,6 +20,6 @@ in
     ./nas.nix
     ./lowmem.nix
     ./gui.nix
-    ./dns.nix
+    ./router.nix
   ];
 }

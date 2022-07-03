@@ -418,7 +418,7 @@
             networking = {
               computerName = "mb";
               hostName = "mb";
-              dns = [ "10.10.10.2" "1.1.1.1" ];
+              dns = [ "10.10.10.1" "1.1.1.1" ];
               search = [ "home.arpa" ];
               knownNetworkServices = [
                 "Wi-Fi"
