@@ -13,6 +13,7 @@
   - https://teu5us.github.io/nix-lib.html
   - https://ryantm.github.io/nixpkgs/functions/library/strings/
   - https://wiki.nikitavoloboev.xyz/operating-systems/linux/nixos
+  - https://stephank.nl/p/2020-06-01-a-nix-primer-by-a-newcomer.html
 
   NixOS option search, for when you want to know what you can set.
   https://search.nixos.org/options

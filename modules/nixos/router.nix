@@ -15,7 +15,14 @@ let
     10.10.10.31 ipad.home.arpa ipad
 
     10.10.10.99 workmb.home.arpa workmb
+
+    10.10.10.126 grafana.home.arpa grafana
+    10.10.10.127 wifi.home.arpa wifi
   '');
+  upstreamdns = [
+    "1.1.1.1"
+    "8.8.8.8"
+  ];
 in
 {
   options.services.role.router = {
@@ -26,18 +33,18 @@ in
       description = "Whether to include a dns blacklist or not in dnsmasq and firewall";
     };
     routerIp = mkOption {
-      type = types.string;
+      type = types.str;
       default = "10.10.10.254";
       description = "router ip address";
     };
-    routerIface = mkOption {
-      type = types.string;
+    wanIface = mkOption {
+      type = types.str;
       default = "eno1";
-      description = "router interface (wan)";
+      description = "interface (wan)";
     };
     lanIface = mkOption {
-      type = types.string;
-      default = "lan";
+      type = types.str;
+      default = "br0";
       description = "interface (lan)";
     };
   };
@@ -61,161 +68,54 @@ in
       # TODO: how can I swap this to ${cfg.routerIface}?
       # Use internal dnsmasq by default, has all the dns blacklists and stuff,
       # should be the fastest as well as its local network.
-      nameservers = [ "127.0.0.1" "1.1.1.1" "8.8.8.8" ];
+      nameservers = [ "127.0.0.1" ] ++ upstreamdns;
 
       bridges.br0.interfaces = [ "enp2s0" "enp3s0" "enp6s0" ];
 
       interfaces = {
-        # Don't request DHCP on wan interface yet
-        # eno1 = {
-        #   useDHCP = false;
-        #   ipv4.addresses = [{ address = cfg.routerIp; prefixLength = 24; }];
-        # };
         eno1.useDHCP = true;
-        # This will be the "lan" interface
+
+        # br0 is all these 3 devices
         enp2s0.useDHCP = false;
         enp3s0.useDHCP = false;
         enp6s0.useDHCP = false;
 
         br0 = {
-          ipv4.addresses = [{
-            address = "10.10.10.1";
-            prefixLength = 24;
-          }];
+          ipv4.addresses = [
+            {
+              address = "10.10.10.1";
+              prefixLength = 24;
+            }
+            {
+              address = "10.10.10.126";
+              prefixLength = 24;
+            }
+          ];
         };
       };
-
-      # This system won't use the nixos firewall setup, we'll define nftable rules directly
       nat = {
         enable = true;
         internalInterfaces = [
-          "br0"
+          cfg.lanIface
         ];
-        externalInterface = "eno1";
+        externalInterface = "${cfg.wanIface}";
       };
       firewall = {
         enable = true;
-        trustedInterfaces = [ "br0" ];
+        trustedInterfaces = [ cfg.lanIface ];
 
         interfaces = {
-          eno1 = {
+          "${cfg.wanIface}" = {
             allowedTCPPorts = [ 22 ];
             allowedUDPPorts = [ ];
           };
-          # wguest = {
-          #   allowedTCPPorts = [
-          #     # DNS
-          #     53
-          #     # HTTP(S)
-          #     80
-          #     443
-          #     110
-          #     # Email (pop3, pop3s)
-          #     995
-          #     114
-          #     # Email (imap, imaps)
-          #     993
-          #     # Email (SMTP Submission RFC 6409)
-          #     587
-          #     # Git
-          #     2222
-          #   ];
-          #   allowedUDPPorts = [
-          #     # https://serverfault.com/a/424226
-          #     # DNS
-          #     53
-          #     # DHCP
-          #     67
-          #     68
-          #     # NTP
-          #     123
-          #   ];
-          # };
+          "${cfg.lanIface}" = {
+            allowedTCPPorts = [ 80 ];
+            allowedUDPPorts = [ ];
+          };
         };
       };
 
-      # nftables = {
-      #   enable = true;
-
-      #   ruleset = ''
-      #     table bridge filter {
-      #       chain prerouting {
-      #         type filter hook prerouting priority 0;
-      #         policy accept;
-      #       }
-      #     	chain input {
-      #     		type filter hook input priority 0; policy accept;
-      #     		iifname "br0" accept
-      #     	}
-      #     	chain forward {
-      #     		type filter hook forward priority 0; policy drop;
-      #     		iifname "br0" accept
-      #     	}
-      #       chain drop_ra_dhcp {
-      #         # Blocks: router advertisements, dhcpv6, dhcpv4
-      #         icmpv6 type nd-router-advert drop
-      #         ip6 version 6 udp sport 547 drop
-      #         ip  version 4 udp sport 67 drop
-      #       }
-      #     }
-      #     table ip filter {
-      #     	# allow all packets sent by the firewall machine itself
-      #     	chain output {
-      #     		type filter hook output priority 100; policy accept;
-      #     	}
-
-      #     	# allow LAN to firewall, disallow WAN to firewall
-      #     	chain input {
-      #     		type filter hook input priority 0; policy accept;
-      #     		iifname "br0" accept
-      #     		iifname "eno1" drop
-      #     	}
-
-      #     	# allow packets from LAN to WAN, and WAN to LAN if LAN initiated the connection
-      #     	chain forward {
-      #     		type filter hook forward priority 0; policy drop;
-      #     		iifname "br0" oifname "eno1" accept
-      #     		iifname "eno1" oifname "br0" ct state related,established accept
-      #     	}
-      #     }
-      #     table ip nat {
-      #     	chain prerouting {
-      #         type nat hook prerouting priority 0; policy accept;
-      #         iifname "eno1" accept
-      #       }
-
-      #     	# for all packets to WAN, after routing, replace source address with primary IP of WAN interface
-      #       chain postrouting {
-      #       	type nat hook postrouting priority 100; policy accept;
-      #         oifname "eno1" masquerade
-      #       }
-      #     }
-      #     table inet filter {
-      #     	chain input {
-      #     		type filter hook input priority 0; policy drop;
-      #     		ct state invalid counter drop comment "early drop of invalid packets"
-      #     		ct state {established, related} counter accept comment "accept all connections related to connections made by us"
-      #     		iif lo accept comment "accept loopback"
-      #     		iif != lo ip daddr 127.0.0.1/8 counter drop comment "drop connections to loopback not coming from loopback"
-      #     		iif != lo ip6 daddr ::1/128 counter drop comment "drop connections to loopback not coming from loopback"
-      #     		ip protocol icmp counter accept comment "accept all ICMP types"
-      #     		ip6 nexthdr icmpv6 counter accept comment "accept all ICMP types"
-      #     		tcp dport 22 counter accept comment "accept SSH"
-      #     		counter comment "count dropped packets"
-      #     	}
-      #       chain forward {
-      #        	type filter hook forward priority 0; policy drop;
-      #   	    counter comment "count dropped packets"
-      #       }
-
-      #       # If you're not counting packets, this chain can be omitted.
-      #       chain output {
-      #   	    type filter hook output priority 0; policy accept;
-      #   	    counter comment "count accepted packets"
-      #       }
-      #     }
-      #   '';
-      # };
     };
     systemd.services.dnsmasq = {
       path = with pkgs; [
@@ -226,7 +126,7 @@ in
     };
     services.dnsmasq = {
       enable = true;
-      servers = [ "1.1.1.1" "8.8.8.8" ];
+      servers = upstreamdns;
       extraConfig = ''
         # I like logs, lets have more of em
         log-queries
@@ -253,8 +153,8 @@ in
         addn-hosts=${extrahosts}
 
         # Define our range for dhcp
-        interface=br0
-        dhcp-range=br0,10.10.10.3,10.10.10.127,1h
+        interface=${cfg.lanIface}
+        dhcp-range=${cfg.lanIface},10.10.10.3,10.10.10.127,24h
 
         # interface=wg0
 
@@ -264,10 +164,10 @@ in
         bind-interfaces
 
         # Set default gateway
-        dhcp-option=br0,3,10.10.10.1
+        dhcp-option=${cfg.lanIface},3,10.10.10.1
 
         # Set DNS servers sent to dhcp hosts
-        dhcp-option=br0,6,10.10.10.1
+        dhcp-option=${cfg.lanIface},6,10.10.10.1
 
         # For future
         # dhcp-boot=pxelinux.0
@@ -287,11 +187,40 @@ in
         dhcp-host=c2:84:0f:47:5e:60,ipad,10.10.10.31
 
         dhcp-host=88:66:5a:56:92:d6,workmb,10.10.10.99
+
+        dhcp-host=e8:48:b8:1d:b7:f1,wifi,10.10.10.127
       '' + optionalString (cfg.blacklist) ''
 
         # Also setup the dns blacklist if enabled
         conf-file=${inputs.dnsblacklist}/dnsmasq/dnsmasq.blacklist.txt
       '';
+    };
+    # Lets try out graphana/prometheus to visualize junk
+    services.grafana = {
+      enable = true;
+      domain = "grafana.home.arpa";
+      port = 80;
+      addr = "10.10.10.126";
+    };
+    services.prometheus = {
+      enable = true;
+      port = 9001;
+      extraFlags = [ "--web.enable-admin-api" ];
+      exporters = {
+        node = {
+          enable = true;
+          enabledCollectors = [ "systemd" ];
+          port = 9002;
+        };
+      };
+      scrapeConfigs = [
+        {
+          job_name = "gw.home.arpa";
+          static_configs = [{
+            targets = [ "127.0.0.1:${toString config.services.prometheus.exporters.node.port}" ];
+          }];
+        }
+      ];
     };
   };
 }
