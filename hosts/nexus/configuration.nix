@@ -17,16 +17,36 @@
   config.system.stateVersion = "21.11";
 
   # This is an intel system, do "intel" stuff to it
-  config.services.role.intel.enable = true;
-
-  # We want gui stuff here
-  config.services.role.gui.enable = true;
+  config.services = {
+    role.intel.enable = true;
+    role.gui.enable = true;
+    prometheus = {
+      exporters = {
+        node = {
+          enable = true;
+          enabledCollectors = [ "systemd" ];
+          port = 9002;
+        };
+      };
+    };
+  };
 
   # Due to ^^^ we're setting our ip statically
   config = {
     networking = {
       hostName = "nexus";
       hostId = "30d18215";
+    };
+    networking.firewall = {
+      enable = true;
+      trustedInterfaces = [ "eno1" ];
+
+      interfaces = {
+        "enp3s0f3" = {
+          allowedTCPPorts = [ 22 9002 ];
+          allowedUDPPorts = [ ];
+        };
+      };
     };
   };
 }

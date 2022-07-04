@@ -55,6 +55,28 @@
       };
     };
 
+    services.prometheus = {
+      exporters = {
+        node = {
+          enable = true;
+          enabledCollectors = [ "systemd" ];
+          port = 9002;
+        };
+      };
+    };
+
+    networking.firewall = {
+      enable = true;
+      trustedInterfaces = [ "enp3s0f3" ];
+
+      interfaces = {
+        "enp3s0f3" = {
+          allowedTCPPorts = [ 22 9002 ];
+          allowedUDPPorts = [ ];
+        };
+      };
+    };
+
     # Generated stuff goes here...
     networking.hostName = "dfs1";
     networking.hostId = "23ee5d32";

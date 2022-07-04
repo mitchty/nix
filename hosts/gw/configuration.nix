@@ -1,4 +1,4 @@
-{ config, ... }: {
+{ config, pkgs, ... }: {
   imports = [
     ./..
     ./hardware-configuration.nix
@@ -18,11 +18,13 @@
       };
     };
 
+    boot.kernelPackages = pkgs.linuxPackages_latest;
     # Generated stuff goes here...
     networking = {
       hostName = "gw";
       hostId = "89fdcfd5";
     };
+
     boot.loader.grub.mirroredBoots = [
       { devices = [ "nodev" ]; path = "/boot"; }
     ];
