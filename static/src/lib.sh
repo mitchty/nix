@@ -279,7 +279,8 @@ randint() {
 
 # Just a convenient way to do a random sleep
 rsleep() {
-  sleep $(randint ${1-30})
+  #shellcheck disable=SC2086
+  sleep "$(randint ${1-30})"
 }
 
 # Because stuff sometimes fails, retry Until Success, this is just a silly
