@@ -293,6 +293,12 @@ us() {
   hookok "$@"
 }
 
+forever() {
+  while true; do
+    "$@"
+  done
+}
+
 # Function/thing to run in retry/randretry/backoff/us on init, can be used to
 # print out a "I"m gonna do a thing message or whatever.
 LIMITERINITFN=${LIMITERINITFN-}
