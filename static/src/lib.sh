@@ -274,7 +274,7 @@ orgpub() {
 # Portably generate a random integer, can't depend on $RANDOM everywhere,
 # especially since I am not a fan of the bash.
 randint() {
-  awk "BEGIN{\"date +%N\"|getline rseed;srand(rseed);close(\"date +%N\");printf \"%i\n\", (rand()*${1-10})}"
+  awk "BEGIN{\"date +%s\"|getline rseed;srand(rseed);close(\"date +%s\");printf \"%i\n\", (rand()*${1-10})}"
 }
 
 # Just a convenient way to do a random sleep
