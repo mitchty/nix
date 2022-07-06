@@ -79,6 +79,7 @@ in
     gh
     gist
     git
+    git-delete-merged-branches
     git-lfs
     gnumake
     gron
