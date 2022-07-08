@@ -22,28 +22,70 @@ let
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
 
-  stats = with pkgs; stdenv.mkDerivation rec {
-    pname = "stats";
-    uname = "exelban";
-    version = "2.7.23";
+  vlc = with pkgs; stdenv.mkDerivation rec {
+    name = "vlc";
+    uname = "videolan";
+    aname = "VLC";
+    version = "3.0.17.3";
 
     buildInputs = [ undmg ];
     sourceRoot = ".";
     phases = [ "unpackPhase" "installPhase" ];
     installPhase = ''
       install -dm755 "$out/Applications"
-      cp -r Stats.app "$out/Applications/Stats.app"
+      cp -r ${aname}.app "$out/Applications/${aname}.app"
     '';
 
     src = fetchurl {
-      name = "Stats.dmg";
-      url = "https://github.com/${uname}/${pname}/releases/download/v${version}/Stats.dmg";
-      sha256 = "sha256-t79ipa9fO66bCp6vMgeYre6XCjCg9WQ6Cpi0iz0CLJE=";
+      name = "${aname}.dmg";
+      url = "http://get.videolan.org/${name}/${version}/macosx/${name}-${version}-intel64.dmg";
+      sha256 = "sha256-zKJn8sUa5WjgLztNimrbqHsr3l8BGiuHxZXBAtifEdg=";
+    };
+  };
+
+  obs-studio = with pkgs; stdenv.mkDerivation rec {
+    name = "obs-studio";
+    uname = "obsproject";
+    aname = "OBS";
+    version = "27.2.4";
+
+    buildInputs = [ undmg ];
+    sourceRoot = ".";
+    phases = [ "unpackPhase" "installPhase" ];
+    installPhase = ''
+      install -dm755 "$out/Applications"
+      cp -r ${aname}.app "$out/Applications/${aname}.app"
+    '';
+
+    src = fetchurl {
+      name = "${aname}.dmg";
+      url = "https://github.com/${uname}/${name}/releases/download/${version}/obs-mac-${version}.dmg";
+      sha256 = "sha256-mu7ZKBbyP9tIGesbDJicFYqqskbgvQJJM0KWFLBkNfI=";
+    };
+  };
+
+  stats = with pkgs; stdenv.mkDerivation rec {
+    name = "stats";
+    uname = "exelban";
+    aname = "Stats";
+    version = "2.7.24";
+
+    buildInputs = [ undmg ];
+    sourceRoot = ".";
+    phases = [ "unpackPhase" "installPhase" ];
+    installPhase = ''
+      install -dm755 "$out/Applications"
+      cp -r ${aname}.app "$out/Applications/${aname}.app"
+    '';
+
+    src = fetchurl {
+      url = "https://github.com/${uname}/${name}/releases/download/v${version}/${aname}.dmg";
+      sha256 = "sha256-9D0/geCEzI2E/lLE+5ZmdfbtXPc6pMxc2fwHN79/GEk=";
     };
   };
 
   swiftbar = with pkgs; stdenv.mkDerivation rec {
-    pname = "swiftbar";
+    name = "swiftbar";
     gname = "SwiftBar";
     version = "1.4.3";
 
@@ -56,8 +98,8 @@ let
     '';
 
     src = fetchurl {
-      name = "SwiftBar.zip";
-      url = "https://github.com/${pname}/${gname}/releases/download/v${version}/${gname}.zip";
+      name = "${gname}.zip";
+      url = "https://github.com/${name}/${gname}/releases/download/v${version}/${gname}.zip";
       sha256 = "sha256-IP/lWahb0ouG912XvaWR3nDL1T3HrBZ2E8pp/WbHGgQ=";
     };
   };
@@ -83,6 +125,8 @@ in
       stats
       swiftbar
       wtf
+      vlc
+      obs-studio
     ];
 
     system.activationScripts.postActivation.text = ''
