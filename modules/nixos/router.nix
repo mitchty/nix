@@ -115,7 +115,6 @@ in
           };
         };
       };
-
     };
     systemd.services.dnsmasq = {
       path = with pkgs; [
@@ -216,21 +215,21 @@ in
       };
       scrapeConfigs = [
         {
-          job_name = "gw.home.arpa";
+          job_name = "nixos";
           static_configs = [{
-            targets = [ "gw.home.arpa:${toString config.services.prometheus.exporters.node.port}" ];
+            targets = [
+              "gw.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              "nexus.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              "dfs1.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+            ];
           }];
         }
         {
-          job_name = "nexus.home.arpa";
+          job_name = "macos";
           static_configs = [{
-            targets = [ "nexus.home.arpa:${toString config.services.prometheus.exporters.node.port}" ];
-          }];
-        }
-        {
-          job_name = "dfs1.home.arpa";
-          static_configs = [{
-            targets = [ "dfs1.home.arpa:${toString config.services.prometheus.exporters.node.port}" ];
+            targets = [
+              "mb.home.arpa:9100"
+            ];
           }];
         }
       ];

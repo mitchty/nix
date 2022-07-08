@@ -5,6 +5,7 @@
     ./restic.nix
     ./nix-index.nix
     ./mitchty.nix
+    ./home.nix
     ./work.nix
   ];
 

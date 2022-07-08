@@ -432,6 +432,9 @@
             services.mitchty = {
               enable = true;
             };
+            services.home = {
+              enable = true;
+            };
           }];
         };
         workmb = darwinSystem {
