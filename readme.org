@@ -68,6 +68,24 @@ And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Ak
    - [[file:secrets/][secrets]] Any secret related data for age and/or git-transcrypt. Basically "private junk hiding in plain sight".
    - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use.
 
+* Braindump
+
+Useful things I tend to forget so in the readme they go...
+
+** List generations
+
+#+begin_src shell
+nix-env --list-generations --profile /nix/var/nix/profiles/system
+#+end_src
+
+** Rolling back to a specific generation
+
+Cause sometimes *nixos-rebuild switch --rollback* isn't enough or you have multiple generations that are no good.
+
+#+begin_src shell
+nix-env --switch-generation $GENERATION --profile /nix/var/nix/profiles/system
+/nix/var/nix/profiles/system/bin/switch-to-configuration switch
+#+end_src
 
 * Todo's
 

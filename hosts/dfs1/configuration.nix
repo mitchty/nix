@@ -52,6 +52,8 @@
 
         # Tag this system as a low memory system
         lowmem.enable = true;
+
+        promtail.enable = true;
       };
     };
 

@@ -16,8 +16,11 @@ let
 
     10.10.10.99 workmb.home.arpa workmb
 
+    10.10.10.125 loki.home.arpa loki
     10.10.10.126 grafana.home.arpa grafana
     10.10.10.127 wifi.home.arpa wifi
+
+    10.10.10.254 canary.home.arpa canary
   '');
   upstreamdns = [
     "1.1.1.1"
@@ -87,6 +90,10 @@ in
               prefixLength = 24;
             }
             {
+              address = "10.10.10.125";
+              prefixLength = 24;
+            }
+            {
               address = "10.10.10.126";
               prefixLength = 24;
             }
@@ -110,7 +117,12 @@ in
             allowedUDPPorts = [ ];
           };
           "${cfg.lanIface}" = {
-            allowedTCPPorts = [ 80 ];
+            allowedTCPPorts = [
+              80
+              config.services.loki.configuration.server.http_listen_port
+              # Seems to be some internal thing that loki spins up that it needs to connect to
+              9095
+            ];
             allowedUDPPorts = [ ];
           };
         };
@@ -238,14 +250,14 @@ in
       enable = true;
       configuration = {
         server = {
-          http_listen_port = 3031;
+          http_listen_port = 3101;
           grpc_listen_port = 0;
         };
         positions = {
           filename = "/tmp/positions.yaml";
         };
         clients = [{
-          url = "http://127.0.0.1:${toString config.services.loki.configuration.server.http_listen_port}/loki/api/v1/push";
+          url = "http://${toString config.services.loki.configuration.ingester.lifecycler.address}:${toString config.services.loki.configuration.server.http_listen_port}/loki/api/v1/push";
         }];
         scrape_configs = [{
           job_name = "journal";
@@ -253,7 +265,7 @@ in
             max_age = "12h";
             labels = {
               job = "systemd-journal";
-              host = "gw.home.arpa";
+              host = config.networking.hostName;
             };
           };
           relabel_configs = [{
@@ -266,12 +278,12 @@ in
     services.loki = {
       enable = true;
       configuration = {
-        server.http_listen_port = 3030;
+        server.http_listen_port = 3100;
         auth_enabled = false;
 
         ingester = {
           lifecycler = {
-            address = "127.0.0.1";
+            address = "loki.home.arpa";
             ring = {
               kvstore = {
                 store = "inmemory";

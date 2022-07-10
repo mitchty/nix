@@ -21,5 +21,6 @@ in
     ./lowmem.nix
     ./gui.nix
     ./router.nix
+    ./promtail.nix
   ];
 }

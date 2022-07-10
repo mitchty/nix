@@ -144,8 +144,8 @@ in
     # TODO: how do I get at the nixos config setup...?
     # ] ++ lib.optional (stdenv.isLinux && config.services.role.gui.enable) [
     # macos specific stuff
-  # ] ++ lib.optionals stdenv.isDarwin [
-  #   inputs.nixpkgs-darwin.legacyPackages.${pkgs.system}.podman
+    # ] ++ lib.optionals stdenv.isDarwin [
+    #   inputs.nixpkgs-darwin.legacyPackages.${pkgs.system}.podman
   ] ++ [
     cidr
     diskhog

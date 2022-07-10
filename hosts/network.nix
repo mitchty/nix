@@ -4,11 +4,19 @@
   networking.firewall.allowedUDPPorts = [ 5353 ];
   networking.firewall.allowedUDPPortRanges = [{ from = 21027; to = 21027; } { from = 22000; to = 22000; } { from = 60000; to = 60010; }];
 
-  networking.networkmanager.enable = true;
+  networking.networkmanager.enable = false;
   networking.enableIPv6 = false;
 
   # Enable ntp
-  services.timesyncd.enable = true;
+  services.chrony = {
+    enable = true;
+    servers = [
+      "pool.ntp.org"
+      "pool.ntp.org"
+      "pool.ntp.org"
+      "time.apple.com"
+    ];
+  };
 
   # Default queueing discipline will be controlled delay
   boot.kernel.sysctl."net.core.default_qdisc" = "fq_codel";

@@ -29,6 +29,7 @@
         };
       };
     };
+    role.promtail.enable = true;
   };
 
   # Due to ^^^ we're setting our ip statically
