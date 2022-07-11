@@ -14,7 +14,7 @@ let
     10.10.10.30 iphone.home.arpa iphone
     10.10.10.31 ipad.home.arpa ipad
 
-    10.10.10.99 workmb.home.arpa workmb
+    10.10.10.99 wmb.home.arpa wmb
 
     10.10.10.125 loki.home.arpa loki
     10.10.10.126 grafana.home.arpa grafana
@@ -197,7 +197,7 @@ in
         dhcp-host=3e:34:2b:0d:97:bc,iphone,10.10.10.30
         dhcp-host=c2:84:0f:47:5e:60,ipad,10.10.10.31
 
-        dhcp-host=88:66:5a:56:92:d6,workmb,10.10.10.99
+        dhcp-host=88:66:5a:56:92:d6,wmb,10.10.10.99
 
         dhcp-host=e8:48:b8:1d:b7:f1,wifi,10.10.10.127
       '' + optionalString (cfg.blacklist) ''

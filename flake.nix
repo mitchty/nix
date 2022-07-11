@@ -437,7 +437,7 @@
             };
           }];
         };
-        workmb = darwinSystem {
+        wmb = darwinSystem {
           inherit inputs;
           system = "x86_64-darwin";
           modules = nixDarwinModules ++ [{
@@ -446,8 +446,8 @@
               primaryGroup = "staff";
             };
             age.secrets = canarySecret "tishmack" // gitSecret "tishmack";
-            networking.computerName = "workmb";
-            networking.hostName = "workmb";
+            networking.computerName = "wmb";
+            networking.hostName = "wmb";
             networking.knownNetworkServices = [
               "Wi-Fi"
             ];

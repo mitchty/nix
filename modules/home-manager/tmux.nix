@@ -13,5 +13,5 @@
 
   # TODO: Host specific configs, deal with conditionalizing later in a module
   home.file.".config/tmuxp/mb.yml".source = ../../static/tmuxp/mb.yml;
-  home.file.".config/tmuxp/workmb.yml".source = ../../static/tmuxp/workmb.yml;
+  home.file.".config/tmuxp/wmb.yml".source = ../../static/tmuxp/wmb.yml;
 }

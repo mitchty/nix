@@ -1,4 +1,4 @@
-session_name: workmb
+session_name: wmb
 start_directory: ~/
 windows:
 - window_name: sh
