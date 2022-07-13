@@ -289,6 +289,9 @@ Customize whitespace mode to make tabs obvious as boxes, and to highlight lines 
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (require 'whitespace)
+(require 'hl-line)
+(global-hl-line-mode)
+(global-visual-line-mode)
 
 (setq whitespace-style '(face tabs trailing))
 
@@ -301,8 +304,8 @@ Customize whitespace mode to make tabs obvious as boxes, and to highlight lines 
                     :background "lightgrey")
 
 (add-hook 'prog-mode 'whitespace-mode)
-(add-hook 'prog-mode 'hl-line-mode)
-(add-hook 'prog-mode 'visual-line-mode)
+(add-hook 'text-mode 'whitespace-mode)
+(add-hook 'makefile-mode 'whitespace-mode)
 #+END_SRC
 
 *** uncategorized
@@ -1300,6 +1303,7 @@ Ref:
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package fancy-dabbrev
+  :after org
   :config
   (setq fancy-dabbrev-preview-delay 0.1)
   (setq fancy-dabbrev-expansion-on-preview-only t)
