@@ -72,7 +72,6 @@ in
     dasel
     dateutils
     deadnix
-    dive
     du-dust
     entr
     file
