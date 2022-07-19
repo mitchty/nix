@@ -547,13 +547,17 @@
         };
       };
 
-      # TODO: More checks in place would be good
-      checks = builtins.mapAttrs (deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
-    }; # // flake-utils.lib.eachDefaultSystem (system:
-  #   let
-  #     pkgs = import nixpkgs { inherit system overlays; };
-  #     hm = home-manager.defaultPackage."${system}";
-  #   in {
-  #   }
-  # );
+      checks.deploy-rs = builtins.mapAttrs (deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
+    } // flake-utils.lib.eachDefaultSystem (system:
+    let pkgs = import nixpkgs { inherit system; };
+    in
+    rec {
+      checks = {
+        nixpkgs-fmt = pkgs.runCommand "check-nix-format" { } ''
+          ${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt --check ${./.}
+          install -dm755 $out
+        '';
+      };
+    }
+    );
 }
