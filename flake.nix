@@ -51,6 +51,7 @@
     , agenix-darwin
     , agenix
     , dnsblacklist
+    , flake-utils
     , ...
     }:
     let
