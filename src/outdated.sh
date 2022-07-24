@@ -8,10 +8,10 @@ _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 set "${SETOPTS:--eu}"
 
-stats_cur="v2.7.26"
-stats_found="$(curl --silent 'https://api.github.com/repos/exelban/stats/releases/latest' | jq -r '.tag_name')"
-
 ok=0
+
+stats_cur="v2.7.27"
+stats_found="$(curl --silent 'https://api.github.com/repos/exelban/stats/releases/latest' | jq -r '.tag_name')"
 
 if [ "${stats_cur}" != "${stats_found}" ]; then
   printf "stats out of date have %s latest is %s\n" "${stats_cur}" "${stats_found}" >&2
