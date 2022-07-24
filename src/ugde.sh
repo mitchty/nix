@@ -38,7 +38,6 @@ failit() {
     if [ "${_dots}" -gt 0 ]; then
         printf "\n" >&2
     fi
-    # printf "fatal: %s\n" "$*" >&2
 }
 
 # Used from lib.sh functions
@@ -48,7 +47,6 @@ okit() {
     if [ "${_dots}" -gt 0 ]; then
         printf "\n" >&2
     fi
-    # printf "ok: %s\n" "$*" >&2
 }
 
 # Used from lib.sh functions
@@ -56,8 +54,11 @@ okit() {
 LIMITEROKFN=okit
 
 # Until Git Diff Equal
-# Because syncthing is SLOW (seconds....) to sync, compare local changes to a remote and only return when they're the same git diff (by sha256sum of the diff itself)
-until [ "$(ssh nexus.home.arpa 'cd ~/src/pub/github.com/mitchty/nix && git diff 2> /dev/null | sha256sum')" = "$(gi mitchty/nix 2> /dev/null && git diff 2> /dev/null| sha256sum)" ]; do
+#
+# Syncthing is slow af, so to make sure we have a sync point for this repo check
+# the sha256sum of its git diff. for that just check each remote host for
+# checksum against local via uniq -c if its not exactly 1 repeat.
+until [ "$((for host in srv nexus; do ssh -q ${host} 'cd ~/src/pub/github.com/mitchty/nix && git diff 2> /dev/null | sha256sum'; done; gi mitchty/nix 2> /dev/null && git diff 2> /dev/null| sha256sum) | sort -u | wc -l)" = "1" ]; do
   printf "." >&2
   rsleep 3
 done

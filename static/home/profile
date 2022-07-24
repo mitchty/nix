@@ -83,8 +83,8 @@ t() {
 }
 
 # general aliases
-alias s="\$(which ssh)"
-alias quit='exit'
+alias s=ssh
+alias quit=exit
 alias cr='reset; clear'
 alias a=ag
 alias n=noglob

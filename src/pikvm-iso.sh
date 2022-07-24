@@ -64,7 +64,7 @@ reset_msd() {
 }
 
 write_image() {
-  post ${KVMHOST}/api/msd/write?image=$(basename "$@") --data-binary @"$@"
+  post ${KVMHOST}/api/msd/write?image=$(basename "$@") -T "$@"
 }
 
 set_params_image() {

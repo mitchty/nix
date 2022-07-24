@@ -145,44 +145,144 @@ done
 
 device_settle "${disks}"
 
-# This is a hack for now until I get another system to setup to get the zfs/lvm
-# setup tested. Should only have one disk at a time here but for now its
-# enforced so meh.
-#
-# Testing out this as a layout for the dumb apu4...
-# https://github.com/kierdavis/sb-nixpkgs/blob/57707ea2caf1b1898c7f8bec59372052ed7e2146/nixos/tests/installer.nix#L298-L314
-for disk in $disks; do
-  boot="${disk}-part1"
-  swap="${disk}-part2"
-  root="${disk}-part3"
-  mkswap "${swap}" -L swap
-  mkfs.vfat -F 16 "${boot}"
-  swapon -L swap
-  mkfs.ext3 -L nixos "${root}"
+# Despite the loop should only get one disk
+if [ "single" = "${flavor}" ]; then
+  # This is a hack for now until I get another system to setup to get the zfs/lvm
+  # setup tested. Should only have one disk at a time here but for now its
+  # enforced so meh.
+  #
+  # Testing out this as a layout for the dumb apu4...
+  # https://github.com/kierdavis/sb-nixpkgs/blob/57707ea2caf1b1898c7f8bec59372052ed7e2146/nixos/tests/installer.nix#L298-L314
+  for disk in $disks; do
+    boot="${disk}-part1"
+    swap="${disk}-part2"
+    root="${disk}-part3"
+    mkswap "${swap}" -L swap
+    mkfs.vfat -F 16 "${boot}"
+    swapon -L swap
+    mkfs.ext3 -L nixos "${root}"
 
-  install -dm755 /mnt
-  mount LABEL=nixos /mnt
-  install -dm755 /mnt/boot
-  mount "${boot}" /mnt/boot
-  break
-done
+    install -dm755 /mnt
+    mount LABEL=nixos /mnt
+    install -dm755 /mnt/boot
+    mount "${boot}" /mnt/boot
+    break
+  done
+elif [ "zfs" = "${flavor}" ]; then
+  count=0
+  pooldevs=
+  mirrorboots=
+  swapmd=
+
+  for disk in $disks; do
+    boot="${disk}-part1"
+    swap="${disk}-part2"
+    root="${disk}-part3"
+    mkfs.vfat -F 16 "${boot}"
+
+    install -dm755 /mnt
+    pooldevs="${pooldevs} ${root}"
+    mirrorboots="${mirrorboots} ${boot}"
+    swapmd="${swapmd} ${swap}"
+    count=$((count+1))
+  done
+
+  # Need to do this or we can get errors because "device is in use" by
+  # frigging udev.... grr
+  # http://dev.bizo.com/2012/07/mdadm-device-or-resource-busy.html
+  udevadm control --stop-exec-queue
+  # metadata 1.0 at the end so we don't conflict with lvm stuff
+  # iff we only have 1 device, fake the $count to 2 and add a missing device
+  rcount=$count
+  if [ "$count" = 1 ]; then
+    rcount=$(( count + 1 ))
+    swapmd="${swapmd} missing"
+  fi
+  mdadm --create /dev/md0 --run --level=1 --raid-devices=$rcount --metadata=1.0 ${swapmd}
+  udevadm control --start-exec-queue
+
+  # Sync of raid array(s) can happen after reboot/boot, lets not have
+  # it take iops away from the install
+  # echo 0 > /proc/sys/dev/raid/speed_limit_max
+
+  # Get our swap going
+  mkswap /dev/md0 -L swap
+  swapon -L swap
+
+  # Have to invert logic here, need the pool mounted and setup then we can mount
+  # all the mirrored /boot partitions.
+  zpool create -f -O xattr=sa -O acltype=posixacl -O compression=lz4 -O atime=off -O mountpoint=legacy zroot raidz ${pooldevs}
+  zfs create -o mountpoint=none zroot/os
+  zfs create -o mountpoint=none zroot/user
+
+  # Separating out os related and non datasets
+  zfs create -o mountpoint=legacy zroot/os/root
+  zfs create -o mountpoint=legacy zroot/os/nix
+  zfs create -o mountpoint=legacy zroot/os/var
+
+  # This can cover other "user" data like maybe vm's or whatever
+  zfs create -o mountpoint=legacy zroot/user/home
+
+  mount -t zfs zroot/os/root /mnt
+
+  install -dm755 /mnt/var /mnt/nix /mnt/home
+
+  mount -t zfs zroot/os/nix /mnt/nix
+  mount -t zfs zroot/os/var /mnt/var
+
+  mount -t zfs zroot/user/home /mnt/home
+
+  idx=0
+  for disk in $disks; do
+    dev="$disk-part1"
+    mntpt=/mnt/boot
+    if [ "0" != "$idx" ]; then
+      mirrorboots="$mirrorboots $disk"
+      mntpt="$mntpt$idx"
+    fi
+    install -dm755 "${mntpt}"
+    mount "${dev}" "${mntpt}"
+    idx=$((idx+1))
+  done
+else
+  printf "bug: how did you get here?\n" >&2
+  exit 1
+fi
 
 nixos-generate-config --root /mnt
 
 hostid="$(printf "00000000%x" "$(cksum /etc/machine-id | cut -d' ' -f1)" | tail -c8)"
 install -m644 /etc/machine-id /mnt/etc/machine-id
-printf "$hostid\n" | tee /mnt/etc/hostid
+printf "%s\n" "${hostid}" | tee /mnt/etc/hostid
 
 # First up, save what the dhcp config got saved with
 # Note we ignore the configuration.nix from nixos-generate-config with our
 # own, we just use the generated hardware-configuration file for its uuid links.
 nixoscfg=/mnt/etc/nixos/configuration.nix
+install -D $nixoscfg $nixoscfg.orig
 install -D "${configuration}" $nixoscfg
-install -D $nixoscfg original-$nixoscfg
 
 # First up insert the hostname and hostid we generated
 sed -i '$i  networking.hostName = "'${host}'";' $nixoscfg
 sed -i '$i  networking.hostId = "'$hostid'";' $nixoscfg
+
+# and finally setup the mirrored boot devices
+idx=0
+sed -i '$i  boot.loader.grub.mirroredBoots = [' $nixoscfg
+for disk in $disks; do
+  path="/boot"
+
+  if [ "0" = "$idx" ]; then
+    out="$path"
+  else
+    out="$path$idx"
+  fi
+
+  sed -i '$i    { devices = [ "nodev" ]; path = "'$out'"; }' $nixoscfg
+
+  idx=$((idx+1))
+done
+sed -i '$i  ];' $nixoscfg
 
 # Add all networking devices as dhcp in networking
 for net in $(ip link | awk '/^[[:digit:]]/ && !/lo/ {print $2}' | tr -d ':'); do
@@ -190,5 +290,17 @@ for net in $(ip link | awk '/^[[:digit:]]/ && !/lo/ {print $2}' | tr -d ':'); do
 done
 
 nixos-install --no-root-password
+
+
+if [ "zfs" = $flavor ]; then
+  for mnt in $(awk '/\/mnt\// {print $1}' /proc/mounts); do
+    umount $mnt
+  done
+
+  umount /mnt
+
+  # Export as per instructions on the wiki
+  zpool export zroot
+fi
 
 reboot_into_firmware_or_shutdown

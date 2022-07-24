@@ -11,7 +11,10 @@ set "${SETOPTS:--eu}"
 #shellcheck source=../static/src/lib.sh
 . ~/src/pub/github.com/mitchty/nix/static/src/lib.sh
 
-ugde
+nixossys=srv.home.arpa
+
+# nix flake check segfaults all the damn time on macos grr..
+ugde && ssh -t "${nixossys}" "zsh --login -i -c 'gi mitchty/nix && nix flake check --show-trace'"
+
 deploy
-ugde
-ssh nexus.home.arpa "zsh --login -i -c 'gi mitchty/nix && deploy'"
+ugde && ssh -t "${nixossys}" "zsh --login -i -c 'gi mitchty/nix && deploy'"

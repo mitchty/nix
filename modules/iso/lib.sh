@@ -119,7 +119,7 @@ clear_partition_table_reboot() {
 
 # wait for each device to complete initialization/settle
 device_settle() {
-  for disk in "$@"; do
+  for disk in $@; do
     dev=$(readlink -f ${disk})
     udevadm settle "${dev}"
     for part in "${dev}"-part*; do

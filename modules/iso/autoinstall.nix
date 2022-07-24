@@ -19,13 +19,17 @@ in
 
     services.lvm.boot.thin.enable = true;
 
-    boot.kernelParams = [ "boot.shell_on_fail" "console=ttyS0,115200" "console=tty0" "iomem=relaxed" "intel-spi.writeable=1" "delayacct" ];
+    boot.kernelParams = [ "boot.shell_on_fail" "console=ttyS0,115200" "console=tty0" "iomem=relaxed" "intel-spi.writeable=1" "delayacct" "copytoram=1" ];
     boot.loader.grub.extraConfig = "
       serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1
       terminal_input serial
       terminal_output serial
     ";
+    # boot.kernelPackages = mkDefault pkgs.linuxPackages_testing_bcachefs;
 
+    # boot.supportedFilesystems = [ "zfs" "bcachefs" "xfs" ];
+
+    boot.supportedFilesystems = [ "zfs" "xfs" ];
     # boot.kernelPackages = pkgs.linuxPackages_latest;
 
     # kernelPatches = pkgs.lib.singleton {
@@ -94,15 +98,17 @@ in
       curl
       dmidecode
       dropwatch
+      flashrom
       iotop
       jq
+      linux-firmware
       linuxPackages.cpupower
       linuxPackages.perf
-      flashrom
       lvm2
       lvm2.bin
       mdadm
       parted
+      pciutils
       powertop
       stdenv
       strace

@@ -212,13 +212,29 @@
       # vm autoinstall test runners, note no by-id links cause qemu doens't get them
       simpleAutoinstall = {
         autoinstall = {
-          flavor = "zfs";
+          flavor = "single";
           hostName = "simple";
           rootDevices = [
             "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001"
           ];
           bootSize = "512MiB";
           swapSize = "512MiB";
+          osSize = "20GiB";
+        };
+      };
+
+      # DL350 Gen9 server, for now zfs as bcachefs is marked broken in 22.05
+      srvAutoinstall = {
+        autoinstall = {
+          flavor = "zfs";
+          hostName = "srv";
+          rootDevices = [
+            "/dev/disk/by-id/wwn-0x5000cca02f0ae6a4"
+            "/dev/disk/by-id/wwn-0x5000cca02f0bad08"
+            "/dev/disk/by-id/wwn-0x5000cca02f0bbb04"
+          ];
+          swapSize = "16GiB";
+          osSize = "538GiB";
         };
       };
 
@@ -299,17 +315,40 @@
         };
       };
       packages.x86_64-linux = {
-        vmSimple = nixos-generators.nixosGenerate {
+        # vmSimple = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   modules = [
+        #     ./modules/iso/autoinstall.nix
+        #     simpleAutoinstall
+        #     {
+        #       autoinstall.debug = true;
+        #       autoinstall.wipe = true;
+        #     }
+        #   ];
+        #   format = "vm-nogui";
+        # };
+        isoSimple = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [
             ./modules/iso/autoinstall.nix
             simpleAutoinstall
             {
               autoinstall.debug = true;
+            }
+          ];
+          format = "install-iso";
+        };
+        isoSrv = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            srvAutoinstall
+            {
+              autoinstall.debug = true;
               autoinstall.wipe = true;
             }
           ];
-          format = "vm-nogui";
+          format = "install-iso";
         };
         isoGw = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
@@ -462,10 +501,26 @@
       };
 
       nixosConfigurations = {
-        nexus = (makeOverridable nixosSystem) {
+        gw = (makeOverridable nixosSystem) {
           system = "x86_64-linux";
           modules = nixOSModules ++ [
-            ./hosts/nexus/configuration.nix
+            ./hosts/gw/configuration.nix
+          ] ++ [{
+            users = {
+              primaryUser = "mitch";
+              primaryGroup = "users";
+            };
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
+          }];
+          specialArgs = {
+            inherit inputs;
+            unstable = unstable.legacyPackages.${x86-linux};
+          };
+        };
+        srv = (makeOverridable nixosSystem) {
+          system = "x86_64-linux";
+          modules = nixOSModules ++ [
+            ./hosts/srv/configuration.nix
           ] ++ [{
             users = {
               primaryUser = "mitch";
@@ -478,16 +533,16 @@
             unstable = unstable.legacyPackages.${x86-linux};
           };
         };
-        gw = (makeOverridable nixosSystem) {
+        nexus = (makeOverridable nixosSystem) {
           system = "x86_64-linux";
           modules = nixOSModules ++ [
-            ./hosts/gw/configuration.nix
+            ./hosts/nexus/configuration.nix
           ] ++ [{
             users = {
               primaryUser = "mitch";
               primaryGroup = "users";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch" // passwdSecrets;
           }];
           specialArgs = {
             inherit inputs;
@@ -520,16 +575,23 @@
         magicRollback = false;
 
         nodes = {
-          "nexus" = {
-            hostname = "nexus.home.arpa";
-            profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
-            };
-          };
           "gw" = {
             hostname = "gw.home.arpa";
             profiles.system = {
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."gw";
+            };
+          };
+          "srv" = {
+            hostname = "srv.home.arpa";
+            # hostname = "10.10.10.117";
+            profiles.system = {
+              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."srv";
+            };
+          };
+          "nexus" = {
+            hostname = "nexus.home.arpa";
+            profiles.system = {
+              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
             };
           };
           "dfs1" = {
