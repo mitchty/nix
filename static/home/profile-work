@@ -16,3 +16,45 @@ hgi() {
 wgi() {
   wrk gi "$@"
 }
+
+# Daily jira cli alias, first arg should always be something jira-cli doens't
+# have so it can fall through to the cli if its not known. That way this acts
+# like a fancy alias with extra features.
+j() {
+  if [ "todo" = "$1" ]; then
+    shift
+    args="issue list --assignee '$(jira me)' --plain --status '~Done' --jql 'project IS NOT EMPTY' --no-headers --columns KEY,TYPE,STATUS,SUMMARY"
+  elif [ "unassign" = "$1" ]; then
+    shift
+    args="issue assign $1 x"
+  elif [ "self" = "$1" ]; then
+    shift
+    args="issue assign $1 $(jira me)"
+    # Special arg that assigns and moves the ticket to in progress
+  elif [ "wip" = "$1" ]; then
+    shift
+    j self "$@"
+    j inprogress "$@"
+    return
+  elif [ "inprogress" = "$1" ]; then
+    shift
+    args="issue move $1 'In Progress'"
+  elif [ "inreview" = "$1" ]; then
+    shift
+    args="issue move $1 'In Review'"
+  elif [ "done" = "$1" ]; then
+    shift
+    args="issue move $1 'Done'"
+  elif [ "comment" = "$1" ]; then
+    shift
+    args="issue comment add '$*'"
+  elif [ "spy" = "$1" ]; then
+    shift
+    args="issue view --comments 3 --plain $1"
+  else
+    args=$@
+  fi
+
+  # TODO: Evil eval hack, future me don't be so lazy but meh.
+  eval "jira ${args}"
+}

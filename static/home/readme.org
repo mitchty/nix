@@ -1,0 +1,70 @@
+* Notes for profile stuff
+
+** Work related
+
+For the jira cli I've created a function to act/mimic like an alias over the jira-cli to make interactions with jira less.... painful.
+
+Idea being the first arg is not an arg that jira cli has, so that I can make day to day interaction simpler.
+
+Examples:
+
+What not closed issues are assigned to me everywhere:
+#+begin_src shell-script
+j todo
+#+end_src
+
+Unassign an issue:
+
+#+begin_src shell-script
+j unassign EXAMPLE-1
+#+end_src
+
+Assign an issue to me:
+
+#+begin_src shell-script
+j self EXAMPLE-1
+#+end_src
+
+Assign an issue to myself and move it to in progress:
+
+#+begin_src shell-script
+j wip EXAMPLE-1
+#+end_src
+
+Move an issue to in progress:
+
+#+begin_src shell-script
+j inprogress EXAMPLE-1
+#+end_src
+
+Move an issue to in review:
+
+#+begin_src shell-script
+j inreview EXAMPLE-1
+#+end_src
+
+Move an issue to done:
+
+#+begin_src shell-script
+j done EXAMPLE-1
+#+end_src
+
+Add a comment to an issue:
+
+#+begin_src shell-script
+j comment EXAMPLE-1 comment text to add
+# or
+j comment EXAMPLE-1 "comment text to add\nwith\newlines"
+#+end_src
+
+Look at an issue in the command line
+
+#+begin_src shell-script
+j spy EXAMPLE-1
+#+end_src
+
+Further todos yet to be done:
+- figuring out how to add/update labels
+- how to add myself as a watcher
+- query all issues i'm watching etc...
+- more I'm sure... all I can think of at time of writing not comprehensive
