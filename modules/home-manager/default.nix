@@ -177,7 +177,8 @@ in
     };
   };
 
-  # Programs not (yet) worthy of their own .nix setup
+  # Programs not (yet) worthy of their own .nix setup... so far
+  programs.fzf.enable = true;
   programs.go.enable = true;
   programs.jq.enable = true;
   programs.direnv = {
