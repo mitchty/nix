@@ -23,7 +23,7 @@ wgi() {
 j() {
   if [ "todo" = "$1" ]; then
     shift
-    args="issue list --assignee '$(jira me)' --plain --status '~Done' --jql 'project IS NOT EMPTY' --no-headers --columns KEY,TYPE,STATUS,SUMMARY"
+    args="issue list -a "$(jira me)" --plain --jql 'project IS NOT EMPTY AND status not in (Closed,Done)' --no-headers --columns KEY,TYPE,STATUS,SUMMARY"
   elif [ "unassign" = "$1" ]; then
     shift
     args="issue assign $1 x"
