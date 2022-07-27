@@ -27,6 +27,11 @@ let
     "1.1.1.1"
     "8.8.8.8"
   ];
+  # Note for work vpn need to setup the firewall rules as per:
+  # https://www.arubanetworks.com/techdocs/VIA/4x/Content/VIA%20Config/Before_you_Begin.htm
+  workvpn = ''
+    ${pkgs.iptables}/bin/iptables --insert INPUT --protocol ESP --jump ACCEPT
+  '';
 in
 {
   options.services.role.router = {
@@ -53,7 +58,7 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf cfg.enable rec {
     boot.kernel.sysctl = {
       "net.ipv4.conf.all.forwarding" = mkForce true;
 
@@ -65,6 +70,13 @@ in
       "net.ipv6.conf.eno1.accept_ra" = 2;
       "net.ipv6.conf.eno1.autoconf" = 1;
     };
+    # Seemed to have issues with this only being in extraConfig, so add an
+    # activationscript just in case.
+    system.activationScripts.viavpn = ''
+      printf "modules:nixos:router: viavpn firewall allow all esp protocol traffic\n" >&2
+      ${workvpn}
+    '';
+
     networking = {
       resolvconf = {
         useLocalResolver = false;
@@ -110,6 +122,11 @@ in
       };
       firewall = {
         enable = true;
+        # Needed for ipsec vpn traffic
+        extraCommands = workvpn;
+        allowedTCPPorts = [ 443 8085 ];
+        allowedUDPPorts = [ 4500 ];
+
         trustedInterfaces = [ cfg.lanIface ];
 
         interfaces = {
