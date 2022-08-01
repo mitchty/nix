@@ -2,6 +2,8 @@
 
 ** Work related
 
+Jira cli homepage: https://github.com/ankitpokhrel/jira-cli
+
 For the jira cli I've created a function to act/mimic like an alias over the jira-cli to make interactions with jira less.... painful.
 
 Idea being the first arg is not an arg that jira cli has, so that I can make day to day interaction simpler.
