@@ -124,6 +124,26 @@ let
       sha256 = "sha256-IP/lWahb0ouG912XvaWR3nDL1T3HrBZ2E8pp/WbHGgQ=";
     };
   };
+
+  wireshark = with pkgs; stdenv.mkDerivation rec {
+    name = "wireshark";
+    gname = "Wireshark";
+    version = "3.6.7";
+
+    buildInputs = [ undmg ];
+    sourceRoot = ".";
+    phases = [ "unpackPhase" "installPhase" ];
+    installPhase = ''
+      install -dm755 "$out/Applications"
+      cp -r ${gname}.app "$out/Applications/${gname}.app"
+    '';
+
+    src = fetchurl {
+      name = "${gname}.dmg";
+      url ="https://2.na.dl.wireshark.org/osx/Wireshark%20${version}%20Intel%2064.dmg";
+      sha256 = "sha256-kw/UGM9LlmsSmc6s2Ijr0HBc9EJpAnzzdazJTLevSeg=";
+    };
+  };
 in
 {
   options = {
@@ -149,6 +169,7 @@ in
       wtf
       vlc
       obs-studio
+      wireshark
     ];
 
     system.activationScripts.postActivation.text = ''

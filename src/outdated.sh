@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i bash -p bash coreutils curl jq
+#!nix-shell -i bash -p bash coreutils curl jq htmlq
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
 # Description: Check for out of date stuff in my nix setup
@@ -58,6 +58,14 @@ stretchly_found="$(curl --silent 'https://api.github.com/repos/hovancik/stretchl
 
 if [ "${stretchly_cur}" != "${stretchly_found}" ]; then
   printf "stretchly out of date have %s latest is %s\n" "${stretchly_cur}" "${stretchly_found}" >&2
+  ok=$(( ok + 1 ))
+fi
+
+wireshark_cur="3.6.7"
+wireshark_found="$(curl --location --silent https://www.wireshark.org/#download | htmlq -wpt | awk '/current stable/ {print $8}' | sed 's/.$//')"
+
+if [ "${wireshark_cur}" != "${wireshark_found}" ]; then
+  printf "wireshark out of date have %s latest is %s\n" "${wireshark_cur}" "${wireshark_found}" >&2
   ok=$(( ok + 1 ))
 fi
 
