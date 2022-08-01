@@ -6,6 +6,21 @@ Jira cli homepage: https://github.com/ankitpokhrel/jira-cli
 
 For the jira cli I've created a function to act/mimic like an alias over the jira-cli to make interactions with jira less.... painful.
 
+A note on *jira-cli* usage, if using pure api tokens one only need to set the folloing env var:
+
+#+begin_src shell-script
+export JIRA_API_TOKEN=whatever
+#+end_src
+
+But if using Personal Access Tokens one must also set auth type to bearer in *jira-cli* >= 1.0.0 like so:
+
+#+begin_src shell-script
+export JIRA_API_TOKEN=whatever
+export JIRA_AUTH_TYPE=bearer
+#+end_src
+
+Ref: https://github.com/ankitpokhrel/jira-cli/pull/269
+
 Idea being the first arg is not an arg that jira cli has, so that I can make day to day interaction simpler.
 
 Examples:
