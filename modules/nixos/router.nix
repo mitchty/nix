@@ -226,6 +226,10 @@ in
       '';
     };
     # Lets try out graphana/prometheus to visualize junk
+    #
+    # Since I forgot the password I set it originally to, to reset it manually
+    # back to OG config:
+    # cd /var/lib/grafana/conf grafana-cli admin reset-admin-password admin && systemctl restart grafana
     services.grafana = {
       enable = true;
       domain = "grafana.home.arpa";
