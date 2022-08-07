@@ -140,7 +140,7 @@ let
 
     src = fetchurl {
       name = "${gname}.dmg";
-      url ="https://2.na.dl.wireshark.org/osx/Wireshark%20${version}%20Intel%2064.dmg";
+      url = "https://2.na.dl.wireshark.org/osx/Wireshark%20${version}%20Intel%2064.dmg";
       sha256 = "sha256-kw/UGM9LlmsSmc6s2Ijr0HBc9EJpAnzzdazJTLevSeg=";
     };
   };
