@@ -27,7 +27,7 @@ in
     ".config/nix/registry.json".text = registry;
   };
   home.activation.useFlakeChannels = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    printf "modules:home-manager:registry.nix: Updating legacy ~/.nix* files/dirs for flakes\n" >&2
+    printf "modules/home-manager/registry.nix: Updating legacy ~/.nix* files/dirs for flakes\n" >&2
     $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.nix-defexpr
     $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.nix-channels
     $DRY_RUN_CMD ln -s $VERBOSE_ARG /dev/null $HOME/.nix-defexpr
