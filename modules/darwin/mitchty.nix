@@ -68,7 +68,7 @@ let
     name = "stats";
     uname = "exelban";
     aname = "Stats";
-    version = "2.7.28";
+    version = "2.7.29";
 
     buildInputs = [ undmg ];
     sourceRoot = ".";
@@ -80,7 +80,7 @@ let
 
     src = fetchurl {
       url = "https://github.com/${uname}/${name}/releases/download/v${version}/${aname}.dmg";
-      sha256 = "sha256-HT6y2Hx1gPfYtC4pl+2tgLF4OiyRzntHaJjx1rOllO8=";
+      sha256 = "sha256-L+HHttsJ4M9kl8cVdQHKXYx/o3xy3SZ2NoSlJjnN+o4";
     };
   };
 
