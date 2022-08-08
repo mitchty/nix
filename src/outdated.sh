@@ -53,7 +53,7 @@ if [ "${obs_cur}" != "${obs_found}" ]; then
   ok=$(( ok + 1 ))
 fi
 
-stretchly_cur="v1.10.0"
+stretchly_cur="v1.11.0"
 stretchly_found="$(curl --silent 'https://api.github.com/repos/hovancik/stretchly/releases/latest' | jq -r '.tag_name')"
 
 if [ "${stretchly_cur}" != "${stretchly_found}" ]; then
