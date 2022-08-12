@@ -73,7 +73,7 @@ TODO: Maybe get this to go dark automagically?
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package minimal-theme
-  :ensure t
+  :ensure
   :config (load-theme 'minimal-light t))
 #+END_SRC
 
@@ -202,7 +202,7 @@ utf8 is the best. Default to it.
 (use-package unicode-escape
   :init
   (set-language-environment "UTF-8")
-  :ensure t)
+  :ensure)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -472,7 +472,7 @@ If editorconfig is around use it.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package editorconfig
-  :ensure t
+  :ensure
   :config
   (editorconfig-mode 1))
 #+END_SRC
@@ -481,7 +481,7 @@ If editorconfig is around use it.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package tramp
-  :defer 5
+  :ensure
   :custom
   (tramp-default-method "ssh")
   :config
@@ -495,7 +495,7 @@ Turns out that someone wrote this exact thing already. Yay get to drop my own cr
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package exec-path-from-shell
-  :ensure t
+  :ensure
   :if (memq window-system '(mac ns))
   :config
   (exec-path-from-shell-initialize)
@@ -507,18 +507,15 @@ Turns out that someone wrote this exact thing already. Yay get to drop my own cr
 Use the silver searcher for quick searches.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package ag
-  :ensure t
-  :defer 10
-  )
+(use-package ag :ensure)
 #+END_SRC
 
 *** osx-clipboard-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package osx-clipboard
+  :ensure
   :if (memq window-system '(mac ns))
-  :ensure t
   :config
   (osx-clipboard-mode +1))
 #+END_SRC
@@ -539,14 +536,8 @@ oomph with all the crap it did.
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package quelpa-use-package
-  :ensure t)
-(use-package s :ensure t)
-
 (use-package mini-modeline
-  :ensure t
-  :after quelpa-use-package
-  :quelpa (mini-modeline :repo "kiennq/emacs-mini-modeline" :fetcher github)
+  :ensure
   :config
   (mini-modeline-mode)
   :custom
@@ -581,7 +572,7 @@ oomph with all the crap it did.
 
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package yasnippet
-  :ensure t
+  :ensure
   :init
   (setq yas-snippet-dirs
         '("~/.emacs.d/snippets"
@@ -598,7 +589,7 @@ oomph with all the crap it did.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package expand-region
-  :ensure t
+  :ensure
   :bind ("C-]" . er/expand-region))
 #+END_SRC
 
@@ -608,12 +599,12 @@ Switching to ivy mode+swiper
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package projectile
-  :ensure t
+  :ensure
   :init
   (projectile-global-mode))
 
 (use-package counsel
-  :ensure t
+  :ensure
   :bind (("C-x C-f" . counsel-find-file)
          ("C-c g" . counsel-git)
          ("C-c j" . counsel-git-grep)
@@ -625,7 +616,7 @@ Switching to ivy mode+swiper
   (counsel-find-file-at-point t))
 
 (use-package swiper
-  :ensure t
+  :ensure
   :bind (("C-s" . swiper)
          ("M-x" . counsel-M-x))
   :config
@@ -644,7 +635,7 @@ Make git not ass to use. At least in emacs. magit is the best git interface... i
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package magit
-  :ensure t
+  :ensure
   :commands (magit-init
              magit-status
              magit-diff
@@ -668,7 +659,7 @@ top to look at.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package magit-todos
-  :ensure t
+  :ensure
   :after magit
   :hook (magit-mode . magit-todos-mode))
 #+END_SRC
@@ -693,9 +684,10 @@ validate the agenda changes.
   (setq file-name (format-time-string "%Y-%m-%d:%H:%M:%S"))
   (format "%s/%s%s" prefix file-name (capture-file-extension extension)))
 
-(use-package ob-go)
+(use-package ob-go :ensure)
 
 (use-package org
+  :ensure
   :bind (("C-c a" . org-agenda)
          ("C-c b" . org-iswitchb)
          ("C-c c" . org-capture)
@@ -792,9 +784,7 @@ validate the agenda changes.
 Validate that this installs from scratch fine, blocking babel executions is ass.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package ob-async
-  :after org
-  :ensure t)
+(use-package ob-async :after org :ensure)
 #+END_SRC
 
 **** TODO org-habit customization                                   :testing:
@@ -816,7 +806,7 @@ https://github.com/integral-dw/org-superstar-mode
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package org-bullets
   :after org
-  :ensure t
+  :ensure
   :custom
   (org-bullets-bullet-list '("◉" "○" "✸" "✿" "✜" "◆" "▶"))
   (org-ellipsis "↴")
@@ -852,7 +842,7 @@ Flycheck for on the fly checking of code.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package flycheck
-  :ensure t
+  :ensure
   :custom
   (flycheck-indication-mode 'left-fringe)
   :hook (prog-mode . flycheck-mode))
@@ -864,7 +854,7 @@ Auto complete functionality is nice to have.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package auto-complete
-  :ensure t
+  :ensure
   :init
   (require 'auto-complete-config)
   (ac-config-default)
@@ -878,7 +868,7 @@ Helpfully inserts matching parens, can be a pita too.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package smartparens
-  :ensure t
+  :ensure
   :hook (prog-mode . smartparens-mode))
 #+END_SRC
 
@@ -888,7 +878,7 @@ Makes matching parens easier.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package rainbow-delimiters
-  :ensure t
+  :ensure
   :hook (prog-mode . rainbow-delimiters-mode))
 #+END_SRC
 
@@ -909,7 +899,7 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package super-save
-  :ensure t
+  :ensure
   :config
   (super-save-mode +1)
   (setq super-save-auto-save-when-idle t)
@@ -921,7 +911,7 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package git-gutter
-  :ensure t
+  :ensure
   :config
   (global-git-gutter-mode t)
   )
@@ -931,7 +921,7 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package clang-format
-  :defer t
+  :ensure
   :bind (([C-M-tab] . clang-format-region))
   )
 #+END_SRC
@@ -941,7 +931,8 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
 For.. yaml
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package yaml-mode :defer t
+(use-package yaml-mode
+  :ensure
   :hook (yaml-mode . whitespace-mode)
   )
 #+END_SRC
@@ -952,7 +943,7 @@ Make markdown pretty(er/ish)
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package markdown-mode
-  :defer t
+  :ensure
   :hook (markdown-mode . whitespace-mode)
   )
 #+END_SRC
@@ -962,7 +953,7 @@ Make markdown pretty(er/ish)
 So I write gooder. Me fail English? Thats unpossible.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package writegood-mode :defer t)
+(use-package writegood-mode :ensure)
 #+END_SRC
 
 *** rust-mode
@@ -970,14 +961,15 @@ So I write gooder. Me fail English? Thats unpossible.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package rust-mode
   :commands rust-mode
-  :defer t)
+  :ensure
+  )
 #+END_SRC
 
 *** idris-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package idris-mode
-  :defer t
+  :ensure
   :config
   (add-to-list 'completion-ignored-extensions ".ibc")
   )
@@ -987,7 +979,7 @@ So I write gooder. Me fail English? Thats unpossible.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package go-mode
-  :defer t
+  :ensure
   :config
   (setq flycheck-go-vet-executable "env CC=gcc go vet"))
 #+END_SRC
@@ -998,7 +990,7 @@ Make undo more useful, and treelike.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package undo-tree
-  :defer t
+  :ensure
   :custom
   (undo-tree-auto-save-history nil)
   :config
@@ -1021,6 +1013,7 @@ where it exists.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package idle-highlight-mode
+  :ensure
   :hook (prog-mode . idle-highlight-mode))
 #+END_SRC
 
@@ -1030,28 +1023,22 @@ Instead of text might as well get a decent mode hook going here.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package nixos-options
-  :defer t)
+  :ensure)
 (use-package company-nixos-options
   :after company
-  :defer t)
+  :ensure)
 #+END_SRC
 
 **** nix-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package nix-mode
-  :defer t
-  :hook (nix-mode . whitespace-mode)
-  )
+(use-package nix-mode :ensure)
 #+END_SRC
 
 *** docker-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package dockerfile-mode
-  :defer t
-  :hook (dockerfile-mode . whitespace-mode)
-  )
+(use-package dockerfile-mode :ensure)
 #+END_SRC
 
 *** TODO cscope or rtags or nuke                         :testing:validation:
@@ -1060,16 +1047,14 @@ Switch to rtags, or maybe even nuke entirely?
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package xcscope
-  :defer t
+  :ensure
   :config (cscope-setup))
 #+END_SRC
 
 *** rg
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package rg
-  :ensure t
-  :defer t)
+(use-package rg :ensure)
 #+END_SRC
 
 * mode related
@@ -1287,7 +1272,7 @@ Iffy.... Does some jank ass wack stuff in fullscreen mode on cocoa emacs in maco
 
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package mini-frame
-  :ensure t
+  :ensure
   :config
   (mini-frame-mode t)
   :custom
@@ -1304,6 +1289,7 @@ Ref:
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package fancy-dabbrev
   :after org
+  :ensure
   :config
   (setq fancy-dabbrev-preview-delay 0.1)
   (setq fancy-dabbrev-expansion-on-preview-only t)
@@ -1318,15 +1304,16 @@ Ref:
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package eglot
+  :ensure
   :hook ((python-mode . eglot-ensure)
 	       (cc-mode . eglot-ensure)
 	       (go-mode . eglot-ensure)
 	       (nix-mode . eglot-ensure)
 	       (yaml-mode . eglot-ensure)
 	       (rust-mode . eglot-ensure))
-  :defer t)
+)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package reformatter)
+(use-package reformatter :ensure)
 #+END_SRC

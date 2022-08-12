@@ -7,7 +7,6 @@ let
   emacsWithConfig = (pkgs.emacsWithPackagesFromUsePackage {
     config = ../../static/emacs/readme.org;
     package = pkgs.emacsNativeComp;
-    alwaysEnsure = true;
     extraEmacsPackages = epkgs: [
       epkgs.use-package
       epkgs.org
@@ -176,6 +175,12 @@ in
       recursive = true;
     };
   };
+
+  # Remove the quelpa nonsense was only there for the modeline module
+  home.activation.freshEmacs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    printf "modules/home-manager/default.nix: clean ~/.emacs.d\n" >&2
+    $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.emacs.d/init.elc ~/.emacs.d/elpa ~/.emacs.d/quelpa
+  '';
 
   # Programs not (yet) worthy of their own .nix setup... so far
   programs.fzf.enable = true;

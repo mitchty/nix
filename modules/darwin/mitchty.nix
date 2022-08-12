@@ -174,10 +174,10 @@ in
 
     system.activationScripts.postActivation.text = ''
       printf "modules/darwin/mitchty.nix: macos shenanigans\n" >&2
-      install -dm755 ~/.cache/swiftbar
-      close stats
-      pkill nettop || :
-      open -a ~/Applications/Nix\ Apps/Stats.app
+      $DRY_RUN_CMD install -dm755 $VERBOSE_ARG ~/.cache/swiftbar
+      $DRY_RUN_CMD close stats
+      $DRY_RUN_CMD pkill nettop || :
+      $DRY_RUN_CMD open -a ~/Applications/Nix\ Apps/Stats.app
     '';
   };
 }
