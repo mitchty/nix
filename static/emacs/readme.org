@@ -289,8 +289,9 @@ Customize whitespace mode to make tabs obvious as boxes, and to highlight lines 
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (require 'whitespace)
-(require 'hl-line)
-(global-hl-line-mode)
+(use-package hl-line
+  :custom-face
+  (hl-line ((t (:background "#ffc0cb")))))
 (global-visual-line-mode)
 
 (setq whitespace-style '(face tabs trailing))
