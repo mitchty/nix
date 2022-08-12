@@ -1200,23 +1200,35 @@ Create *auto-insert-alist* so all the mode lists are the same
 ***** shell
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(setq auto-insert-alist
-      (append
-       '(
-         ((sh-mode . "sh")
-          nil
-          "#!/usr/bin/env sh\n"
-          "#-*-mode: Shell-script; coding: utf-8;-*-\n"
-	  "# SPDX-License-Identifier: BlueOak-1.0.0\n"
-          "# Description: " _ "\n"
-          "_base=$(basename \"$0\")\n"
-          "_dir=$(cd -P -- \"$(dirname -- \"$(command -v -- \"$0\")\")\" && pwd -P || exit 126)\n"
-          "export _base _dir\n\n"
-	  "set \"${SETOPTS:--eu}\"\n"
-          )
-         )
-       auto-insert-alist)
-      )
+(use-package sh-script
+  :hook (sh-mode . shfmtstuff)
+  :config
+  (setq auto-insert-alist
+	(append
+	 '(
+           ((sh-mode . "sh")
+            nil
+            "#!/usr/bin/env sh\n"
+            "#-*-mode: Shell-script; coding: utf-8;-*-\n"
+            "# SPDX-License-Identifier: BlueOak-1.0.0\n"
+            "# Description: " _ "\n"
+            "_base=$(basename \"$0\")\n"
+            "_dir=$(cd -P -- \"$(dirname -- \"$(command -v -- \"$0\")\")\" && pwd -P || exit 126)\n"
+            "export _base _dir\n"
+	    "set \"${SETOPTS:--eu}\"\n"
+            )
+           )
+	 auto-insert-alist)
+	)
+  (progn
+    (defvar shfmt-args '("-ci" "-p" "-i" "2" "-bn" "-sr")
+      "shfmt default args")
+    (reformatter-define shfmt
+			:program "shfmt"
+			:args shfmt-args))
+  (defun shfmtstuff()
+    (unless (eq sh-shell 'zsh)
+      (shfmt-on-save-mode))))
 #+END_SRC
 
 *** desktop-save
