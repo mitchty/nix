@@ -109,7 +109,7 @@ Keep temporary stuff isolated from everyone else. It infects everything otherwis
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (custom-set-variables
- '(temporary-file-directory "/tmp/")
+ '(temporary-file-directory "/tmp/.emacs/")
  '(backup-directory-alist `((".*" . ,temporary-file-directory)))
  '(auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
  '(create-lockfiles nil)
