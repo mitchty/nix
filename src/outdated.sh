@@ -10,7 +10,7 @@ set "${SETOPTS:--eu}"
 
 ok=0
 
-stats_cur="v2.7.29"
+stats_cur="v2.7.30"
 stats_found="$(curl --silent 'https://api.github.com/repos/exelban/stats/releases/latest' | jq -r '.tag_name')"
 
 if [ "${stats_cur}" != "${stats_found}" ]; then
