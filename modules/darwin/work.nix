@@ -4,7 +4,7 @@ with lib;
 
 let
   cfg = config.services.work;
-  fakesha = lib.fakeSha256;
+  fake = lib.fakeSha256;
   uri = "https://artifactory.algol60.net/artifactory/vshasta-support-generic-local/stable";
 
   # Nix version for vshasta/craypc is bogus, just picking the YYYY.mm.DD this
