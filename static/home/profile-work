@@ -51,6 +51,9 @@ j() {
   elif [ "spy" = "$1" ]; then
     shift
     args="issue view --comments 3 --plain $1"
+  elif [ "deluge" = "$1" ]; then
+    shift
+    args="issue view --comments 10000 --plain $1"
   else
     args=$@
   fi
