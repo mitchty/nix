@@ -29,6 +29,8 @@ let
   ];
   # Note for work vpn need to setup the firewall rules as per:
   # https://www.arubanetworks.com/techdocs/VIA/4x/Content/VIA%20Config/Before_you_Begin.htm
+  #
+  # Bit of a hack I think due to this issue https://github.com/NixOS/nixpkgs/issues/69265
   workvpn = ''
     ${pkgs.iptables}/bin/iptables --insert INPUT --protocol ESP --jump ACCEPT
   '';
