@@ -182,7 +182,6 @@ Line wrapping is useful. Enable it globally for a start.
 Need word-wrap so kill line kills the line, not the displayed line.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(global-visual-line-mode t)
 (custom-set-variables '(word-wrap t))
 #+END_SRC
 
@@ -292,8 +291,13 @@ Customize whitespace mode to make tabs obvious as boxes, and to highlight lines 
 (use-package hl-line
   :custom-face
   (hl-line ((t (:background "#ffc0cb")))))
-(global-visual-line-mode)
 
+;; This breaks in :hook for some reason I can't be assed to figure out.
+(add-hook 'prog-mode-hook 'hl-line-mode)
+(add-hook 'text-mode-hook 'hl-line-mode)
+(add-hook 'makefile-mode-hook 'hl-line-mode)
+
+(global-visual-line-mode)
 (setq whitespace-style '(face tabs trailing))
 
 (set-face-attribute 'whitespace-tab nil
@@ -303,10 +307,9 @@ Customize whitespace mode to make tabs obvious as boxes, and to highlight lines 
 (set-face-attribute 'whitespace-line nil
                     :foreground "#2075c7"
                     :background "lightgrey")
-
-(add-hook 'prog-mode 'whitespace-mode)
-(add-hook 'text-mode 'whitespace-mode)
-(add-hook 'makefile-mode 'whitespace-mode)
+(add-hook 'prog-mode-hook 'whitespace-mode)
+(add-hook 'text-mode-hook 'whitespace-mode)
+(add-hook 'makefile-mode-hook 'whitespace-mode)
 #+END_SRC
 
 *** uncategorized
