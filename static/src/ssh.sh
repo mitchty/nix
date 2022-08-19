@@ -35,6 +35,11 @@ _sshe() {
   printf "%s%s %s" "${SSH}" "$(_ssh)" "$@"
 }
 
+# ssh option echo, for use if you just want what ssh() would call, e.g. for sshpass
+_sshoe() {
+  printf "%s %s" "$(_ssh)" "$@"
+}
+
 # scp echo, for use if you just want what scp() would call, e.g. for sshpass
 _scpe() {
   printf "%s%s %s" "${SSH}" "$(_ssh)" "$@"
