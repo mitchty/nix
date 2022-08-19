@@ -231,10 +231,13 @@ If I selected text, delete the selection, I probably meant it emacs.
 *** we aren't banging rocks together anymore emacs
 
 Double spacing after a line isn't needed. We aren't animals emacs, we have
-computers.
+computers. Also adjust what emacs treats as the end of a sentence.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(set-default 'sentence-end-double-space nil)
+(custom-set-variables
+ '(sentence-end "[.?!][]\"')]*\\($\\|\t\\| \\)[ \t\n]*")
+ '(sentence-end-double-space nil)
+ )
 #+END_SRC
 
 *** long line speedups
@@ -245,31 +248,6 @@ a language that needs this I can deal with it then.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (setq-default bidi-paragraph-direction 'left-to-right)
-#+END_SRC
-
-Also disable this algorithm, which may unbalance ()'s in bidirectional language
-detection. But again as I don't use/speak/read them. Ok tradeoff.
-
-Note: tangle is off cause there isn't much need for this anymore with the flake setup.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(if (version<= "27.1" emacs-version)
-    (progn
-      (setq bidi-inhibit-bpa t)
-      (global-so-long-mode 1)))
-#+END_SRC
-
-Ref: https://200ok.ch/posts/2020-09-29_comprehensive_guide_on_handling_long_lines_in_emacs.html
-
-*** sentence end
-
-Semi related to the above, make the sentence endings a bit more code-ish.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(custom-set-variables
- '(sentence-end "[.?!][]\"')]*\\($\\|\t\\| \\)[ \t\n]*")
- '(sentence-end-double-space nil)
- )
 #+END_SRC
 
 *** default tab-width
