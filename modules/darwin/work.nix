@@ -45,6 +45,23 @@ let
       install -m755 -D $src $out/bin/craypc
     '';
   };
+  snyk = pkgs.stdenv.mkDerivation rec {
+    name = "snyk-${version}";
+    version = "1.988.0";
+
+    src = pkgs.fetchurl {
+      url = "https://static.snyk.io/cli/v${version}/snyk-macos";
+      sha256 = "sha256-pxdBLlyVFjD0lAlLFzpMkBf4n6vq8WqAM0vmOYQ7i5E=";
+    };
+
+    # We don't need to do anything but install the binary
+    phases = [ "installPhase" ];
+
+    installPhase = ''
+      install -m755 -D $src $out/bin/snyk
+    '';
+  };
+
 in
 {
   options = {
@@ -68,6 +85,7 @@ in
       inputs.mitchty.packages.${pkgs.system}.jira-cli
       craypc
       vshasta
+      snyk
     ];
   };
 }
