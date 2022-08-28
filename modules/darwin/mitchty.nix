@@ -4,6 +4,7 @@ with lib;
 
 let
   cfg = config.services.mitchty;
+  fake = lib.fakeSha256;
 
   # Scripts I wrote that are macos only.
   close = (pkgs.writeScriptBin "close" (builtins.readFile ../../static/src/close)).overrideAttrs (old: {
@@ -68,7 +69,7 @@ let
     name = "stats";
     uname = "exelban";
     aname = "Stats";
-    version = "2.7.30";
+    version = "2.7.32";
 
     buildInputs = [ undmg ];
     sourceRoot = ".";
@@ -80,7 +81,7 @@ let
 
     src = fetchurl {
       url = "https://github.com/${uname}/${name}/releases/download/v${version}/${aname}.dmg";
-      sha256 = "sha256-6mb+Vf5l/7GBwVJEQsgtdXLQZhQJYiQmLnfE0fPJEMg=";
+      sha256 = "sha256-8XnjkC5pSNOTqcjP87cwbdN+5VyJb1ened9ROa2n60E=";
     };
   };
 
