@@ -182,7 +182,7 @@ in
   # Remove the quelpa nonsense was only there for the modeline module
   home.activation.freshEmacs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     printf "modules/home-manager/default.nix: clean ~/.emacs.d\n" >&2
-    $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.emacs.d/init.elc ~/.emacs.d/elpa ~/.emacs.d/quelpa
+    $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.emacs.d/init.elc ~/.emacs.d/elpa ~/.emacs.d/quelpa ~/.emacs.d/readme.el
   '';
 
   # Programs not (yet) worthy of their own .nix setup... so far
