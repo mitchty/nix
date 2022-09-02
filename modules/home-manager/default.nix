@@ -76,9 +76,12 @@ in
     file
     gh
     gist
-    git
-    git-delete-merged-branches
+    gitFull
+    git-extras
     git-lfs
+    git-quick-stats
+    git-recent
+    git-sizer
     gnumake
     gron
     htop
