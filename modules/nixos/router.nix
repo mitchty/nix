@@ -17,10 +17,15 @@ let
 
     10.10.10.99 wmb.home.arpa wmb
 
-    10.10.10.125 loki.home.arpa loki
-    10.10.10.126 grafana.home.arpa grafana
+
     10.10.10.127 wifi.home.arpa wifi
 
+    # Static ip's take up the last /16
+    10.10.10.128 loki.home.arpa loki
+    10.10.10.129 grafana.home.arpa grafana
+    10.10.10.130 nixcache.home.arpa nixcache
+
+    # For testing dns works or not
     10.10.10.254 canary.home.arpa canary
   '');
   upstreamdns = [
@@ -105,12 +110,12 @@ in
               prefixLength = 24;
             }
             {
-              address = "10.10.10.125";
-              prefixLength = 24;
+              address = "10.10.10.128";
+              prefixLength = 32;
             }
             {
-              address = "10.10.10.126";
-              prefixLength = 24;
+              address = "10.10.10.129";
+              prefixLength = 32;
             }
           ];
         };
@@ -236,7 +241,7 @@ in
       enable = true;
       domain = "grafana.home.arpa";
       port = 80;
-      addr = "10.10.10.126";
+      addr = "10.10.10.129";
       analytics.reporting.enable = false;
     };
     services.prometheus = {
