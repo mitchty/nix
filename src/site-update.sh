@@ -13,8 +13,32 @@ set "${SETOPTS:--eu}"
 
 nixossys=srv.home.arpa
 
-# nix flake check segfaults all the damn time on macos grr..
-ugde && ssh -t "${nixossys}" "zsh --login -i -c 'gi mitchty/nix && nix flake check --show-trace'"
+check() {
+  # nix flake check segfaults all the damn time on macos grr..
+  ugde && ssh -t "${nixossys}" "zsh --login -i -c 'gi mitchty/nix && nix flake check --show-trace'"
+}
 
-deploy
-ugde && ssh -t "${nixossys}" "zsh --login -i -c 'gi mitchty/nix && deploy'"
+_deployrs() {
+  ugde && ssh -t "${nixossys}" "zsh --login -i -c 'gi mitchty/nix && nix run github:serokell/deploy-rs -- -s ${1}'"
+}
+
+deployrs() {
+  if [ $# -gt 0 ]; then
+    until [ $# -eq 0 ]; do
+      host="${1-}"
+      shift || :
+      _deployrs ".${host+#}${host}"
+    done
+  else
+    _deployrs "."
+  fi
+}
+
+if [ $# -gt 0 ]; then
+  check
+  deployrs "$@"
+else
+  deploy
+  check
+  deployrs
+fi
