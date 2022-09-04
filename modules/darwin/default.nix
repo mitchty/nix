@@ -29,7 +29,7 @@
         NSGlobalDomain = {
           "com.apple.mouse.tapBehavior" = 1;
           "com.apple.sound.beep.feedback" = 0;
-          "com.apple.sound.beep.volume" = "0.0";
+          "com.apple.sound.beep.volume" = 0.0;
           AppleKeyboardUIMode = 3;
           ApplePressAndHoldEnabled = false;
           AppleShowAllExtensions = true;
@@ -46,7 +46,7 @@
         };
         dock = {
           autohide = true;
-          autohide-delay = "0.0";
+          autohide-delay = 0.0;
           mineffect = "suck";
           orientation = "bottom";
           showhidden = true;
