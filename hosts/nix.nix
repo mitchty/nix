@@ -1,4 +1,17 @@
-{ ... }: {
+{ ... }:
+let
+  mkCache = url: key: { inherit url key; };
+  caches =
+    let
+      nixos = mkCache "https://cache.nixos.org" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=";
+      nix-community = mkCache "https://nix-community.cachix.org" "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=";
+      nix-cache = mkCache "http://nixcache.home.arpa" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=";
+    in
+    [ nix-cache nixos nix-community ];
+
+  customCaches = map (x: x.url) caches;
+in
+{
   imports = [
     ./nix-basic.nix
   ];
@@ -17,9 +30,11 @@
       options = "--delete-older-than 14d";
     };
 
+    binaryCaches = customCaches;
+
     # Lets things download in parallel
     extraOptions = ''
-      binary-caches-parallel-connections = 5
+      binary-caches-parallel-connections = 100
     '';
   };
 }
