@@ -22,6 +22,7 @@
           };
         };
       };
+      zfs.autoScrub.enable = true;
     };
 
     networking = {

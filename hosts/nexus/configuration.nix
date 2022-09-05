@@ -27,6 +27,7 @@
         };
       };
     };
+    zfs.autoScrub.enable = true;
   };
 
   # Due to ^^^ we're setting our ip statically
