@@ -25,11 +25,6 @@ let
   cachePrefix = "/var/cache/nginx";
   cacheDir = "${cachePrefix}/cache";
   rootDir = "${cachePrefix}/root";
-
-  upstreamdns = [
-    "1.1.1.1"
-    "8.8.8.8"
-  ];
 in
 {
   options.services.role.nixcache = {
@@ -37,13 +32,13 @@ in
     cname = mkOption {
       type = types.str;
       default = "nixcache.home.arpa";
-      description = "Internal dns domain to use for the http cache name";
+      description = "Internal dns domain to use for the http cache cname";
     };
     # TODO: Need to make ip config a single derivation/list to pass in
     ip = mkOption {
       type = types.str;
       default = "10.10.10.130";
-      description = "ip address ";
+      description = "ip address";
     };
     iface = mkOption {
       type = types.str;
@@ -56,10 +51,9 @@ in
     networking = {
       interfaces = {
         eno1 = {
-          useDHCP = true;
           ipv4.addresses = [
             {
-              address = "${cfg.ip}";
+              address = cfg.ip;
               prefixLength = 32;
             }
           ];
@@ -88,8 +82,8 @@ in
 
       virtualHosts."nixcache.home.arpa" = {
         listen = [
-          { addr = "10.10.10.130"; port = 80; }
-          { addr = "10.10.10.130"; port = 443; }
+          { addr = cfg.ip; port = 80; }
+          { addr = cfg.ip; port = 443; }
         ];
         extraConfig = ''
           resolver 10.10.10.1 ipv6=off valid=10s;
