@@ -17,7 +17,6 @@ let
 
     10.10.10.99 wmb.home.arpa wmb
 
-
     10.10.10.127 wifi.home.arpa wifi
 
     # Static ip's take up the last /16
@@ -48,10 +47,10 @@ in
       default = true;
       description = "Whether to include a dns blacklist or not in dnsmasq and firewall";
     };
-    routerIp = mkOption {
+    domain = mkOption {
       type = types.str;
-      default = "10.10.10.254";
-      description = "router ip address";
+      default = "home.arpa";
+      description = "Internal dns domain to use";
     };
     wanIface = mkOption {
       type = types.str;
@@ -163,9 +162,10 @@ in
         log-queries
         log-dhcp
 
-        # Setup what domain we're serving home.arpa basically for internal according to the rfc
-        local=/${homedomain}/
-        domain=${homedomain}
+        # Setup what domain we're serving home.arpa basically for internal
+        # according to the rfc
+        local=/${cfg.domain}/
+        domain=${cfg.domain}
 
         # Don't need to cache negative entries
         no-negcache
@@ -176,8 +176,8 @@ in
         # Forgot...
         bogus-priv
 
-        # expand-hosts will bring in crap like 127.0.0.2 for nexus, I SAID NO,
-        # bad option go home
+        # expand-hosts will bring in crap like 127.0.0.2, I SAID NO, bad option
+        # go home
         no-hosts
 
         # dns hosts
@@ -283,7 +283,9 @@ in
           filename = "/tmp/positions.yaml";
         };
         clients = [{
-          url = "http://${toString config.services.loki.configuration.ingester.lifecycler.address}:${toString config.services.loki.configuration.server.http_listen_port}/loki/api/v1/push";
+          # TODO: Also remove this to be more like it used to be
+          # url = "http://${toString config.services.loki.configuration.ingester.lifecycler.address}:${toString config.services.loki.configuration.server.http_listen_port}/loki/api/v1/push";
+          url = "http://loki.home.arpa:3100/loki/api/v1/push";
         }];
         scrape_configs = [{
           job_name = "journal";
