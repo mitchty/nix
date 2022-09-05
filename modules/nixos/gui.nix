@@ -43,11 +43,6 @@ in
       pkgs.yakuake
     ];
 
-    # Use xrdp for gui usage for this node
-    # TODO: once pikvm is working maybe see if that is worth using instead
-    services.xrdp.enable = true;
-    services.xrdp.defaultWindowManager = "startplasma-x11";
-
     # Capslock is control, I'm not a heathen.
     services.xserver.xkbOptions = "ctrl:swapcaps";
 

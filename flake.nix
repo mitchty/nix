@@ -512,6 +512,9 @@
               primaryGroup = "users";
             };
             age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
+            services.role = {
+              mosh.enable = true;
+            };
           }];
           specialArgs = {
             inherit inputs;
@@ -528,6 +531,10 @@
               primaryGroup = "users";
             };
             age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch" // passwdSecrets;
+            services.role = {
+              mosh.enable = true;
+              syncthing.enable = true;
+            };
           }];
           specialArgs = {
             inherit inputs;
@@ -544,6 +551,10 @@
               primaryGroup = "users";
             };
             age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch" // passwdSecrets;
+            services.role = {
+              mosh.enable = true;
+              syncthing.enable = true;
+            };
           }];
           specialArgs = {
             inherit inputs;
@@ -560,6 +571,9 @@
               primaryGroup = "users";
             };
             age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
+            services.role = {
+              mosh.enable = true;
+            };
           }];
           specialArgs = {
             inherit inputs;

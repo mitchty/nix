@@ -8,6 +8,5 @@
     ./ssh.nix
     ./pkgs.nix
     ./shell.nix
-    ./mdns.nix
   ];
 }

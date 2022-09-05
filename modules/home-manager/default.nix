@@ -62,7 +62,6 @@ in
   home.packages = with inputs.unstable.legacyPackages.${pkgs.system}; [
     (pkgs.hiPrio gcc11) # Both this and clang provide c++ executable, so prefer gcc's for no reason than because
     act
-    avahi
     bind
     clang
     clang-tools

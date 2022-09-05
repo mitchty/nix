@@ -19,9 +19,11 @@ in
     ./gui.nix
     ./intel.nix
     ./lowmem.nix
+    ./mosh.nix
     ./nas.nix
     ./nix-cache.nix
     ./promtail.nix
     ./router.nix
+    ./syncthing.nix
   ];
 }
