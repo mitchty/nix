@@ -18,6 +18,7 @@ in
   imports = [
     ./gui.nix
     ./intel.nix
+    ./loki.nix
     ./lowmem.nix
     ./mosh.nix
     ./nas.nix

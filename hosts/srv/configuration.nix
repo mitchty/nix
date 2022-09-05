@@ -13,12 +13,6 @@
     system.stateVersion = "22.05";
 
     services = {
-      role = {
-        intel.enable = true;
-        gui.enable = true;
-        promtail.enable = true;
-        nixcache.enable = true;
-      };
       prometheus = {
         exporters = {
           node = {

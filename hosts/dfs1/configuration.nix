@@ -45,16 +45,6 @@
       # TODO: Put this into some sorta common zfs module once I figure out what
       # makes sense to abstract into a module
       zfs.autoScrub.enable = true;
-
-      role = {
-        # This is an intel system, do "intel" stuff to it
-        intel.enable = true;
-
-        # Tag this system as a low memory system
-        lowmem.enable = true;
-
-        promtail.enable = true;
-      };
     };
 
     services.prometheus = {

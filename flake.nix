@@ -513,7 +513,9 @@
             };
             age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
             services.role = {
+              intel.enable = true;
               mosh.enable = true;
+              router.enable = true;
             };
           }];
           specialArgs = {
@@ -532,7 +534,12 @@
             };
             age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch" // passwdSecrets;
             services.role = {
+              gui.enable = true;
+              intel.enable = true;
+              loki.enable = true;
               mosh.enable = true;
+              nixcache.enable = true;
+              promtail.enable = true;
               syncthing.enable = true;
             };
           }];
@@ -552,7 +559,10 @@
             };
             age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch" // passwdSecrets;
             services.role = {
+              gui.enable = true;
+              intel.enable = true;
               mosh.enable = true;
+              promtail.enable = true;
               syncthing.enable = true;
             };
           }];
@@ -572,7 +582,10 @@
             };
             age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
             services.role = {
+              intel.enable = true;
+              lowmem.enable = true;
               mosh.enable = true;
+              promtail.enable = true;
             };
           }];
           specialArgs = {

@@ -18,8 +18,6 @@
 
   # This is an intel system, do "intel" stuff to it
   config.services = {
-    role.intel.enable = true;
-    role.gui.enable = true;
     prometheus = {
       exporters = {
         node = {
@@ -29,7 +27,6 @@
         };
       };
     };
-    role.promtail.enable = true;
   };
 
   # Due to ^^^ we're setting our ip statically
