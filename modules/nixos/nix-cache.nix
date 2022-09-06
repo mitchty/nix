@@ -37,7 +37,7 @@ in
     # TODO: Need to make ip config a single derivation/list to pass in
     ip = mkOption {
       type = types.str;
-      default = "10.10.10.130";
+      default = "10.10.10.131";
       description = "ip address";
     };
     iface = mkOption {
@@ -80,7 +80,7 @@ in
         }
       '';
 
-      virtualHosts."nixcache.home.arpa" = {
+      virtualHosts."${cfg.cname}" = {
         listen = [
           { addr = cfg.ip; port = 80; }
           { addr = cfg.ip; port = 443; }

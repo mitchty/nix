@@ -76,7 +76,8 @@ let
     # Static ip's take up the last /16
     10.10.10.128 loki.home.arpa loki
     10.10.10.129 grafana.home.arpa grafana
-    10.10.10.130 nixcache.home.arpa nixcache
+    10.10.10.130 prometheus.home.arpa prometheus
+    10.10.10.131 nixcache.home.arpa nixcache
 
     # For testing dns works or not
     10.10.10.254 canary.home.arpa canary
@@ -292,39 +293,6 @@ in
       port = 80;
       addr = "10.10.10.129";
       analytics.reporting.enable = false;
-    };
-    services.prometheus = {
-      enable = true;
-      port = 9001;
-      extraFlags = [ "--web.enable-admin-api" ];
-      exporters = {
-        node = {
-          enable = true;
-          enabledCollectors = [ "systemd" ];
-          port = 9002;
-        };
-      };
-      scrapeConfigs = [
-        {
-          job_name = "nixos";
-          static_configs = [{
-            targets = [
-              "gw.home.arpa:${toString config.services.prometheus.exporters.node.port}"
-              "nexus.home.arpa:${toString config.services.prometheus.exporters.node.port}"
-              "dfs1.home.arpa:${toString config.services.prometheus.exporters.node.port}"
-              "srv.home.arpa:${toString config.services.prometheus.exporters.node.port}"
-            ];
-          }];
-        }
-        {
-          job_name = "macos";
-          static_configs = [{
-            targets = [
-              "mb.home.arpa:9100"
-            ];
-          }];
-        }
-      ];
     };
   };
 }

@@ -540,6 +540,7 @@
               loki.enable = true;
               mosh.enable = true;
               nixcache.enable = true;
+              prometheus.enable = true;
               promtail.enable = true;
               syncthing.enable = true;
             };

@@ -23,6 +23,7 @@ in
     ./mosh.nix
     ./nas.nix
     ./nix-cache.nix
+    ./prometheus.nix
     ./promtail.nix
     ./router.nix
     ./syncthing.nix
