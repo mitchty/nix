@@ -515,6 +515,7 @@
             services.role = {
               intel.enable = true;
               mosh.enable = true;
+              promtail.enable = true;
               router.enable = true;
             };
           }];
