@@ -45,7 +45,7 @@ if [ "${vlc_cur}" != "${vlc_found}" ]; then
   ok=$(( ok + 1 ))
 fi
 
-obs_cur="27.2.4"
+obs_cur="28.0.1"
 obs_found="$(curl --silent 'https://api.github.com/repos/obsproject/obs-studio/releases/latest' | jq -r '.tag_name')"
 
 if [ "${obs_cur}" != "${obs_found}" ]; then
