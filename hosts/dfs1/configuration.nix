@@ -47,16 +47,6 @@
       zfs.autoScrub.enable = true;
     };
 
-    services.prometheus = {
-      exporters = {
-        node = {
-          enable = true;
-          enabledCollectors = [ "systemd" ];
-          port = 9002;
-        };
-      };
-    };
-
     networking.firewall = {
       enable = true;
       trustedInterfaces = [ "enp3s0f3" ];

@@ -54,13 +54,6 @@ in
       port = 9001;
       listenAddress = cfg.cname;
       extraFlags = [ "--web.enable-admin-api" ];
-      exporters = {
-        node = {
-          enable = true;
-          enabledCollectors = [ "systemd" ];
-          port = 9002;
-        };
-      };
       scrapeConfigs = [
         {
           job_name = "nixos";

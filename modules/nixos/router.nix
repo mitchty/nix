@@ -163,10 +163,6 @@ in
               address = "10.10.10.1";
               prefixLength = 24;
             }
-            {
-              address = "10.10.10.129";
-              prefixLength = 32;
-            }
           ];
         };
       };
@@ -189,14 +185,6 @@ in
         interfaces = {
           "${cfg.wanIface}" = {
             allowedTCPPorts = [ 22 ];
-            allowedUDPPorts = [ ];
-          };
-          "${cfg.lanIface}" = {
-            allowedTCPPorts = [
-              80
-              # Seems to be some internal thing that loki spins up that it needs to connect to
-              9095
-            ];
             allowedUDPPorts = [ ];
           };
         };
@@ -281,18 +269,6 @@ in
         # Also setup the dns blacklist if enabled
         conf-file=${inputs.dnsblacklist}/dnsmasq/dnsmasq.blacklist.txt
       '';
-    };
-    # Lets try out graphana/prometheus to visualize junk
-    #
-    # Since I forgot the password I set it originally to, to reset it manually
-    # back to OG config:
-    # cd /var/lib/grafana/conf grafana-cli admin reset-admin-password admin && systemctl restart grafana
-    services.grafana = {
-      enable = true;
-      domain = "grafana.home.arpa";
-      port = 80;
-      addr = "10.10.10.129";
-      analytics.reporting.enable = false;
     };
   };
 }

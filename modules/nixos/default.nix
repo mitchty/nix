@@ -16,6 +16,7 @@ in
 {
   # imports = [ mylib.nixFiles ./. ];
   imports = [
+    ./grafana.nix
     ./gui.nix
     ./intel.nix
     ./loki.nix
@@ -23,6 +24,7 @@ in
     ./mosh.nix
     ./nas.nix
     ./nix-cache.nix
+    ./node-exporter.nix
     ./prometheus.nix
     ./promtail.nix
     ./router.nix

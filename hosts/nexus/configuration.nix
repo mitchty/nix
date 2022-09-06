@@ -18,15 +18,6 @@
 
   # This is an intel system, do "intel" stuff to it
   config.services = {
-    prometheus = {
-      exporters = {
-        node = {
-          enable = true;
-          enabledCollectors = [ "systemd" ];
-          port = 9002;
-        };
-      };
-    };
     zfs.autoScrub.enable = true;
   };
 

@@ -515,6 +515,7 @@
             services.role = {
               intel.enable = true;
               mosh.enable = true;
+              node-exporter.enable = true;
               promtail.enable = true;
               router.enable = true;
             };
@@ -535,10 +536,12 @@
             };
             age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch" // passwdSecrets;
             services.role = {
+              grafana.enable = true;
               gui.enable = true;
               intel.enable = true;
               loki.enable = true;
               mosh.enable = true;
+              node-exporter.enable = true;
               nixcache.enable = true;
               prometheus.enable = true;
               promtail.enable = true;
@@ -564,6 +567,7 @@
               gui.enable = true;
               intel.enable = true;
               mosh.enable = true;
+              node-exporter.enable = true;
               promtail.enable = true;
               syncthing.enable = true;
             };
@@ -587,6 +591,7 @@
               intel.enable = true;
               lowmem.enable = true;
               mosh.enable = true;
+              node-exporter.enable = true;
               promtail.enable = true;
             };
           }];

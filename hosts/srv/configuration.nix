@@ -12,18 +12,7 @@
   config = {
     system.stateVersion = "22.05";
 
-    services = {
-      prometheus = {
-        exporters = {
-          node = {
-            enable = true;
-            enabledCollectors = [ "systemd" ];
-            port = 9002;
-          };
-        };
-      };
-      zfs.autoScrub.enable = true;
-    };
+    services.zfs.autoScrub.enable = true;
 
     networking = {
       hostName = "srv";
