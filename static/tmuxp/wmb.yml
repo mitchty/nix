@@ -7,7 +7,10 @@ windows:
     - pane
 - window_name: deploy
   panes:
-    - deploy
+    - shell_command:
+      - gi mitchty/nix
+      - cmd: deploy
+        enter: false
 - window_name: yolo
   panes:
     - . ~/src/pub/github.com/mitchty/nix/static/src/ssh.sh
