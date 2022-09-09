@@ -7,12 +7,14 @@ windows:
     - pane
 - window_name: syncthing
   panes:
-    - syncthing
+    - pkill syncthing; syncthing
 - window_name: deploy
   panes:
-    - ssh -t nexus.local 'deploy'
-    - deploy
-- window_name: btop
-  panes:
-    - ssh -t nexus.local 'btop'
-    - btop
+    - shell_command:
+      - gi mitchty/nix
+      - cmd: site-update
+        enter: false
+    - shell_command:
+      - gi mitchty/nix
+      - cmd: deploy
+        enter: false
