@@ -1193,8 +1193,8 @@ TODO: What use-package can I stick this in?
   :hook (sh-mode . shfmtstuff)
   :config
   (setq auto-insert-alist
-	(append
-	 '(
+        (append
+         '(
            ((sh-mode . "sh")
             nil
             "#!/usr/bin/env sh\n"
@@ -1204,19 +1204,21 @@ TODO: What use-package can I stick this in?
             "_base=$(basename \"$0\")\n"
             "_dir=$(cd -P -- \"$(dirname -- \"$(command -v -- \"$0\")\")\" && pwd -P || exit 126)\n"
             "export _base _dir\n"
-	    "set \"${SETOPTS:--eu}\"\n"
+            "set \"${SETOPTS:--eu}\"\n"
             )
            )
-	 auto-insert-alist)
-	)
+         auto-insert-alist)
+        )
+  ;; TODO: Need to figure out how to get -i to be dynamic somehow based off the
+  ;; buffer maybe?
   (progn
     (defvar shfmt-args '("-ci" "-p" "-i" "2" "-bn" "-sr")
       "shfmt default args")
     (reformatter-define shfmt
-			:program "shfmt"
-			:args shfmt-args))
+                        :program "shfmt"
+                        :args shfmt-args))
   (defun shfmtstuff()
-    (unless (eq sh-shell 'zsh)
+    (unless (or (eq sh-shell 'zsh) (string-match-p "_spec.sh" (buffer-file-name)))
       (shfmt-on-save-mode))))
 #+END_SRC
 
