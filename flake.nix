@@ -72,8 +72,8 @@
 
       nixpkgsConfig = {
         overlays = [
-          rust.overlay
           emacs.overlay
+          rust.overlays.default
           # No longer neeeded here for future me to use to copypasta new patches
           # in if needed.
           # (self: super:
