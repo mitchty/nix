@@ -26,18 +26,18 @@ sshcopy() {
 extract() {
   if [ -f "$1" ]; then
     case ${1} in
-      ,*.tar.bz2|*.tbz2|*.tbz)  bunzip2 -c "$1" | tar xvf -;;
-      ,*.tar.gz|*.tgz)          gunzip -c "$1" | tar xvf -;;
-      ,*.tz|*.tar.z)            zcat "$1" | tar xvf -;;
-      ,*.tar.xz|*.txz|*.tpxz)   xz -d -c "$1" | tar xvf -;;
-      ,*.bz2)                   bunzip2 "$1";;
-      ,*.gz)                    gunzip "$1";;
-      ,*.jar|*.zip)             unzip "$1";;
-      ,*.rar)                   unrar x "$1";;
-      ,*.tar)                   tar -xvf "$1";;
-      ,*.z)                     uncompress "$1";;
-      ,*.rpm)                   rpm2cpio "$1" | cpio -idv;;
-      ,*)                       echo "Unable to extract <$1> Unknown extension."
+      ,*.tar.bz2 | *.tbz2 | *.tbz) bunzip2 -c "$1" | tar xvf - ;;
+      ,*.tar.gz | *.tgz) gunzip -c "$1" | tar xvf - ;;
+      ,*.tz | *.tar.z) zcat "$1" | tar xvf - ;;
+      ,*.tar.xz | *.txz | *.tpxz) xz -d -c "$1" | tar xvf - ;;
+      ,*.bz2) bunzip2 "$1" ;;
+      ,*.gz) gunzip "$1" ;;
+      ,*.jar | *.zip) unzip "$1" ;;
+      ,*.rar) unrar x "$1" ;;
+      ,*.tar) tar -xvf "$1" ;;
+      ,*.z) uncompress "$1" ;;
+      ,*.rpm) rpm2cpio "$1" | cpio -idv ;;
+      ,*) echo "Unable to extract <$1> Unknown extension." ;;
     esac
   else
     print "File <$1> does not exist."
