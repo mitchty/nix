@@ -14,11 +14,12 @@ runtime=$(date +%Y-%m-%d-%H:%M:%S)
 for x in "$@"; do
   # This is useless here NIXOPTS when null shouldn't be in argv
   #shellcheck disable=SC2086
-  nix build ${NIXOPTS-} ".#iso${x}"
+  nix build ${NIXOPTS-} ".#${_base}${x}"
   install -dm755 img
-  lnsrc="img/${x}@${runtime}.iso"
-  lndst="img/${x}.iso"
-  install -m444 "$(find -L result -type f -name '*.iso')" "${lnsrc}"
+  lnsrc="img/${x}@${runtime}.${_base}"
+  lndst="img/${x}.${_base}"
+  #shellcheck disable=SC2086
+  install -m444 "$(find -L result -type f -name '*.'${_base})" "${lnsrc}"
   ln -f "${lnsrc}" "${lndst}"
 done
 
