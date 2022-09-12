@@ -1248,7 +1248,7 @@ Desktop saving of session information handy to keep the same buffers between ses
       (desktop-save desktop-dirname)))
 )
 
-;;(add-hook 'after-init-hook 'desktop-setup)
+(add-hook 'after-init-hook 'desktop-setup)
 #+END_SRC
 
 * custom
