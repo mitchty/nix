@@ -62,9 +62,6 @@
       inherit (nixpkgs.lib) attrValues makeOverridable nixosSystem;
 
       x86-linux = "x86_64-linux";
-      stable = import nixpkgs {
-        system = x86-linux;
-      };
 
       homeDir = system: user: with nixpkgs.legacyPackages.${system}.stdenv;
         if isDarwin then
