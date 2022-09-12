@@ -74,6 +74,7 @@ in
     entr
     file
     gh
+    (pkgs.hiPrio go) # Ensure this is the go to use in the case of collision
     gist
     gitFull
     git-extras
@@ -105,6 +106,9 @@ in
     p7zip
     pbzip2
     pigz
+    # For emacs python-mode, not sure if Full is needed or if Minimal would work
+    # and don't care much.
+    python3Full
     pv
     rage
     rclone
