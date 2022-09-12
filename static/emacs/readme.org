@@ -1169,18 +1169,21 @@ TODO: What use-package can I stick this in?
 ***** python
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(setq auto-insert-alist
-      (append
-       '(((python-mode . "python")
-          nil
-          "#!/usr/bin/env python\n"
-          "# -*-mode: Python; coding: utf-8;-*-\n"
-	  "# SPDX-License-Identifier: BlueOak-1.0.0\n"
-          "# Description: " _ "\n\n"
-          )
-         )
-       auto-insert-alist)
-      )
+(use-package python
+  :config
+  (setq auto-insert-alist
+        (append
+         '(((python-mode . "python")
+            nil
+            "#!/usr/bin/env python\n"
+            "# -*-mode: Python; coding: utf-8;-*-\n"
+            "# SPDX-License-Identifier: BlueOak-1.0.0\n"
+            "# Description: " _ "\n\n"
+            )
+           )
+         auto-insert-alist)
+        )
+)
 #+END_SRC
 
 ***** shell
