@@ -410,20 +410,20 @@ List of fonts in order of preference. Set preferred font list when we're in a gu
 #+BEGIN_SRC emacs-lisp :tangle yes
 (with-no-warnings
   (mapcar (lambda (element)
-	    (when (and window-system (find-font (font-spec :name element))
-		       (progn (set-frame-font element)
-			      (set-face-attribute 'default nil :height 180))
-		       )))
-	  '(
-	    "Monaco"
-	    "Menlo"
-	    "Source Code Pro"
-	    "Pragmata Pro" ;; Seems to register differently on osx than X
-	    "PragmataPro"
-	    "Comic Code"
-	    "ComicCode"
-	    )
-	  ))
+            (when (and window-system (find-font (font-spec :name element))
+                       (progn (set-frame-font element)
+                              (set-face-attribute 'default nil :height 180))
+                       )))
+          '(
+            "Monaco"
+            "Menlo"
+            "Source Code Pro"
+            "Pragmata Pro" ;; Seems to register differently on osx than X
+            "PragmataPro"
+            "Comic Code"
+            "ComicCode"
+            )
+          ))
 #+END_SRC
 
 *** tty
@@ -1131,7 +1131,7 @@ Create *auto-insert-alist* so all the mode lists are the same
          ((c-mode . "c")
           nil
           "/*\n"
-	  "SPDX-License-Identifier: BlueOak-1.0.0\n"
+          "SPDX-License-Identifier: BlueOak-1.0.0\n"
           "Description: " _ "\n"
           "*/\n"
           "#include <stdio.h>\n"
@@ -1153,7 +1153,7 @@ Create *auto-insert-alist* so all the mode lists are the same
          ((emacs-lisp-mode . "elisp")
           nil
           ";;-*-mode: emacs-lisp; coding: utf-8;-*-\n"
-	  ";; SPDX-License-Identifier: BlueOak-1.0.0\n"
+          ";; SPDX-License-Identifier: BlueOak-1.0.0\n"
           ";; Description: " _ "\n"
           )
          )
@@ -1300,11 +1300,11 @@ Ref:
 (use-package eglot
   :ensure
   :hook ((python-mode . eglot-ensure)
-	       (cc-mode . eglot-ensure)
-	       (go-mode . eglot-ensure)
-	       (nix-mode . eglot-ensure)
-	       (yaml-mode . eglot-ensure)
-	       (rust-mode . eglot-ensure))
+               (cc-mode . eglot-ensure)
+               (go-mode . eglot-ensure)
+               (nix-mode . eglot-ensure)
+               (yaml-mode . eglot-ensure)
+               (rust-mode . eglot-ensure))
 )
 #+END_SRC
 
