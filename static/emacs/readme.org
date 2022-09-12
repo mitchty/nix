@@ -830,7 +830,7 @@ Flycheck for on the fly checking of code.
   :hook (prog-mode . flycheck-mode))
 #+END_SRC
 
-*** TODO auto-complete not tangled                        :validation:broken:
+*** auto-complete
 
 Auto complete functionality is nice to have.
 
@@ -873,7 +873,7 @@ Make buffer names unique based on their directory and not have <N> or other nons
 (custom-set-variables '(uniquify-buffer-name-style 'post-forward))
 #+END_SRC
 
-*** TODO super-save                                      :validation:testing:
+*** super-save
 
 REMOVE ME && TODO IF THIS WORKS
 
@@ -1124,6 +1124,8 @@ Create *auto-insert-alist* so all the mode lists are the same
 
 ***** c
 
+TODO: What use-package can I stick this in?
+
 #+BEGIN_SRC emacs-lisp :tangle yes
 (setq auto-insert-alist
       (append
@@ -1146,6 +1148,9 @@ Create *auto-insert-alist* so all the mode lists are the same
 #+END_SRC
 
 ***** elisp
+
+TODO: What use-package can I stick this in?
+
 #+BEGIN_SRC emacs-lisp :tangle yes
 (setq auto-insert-alist
       (append
