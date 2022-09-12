@@ -23,7 +23,10 @@
     };
 
     home-manager.url = "github:nix-community/home-manager/release-22.05";
-    nixos-generators.url = "github:nix-community/nixos-generators";
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     deploy-rs.url = "github:serokell/deploy-rs";
     agenix-darwin.url = "github:montchr/agenix/darwin-support";
     agenix.url = "github:ryantm/agenix";
