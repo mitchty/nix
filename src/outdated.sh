@@ -61,7 +61,7 @@ if [ "${stretchly_cur}" != "${stretchly_found}" ]; then
   ok=$(( ok + 1 ))
 fi
 
-wireshark_cur="3.6.7"
+wireshark_cur="3.6.8"
 wireshark_found="$(curl --location --silent https://www.wireshark.org/#download | htmlq -wpt | awk '/current stable/ {print $8}' | sed 's/.$//')"
 
 if [ "${wireshark_cur}" != "${wireshark_found}" ]; then
