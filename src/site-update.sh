@@ -34,11 +34,10 @@ deployrs() {
   fi
 }
 
+check
+
 if [ $# -gt 0 ]; then
-  check
   deployrs "$@"
 else
-  deploy
-  check
   deployrs
 fi
