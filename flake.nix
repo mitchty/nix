@@ -538,6 +538,7 @@
             services.role = {
               grafana.enable = true;
               gui.enable = true;
+              highmem.enable = true;
               intel.enable = true;
               loki.enable = true;
               mosh.enable = true;

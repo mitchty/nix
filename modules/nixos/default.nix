@@ -18,6 +18,7 @@ in
   imports = [
     ./grafana.nix
     ./gui.nix
+    ./highmem.nix
     ./intel.nix
     ./loki.nix
     ./lowmem.nix
