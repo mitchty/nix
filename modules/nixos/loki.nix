@@ -54,6 +54,7 @@ in
     services.loki = {
       enable = true;
       configuration = {
+        analytics.reporting_enabled = false;
         server.http_listen_port = 3100;
         auth_enabled = false;
 
