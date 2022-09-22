@@ -78,8 +78,11 @@ in
 
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
-      kubernetes-helm
+      colima
+      docker
       google-cloud-sdk
+      kubectl
+      kubernetes-helm
       yq-go
     ] ++ [
       inputs.mitchty.packages.${pkgs.system}.jira-cli
