@@ -23,6 +23,10 @@ let
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
 
+  yeet = (pkgs.writeScriptBin "yeet" (builtins.readFile ../../src/yeet.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+
   vlc = with pkgs; stdenv.mkDerivation rec {
     name = "vlc";
     uname = "videolan";
@@ -166,13 +170,14 @@ in
       close
       gohome
       notify
+      obs-studio
       stats
       stretchly
       swiftbar
-      wtf
       vlc
-      obs-studio
       wireshark
+      wtf
+      yeet
     ];
 
     system.activationScripts.postActivation.text = ''
