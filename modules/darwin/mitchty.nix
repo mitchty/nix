@@ -6,6 +6,8 @@ let
   cfg = config.services.mitchty;
   fake = lib.fakeSha256;
 
+  stats = pkgs.callPackage ./pkgs/stats.nix { };
+
   # Scripts I wrote that are macos only.
   close = (pkgs.writeScriptBin "close" (builtins.readFile ../../static/src/close)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
@@ -68,26 +70,6 @@ let
       # As of obs 28.0.0 this disk image is now APFS and not HFS, so undmg no worky
       url = "https://github.com/${uname}/${name}/releases/download/${version}/obs-studio-${version}-macos-x86_64.dmg";
       sha256 = "sha256-JG4bF0rz9hUT5OAE6UijJRSQkbUWW3AFORVw9tM07j4=";
-    };
-  };
-
-  stats = with pkgs; stdenv.mkDerivation rec {
-    name = "stats";
-    uname = "exelban";
-    aname = "Stats";
-    version = "2.7.35";
-
-    buildInputs = [ undmg ];
-    sourceRoot = ".";
-    phases = [ "unpackPhase" "installPhase" ];
-    installPhase = ''
-      install -dm755 "$out/Applications"
-      cp -r ${aname}.app "$out/Applications/${aname}.app"
-    '';
-
-    src = fetchurl {
-      url = "https://github.com/${uname}/${name}/releases/download/v${version}/${aname}.dmg";
-      sha256 = "sha256-v5nLDKfIex0P3myEhNmNUTvD5ZWDik2bDilEZxZKcMY=";
     };
   };
 
