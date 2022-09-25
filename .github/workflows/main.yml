@@ -18,6 +18,7 @@ jobs:
             experimental-features = nix-command flakes
       - run: rm -f flake.lock
       - run: nix flake update
+      - run: nix flake check
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           branch: master
