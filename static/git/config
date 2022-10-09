@@ -25,7 +25,9 @@
 [diff]
   algorithm = histogram
 
+# Stuff I really need to go through at some point.
 [alias]
+  nix = !git checkout flake.lock && git syn
   bage = for-each-ref --sort='authordate:iso8601' --format=' %(color:green)%(authordate:relative)%09%(color:white)%(refname:short)' refs/heads
   begin = !git init && git commit --allow-empty -m 'Initial empty commit'
   up = !git pull --rebase && git push
