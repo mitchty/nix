@@ -1,14 +1,10 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 with lib;
 
 let
   cfg = config.services.mitchty;
   fake = lib.fakeSha256;
-
-  obs-studio = pkgs.callPackage ./pkgs/obs.nix { };
-  stats = pkgs.callPackage ./pkgs/stats.nix { };
-  stretchly = pkgs.callPackage ./pkgs/stretchly.nix { };
 
   # Scripts I wrote that are macos only.
   close = (pkgs.writeScriptBin "close" (builtins.readFile ../../static/src/close)).overrideAttrs (old: {
@@ -30,67 +26,6 @@ let
   yeet = (pkgs.writeScriptBin "yeet" (builtins.readFile ../../src/yeet.sh)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
-
-  vlc = with pkgs; stdenv.mkDerivation rec {
-    name = "vlc";
-    uname = "videolan";
-    aname = "VLC";
-    version = "3.0.17.3";
-
-    buildInputs = [ undmg ];
-    sourceRoot = ".";
-    phases = [ "unpackPhase" "installPhase" ];
-    installPhase = ''
-      install -dm755 "$out/Applications"
-      cp -r ${aname}.app "$out/Applications/${aname}.app"
-    '';
-
-    src = fetchurl {
-      name = "${aname}.dmg";
-      url = "http://get.videolan.org/${name}/${version}/macosx/${name}-${version}-intel64.dmg";
-      sha256 = "sha256-zKJn8sUa5WjgLztNimrbqHsr3l8BGiuHxZXBAtifEdg=";
-    };
-  };
-
-  swiftbar = with pkgs; stdenv.mkDerivation rec {
-    name = "swiftbar";
-    gname = "SwiftBar";
-    version = "1.4.3";
-
-    buildInputs = [ unzip ];
-    sourceRoot = ".";
-    phases = [ "unpackPhase" "installPhase" ];
-    installPhase = ''
-      install -dm755 "$out/Applications"
-      cp -r ${gname}.app "$out/Applications/${gname}.app"
-    '';
-
-    src = fetchurl {
-      name = "${gname}.zip";
-      url = "https://github.com/${name}/${gname}/releases/download/v${version}/${gname}.zip";
-      sha256 = "sha256-IP/lWahb0ouG912XvaWR3nDL1T3HrBZ2E8pp/WbHGgQ=";
-    };
-  };
-
-  wireshark = with pkgs; stdenv.mkDerivation rec {
-    name = "wireshark";
-    gname = "Wireshark";
-    version = "3.6.8";
-
-    buildInputs = [ undmg ];
-    sourceRoot = ".";
-    phases = [ "unpackPhase" "installPhase" ];
-    installPhase = ''
-      install -dm755 "$out/Applications"
-      cp -r ${gname}.app "$out/Applications/${gname}.app"
-    '';
-
-    src = fetchurl {
-      name = "${gname}.dmg";
-      url = "https://2.na.dl.wireshark.org/osx/Wireshark%20${version}%20Intel%2064.dmg";
-      sha256 = "sha256-weVPGvkzSGrGDalLsaNm31EllZ70FuGpPCovud5476A=";
-    };
-  };
 in
 {
   options = {
@@ -107,15 +42,16 @@ in
 
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
+      # TODO: Gotta make my nixos flake an overlay, future me problem.
+      inputs.mitchty.packages.${pkgs.system}.obs-studio
+      inputs.mitchty.packages.${pkgs.system}.stats
+      inputs.mitchty.packages.${pkgs.system}.stretchly
+      inputs.mitchty.packages.${pkgs.system}.swiftbar
+      inputs.mitchty.packages.${pkgs.system}.vlc
+      inputs.mitchty.packages.${pkgs.system}.wireshark
       close
       gohome
       notify
-      obs-studio
-      stats
-      stretchly
-      swiftbar
-      vlc
-      wireshark
       wtf
       yeet
     ];
