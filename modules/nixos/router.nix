@@ -195,32 +195,11 @@ in
         ipv4
         ipv6
         ia_na 0
+
+        # Why the hell prefix delegation only seems to work with prefix 3 is
+        # beyond me. Comcast ipv6 is wack. Also why can I only get a delegation
+        # of /60? Everything here determined through painful trial and error.
         ia_pd 0/::/60 ${cfg.lanIface}/3/64
-                # noipv6rs
-                # waitip 6
-                # # Uncomment this line if you are running dhcpcd for IPv6 only.
-                # #ipv6only
-                # # use the interface connected to WAN
-                # interface ${cfg.wanIface} {
-                #   iaid 1
-                #   ipv6rs
-                #   ia_na 1
-                #   # send ia-na 0; # request NA for wan
-                #   # send ia-pd 1; # request PD for lan
-                #   # send rapid-commit; # don't wait for ra
-                # };
-
-                # id-assoc na 0 {
-                #   # id-assoc for wan interface
-                # };
-
-                # id-assoc pd 1 {
-                #   prefix-interface br0 {
-                #     sla-id 0;
-                #     sla-len 0;
-                #     ifid 1;
-                #   };
-                # };
       '';
 
       firewall = {
