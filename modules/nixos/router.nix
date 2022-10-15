@@ -90,8 +90,11 @@ let
   # https://www.arubanetworks.com/techdocs/VIA/4x/Content/VIA%20Config/Before_you_Begin.htm
   #
   # Bit of a hack I think due to this issue https://github.com/NixOS/nixpkgs/issues/69265
-  workvpn = ''
+  workvpnadd = ''
     ${pkgs.iptables}/bin/iptables --insert INPUT --protocol ESP --jump ACCEPT
+  '';
+  workvpnrm = ''
+    ${pkgs.iptables}/bin/iptables --delete INPUT --protocol ESP --jump ACCEPT
   '';
 in
 {
@@ -120,31 +123,35 @@ in
   };
 
   config = mkIf cfg.enable rec {
-    boot.kernel.sysctl = {
-      "net.ipv4.conf.all.forwarding" = mkForce true;
+    boot = {
+      kernel.sysctl = {
+        "net.ipv4.conf.all.forwarding" = 1;
+        "net.ipv6.conf.all.forwarding" = 1;
+        "net.ipv6.conf.default.forwarding" = 1;
 
-      "net.ipv6.conf.all.forwarding" = mkForce true;
-      "net.ipv6.conf.all.accept_ra" = 0;
-      "net.ipv6.conf.all.autoconf" = 0;
-      "net.ipv6.conf.all.use_tempaddr" = 0;
+        # Disable these globally
+        "net.ipv6.conf.all.use_tempaddr" = 1;
 
-      "net.ipv6.conf.eno1.accept_ra" = 2;
-      "net.ipv6.conf.eno1.autoconf" = 1;
+        # If we don't disable forwarding for the wan interface, for some reason
+        # the router advertisements in ipv6 don't work. Linux is effing dumb.
+        "net.ipv6.conf.br0.forwarding" = 1;
+        "net.ipv6.conf.br0.accept_ra" = 1;
+      };
     };
-    # Seemed to have issues with this only being in extraConfig, so add an
-    # activationscript just in case.
-    system.activationScripts.viavpn = ''
-      printf "modules:nixos:router: viavpn firewall allow all esp protocol traffic\n" >&2
-      ${workvpn}
-    '';
 
     networking = {
+      # Only using dhcp for the wan interface
+      useDHCP = false;
+
       resolvconf = {
         useLocalResolver = false;
       };
+
       # TODO: how can I swap this to ${cfg.routerIface}?
       # Use internal dnsmasq by default, has all the dns blacklists and stuff,
       # should be the fastest as well as its local network.
+      #
+      # But probably best to just leave it as is.
       nameservers = [ "127.0.0.1" ] ++ upstreamdns;
 
       bridges.br0.interfaces = [ "enp2s0" "enp3s0" "enp6s0" ];
@@ -173,22 +180,85 @@ in
         ];
         externalInterface = "${cfg.wanIface}";
       };
+
+      # We're only using dhcpcd for the wan interface eno1
+      dhcpcd.extraConfig = ''
+        duid
+
+        slaac private
+
+        allowinterfaces ${cfg.wanIface}
+        denyinterfaces ${cfg.lanIface}
+
+        interface ${cfg.wanIface}
+        ipv6rs
+        ipv4
+        ipv6
+        ia_na 0
+        ia_pd 0/::/60 ${cfg.lanIface}/3/64
+                # noipv6rs
+                # waitip 6
+                # # Uncomment this line if you are running dhcpcd for IPv6 only.
+                # #ipv6only
+                # # use the interface connected to WAN
+                # interface ${cfg.wanIface} {
+                #   iaid 1
+                #   ipv6rs
+                #   ia_na 1
+                #   # send ia-na 0; # request NA for wan
+                #   # send ia-pd 1; # request PD for lan
+                #   # send rapid-commit; # don't wait for ra
+                # };
+
+                # id-assoc na 0 {
+                #   # id-assoc for wan interface
+                # };
+
+                # id-assoc pd 1 {
+                #   prefix-interface br0 {
+                #     sla-id 0;
+                #     sla-len 0;
+                #     ifid 1;
+                #   };
+                # };
+      '';
+
       firewall = {
         enable = true;
+        allowPing = true;
         # Needed for ipsec vpn traffic
-        extraCommands = workvpn;
+        extraCommands = ''
+          ${pkgs.iptables}/bin/ip6tables -A INPUT -p udp --dport dhcpv6-client -j nixos-fw-accept
+          ${pkgs.iptables}/bin/ip6tables -A INPUT -p ipv6-icmp -j nixos-fw-accept
+          ${pkgs.iptables}/bin/ip6tables -A OUTPUT -p ipv6-icmp -j nixos-fw-accept
+          ${pkgs.iptables}/bin/ip6tables -A FORWARD -p ipv6-icmp -j nixos-fw-accept
+          ${pkgs.iptables}/bin/iptables --insert INPUT --protocol ESP --jump nixos-fw-accept
+        '';
+        # ^^^ needs to be idempotent so we need to delete anything added and
+        # also handle if it may not exist.
+        extraStopCommands = ''
+          ${pkgs.iptables}/bin/ip6tables -D INPUT -p udp --dport dhcpv6-client -j nixos-fw-accept || :
+          ${pkgs.iptables}/bin/ip6tables -D INPUT -p ipv6-icmp -j nixos-fw-accept || :
+          ${pkgs.iptables}/bin/ip6tables -D OUTPUT -p ipv6-icmp -j nixos-fw-accept || :
+          ${pkgs.iptables}/bin/ip6tables -D FORWARD -p ipv6-icmp -j nixos-fw-accept || :
+          ${pkgs.iptables}/bin/iptables --delete INPUT --protocol ESP --jump nixos-fw-accept || :
+        '';
+
         allowedTCPPorts = [ 443 8085 ];
-        allowedUDPPorts = [ 4500 ];
+        allowedUDPPorts = [ 546 547 4500 ];
 
         trustedInterfaces = [ cfg.lanIface ];
 
         interfaces = {
           "${cfg.wanIface}" = {
             allowedTCPPorts = [ 22 ];
-            allowedUDPPorts = [ ];
+            allowedUDPPorts = [ 546 547 ];
           };
         };
       };
+    };
+    services.vnstat = {
+      enable = true;
     };
     systemd.services.dnsmasq = {
       path = with pkgs; [
@@ -197,12 +267,30 @@ in
         curl
       ];
     };
+
+    services.radvd = {
+      enable = true;
+      config = ''
+        interface br0 {
+          AdvSendAdvert on;
+          AdvHomeAgentFlag off;
+          MinRtrAdvInterval 30;
+          MaxRtrAdvInterval 100;
+          AdvDefaultPreference high;
+          prefix ::/64 {
+            AdvOnLink on;
+            AdvAutonomous on;
+            AdvRouterAddr on;
+          };
+        };
+      '';
+    };
     services.dnsmasq = {
       enable = true;
       servers = upstreamdns;
       extraConfig = ''
         # I like logs, lets have more of em
-        log-queries
+        # log-queries
         log-dhcp
 
         # Setup what domain we're serving home.arpa basically for internal
@@ -230,6 +318,13 @@ in
         interface=${cfg.lanIface}
         dhcp-range=${cfg.lanIface},10.10.10.3,10.10.10.127,24h
 
+        # Create a IPv6 range from address on the interface. The ::1 is related to the ifid in /etc/wide-dhcpv6/dhcp6c.conf.
+        # dhcp-range=tag:${cfg.lanIface},::1,constructor:${cfg.lanIface}, ra-names, 12h
+        dhcp-range=tag:${cfg.wanIface},::1,constructor:${cfg.wanIface}, ra-names, 12h
+
+        # IPv6 Route Advertisements
+        enable-ra
+
         # interface=wg0
 
         # Where we listen TODO: brain on this a bit
@@ -256,7 +351,10 @@ in
 
         dhcp-host=dc:a6:32:e9:42:f7,pikvm,10.10.10.10
 
-        dhcp-host=a0:ce:c8:ce:43:48,mb,10.10.10.20
+        # ether (broke somehow randomly...)
+        # dhcp-host=a0:ce:c8:ce:43:48,mb,10.10.10.20
+        # wifi
+        dhcp-host=f0:18:98:0d:0e:64,mb,10.10.10.20
 
         dhcp-host=3e:34:2b:0d:97:bc,iphone,10.10.10.30
         dhcp-host=c2:84:0f:47:5e:60,ipad,10.10.10.31

@@ -1,6 +1,6 @@
 { ... }: {
   networking.networkmanager.enable = false;
-  networking.enableIPv6 = false;
+  networking.enableIPv6 = true;
 
   # Enable ntp
   services.chrony = {
