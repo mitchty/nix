@@ -655,13 +655,6 @@
           ${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt --check ${./.}
           install -dm755 $out
         '';
-        # Duplicating the nix-shell but if I run it within nix flake check it
-        # fails so grr.
-        outdated = pkgs.runCommand "check-outdated" { } ''
-          export PATH="${nixpkgs.lib.makeBinPath [pkgs.coreutils pkgs.curl pkgs.jq pkgs.htmlq]}:$PATH"
-          ${builtins.readFile ./src/outdated.sh}
-          install -dm755 $out
-        '';
       };
     }
     );
