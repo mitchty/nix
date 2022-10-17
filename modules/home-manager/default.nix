@@ -124,7 +124,7 @@ in
     sshpass
     syncthing
     tldr
-    transcrypt
+    inputs.mitchty.packages.${pkgs.system}.transcrypt
     unzip
     vim
     wget

@@ -248,11 +248,11 @@
         "unstable": "unstable"
       },
       "locked": {
-        "lastModified": 1665892247,
-        "narHash": "sha256-7IkZLR2369G2Q3H5AeI3mXJ8HBaAdtmzFEJTPD1oVVg=",
+        "lastModified": 1665966346,
+        "narHash": "sha256-swtWrYDXGD8LGNRJWYy/N4AMP4aqBf5oMilWFVT9Xno=",
         "owner": "mitchty",
         "repo": "nixos",
-        "rev": "1eb936d29fe73a9603f698b80e8b99646039d5ce",
+        "rev": "1e69c785144f2b228797c4545e9a644c239e3817",
         "type": "github"
       },
       "original": {
