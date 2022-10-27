@@ -96,6 +96,8 @@ Like the startup screen and the echo hooey.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (custom-set-variables
+   '(frame-inhibit-implied-resize t)
+   '(pixel-scroll-precision-mode t)
    '(inhibit-startup-screen t)
    '(inhibit-startup-message t)
    '(inhibit-startup-echo-area-message t)
