@@ -9,60 +9,91 @@
 #+PROPERTY: header-args :comments no
 #+PROPERTY: header-args :results replace
 
-* prelude
+* Emacs config
 
-Startup related tasks/setup that might be used later on.
-
-*** emacs package setup
-
-This is out of place but to catch the gui elements early.
+Use use-package to configure emacs itself.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-(when (not (window-system))
-  (menu-bar-mode -1))
-#+END_SRC
+(use-package emacs
+  :demand t
+  :bind (("C-x ," . kill-whole-line)
+         ("C-c %" . query-replace)) ;; because modern macos has yeeted this away from me...
+  :config
+  (setq-default debug-on-error t)
+  (setq-default bidi-paragraph-direction 'left-to-right)
+  (setq kill-buffer-query-functions
+      (remq 'process-kill-buffer-query-function kill-buffer-query-functions))
+  (show-paren-mode)
+  (load "server")
+  (unless (server-running-p) (server-start))
+  (defun my-minibuffer-setup-hook ()
+    (setq gc-cons-threshold most-positive-fixnum))
+  (defun my-minibuffer-exit-hook ()
+    (setq gc-cons-threshold 8000000))
+  (defun string/ends-with (string suffix)
+    "Return t if STRING ends with SUFFIX."
+    (and (string-match (rx-to-string `(: ,suffix eos) t)
+                       string)
+         t))
+  (defvar on-mswindows (string-match "windows" (symbol-name system-type))
+    "Am I running under windows?")
+  (defvar on-osx (string-match "darwin" (symbol-name system-type))
+    "Am I running under osx?")
+  (defvar on-linux (string-match "gnu/linux" (symbol-name system-type))
+    "Am I running under linux?")
+  (add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
+  (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
+  (fset 'yes-or-no-p 'y-or-n-p)
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+  (setq ediff-split-window-function 'split-window-horizontally)
+  (setq inhibit-startup-screen t)
+  (setq enable-recursive-minibuffers t)
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
+  (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+  (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
+  (put 'upcase-region 'disabled nil)
 
-*** emacs gc speedup
+  (make-directory temporary-file-directory :parents)
 
-#+BEGIN_SRC emacs-lisp :tangle yes
-(defun my-minibuffer-setup-hook ()
-  (setq gc-cons-threshold most-positive-fixnum))
-
-(defun my-minibuffer-exit-hook ()
-  (setq gc-cons-threshold 8000000))
-
-(add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
-(add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
-#+END_SRC
-
-*** match end of string function
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(defun string/ends-with (string suffix)
-  "Return t if STRING ends with SUFFIX."
-  (and (string-match (rx-to-string `(: ,suffix eos) t)
-                     string)
-       t)
+  (delete-selection-mode 1)
+  :custom
+  (frame-inhibit-implied-resize t)
+  (inhibit-startup-echo-area-message t)
+  (inhibit-startup-message t)
+  (inhibit-startup-screen t)
+  (initial-scratch-message nil)
+  (pixel-scroll-precision-mode t)
+  (temporary-file-directory "/tmp/.emacs/")
+  (backup-directory-alist `((".*" . ,temporary-file-directory)))
+  (auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
+  (create-lockfiles nil)
+  (make-backup-files nil)
+  (auto-save-default nil)
+  (backup-by-copying t)
+  (auto-save-list-file-prefix temporary-file-directory)
+  (backup-directory-alist '((".*" . temporary-file-directory)))
+  (auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
+  (auto-save-file-name-transforms '((".*" "~/.emacs.d/cache/autosave/" t)))
+  (global-auto-revert-mode t)
+  (auto-revert-remote-files t)
+  (word-wrap t)
+  (default-major-mode 'text-mode)
+  (fill-column 80)
+  (sentence-end "[.?!][]\"')]*\\($\\|\t\\| \\)[ \t\n]*")
+  (sentence-end-double-space nil)
+  (default-tab-width 2)
+  (redisplay-dont-pause t)
   )
 #+END_SRC
 
-*** debug on error
+TESTING tooltip mode
 
-Not having to start *emacs* with *--debug-init* is useful.
+Puts all tooltips in the echo arear.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
-(setq-default debug-on-error t)
-#+END_SRC
-
-*** emacs server
-
-Start up the emacs server if it isn't running.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(load "server")
-(unless (server-running-p) (server-start))
+#+BEGIN_SRC emacs-lisp :tangle no
+(tooltip-mode -1)
+(custom-set-variables
+ '(tooltip-use-echo-area t))
 #+END_SRC
 
 *** theme
@@ -77,124 +108,6 @@ TODO: Maybe get this to go dark automagically?
   :config (load-theme 'minimal-light t))
 #+END_SRC
 
-*** os detection
-
-Make it easier to determine what os we're running on.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(defvar on-mswindows (string-match "windows" (symbol-name system-type))
-  "Am I running under windows?")
-(defvar on-osx (string-match "darwin" (symbol-name system-type))
-  "Am I running under osx?")
-(defvar on-linux (string-match "gnu/linux" (symbol-name system-type))
-  "Am I running under linux?")
-#+END_SRC
-
-*** disable pointless startup stuff
-
-Like the startup screen and the echo hooey.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (custom-set-variables
-   '(frame-inhibit-implied-resize t)
-   '(inhibit-startup-echo-area-message t)
-   '(inhibit-startup-message t)
-   '(inhibit-startup-screen t)
-   '(initial-scratch-message nil)
-   '(pixel-scroll-precision-mode t)
-   )
-#+END_SRC
-
-*** temporary files
-
-Keep temporary stuff isolated from everyone else. It infects everything otherwise. As bad as the .DS_Store files on osx.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(custom-set-variables
- '(temporary-file-directory "/tmp/.emacs/")
- '(backup-directory-alist `((".*" . ,temporary-file-directory)))
- '(auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
- '(create-lockfiles nil)
- '(make-backup-files nil)
- '(auto-save-default nil)
- '(backup-by-copying t)
- '(auto-save-list-file-prefix temporary-file-directory)
- '(backup-directory-alist `((".*" . ,temporary-file-directory)))
- '(auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
- )
-#+END_SRC
-
-Just in case the temp file dir doesn't exist, make it or emacs startup will be short lived indeed.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(make-directory temporary-file-directory :parents)
-#+END_SRC
-
-*** auto revert
-
-Update files in open buffers as they're changed on disk, freaking annoying without this on.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(custom-set-variables
- '(global-auto-revert-mode t)
- '(auto-revert-remote-files t))
-#+END_SRC
-
-*** dired
-
-Use dired-x.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
-#+END_SRC
-
-*** ediff
-
-For those rare times I use it, make it a bit less derp on output.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(setq ediff-window-setup-function 'ediff-setup-windows-plain)
-(setq ediff-split-window-function 'split-window-horizontally)
-#+END_SRC
-
-*** always remove trailing whitespace
-
-Trailing whitespace is not normally useful. Remove it always on save in the *before-save-hook*.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
-#+END_SRC
-
-*** chmod u+x on save for scripts
-
-Because its derp to have to chmod 755 stuff after I save. Honestly, do it for me kthxbai.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
-#+END_SRC
-
-*** misc text related
-#+BEGIN_SRC emacs-lisp :tangle yes
-(put 'upcase-region 'disabled nil)
-#+END_SRC
-*** line wrap
-
-Line wrapping is useful. Enable it globally for a start.
-
-Need word-wrap so kill line kills the line, not the displayed line.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(custom-set-variables '(word-wrap t))
-#+END_SRC
-
-*** default major mode
-
-So if we don't know, call it text-mode.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(custom-set-variables '(default-major-mode 'text-mode))
-#+END_SRC
-
 *** encoding
 
 utf8 is the best. Default to it.
@@ -203,63 +116,13 @@ utf8 is the best. Default to it.
 (use-package unicode-escape
   :init
   (set-language-environment "UTF-8")
-  :ensure)
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(custom-set-variables '(locale-coding-system 'utf-8))
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-#+END_SRC
-
-*** text selection
-
-If I selected text, delete the selection, I probably meant it emacs.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(delete-selection-mode 1)
-#+END_SRC
-
-*** line width
-
-80 char line columns not 72.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(custom-set-variables '(fill-column 80))
-#+END_SRC
-
-*** we aren't banging rocks together anymore emacs
-
-Double spacing after a line isn't needed. We aren't animals emacs, we have
-computers. Also adjust what emacs treats as the end of a sentence.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(custom-set-variables
- '(sentence-end "[.?!][]\"')]*\\($\\|\t\\| \\)[ \t\n]*")
- '(sentence-end-double-space nil)
- )
-#+END_SRC
-
-*** long line speedups
-
-Improve the performance of emacs with files that contain long lines. Disable
-left to right and right to left in the same buffer support. Until or if I learn
-a language that needs this I can deal with it then.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(setq-default bidi-paragraph-direction 'left-to-right)
-#+END_SRC
-
-*** default tab-width
-
-Two seems sensible, cause well, tabs are evil incarnate.
-
-Lets use a tab width of 2 by default.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(custom-set-variables '(default-tab-width 2))
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (set-selection-coding-system 'utf-8)
+  (prefer-coding-system 'utf-8)
+  :custom
+  (locale-coding-system 'utf-8)
+  :ensure t)
 #+END_SRC
 
 *** whitespace
@@ -290,48 +153,6 @@ Customize whitespace mode to make tabs obvious as boxes, and to highlight lines 
 (add-hook 'prog-mode-hook 'whitespace-mode)
 (add-hook 'text-mode-hook 'whitespace-mode)
 (add-hook 'makefile-mode-hook 'whitespace-mode)
-#+END_SRC
-
-*** uncategorized
-
-I have no idea how to label these.
-
-Highlight parens.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(show-paren-mode)
-#+END_SRC
-
-Typing out *yes* or *no* is stupid.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(fset 'yes-or-no-p 'y-or-n-p)
-#+END_SRC
-
-Disable the stupid prompt added in 23.2 that asks if you want to kill a buffer with a process attached. Yes, obviously, shut up and do it.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(setq kill-buffer-query-functions
-      (remq 'process-kill-buffer-query-function kill-buffer-query-functions))
-#+END_SRC
-
-TESTING tooltip mode
-
-Puts all tooltips in the echo arear.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(tooltip-mode -1)
-(custom-set-variables
- '(tooltip-use-echo-area t))
-#+END_SRC
-
-TESTING redisplay
-
-Have emacs not redraw the display before processing input events.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(custom-set-variables
- '(redisplay-dont-pause t))
 #+END_SRC
 
 *** osx specific
@@ -369,15 +190,6 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
   )
 #+END_SRC
 
-*** global key bindings
-
-Global key bindings.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (global-set-key (kbd "C-x ,") 'kill-whole-line)
-  (global-set-key (kbd "C-x C-m") 'compile)
-#+END_SRC
-
 *** x copy/paste
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -391,6 +203,7 @@ Global key bindings.
 * appearance
 *** fonts setup
 
+TODO: Migrate this into the top use-package setup
 Set the default frame list values, then iff in a window system set the fonts in reverse order of preference
 
 #+BEGIN_SRC emacs-lisp :tangle yes
