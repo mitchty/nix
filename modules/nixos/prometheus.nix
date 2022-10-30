@@ -63,6 +63,7 @@ in
               "nexus.home.arpa:${toString config.services.prometheus.exporters.node.port}"
               "dfs1.home.arpa:${toString config.services.prometheus.exporters.node.port}"
               "srv.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              "sys1.home.arpa:${toString config.services.prometheus.exporters.node.port}"
             ];
           }];
         }

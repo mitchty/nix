@@ -239,6 +239,20 @@
         };
       };
 
+      # Terramaster tm4-423 test
+      sys1Autoinstall = {
+        autoinstall = {
+          flavor = "zfs";
+          hostName = "sys1";
+          rootDevices = [
+            "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T814942M"
+            "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T801235B"
+          ];
+          swapSize = "16GiB";
+          osSize = "96GiB";
+        };
+      };
+
       # Current nas box, needs a rebuild once dfs2/3 are working
       dfs1Autoinstall = {
         autoinstall.flavor = "zfs";
@@ -344,6 +358,18 @@
           modules = [
             ./modules/iso/autoinstall.nix
             srvAutoinstall
+            {
+              autoinstall.debug = true;
+              autoinstall.wipe = true;
+            }
+          ];
+          format = "install-iso";
+        };
+        isoSys1 = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            sys1Autoinstall
             {
               autoinstall.debug = true;
               autoinstall.wipe = true;
@@ -578,6 +604,28 @@
             unstable = unstable.legacyPackages.${x86-linux};
           };
         };
+        sys1 = (makeOverridable nixosSystem) {
+          system = "x86_64-linux";
+          modules = nixOSModules ++ [
+            ./hosts/sys1/configuration.nix
+          ] ++ [{
+            users = {
+              primaryUser = "mitch";
+              primaryGroup = "users";
+            };
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
+            services.role = {
+              intel.enable = true;
+              mosh.enable = true;
+              node-exporter.enable = true;
+              promtail.enable = true;
+            };
+          }];
+          specialArgs = {
+            inherit inputs;
+            unstable = unstable.legacyPackages.${x86-linux};
+          };
+        };
         dfs1 = nixosSystem {
           system = "x86_64-linux";
           modules = nixOSModules ++ [
@@ -628,6 +676,12 @@
             hostname = "nexus.home.arpa";
             profiles.system = {
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
+            };
+          };
+          "sys1" = {
+            hostname = "sys1.home.arpa";
+            profiles.system = {
+              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."sys1";
             };
           };
           "dfs1" = {

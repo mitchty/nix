@@ -64,6 +64,7 @@ let
     10.10.10.3 nexus.home.arpa nexus
     10.10.10.4 dfs1.home.arpa dfs1
     10.10.10.5 srv.home.arpa srv
+    10.10.10.6 sys1.home.arpa sys1
     10.10.10.10 pikvm.home.arpa pikvm
     10.10.10.20 mb.home.arpa mb
     10.10.10.30 iphone.home.arpa iphone
@@ -327,6 +328,7 @@ in
         dhcp-host=00:1f:c6:9b:9f:93,nexus,10.10.10.3
         dhcp-host=00:e2:69:15:7c:ea,dfs1,10.10.10.4
         dhcp-host=50:65:f3:6b:01:2a,srv,10.10.10.5
+        dhcp-host=6c:bf:b5:02:89:cf,sys1,10.10.10.6
 
         dhcp-host=dc:a6:32:e9:42:f7,pikvm,10.10.10.10
 

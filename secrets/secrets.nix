@@ -10,19 +10,21 @@ let
   srv = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsX6e+fhe/CxoGIbZ4auuk83H3sUK5XQhia8OWFz4pt";
   nexus = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJCQJlqfzBYIjuWAIl72Q4o264vMEKWc4b+Tc30cqgtO";
   dfs1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMIIXtwtlXD59ni6Y/+jYr2opNqvG6sTTXKbVN4OBLTA";
+  sys1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINfovbJkY1YFGvngpFBq/FXmeercA27axDCRBxBiJZqI";
+
   wmb = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINWlH6mfb4+v6z+uXNBDr+pPkhgTI7v3TMYl8UDNiKT1";
 
   # To make the following a skosh simpler/easier
   homeusers = [ mitch ];
-  homehosts = [ mb srv nexus dfs1 gw ];
+  homehosts = [ mb srv nexus dfs1 gw sys1 ];
 
   workhosts = [ wmb ];
 
   # TODO: Remove dfs1 from here this is a hack for now
-  git = [ mb srv nexus wmb dfs1 gw ] ++ homeusers;
+  git = [ mb srv nexus wmb dfs1 gw sys1 ] ++ homeusers;
   restic = [ mb srv nexus ];
 
-  allnixos = [ dfs1 srv nexus gw ];
+  allnixos = [ dfs1 srv nexus gw sys1 ];
 
   # Some secrets should be usable everywhere
   allusers = homeusers;

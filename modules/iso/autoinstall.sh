@@ -137,10 +137,10 @@ device_settle "${disks}"
 idx=0
 for disk in $disks; do
   if [ 1 -eq "${wipe}" ]; then
-     wipeit="yep"
+    wipeit="yep"
   fi
   sfdisklabel gpt ${idx} "${dedicatedboot}" "${bootsize}" "${swapsize}" "${ossize}" | sfdisk --force ${wipeit+--wipe always --wipe-partitions always} "${disk}"
-  idx=$((idx+1))
+  idx=$((idx + 1))
 done
 
 device_settle "${disks}"
@@ -184,7 +184,7 @@ elif [ "zfs" = "${flavor}" ]; then
     pooldevs="${pooldevs} ${root}"
     mirrorboots="${mirrorboots} ${boot}"
     swapmd="${swapmd} ${swap}"
-    count=$((count+1))
+    count=$((count + 1))
   done
 
   # Need to do this or we can get errors because "device is in use" by
@@ -195,7 +195,7 @@ elif [ "zfs" = "${flavor}" ]; then
   # iff we only have 1 device, fake the $count to 2 and add a missing device
   rcount=$count
   if [ "$count" = 1 ]; then
-    rcount=$(( count + 1 ))
+    rcount=$((count + 1))
     swapmd="${swapmd} missing"
   fi
   mdadm --create /dev/md0 --run --level=1 --raid-devices=$rcount --metadata=1.0 ${swapmd}
@@ -242,7 +242,7 @@ elif [ "zfs" = "${flavor}" ]; then
     fi
     install -dm755 "${mntpt}"
     mount "${dev}" "${mntpt}"
-    idx=$((idx+1))
+    idx=$((idx + 1))
   done
 else
   printf "bug: how did you get here?\n" >&2
@@ -280,7 +280,7 @@ for disk in $disks; do
 
   sed -i '$i    { devices = [ "nodev" ]; path = "'$out'"; }' $nixoscfg
 
-  idx=$((idx+1))
+  idx=$((idx + 1))
 done
 sed -i '$i  ];' $nixoscfg
 
@@ -290,7 +290,6 @@ for net in $(ip link | awk '/^[[:digit:]]/ && !/lo/ {print $2}' | tr -d ':'); do
 done
 
 nixos-install --no-root-password
-
 
 if [ "zfs" = $flavor ]; then
   for mnt in $(awk '/\/mnt\// {print $1}' /proc/mounts); do
@@ -302,5 +301,10 @@ if [ "zfs" = $flavor ]; then
   # Export as per instructions on the wiki
   zpool export zroot
 fi
+
+# Make it easier to debug if things go sideways with a tempfile I can create
+until [ ! -e /tmp/wait ]; do
+  sleep 5
+done
 
 reboot_into_firmware_or_shutdown

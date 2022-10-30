@@ -29,7 +29,7 @@ in
 
     # boot.supportedFilesystems = [ "zfs" "bcachefs" "xfs" ];
 
-    boot.supportedFilesystems = [ "zfs" "xfs" ];
+    boot.supportedFilesystems = [ "xfs" ];
     # boot.kernelPackages = pkgs.linuxPackages_latest;
 
     # kernelPatches = pkgs.lib.singleton {
