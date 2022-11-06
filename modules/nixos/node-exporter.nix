@@ -16,7 +16,25 @@ in
       exporters = {
         node = {
           enable = true;
-          enabledCollectors = [ "systemd" ];
+          enabledCollectors = [
+            "conntrack"
+            "diskstats"
+            "entropy"
+            "filefd"
+            "filesystem"
+            "interrupts"
+            "ksmd"
+            "loadavg"
+            "logind"
+            "mdadm"
+            "meminfo"
+            "netdev"
+            "netstat"
+            "stat"
+            "systemd"
+            "time"
+            "vmstat"
+          ];
           port = 9002;
         };
       };
