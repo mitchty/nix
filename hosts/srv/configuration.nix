@@ -2,6 +2,7 @@
   imports = [
     ./..
     ./hardware-configuration.nix
+    ../kernel.nix
     ../virtualization.nix
     ../binfmt.nix
     ../desktop.nix

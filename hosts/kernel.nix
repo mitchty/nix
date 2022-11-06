@@ -15,36 +15,11 @@
       # The default nixpkgs kernel has these as modules, but whatever just
       # compile them in statically
       extraConfig = ''
-        CAN n
-        FIREWIRE n
-        FPGA n
-        INFINIBAND n
-        INPUT_JOYSTICK n
-        INPUT_TOUCHSCREEN n
-        IWLWIFI n
-        GAMEPORT n
-        GREYBUS n
-        NET_VENDOR_NVIDIA n
-        NFC n
-        CXL_BUS n
-        STAGING y
-        STAGING_MEDIA y
+        TASK_DELAY_ACCT y
+        ZSWAP_COMPRESSOR_DEFAULT zstd
         ZSWAP_COMPRESSOR_DEFAULT_LZO n
         ZSWAP_COMPRESSOR_DEFAULT_ZSTD y
-        ZSWAP_COMPRESSOR_DEFAULT zstd
       '';
-      #    DM_CACHE m
-      #    DM_INTEGRITY m
-      #    DM_VERITY m
-      #    DM_THIN_PROVISIONING m
-      #    CRYPTO_AEGIS128_SIMD n
-      #    BT n
-      #    FB_NVIDIA n
-      #    FB_NVIDIA_BACKLIGHT n
-      #    FB_NVIDIA_I2C n
-      #    RTC_DRV_RK808 y
-      #    SND n
-      #    SOUND n
     };
 
     # Always clean out /tmp

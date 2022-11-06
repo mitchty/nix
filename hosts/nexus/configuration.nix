@@ -5,6 +5,7 @@
 
       # Ordering of imports is for understanding not alphanumeric sorted
       ./hardware-configuration.nix
+      ../kernel.nix
       ../pipewire.nix
       ../virtualization.nix
       ../binfmt.nix

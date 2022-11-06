@@ -3,6 +3,7 @@
     [
       ./..
       ./hardware-configuration.nix
+      ../kernel.nix
       ../virtualization.nix
       ../binfmt.nix
       ../zfs-grub.nix
