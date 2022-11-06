@@ -14,10 +14,13 @@
     linux-firmware
     linuxPackages.cpupower
     linuxPackages.perf
+    masscan
     mosh
     nftables
+    nmap
     pciutils
     powertop
+    psmisc
     s-tui
     strace
     tcpdump
