@@ -61,7 +61,7 @@ in
       $DRY_RUN_CMD install -dm755 $VERBOSE_ARG ~/.cache/swiftbar
       $DRY_RUN_CMD close stats
       $DRY_RUN_CMD pkill nettop || :
-      $DRY_RUN_CMD open -a ~/Applications/Nix\ Apps/Stats.app
+      $DRY_RUN_CMD open -a /Applications/Nix\ Apps/Stats.app
     '';
   };
 }
