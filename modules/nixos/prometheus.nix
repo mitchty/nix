@@ -24,6 +24,11 @@ in
       default = "eno1";
       description = "interface to add vip to";
     };
+    interval = mkOption {
+      type = types.str;
+      default = "10s";
+      description = "scrape intrerval string";
+    };
   };
 
   config = mkIf cfg.enable rec {
@@ -53,27 +58,70 @@ in
       enable = true;
       port = 9001;
       listenAddress = cfg.cname;
-      extraFlags = [ "--web.enable-admin-api" ];
+      extraFlags = [
+        "--web.enable-admin-api"
+        "--storage.tsdb.retention.time=${toString (365 * 3)}d" # 3 years of data?
+      ];
       scrapeConfigs = [
         {
           job_name = "nixos";
-          static_configs = [{
-            targets = [
-              "gw.home.arpa:${toString config.services.prometheus.exporters.node.port}"
-              "nexus.home.arpa:${toString config.services.prometheus.exporters.node.port}"
-              "dfs1.home.arpa:${toString config.services.prometheus.exporters.node.port}"
-              "srv.home.arpa:${toString config.services.prometheus.exporters.node.port}"
-              "sys1.home.arpa:${toString config.services.prometheus.exporters.node.port}"
-            ];
-          }];
+          scrape_interval = cfg.interval;
+          static_configs = [
+            {
+              targets = [
+                "gw.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              ];
+              labels = {
+                alias = "gw.home.arpa";
+              };
+            }
+            {
+              targets = [
+                "nexus.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              ];
+              labels = {
+                alias = "nexus.home.arpa";
+              };
+            }
+            {
+              targets = [
+                "dfs1.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              ];
+              labels = {
+                alias = "dfs1.home.arpa";
+              };
+            }
+            {
+              targets = [
+                "srv.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              ];
+              labels = {
+                alias = "srv.home.arpa";
+              };
+            }
+            {
+              targets = [
+                "sys1.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              ];
+              labels = {
+                alias = "sys1.home.arpa";
+              };
+            }
+          ];
         }
         {
           job_name = "macos";
-          static_configs = [{
-            targets = [
-              "mb.home.arpa:9100"
-            ];
-          }];
+          scrape_interval = cfg.interval;
+          static_configs = [
+            {
+              targets = [
+                "mb.home.arpa:9100"
+              ];
+              labels = {
+                alias = "mb.home.arpa";
+              };
+            }
+          ];
         }
       ];
     };
