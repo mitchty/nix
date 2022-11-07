@@ -6,6 +6,9 @@
 { pkgs, ... }:
 
 let
+  crane = (pkgs.writeScriptBin "crane" (builtins.readFile ../../static/src/crane.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
   dns = (pkgs.writeScriptBin "dns" (builtins.readFile ../../static/src/dns)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
@@ -24,6 +27,7 @@ let
 in
 {
   home.packages = [
+    crane
     dns
     iso8601
     portchk
