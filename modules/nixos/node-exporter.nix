@@ -10,9 +10,25 @@ in
 {
   options.services.role.node-exporter = {
     enable = mkEnableOption "Setup as a prometheus node-exporter";
+
+    exporterIface = lib.mkOption
+      {
+        type = lib.types.str;
+        example = lib.literalExample "eno1";
+        default = "";
+        description = "interface to open node exporter firewall for node exporter";
+      };
   };
 
   config = mkIf cfg.enable rec {
+    networking.firewall = mkIf (cfg.exporterIface != "") {
+      interfaces = {
+        "${cfg.exporterIface}" = {
+          allowedTCPPorts = [ 9002 ];
+        };
+      };
+    };
+
     services.prometheus = {
       enable = true;
       exporters = {
