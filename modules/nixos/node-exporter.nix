@@ -4,6 +4,8 @@ with lib;
 
 let
   cfg = config.services.role.node-exporter;
+
+  hasFileSystemType = fsType: { } != filterAttrs (n: v: v.fsType == fsType) config.fileSystems;
 in
 {
   options.services.role.node-exporter = {
@@ -34,7 +36,11 @@ in
             "systemd"
             "time"
             "vmstat"
-          ];
+          ] ++ (
+            optionals (hasFileSystemType "xfs") [ "xfs" ]
+          ) ++ (
+            optionals (hasFileSystemType "zfs" || elem "zfs" config.boot.supportedFilesystems) [ "zfs" ]
+          );
           port = 9002;
         };
       };
