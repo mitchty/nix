@@ -198,6 +198,14 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
   )
 #+END_SRC
 * appearance
+*** focus on current text
+
+TESTING
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package dimmer
+  :ensure t)
+#+END_SRC
+
 *** fonts setup
 
 TODO: Migrate this into the top use-package setup
