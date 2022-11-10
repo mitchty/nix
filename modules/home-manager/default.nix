@@ -5,7 +5,7 @@ let
   # TODO: figure out a way to import based on this...
   # sys = pkgs.lib.last (pkgs.lib.splitString "-" pkgs.system);
   emacsWithConfig = (pkgs.emacsWithPackagesFromUsePackage {
-    config = ../../static/emacs/readme.org;
+    config = ../../static/emacs/init.org;
     package = pkgs.emacsNativeComp;
     extraEmacsPackages = epkgs: [
       epkgs.use-package
@@ -172,12 +172,12 @@ in
     package = emacsWithConfig;
   };
   home.file = {
-    ".emacs.d/init.el" = {
-      source = ../../static/emacs/init.el;
+    ".emacs.d/early-init.el" = {
+      source = ../../static/emacs/early-init.el;
       recursive = true;
     };
-    ".emacs.d/readme.org" = {
-      source = ../../static/emacs/readme.org;
+    ".emacs.d/init.org" = {
+      source = ../../static/emacs/init.org;
       recursive = true;
     };
   };
@@ -185,7 +185,7 @@ in
   # Remove the quelpa nonsense was only there for the modeline module
   home.activation.freshEmacs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     printf "modules/home-manager/default.nix: clean ~/.emacs.d\n" >&2
-    $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.emacs.d/init.elc ~/.emacs.d/elpa ~/.emacs.d/quelpa ~/.emacs.d/readme.el
+    $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.emacs.d/init.elc ~/.emacs.d/elpa
   '';
 
   # Programs not (yet) worthy of their own .nix setup... so far
