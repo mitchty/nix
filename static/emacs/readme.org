@@ -759,6 +759,12 @@ So I write gooder. Me fail English? Thats unpossible.
   )
 #+END_SRC
 
+*** terraform-mode
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package terraform-mode :ensure)
+#+END_SRC
+
 *** idris-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
