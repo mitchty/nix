@@ -71,9 +71,6 @@ Use use-package to configure emacs itself.
   (auto-save-default nil)
   (backup-by-copying t)
   (auto-save-list-file-prefix temporary-file-directory)
-  (backup-directory-alist '((".*" . temporary-file-directory)))
-  (auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
-  (auto-save-file-name-transforms '((".*" "~/.emacs.d/cache/autosave/" t)))
   (global-auto-revert-mode t)
   (auto-revert-remote-files t)
   (word-wrap t)
@@ -398,7 +395,7 @@ Switching to ivy mode+swiper
 (use-package projectile
   :ensure
   :init
-  (projectile-global-mode))
+  (projectile-mode))
 
 (use-package counsel
   :ensure
@@ -927,7 +924,7 @@ So first up, add auto-insert to *find-file-hooks* so we insert straight away. Al
 setup the copyright bit to minimally put in name.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(add-hook 'find-file-hooks 'auto-insert)
+(add-hook 'find-file-hook 'auto-insert)
 (defvar auto-insert-copyright (user-full-name))
 #+END_SRC
 
