@@ -193,7 +193,7 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
 (when (and on-linux (window-system))
   (progn
     (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
-    (setq x-select-enable-clipboard t)
+    (setq select-enable-clipboard t)
     )
   )
 #+END_SRC
