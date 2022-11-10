@@ -331,11 +331,11 @@
     },
     "nixpkgs-mitchty": {
       "locked": {
-        "lastModified": 1664119830,
-        "narHash": "sha256-NBq3q1GKsca4ep66XrGsTsFqYOSgcQMf9Ss8ijGF5Ow=",
+        "lastModified": 1668039443,
+        "narHash": "sha256-DI2OcNm4voUMUeYVbiIAQjyC7M04vDltNrL4dG1yxO0=",
         "owner": "mitchty",
         "repo": "nixpkgs",
-        "rev": "e4fb75a82d1e58444d62749b71fab34e5f261cac",
+        "rev": "22ef8368460a03319d8c12a84564b7f964cc2fec",
         "type": "github"
       },
       "original": {

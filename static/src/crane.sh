@@ -23,7 +23,7 @@ cd "${dir}" || exit 126
 nix flake init -t github:ipetkov/crane
 git init
 
-echo result > .gitignore
+printf "result\ntarget\n" > .gitignore
 
 echo 'use flake' > .envrc
 
@@ -33,7 +33,7 @@ git commit -m "nix flake init -t github:ipetkov/crane"
 # Mostly here until/if/when https://github.com/ipetkov/crane/issues/156 is resolved
 cat << 'EOF' | patch -p1
 diff --git a/flake.nix b/flake.nix
-index 0657077..c5c1c70 100644
+index 0657077..1aaaf49 100644
 --- a/flake.nix
 +++ b/flake.nix
 @@ -24,21 +24,25 @@
@@ -47,8 +47,8 @@ index 0657077..c5c1c70 100644
          src = craneLib.cleanCargoSource ./.;
 
 +        # If one needs to customize the build environment here is where to add
-+        # to it, mostly only needed for macos
-+        buildInputs = [] ++ lib.optionals stdenv.isDarwin [ pkgs.libiconv ];
++        # to it, mostly only needed for macos dependencies.
++        buildInputs = [ ] ++ lib.optionals stdenv.isDarwin (lib.attrVals [ "libiconv" ] pkgs);
 +
          # Build *just* the cargo dependencies, so we can reuse
          # all of that work (e.g. via cachix) when running in CI
@@ -75,7 +75,7 @@ index 0657077..c5c1c70 100644
            };
 
 @@ -75,7 +79,7 @@
-           # Consider setting $(doCheck = false) on $(my-crate) if you do not want
+           # Consider setting `doCheck = false` on `my-crate` if you do not want
            # the tests to run twice
            my-crate-nextest = craneLib.cargoNextest {
 -            inherit cargoArtifacts src;
@@ -83,17 +83,8 @@ index 0657077..c5c1c70 100644
              partitions = 1;
              partitionType = "count";
            };
-@@ -100,7 +104,7 @@
-           nativeBuildInputs = with pkgs; [
-             cargo
-             rustc
--          ];
-+          ] ++ buildInputs;
-         };
-       });
- }
 EOF
 
-rm flake.nix.orig
+rm -f flake.nix.orig
 git add -u
 git commit -m "Patch in fix for https://github.com/ipetkov/crane/issues/156"
