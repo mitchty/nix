@@ -24,67 +24,7 @@ nix flake init -t github:ipetkov/crane
 git init
 
 printf "result\ntarget\n" > .gitignore
-
-echo 'use flake' > .envrc
+printf 'use flake\n' > .envrc
 
 git add -A
 git commit -m "nix flake init -t github:ipetkov/crane"
-
-# Mostly here until/if/when https://github.com/ipetkov/crane/issues/156 is resolved
-cat << 'EOF' | patch -p1
-diff --git a/flake.nix b/flake.nix
-index 0657077..1aaaf49 100644
---- a/flake.nix
-+++ b/flake.nix
-@@ -24,21 +24,25 @@
-           inherit system;
-         };
-
--        inherit (pkgs) lib;
-+        inherit (pkgs) lib stdenv;
-
-         craneLib = crane.lib.${system};
-         src = craneLib.cleanCargoSource ./.;
-
-+        # If one needs to customize the build environment here is where to add
-+        # to it, mostly only needed for macos dependencies.
-+        buildInputs = [ ] ++ lib.optionals stdenv.isDarwin (lib.attrVals [ "libiconv" ] pkgs);
-+
-         # Build *just* the cargo dependencies, so we can reuse
-         # all of that work (e.g. via cachix) when running in CI
-         cargoArtifacts = craneLib.buildDepsOnly {
--          inherit src;
-+          inherit src buildInputs;
-         };
-
-         # Build the actual crate itself, reusing the dependency
-         # artifacts from above.
-         my-crate = craneLib.buildPackage {
--          inherit cargoArtifacts src;
-+          inherit cargoArtifacts src buildInputs;
-         };
-       in
-       {
-@@ -53,7 +57,7 @@
-           # we can block the CI if there are issues here, but not
-           # prevent downstream consumers from building our crate by itself.
-           my-crate-clippy = craneLib.cargoClippy {
--            inherit cargoArtifacts src;
-+            inherit cargoArtifacts src buildInputs;
-             cargoClippyExtraArgs = "--all-targets -- --deny warnings";
-           };
-
-@@ -75,7 +79,7 @@
-           # Consider setting `doCheck = false` on `my-crate` if you do not want
-           # the tests to run twice
-           my-crate-nextest = craneLib.cargoNextest {
--            inherit cargoArtifacts src;
-+            inherit cargoArtifacts src buildInputs;
-             partitions = 1;
-             partitionType = "count";
-           };
-EOF
-
-rm -f flake.nix.orig
-git add -u
-git commit -m "Patch in fix for https://github.com/ipetkov/crane/issues/156"
