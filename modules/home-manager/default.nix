@@ -77,24 +77,29 @@ in
     dasel
     dateutils
     deadnix
+    difftastic
     du-dust
     entr
     file
+    fio
     gh
     (pkgs.hiPrio go) # Ensure this is the go to use in the case of collision
     gist
-    gitFull
     git-extras
     git-lfs
     git-quick-stats
     git-recent
     git-sizer
+    gitFull
     gnumake
     gron
     htop
+    hyperfine
+    iftop
     inputs.agenix.packages.${pkgs.system}.agenix
     inputs.mitchty.packages.${pkgs.system}.hatools
     inputs.mitchty.packages.${pkgs.system}.hwatch
+    inputs.mitchty.packages.${pkgs.system}.transcrypt
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
     inputs.rust.packages.${pkgs.system}.rust
     jless
@@ -113,14 +118,16 @@ in
     p7zip
     pbzip2
     pigz
+    procps
+    pv
     # For emacs python-mode, not sure if Full is needed or if Minimal would work
     # and don't care much.
     python3Full
-    pv
     rage
     rclone
     restic
     ripgrep
+    rq
     rust-analyzer
     s3cmd
     shellcheck
@@ -131,7 +138,6 @@ in
     sshpass
     syncthing
     tldr
-    inputs.mitchty.packages.${pkgs.system}.transcrypt
     unzip
     vim
     wget
@@ -139,6 +145,7 @@ in
     yt-dlp
     # Non gui linux stuff
   ] ++ lib.optionals stdenv.isLinux [
+    usbutils
     # Testing packages that I may/not upstream any changes to nixpkgs
     inputs.mitchty.packages.${pkgs.system}.seaweedfs
     docker
