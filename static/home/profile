@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
+# SPDX-License-Identifier: BlueOak-1.0.0
 
 # Cheap copy function to make copying a file via ssh from one host
 # to another less painful, use pipeviewer to give some idea as to progress.
@@ -75,7 +76,7 @@ login_shell() {
 
 t() {
   if [ -z "$1" ]; then
-    echo "Supply a tmux session name to connect to/create"
+    printf "Supply a tmux session name to connect to/create\n" >&2
   else
     tmux has-session -t "$1" 2> /dev/null || tmux new-session -d -s "$1"
     tmux attach-session -d -t "$1"
@@ -128,3 +129,38 @@ alias hb='rsync -e "ssh -T -c aes128-ctr -o Compression=no -x" --exclude .cache 
 
 PATH="${PATH}:${HOME}/bin:${HOME}/.local/bin"
 export PATH
+
+# Using german word for new, neu to handle setting up a new cargo/rust setup and cd into it
+#
+# Mostly to make it easy to just start a test with nix+cargo+git all in one.
+neu() {
+  # Arg is the directory to do stuff to, required
+  _neudir=${1?}
+  shift > /dev/null 2>&1 || :
+  _neuname=${1?}
+
+  if [ -e "${_neudir}" ]; then
+    printf "fatal: %S exists, refusing to add stuff to it\n" "${_neudir}" >&2
+    return 1
+  fi
+
+  install -dm755 "${_neudir}"
+
+  cd "${_neudir}" || return 126
+
+  nix flake init -t github:ipetkov/crane
+  git init
+
+  printf "result\ntarget\n" > .gitignore
+  printf 'use flake\n' > .envrc
+
+  # Rename it if we want a different name for the thing
+  if [ -n "${_neuname}" ]; then
+    sed -i '' -e "s/quick-start/${_neuname}/g" -e "s/my-crate/${_neuname}/g" Cargo.toml flake.nix
+  fi
+
+  git add -A
+  git commit -m "nix flake init -t github:ipetkov/crane"
+}
+
+alias nbld='nix build && nix flake check'
