@@ -19,6 +19,9 @@
       jq
     ];
 
+    # Sets up /etc/pam/sudo to use touchid for sudo
+    security.pam.enableSudoTouchIdAuth = true;
+
     # Keyboard shenanigans
     system = {
       keyboard = {
