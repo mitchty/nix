@@ -662,6 +662,8 @@ Flycheck for on the fly checking of code.
   :ensure
   :custom
   (flycheck-indication-mode 'left-fringe)
+  (flycheck-highlighting-mode 'symbols)
+  (flycheck-highlighting-style 'level-face)
   :hook (prog-mode . flycheck-mode))
 #+END_SRC
 
