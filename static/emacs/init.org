@@ -1145,9 +1145,11 @@ Ref:
   (setq fancy-dabbrev-preview-delay 0.1)
   (setq fancy-dabbrev-expansion-on-preview-only t)
   (setq fancy-dabbrev-indent-command 'tab-to-tab-stop)
-  ;; Don't seem to work in :hook macro
+  (setq fancy-dabbrev-no-expansion-for '(multiple-cursors-mode magit-mode))
+  ;; :bind
+  ;;   (([C-M-c] . fancy-dabbrev-expand-or-indent))
   (add-hook 'prog-mode-hook (local-set-key (kbd "<tab>") 'fancy-dabbrev-expand-or-indent))
-  (add-hook 'text-mode-hook (local-set-key (kbd "<tab>") 'fancy-dabbrev-expand-or-indent))
+  ;; Don't seem to work in :hook macro
   :hook ((prog-mode . fancy-dabbrev-mode)
          (org-mode . fancy-dabbrev-mode)))
 #+END_SRC
