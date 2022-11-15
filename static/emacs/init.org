@@ -104,6 +104,13 @@ TODO: Maybe get this to go dark automagically?
 (use-package minimal-theme
   :ensure
   :config (load-theme 'minimal-light t))
+
+(use-package auto-dark
+  :after minimal-theme
+  :ensure
+  :if (memq window-system '(mac ns))
+  :custom
+  (auto-dark--light-theme 'minimal-light))
 #+END_SRC
 
 *** encoding
