@@ -105,12 +105,17 @@ TODO: Maybe get this to go dark automagically?
   :ensure
   :config (load-theme 'minimal-light t))
 
+(use-package tron-legacy-theme
+  :ensure
+  :config (load-theme 'tron-legacy t))
+
 (use-package auto-dark
   :after minimal-theme
   :ensure
   :if (memq window-system '(mac ns))
   :custom
-  (auto-dark--light-theme 'minimal-light))
+  (auto-dark--light-theme 'minimal-light)
+  (auto-dark--dark-theme 'tron-legacy))
 #+END_SRC
 
 *** encoding
