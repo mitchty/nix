@@ -61,6 +61,7 @@
   sc = !git clone --recursive $1
   # git update with submodule update
   sup = !git pull --rebase && git submodule update --init --recursive
+  sw = switch
   wtl = worktree list
   wtp = worktree prune
   wta = worktree add
