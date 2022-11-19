@@ -8,7 +8,6 @@
       ../kernel.nix
       ../pipewire.nix
       ../virtualization.nix
-      ../binfmt.nix
       ../desktop.nix
       ../zfs.nix
       ../userscompat.nix
