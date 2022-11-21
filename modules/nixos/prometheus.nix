@@ -58,8 +58,10 @@ in
       enable = true;
       port = 9001;
       listenAddress = cfg.cname;
+      # https://prometheus.io/docs/prometheus/latest/storage/#operational-aspects
       extraFlags = [
         "--web.enable-admin-api"
+        "--storage.tsdb.wal-compression"
         "--storage.tsdb.retention.time=${toString (365 * 3)}d" # 3 years of data?
       ];
       scrapeConfigs = [
