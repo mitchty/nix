@@ -332,10 +332,10 @@ in
 
         dhcp-host=dc:a6:32:e9:42:f7,pikvm,10.10.10.10
 
-        # ether (broke somehow randomly...)
-        # dhcp-host=a0:ce:c8:ce:43:48,mb,10.10.10.20
+        # ether
+        dhcp-host=a0:ce:c8:ce:43:48,mb,10.10.10.20
         # wifi
-        dhcp-host=f0:18:98:0d:0e:64,mb,10.10.10.20
+        # dhcp-host=f0:18:98:0d:0e:64,mb,10.10.10.20
 
         dhcp-host=3e:34:2b:0d:97:bc,iphone,10.10.10.30
         dhcp-host=c2:84:0f:47:5e:60,ipad,10.10.10.31
