@@ -139,12 +139,13 @@ Customize whitespace mode to make tabs obvious as boxes, and to highlight lines 
 
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package hl-line
+  :after org
   :ensure
+  :hook ((prog-mode . hl-line-mode)
+         (text-mode . hl-line-mode)
+         (org-mode . hl-line-mode))
   :custom-face
   (hl-line ((t (:background "#ffc0cb")))))
-(add-hook 'prog-mode-hook 'hl-line-mode)
-(add-hook 'text-mode-hook 'hl-line-mode)
-(add-hook 'makefile-mode-hook 'hl-line-mode)
 #+END_SRC
 
 This breaks in :hook for some reason I can't be assed to figure out.
