@@ -98,16 +98,14 @@ Puts all tooltips in the echo arear.
 
 Sick of solarized, going back to good old black on white minimalism like paper.
 
-TODO: Maybe get this to go dark automagically?
-
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package minimal-theme
   :ensure
   :config (load-theme 'minimal-light t))
 
-(use-package tron-legacy-theme
+(use-package color-theme-sanityinc-tomorrow
   :ensure
-  :config (load-theme 'tron-legacy t))
+  :config (load-theme 'sanityinc-tomorrow-bright t))
 
 (use-package auto-dark
   :after minimal-theme
@@ -115,7 +113,7 @@ TODO: Maybe get this to go dark automagically?
   :if (memq window-system '(mac ns))
   :custom
   (auto-dark--light-theme 'minimal-light)
-  (auto-dark--dark-theme 'tron-legacy))
+  (auto-dark--dark-theme 'color-theme-sanityinc-tomorrow-bright))
 #+END_SRC
 
 *** encoding
@@ -132,24 +130,27 @@ utf8 is the best. Default to it.
   (prefer-coding-system 'utf-8)
   :custom
   (locale-coding-system 'utf-8)
-  :ensure t)
+  :ensure)
 #+END_SRC
 
 *** whitespace
 
 Customize whitespace mode to make tabs obvious as boxes, and to highlight lines over 80 characters in length.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
-(require 'whitespace)
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package hl-line
+  :ensure
   :custom-face
   (hl-line ((t (:background "#ffc0cb")))))
-
-;; This breaks in :hook for some reason I can't be assed to figure out.
 (add-hook 'prog-mode-hook 'hl-line-mode)
 (add-hook 'text-mode-hook 'hl-line-mode)
 (add-hook 'makefile-mode-hook 'hl-line-mode)
+#+END_SRC
 
+This breaks in :hook for some reason I can't be assed to figure out.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(require 'whitespace)
 (global-visual-line-mode)
 (setq whitespace-style '(face tabs trailing))
 
@@ -368,7 +369,6 @@ oomph with all the crap it did.
   :custom
   (mini-modeline-truncate-p nil)
   (mini-modeline-echo-duration 5)
-  (mini-modeline-face-attr '(:background "white" :weight normal :box (:line-width 2 :color "#ffffff")))
   (mini-modeline-display-gui-line nil)
   (mini-modeline-r-format '((:eval
                              (when (and (bound-and-true-p flycheck-mode)
