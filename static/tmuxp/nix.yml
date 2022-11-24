@@ -1,8 +1,0 @@
-session_name: nix
-start_directory: ~/src/pub/github.com/mitchty/nix
-windows:
-- window_name: nixdev
-  focus: True
-  panes:
-    - pane
-    - clear; deploy
