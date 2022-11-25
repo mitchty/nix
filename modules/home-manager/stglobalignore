@@ -40,18 +40,18 @@
 *.*.sw[a-p]
 
 // .git git stuff we don't want to sync
-.git/COMMIT_EDITMSG
-tmp_pack_.*
+(?d).git/COMMIT_EDITMSG
+(?d)tmp_pack_.*
 
 // attic stuff is where I stick bits to eventually die
 domain/attic
 
 // rust
-target/release
-target/debug
+(?d)target/release
+(?d)target/debug
 
 // nix result symlink, its specific to the host anyway
-result
+(?d)result
 
 // Packer cache is huge and no need to sync it
-packer_cache
+(?d)packer_cache
