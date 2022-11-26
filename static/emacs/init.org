@@ -15,6 +15,7 @@ Use use-package to configure emacs itself.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package emacs
+  :ensure
   :demand t
   :bind (("C-x ," . kill-whole-line)
          ("C-c %" . query-replace)) ;; because modern macos has yeeted this away from me...
@@ -111,9 +112,10 @@ Sick of solarized, going back to good old black on white minimalism like paper.
   :after minimal-theme
   :ensure
   :if (memq window-system '(mac ns))
+  :config (auto-dark-mode)
   :custom
-  (auto-dark--light-theme 'minimal-light)
-  (auto-dark--dark-theme 'color-theme-sanityinc-tomorrow-bright))
+  (auto-dark--dark-theme 'color-theme-sanityinc-tomorrow-bright)
+  (auto-dark--light-theme 'minimal-light))
 #+END_SRC
 
 *** encoding
