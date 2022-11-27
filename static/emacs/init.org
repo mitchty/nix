@@ -57,7 +57,14 @@ Use use-package to configure emacs itself.
   (make-directory temporary-file-directory :parents)
 
   (delete-selection-mode 1)
+
+  (set-language-environment "UTF-8")
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (set-selection-coding-system 'utf-8)
+  (prefer-coding-system 'utf-8)
   :custom
+  (locale-coding-system 'utf-8)
   (frame-inhibit-implied-resize t)
   (inhibit-startup-echo-area-message t)
   (inhibit-startup-message t)
@@ -116,23 +123,6 @@ Sick of solarized, going back to good old black on white minimalism like paper.
   :custom
   (auto-dark--dark-theme 'color-theme-sanityinc-tomorrow-bright)
   (auto-dark--light-theme 'minimal-light))
-#+END_SRC
-
-*** encoding
-
-utf8 is the best. Default to it.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package unicode-escape
-  :init
-  (set-language-environment "UTF-8")
-  (set-terminal-coding-system 'utf-8)
-  (set-keyboard-coding-system 'utf-8)
-  (set-selection-coding-system 'utf-8)
-  (prefer-coding-system 'utf-8)
-  :custom
-  (locale-coding-system 'utf-8)
-  :ensure)
 #+END_SRC
 
 *** whitespace
