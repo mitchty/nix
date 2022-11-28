@@ -504,6 +504,14 @@ top to look at.
   :hook (magit-mode . magit-todos-mode))
 #+END_SRC
 
+Also setup magit-lfs mode so we can do git lfs interaction.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package magit-lfs
+  :ensure
+  :after magit)
+#+END_SRC
+
 *** TODO org-mode                                        :validation:testing:
 
 Org-mode keybindings and settings, pretty sparse really.
