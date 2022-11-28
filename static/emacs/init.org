@@ -149,9 +149,7 @@ Customize whitespace mode to make tabs obvious as boxes, and to highlight lines 
 (use-package hl-line
   :after org
   :ensure
-  :hook ((prog-mode . hl-line-mode)
-         (text-mode . hl-line-mode)
-         (org-mode . hl-line-mode))
+  :hook ((prog-mode text-mode org-mode) . hl-line-mode)
   :custom-face
   (hl-line ((t (:background "#ffc0cb")))))
 #+END_SRC
@@ -173,6 +171,7 @@ This breaks in :hook for some reason I can't be assed to figure out.
 (add-hook 'prog-mode-hook 'whitespace-mode)
 (add-hook 'text-mode-hook 'whitespace-mode)
 (add-hook 'makefile-mode-hook 'whitespace-mode)
+(add-hook 'org-mode-hook 'whitespace-mode)
 #+END_SRC
 
 *** osx specific
@@ -354,10 +353,18 @@ Use the silver searcher for quick searches.
   (osx-clipboard-mode +1))
 #+END_SRC
 
-*** mode-line setup
+*** TESTING mode-line setup
 
-Using some hacked together minimal mode line stuff now, spaceline too too much
+Using some hacked together minimal mode line stuff now, spaceline is too much
 oomph with all the crap it did.
+
+Will try this other mode line out (seems to just block startup sooo no?).
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package smart-mode-line
+  :ensure
+  :config (sml/setup))
+#+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (defun my-flycheck-lighter (state)
@@ -367,9 +374,7 @@ oomph with all the crap it did.
          (err (or (cdr (assq state counts)) "?"))
          (running (eq 'running flycheck-last-status-change)))
     (if (or errorp running) (format "•%s" err))))
-#+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package mini-modeline
   :ensure
   :config
@@ -414,9 +419,7 @@ oomph with all the crap it did.
           ))
   :config
   (yas/reload-all)
-  :hook ((prog-mode . yas-minor-mode)
-         (org-mode . yas-minor-mode))
-  )
+  :hook ((prog-mode text-mode org-mode) . yas-minor-mode))
 #+END_SRC
 
 *** expand-region
@@ -758,9 +761,20 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
   )
 #+END_SRC
 
-*** git gutter
+*** TESTING diff-hl
+
+Shows in the fringe the status of lines added/removed/modified. Seems a skosh slow.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
+(use-package diff-hl
+  :ensure
+  :config
+  (global-diff-hl-mode))
+#+END_SRC
+
+*** git gutter
+
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package git-gutter
   :ensure
   :config
@@ -871,10 +885,20 @@ Make undo more useful, and treelike.
 Highlight a variable when you're selecting it, helps in reviewing code to see
 where it exists.
 
+TODO: Add stuff like this? Future me figure it out.
+
+(add-hook 'after-change-major-mode-hook
+  (lambda ()
+    (when (derived-mode-p 'c-mode)
+      (setq-local idle-highlight-exceptions '("unsigned" "signed" "long" "int" "shot" "char")))
+    (when (derived-mode-p 'python-mode)
+      (setq-local idle-highlight-exceptions '("list" "tuple" "int" "float" "str" "bool")))))
+
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package idle-highlight-mode
   :ensure
-  :hook (prog-mode . idle-highlight-mode))
+  :custom (idle-highlight-idle-time 0.2)
+  :hook ((prog-mode text-mode) . idle-highlight-mode))
 #+END_SRC
 
 *** nix
@@ -1173,13 +1197,7 @@ Ref:
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package eglot
   :ensure
-  :hook ((python-mode . eglot-ensure)
-               (cc-mode . eglot-ensure)
-               (go-mode . eglot-ensure)
-               (nix-mode . eglot-ensure)
-               (yaml-mode . eglot-ensure)
-               (rust-mode . eglot-ensure))
-)
+  :hook ((python-mode cc-mode go-mode nix-mode yaml-mode rust-mode) . eglot-ensure))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes
