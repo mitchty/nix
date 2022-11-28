@@ -127,9 +127,9 @@ Sick of solarized, going back to good old black on white minimalism like paper.
   :ensure
   :config (load-theme 'minimal-light t))
 
-(use-package color-theme-sanityinc-tomorrow
+(use-package zenburn-theme
   :ensure
-  :config (load-theme 'sanityinc-tomorrow-bright t))
+  :config (load-theme 'zenburn t))
 
 (use-package auto-dark
   :after minimal-theme
@@ -137,7 +137,7 @@ Sick of solarized, going back to good old black on white minimalism like paper.
   :if (memq window-system '(mac ns))
   :config (auto-dark-mode)
   :custom
-  (auto-dark--dark-theme 'color-theme-sanityinc-tomorrow-bright)
+  (auto-dark--dark-theme 'zenburn)
   (auto-dark--light-theme 'minimal-light))
 #+END_SRC
 
@@ -833,9 +833,43 @@ So I write gooder. Me fail English? Thats unpossible.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package rust-mode
+  :diminish rust-mode
   :commands rust-mode
   :ensure
   )
+
+(use-package rustic
+  :after eglot
+  :ensure
+  ;; :bind (:map rustic-mode-map
+  ;;             ("M-j" . lsp-ui-imenu)
+  ;;             ("M-?" . lsp-find-references)
+  ;;             ("C-c C-c l" . flycheck-list-errors)
+  ;;             ("C-c C-c a" . lsp-execute-code-action)
+  ;;             ("C-c C-c r" . lsp-rename)
+  ;;             ("C-c C-c q" . lsp-workspace-restart)
+  ;;             ("C-c C-c Q" . lsp-workspace-shutdown)
+  ;;             ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  ;; uncomment for less flashiness
+  ;; (setq lsp-eldoc-hook nil)
+  ;; (setq lsp-enable-symbol-highlighting nil)
+  ;; (setq lsp-signature-auto-activate nil)
+
+  ;; comment to disable rustfmt on save
+  (setq rustic-format-on-save t)
+  (setq rustic-lsp-client 'eglot)
+  (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1))))
+;;   (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
+
+;; (defun rk/rustic-mode-hook ()
+;;   ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+;;   ;; save rust buffers that are not file visiting. Once
+;;   ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+;;   ;; no longer be necessary.
+;;   (when buffer-file-name
+;;     (setq-local buffer-save-without-query t))
+;;   (add-hook 'before-save-hook 'lsp-format-buffer nil t))
 #+END_SRC
 
 *** terraform-mode
