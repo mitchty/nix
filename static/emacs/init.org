@@ -92,14 +92,30 @@ Use use-package to configure emacs itself.
   )
 #+END_SRC
 
+*** Testing area
+
 TESTING tooltip mode
 
 Puts all tooltips in the echo arear.
 
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp :tangle yes
 (tooltip-mode -1)
 (custom-set-variables
  '(tooltip-use-echo-area t))
+#+END_SRC
+
+*** use-package debugging
+
+Cause the macros *use-packge* can generate are... not entirely easy to debug. This helps make it easier than using builtins.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package macrostep
+  :ensure
+  :after elisp-mode
+  :bind
+  (:map emacs-lisp-mode-map
+        ("C-c e"   . macrostep-expand)
+        ("C-c C-e" . macrostep-expand)))
 #+END_SRC
 
 *** theme
