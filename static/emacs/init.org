@@ -118,9 +118,18 @@ Cause the macros *use-packge* can generate are... not entirely easy to debug. Th
         ("C-c C-e" . macrostep-expand)))
 #+END_SRC
 
-*** theme
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package nov
+  :ensure
+  :defer t
+  :config
+  (setq nov-text-width 80)
+  :mode (("\\.epub\\'" . nov-mode)))
+#+END_SRC
 
-Sick of solarized, going back to good old black on white minimalism like paper.
+*** TESTING theme
+
+Sick of solarized, going back to good old black on white minimalism like paper. Also note auto-dark is macos only.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package minimal-theme
