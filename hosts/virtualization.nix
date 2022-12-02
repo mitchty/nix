@@ -4,7 +4,8 @@
   # For the qemu-agent integration for kvm/qemu
   services.qemuGuest.enable = true;
 
-  # Use/setup libvirtd/docker
+  # Use/setup libvirtd/docker note libvirtd requires polkit to work in 22.11
+  security.polkit.enable = true;
   virtualisation.libvirtd.enable = true;
   virtualisation.docker.enable = true;
 
