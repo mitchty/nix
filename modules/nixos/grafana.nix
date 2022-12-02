@@ -42,7 +42,7 @@ in
         interfaces = {
           eno1 = {
             allowedTCPPorts = [
-              services.grafana.port
+              services.grafana.settings.server.http_port
             ];
           };
         };
@@ -54,10 +54,14 @@ in
     # cd /var/lib/grafana/conf grafana-cli admin reset-admin-password admin && systemctl restart grafana
     services.grafana = {
       enable = true;
-      domain = cfg.cname;
-      port = 80;
-      addr = cfg.ip;
-      analytics.reporting.enable = false;
+      settings = {
+        server = {
+          http_port = 80;
+          addr = cfg.ip;
+          http_domain = cfg.cname;
+        };
+        analytics.reporting = false;
+      };
     };
   };
 }
