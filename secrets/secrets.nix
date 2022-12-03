@@ -42,6 +42,7 @@ in
 
   # For authenticated git push/pull mainly.
   "git/netrc.age".publicKeys = git ++ ageadmins;
+  "git/gh-cli-pub.age".publicKeys = git ++ ageadmins;
 
   # nixos specific
   "passwd/root.age".publicKeys = allnixos ++ ageadmins;

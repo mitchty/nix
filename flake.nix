@@ -301,6 +301,13 @@
         };
       };
 
+      ghcliPubSecret = user: {
+        "git/gh-cli-pub" = {
+          file = ./secrets/git/gh-cli-pub.age;
+          owner = user;
+        };
+      };
+
       resticSecret = user: {
         "restic/env.sh" = {
           file = ./secrets/restic/env.sh.age;
@@ -477,7 +484,7 @@
               primaryUser = "mitch";
               primaryGroup = "staff";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch";
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // ghcliPubSecret "mitch" // resticSecret "mitch";
             # Since I use this host for working on all this crap, need a get out
             # of jail free card on dns, but nice for it to search home.arpa by
             # default too so I can be lazy.
@@ -511,7 +518,7 @@
               primaryUser = "tishmack";
               primaryGroup = "staff";
             };
-            age.secrets = canarySecret "tishmack" // gitSecret "tishmack";
+            age.secrets = canarySecret "tishmack" // gitSecret "tishmack" // ghcliPubSecret "tishmack";
             networking.computerName = "wmb";
             networking.hostName = "wmb";
             networking.knownNetworkServices = [
@@ -537,7 +544,7 @@
               primaryUser = "mitch";
               primaryGroup = "users";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // ghcliPubSecret "tishmack" // passwdSecrets;
             services.role = {
               intel.enable = true;
               mosh.enable = true;
@@ -560,7 +567,7 @@
               primaryUser = "mitch";
               primaryGroup = "users";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch" // passwdSecrets;
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // ghcliPubSecret "mitch" // resticSecret "mitch" // passwdSecrets;
             services.role = {
               grafana.enable = true;
               gui.enable = true;
@@ -589,7 +596,7 @@
               primaryUser = "mitch";
               primaryGroup = "users";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // resticSecret "mitch" // passwdSecrets;
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // ghcliPubSecret "mitch" // resticSecret "mitch" // passwdSecrets;
             services.role = {
               gui.enable = true;
               intel.enable = true;
@@ -613,7 +620,7 @@
               primaryUser = "mitch";
               primaryGroup = "users";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
+            age.secrets = canarySecret "mitch" // gitSecret "mitch" // ghcliPubSecret "mitch" // passwdSecrets;
             services.role = {
               intel.enable = true;
               mosh.enable = true;
