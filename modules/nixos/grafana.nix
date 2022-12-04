@@ -57,8 +57,8 @@ in
       settings = {
         server = {
           http_port = 80;
-          addr = cfg.ip;
-          http_domain = cfg.cname;
+          http_addr = cfg.ip;
+          domain = cfg.cname;
         };
         analytics.reporting = false;
       };
