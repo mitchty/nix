@@ -323,6 +323,19 @@
           file = ./secrets/passwd/mitch.age;
         };
       };
+
+      # Make age.secrets = a bit simpler with some defined variables
+      homeUser = "mitch";
+      workUser = "tishmack";
+
+      ageDefault = user: canarySecret user;
+      ageGit = user: gitSecret user // ghcliPubSecret user;
+      ageRestic = user: resticSecret user;
+
+      ageHome = user: ageDefault user // ageGit user;
+      ageHomeWithBackup = user: ageHome user // ageRestic user;
+      ageHomeNixos = user: ageHome user // passwdSecrets;
+      ageHomeNixosWithBackup = user: ageHomeNixos user // ageRestic user;
     in
     {
       diskImages = {
@@ -481,10 +494,10 @@
           system = "x86_64-darwin";
           modules = nixDarwinModules ++ [{
             users = {
-              primaryUser = "mitch";
+              primaryUser = homeUser;
               primaryGroup = "staff";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // ghcliPubSecret "mitch" // resticSecret "mitch";
+            age.secrets = ageHomeWithBackup homeUser;
             # Since I use this host for working on all this crap, need a get out
             # of jail free card on dns, but nice for it to search home.arpa by
             # default too so I can be lazy.
@@ -515,10 +528,10 @@
           system = "x86_64-darwin";
           modules = nixDarwinModules ++ [{
             users = {
-              primaryUser = "tishmack";
+              primaryUser = workUser;
               primaryGroup = "staff";
             };
-            age.secrets = canarySecret "tishmack" // gitSecret "tishmack" // ghcliPubSecret "tishmack";
+            age.secrets = ageHome workUser;
             networking.computerName = "wmb";
             networking.hostName = "wmb";
             networking.knownNetworkServices = [
@@ -541,10 +554,10 @@
             ./hosts/gw/configuration.nix
           ] ++ [{
             users = {
-              primaryUser = "mitch";
+              primaryUser = homeUser;
               primaryGroup = "users";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // ghcliPubSecret "tishmack" // passwdSecrets;
+            age.secrets = ageHomeNixos homeUser;
             services.role = {
               intel.enable = true;
               mosh.enable = true;
@@ -564,10 +577,10 @@
             ./hosts/srv/configuration.nix
           ] ++ [{
             users = {
-              primaryUser = "mitch";
+              primaryUser = homeUser;
               primaryGroup = "users";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // ghcliPubSecret "mitch" // resticSecret "mitch" // passwdSecrets;
+            age.secrets = ageHomeNixosWithBackup homeUser;
             services.role = {
               grafana.enable = true;
               gui.enable = true;
@@ -593,10 +606,10 @@
             ./hosts/nexus/configuration.nix
           ] ++ [{
             users = {
-              primaryUser = "mitch";
+              primaryUser = homeUser;
               primaryGroup = "users";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // ghcliPubSecret "mitch" // resticSecret "mitch" // passwdSecrets;
+            age.secrets = ageHomeNixosWithBackup homeUser;
             services.role = {
               gui.enable = true;
               intel.enable = true;
@@ -617,10 +630,10 @@
             ./hosts/sys1/configuration.nix
           ] ++ [{
             users = {
-              primaryUser = "mitch";
+              primaryUser = homeUser;
               primaryGroup = "users";
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // ghcliPubSecret "mitch" // passwdSecrets;
+            age.secrets = ageHomeNixos homeUser;
             services.role = {
               intel.enable = true;
               mosh.enable = true;
@@ -633,29 +646,30 @@
             unstable = unstable.legacyPackages.${x86-linux};
           };
         };
-        dfs1 = nixosSystem {
-          system = "x86_64-linux";
-          modules = nixOSModules ++ [
-            ./hosts/dfs1/configuration.nix
-          ] ++ [{
-            users = {
-              primaryUser = "mitch";
-              primaryGroup = "users";
+        dfs1 = nixosSystem
+          {
+            system = "x86_64-linux";
+            modules = nixOSModules ++ [
+              ./hosts/dfs1/configuration.nix
+            ] ++ [{
+              users = {
+                primaryUser = homeUser;
+                primaryGroup = "users";
+              };
+              age.secrets = ageHomeNixos homeUser;
+              services.role = {
+                intel.enable = true;
+                lowmem.enable = true;
+                mosh.enable = true;
+                node-exporter.enable = true;
+                promtail.enable = true;
+              };
+            }];
+            specialArgs = {
+              inherit inputs;
+              unstable = unstable.legacyPackages.${x86-linux};
             };
-            age.secrets = canarySecret "mitch" // gitSecret "mitch" // passwdSecrets;
-            services.role = {
-              intel.enable = true;
-              lowmem.enable = true;
-              mosh.enable = true;
-              node-exporter.enable = true;
-              promtail.enable = true;
-            };
-          }];
-          specialArgs = {
-            inherit inputs;
-            unstable = unstable.legacyPackages.${x86-linux};
           };
-        };
       };
 
       # Deploy-rs targets/setup
