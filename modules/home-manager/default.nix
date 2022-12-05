@@ -6,7 +6,17 @@ let
   # sys = pkgs.lib.last (pkgs.lib.splitString "-" pkgs.system);
   emacsWithConfig = (pkgs.emacsWithPackagesFromUsePackage {
     config = ../../static/emacs/init.org;
-    package = pkgs.emacsNativeComp;
+    # Until emacs 29 is in emacsNativeComp
+    package = pkgs.emacsGit.overrideAttrs (super: {
+      patches = [
+        (pkgs.fetchpatch {
+          name = "gc-block-align-patch";
+          url = "https://github.com/tyler-dodge/emacs/commit/36d2a8d5a4f741ae99540e139fff2621bbacfbaa.patch";
+          sha256 = "sha256-/hJa8LIqaAutny6RX/x6a+VNpNET86So9xE8zdh27p8=";
+        })
+      ];
+    });
+    # Force these two even though they're outside of the org config.
     extraEmacsPackages = epkgs: [
       epkgs.use-package
       epkgs.org
