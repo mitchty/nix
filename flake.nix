@@ -38,7 +38,7 @@
       url = "github:notracking/hosts-blocklists";
       flake = false;
     };
-    seaweedfs.url = "github:/mitchty/nixos-seaweedfs";
+    seaweedfs.url = "github:/mitchty/nixos-seaweedfs/wip";
   };
 
   outputs =
