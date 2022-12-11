@@ -38,6 +38,7 @@
       url = "github:notracking/hosts-blocklists";
       flake = false;
     };
+    seaweedfs.url = "github:/mitchty/nixos-seaweedfs";
   };
 
   outputs =
@@ -55,6 +56,7 @@
     , agenix
     , dnsblacklist
     , flake-utils
+    , seaweedfs
     , ...
     }:
     let
@@ -70,7 +72,7 @@
           "/home/${user}"
         else "";
 
-      nixpkgsConfig = {
+      nixpkgsConfig = extras: {
         overlays = [
           emacs.overlay
           rust.overlays.default
@@ -82,7 +84,7 @@
           #       patches = (old.patches or [ ]) ++ [ ./patches/CVE-2021-4034.patch ];
           #     });
           #   })
-        ];
+        ] ++ extras;
         # TODO: later
         # singleton (
         #   # Sub in x86 version of packages that don't build on Apple Silicon yet
@@ -130,7 +132,7 @@
             inherit (config.users) primaryUser;
           in
           {
-            nixpkgs = nixpkgsConfig;
+            nixpkgs = nixpkgsConfig [ ];
             users.users.${primaryUser}.home = homeDir "x86_64-darwin" primaryUser;
             home-manager.useGlobalPkgs = true;
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
@@ -189,13 +191,14 @@
         home-manager.nixosModules.home-manager
         ./modules/nixos
         agenix.nixosModules.age
+        seaweedfs.nixosModules.seaweedfs
         (
           { config, ... }:
           let
             inherit (config.users) primaryUser;
           in
           {
-            nixpkgs = nixpkgsConfig;
+            nixpkgs = nixpkgsConfig [ seaweedfs.overlays.default ];
             users.users.${primaryUser}.home = homeDir "x86_64-linux" primaryUser;
             home-manager.useGlobalPkgs = true;
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
@@ -637,8 +640,70 @@
             services.role = {
               intel.enable = true;
               mosh.enable = true;
-              node-exporter.enable = true;
               promtail.enable = true;
+              node-exporter = {
+                enable = true;
+                exporterIface = "enp1s0";
+              };
+            };
+
+            fileSystems = {
+              "/data/disk0" = {
+                device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF";
+                fsType = "ext4";
+                options = [ "nofail" ];
+              };
+              # mdadm --create /dev/md1 --run --level=1 --raid-devices=2 --metadata=1.0 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T801235B-part4 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T814942M-part4
+              "/data/ssd" = {
+                device = "/dev/disk/by-id/md-uuid-2608ed18:6dad2d62:ee16d3fb:3a073e23";
+                fsType = "ext4";
+                options = [ "nofail" ];
+              };
+              # "/data/srv" = {
+              #   device = "/datta/disk0";
+              #   fsType = "fuse.mergerfs";
+              #   options = [
+              #     "defaults"
+              #     "allow_other"
+              #     "use_ino"
+              #     "cache.files=partial"
+              #     "dropcacheonclose=true"
+              #     "category.create=epmfs"
+              #     "nofail"
+              #   ];
+              #   wantedBy = [ "seaweedfs-master.target" ];
+              # };
+            };
+
+            # systemd.mounts = [
+            #   {
+            #     after = [ "data-ssd.mount" "data-disk0.mount" ];
+            #     what = "/data/disk0"; # :next:next
+            #     where = "/data/srv";
+            #     type = "fuse.mergerfs";
+            #     options = "defaults,allow_other,use_ino,cache.files=partial,dropcacheonclose=true,category.create=epmfs,nofail";
+            #     wantedBy = [ "seaweedfs-master.target" ];
+            #   }
+            # ];
+
+            services.seaweedfs = {
+              master = {
+                enable = true;
+                settings = {
+                  sequencer = "snowflake";
+                  sequencer_snowflake_id = 0;
+                };
+                mdir = "/data/ssd/weed/mdir";
+              };
+              volume = {
+                enable = true;
+                stores.disk0 = { dir = "/data/disk0/weed"; };
+              };
+              filer.enable = true;
+              # iam.enable = true;
+              # s3.enable = true;
+              webdav.enable = true;
+              staticUser.enable = true;
             };
           }];
           specialArgs = {
