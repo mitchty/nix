@@ -80,11 +80,11 @@
     "dnsblacklist": {
       "flake": false,
       "locked": {
-        "lastModified": 1670673062,
-        "narHash": "sha256-WZz39tQWp9TN3b5xE3j0m+z4Qo1hVKjc1gJckjwMMNE=",
+        "lastModified": 1670758491,
+        "narHash": "sha256-r5xY02P0aCZmtteOb1UyD/SQRMcUki2345lMPxgM3/s=",
         "owner": "notracking",
         "repo": "hosts-blocklists",
-        "rev": "7a389aa609cda810009449228ebc9eb5d3210c81",
+        "rev": "61bdab30354d5a7ea15de45c3c2024f15b8b79fb",
         "type": "github"
       },
       "original": {
@@ -101,11 +101,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1670724476,
-        "narHash": "sha256-sO6N+5h2kWtn0NyTfn930DhghFJrHUphTUMVYgqmsS8=",
+        "lastModified": 1670753410,
+        "narHash": "sha256-UnqNXgpr8fvGMFObOrxij8iFGpRo5j5hJRUCLpLTpvQ=",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "72ceefe367325f41481b85a1cb85df000352791b",
+        "rev": "6e51884abe30b5c57ad248b1a8196929dfbbe029",
         "type": "github"
       },
       "original": {
@@ -205,6 +205,21 @@
         "type": "github"
       }
     },
+    "flake-utils_6": {
+      "locked": {
+        "lastModified": 1659877975,
+        "narHash": "sha256-zllb8aq3YO3h8B/U0/J1WBgAL8EX5yWf5pMj3G0NAmc=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "c0e246b9b83f637f4681389ecabcb2681b4f3af0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": "nixpkgs_4"
@@ -226,11 +241,11 @@
     },
     "master": {
       "locked": {
-        "lastModified": 1670724599,
-        "narHash": "sha256-S2EL3/nKgHdS5mbwK6WRZpb1KrzSpbJ9P4qIQjK1DEA=",
+        "lastModified": 1670772803,
+        "narHash": "sha256-2wOyf2jvg0OCIqo/DGlPCHBr7EckguxeW+KP3VtVUQI=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f2e17a2786d649e55430f95511062ceadd1530d9",
+        "rev": "99fed31f9da9265b6b608955610e4b72247e0dad",
         "type": "github"
       },
       "original": {
@@ -315,11 +330,11 @@
     },
     "nixpkgs-darwin": {
       "locked": {
-        "lastModified": 1670677885,
-        "narHash": "sha256-seXxh+iBlufqrfQHd9MA4V5ExRO/wM39YjMLKBzMYcY=",
+        "lastModified": 1670758616,
+        "narHash": "sha256-4IUXGYkYqDIfi1+hEVcqohYPgBOqS525arJo792ATrQ=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "c5916ba1eaf7a1a789573ace2ac0ff43e2ae5731",
+        "rev": "b9aea6cbeb058e4b9ae210b1e69f02081dda33f6",
         "type": "github"
       },
       "original": {
@@ -439,6 +454,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_8": {
+      "locked": {
+        "lastModified": 1659981942,
+        "narHash": "sha256-uCFiP/B/NXOWzhN6TKfMbSxtVMk1bVnCrnJRjCF6RmU=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "39d7f929fbcb1446ad7aa7441b04fb30625a4190",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -456,6 +487,7 @@
         "nixpkgs-darwin": "nixpkgs-darwin",
         "nixpkgs-mitchty": "nixpkgs-mitchty",
         "rust": "rust_2",
+        "seaweedfs": "seaweedfs",
         "unstable": "unstable_2"
       }
     },
@@ -496,6 +528,26 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "seaweedfs": {
+      "inputs": {
+        "flake-utils": "flake-utils_6",
+        "nixpkgs": "nixpkgs_8"
+      },
+      "locked": {
+        "lastModified": 1670777244,
+        "narHash": "sha256-W8+BBXtDTLoieYEr0KApbf2SpH3F+tlEhMwKOHpjfqA=",
+        "owner": "mitchty",
+        "repo": "nixos-seaweedfs",
+        "rev": "3d6b5649cab01ff1e948cb41561dce7018807189",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mitchty",
+        "ref": "wip",
+        "repo": "nixos-seaweedfs",
         "type": "github"
       }
     },
