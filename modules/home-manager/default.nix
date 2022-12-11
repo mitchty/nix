@@ -155,18 +155,17 @@ in
     yt-dlp
     # Non gui linux stuff
   ] ++ lib.optionals stdenv.isLinux [
-    usbutils
-    # Testing packages that I may/not upstream any changes to nixpkgs
-    inputs.mitchty.packages.${pkgs.system}.seaweedfs
     docker
     docker-compose
     firefox
     lshw
     podman
     podman-compose
+    seaweedfs
     tcpdump
     tio
     traitor
+    usbutils
     xorg.xauth
     # Gui linux stuff
     # TODO: how do I get at the nixos config setup...?
