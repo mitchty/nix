@@ -130,23 +130,24 @@ alias hb='rsync -e "ssh -T -c aes128-ctr -o Compression=no -x" --exclude .cache 
 PATH="${PATH}:${HOME}/bin:${HOME}/.local/bin"
 export PATH
 
-# Using german word for new, neu to handle setting up a new cargo/rust setup and cd into it
-#
-# Mostly to make it easy to just start a test with nix+cargo+git all in one.
-neu() {
-  # Arg is the directory to do stuff to, required
-  _neudir=${1?}
-  shift > /dev/null 2>&1 || :
-  _neuname=${1?}
+# Mostly to make it easy to jumpstart a rust project nix+cargo+git all in one
+# via the crane flake.
+crane() {
+  unset _crane_dir _crane_name
 
-  if [ -e "${_neudir}" ]; then
-    printf "fatal: %S exists, refusing to add stuff to it\n" "${_neudir}" >&2
+  # Arg is the directory to do stuff to, required
+  _crane_dir=${1?}
+  shift > /dev/null 2>&1 || :
+  _crane_name=${1}
+
+  if [ -e "${_crane_dir}" ]; then
+    printf "fatal: %S already exists, refusing to use it for anything\n" "${_crane_dir}" >&2
     return 1
   fi
 
-  install -dm755 "${_neudir}"
+  install -dm755 "${_crane_dir}"
 
-  cd "${_neudir}" || return 126
+  cd "${_crane_dir}" || return 126
 
   nix flake init -t github:ipetkov/crane
   git init
@@ -155,8 +156,8 @@ neu() {
   printf 'use flake\n' > .envrc
 
   # Rename it if we want a different name for the thing
-  if [ -n "${_neuname}" ]; then
-    sed -i '' -e "s/quick-start/${_neuname}/g" -e "s/my-crate/${_neuname}/g" Cargo.toml flake.nix
+  if [ -n "${_crane_name}" ]; then
+    sed -i '' -e "s/quick-start/${_crane_name}/g" -e "s/my-crate/${_crane_name}/g" Cargo.toml flake.nix
   fi
 
   git add -A
