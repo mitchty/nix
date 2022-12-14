@@ -320,7 +320,7 @@ If editorconfig is around use it.
 
 *** tramp
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package tramp
   :defer
   :ensure
