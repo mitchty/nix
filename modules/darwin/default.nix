@@ -65,5 +65,16 @@
         };
       };
     };
+
+    # (Ab)use /etc/resolver for home.arpa so dns lookups are sent to the right nameserver.
+    #
+    # TODO: maybe make a module for /etc/resolver setups? Also need to figure
+    # out an uninstall form for this.
+    system.activationScripts.postActivation.text = ''
+      printf "modules/darwin/default.nix: /etc/resolve home.arpa dns setup\n" >&2
+      $DRY_RUN_CMD sudo install -dm755 $VERBOSE_ARG /etc/resolver
+      $DRY_RUN_CMD printf "domain home.arpa\nsearch home.arpa\nnameserver 10.10.10.1\n" | sudo tee /etc/resolver/home.arpa
+      $DRY_RUN_CMD sudo killall -HUP mDNSResponder
+    '';
   };
 }
