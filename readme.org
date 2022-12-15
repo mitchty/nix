@@ -69,6 +69,11 @@ And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Ak
    - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use.
 
 * Todo's
+** Linode
+
+Need to get vps using nix as well now that 22.11 has image build support.
+
+https://github.com/Vanilla-s-Lab/linode-nix/tree/master
 
 ** Pipewire
 
