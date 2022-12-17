@@ -103,10 +103,18 @@ in
             }
             {
               targets = [
-                "sys1.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+                "cl1.home.arpa:${toString config.services.prometheus.exporters.node.port}"
               ];
               labels = {
-                alias = "sys1.home.arpa";
+                alias = "cl1.home.arpa";
+              };
+            }
+            {
+              targets = [
+                "cl2.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              ];
+              labels = {
+                alias = "cl2.home.arpa";
               };
             }
           ];

@@ -10,7 +10,7 @@ let
 in
 {
   config = {
-    system.stateVersion = "22.05";
+    system.stateVersion = "22.11";
 
     # BIG TODO: merge the runtime config and this autoinstall setup
     boot.initrd.kernelModules = modules;

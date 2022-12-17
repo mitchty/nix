@@ -8,9 +8,8 @@
       ../zfs-grub.nix
       ../userscompat.nix
     ];
-  # Due to ^^^ we're setting our ip statically
   config = {
-    system.stateVersion = "22.05";
+    system.stateVersion = "22.11";
     services = {
       zfs.autoScrub.enable = true;
     };
@@ -19,8 +18,8 @@
       { devices = [ "nodev" ]; path = "/boot1"; }
     ];
     networking = {
-      hostName = "sys1";
-      hostId = "76650d70";
+      hostName = "cl1";
+      hostId = "318f7e59";
 
       interfaces = {
         enp1s0.useDHCP = true;
