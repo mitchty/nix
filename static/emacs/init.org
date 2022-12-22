@@ -572,10 +572,10 @@ validate the agenda changes.
              (shell . t)
              )))
   :custom
-  (org-directory "~/src/org")
+  (org-directory "~/src/pub/git.mitchty.net/mitchty/org")
   ;; Don't sort-lines ^^^
   (org-agenda-span 'fortnight)
-  (org-archive-directory "~/src/org/attic")
+  (org-archive-directory (concat org-directory "/attic"))
   (org-confirm-babel-evaluate nil)
   (org-default-notes-file (concat org-directory "/notes.org"))
   (org-fontify-done-headline t)
@@ -587,8 +587,8 @@ validate the agenda changes.
   (org-src-strip-leading-and-trailing-blank-lines t)
   ;; Ref https://orgmode.org/manual/Template-elements.html for more detail.
   (org-agenda-files
-   (list "~/src/org"
-         "~/src/git.mitchty.net/mitchty/dotfiles"))
+   (list org-directory
+         "~/src/pub/github.com/mitchty/nix"))
   ;;      "#+TITLE: %a\n#+ROAM_KEY: %U\n\n [[%U][%U]]\n"
   (org-capture-templates
    '(
@@ -643,6 +643,21 @@ Validate that this installs from scratch fine, blocking babel executions is ass.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package ob-async :after org :ensure)
+#+END_SRC
+
+**** TODO org-journal                                            :validation:
+
+Try out org journal https://github.com/bastibe/org-journal
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package org-journal
+  :ensure
+  :defer
+  :init
+  (setq org-journal-prefix-key "C-c j ")
+  :config
+  (setq org-journal-dir (concat org-directory "/journal")
+        org-journal-date-format "%A, %d %B %Y"))
 #+END_SRC
 
 **** TODO org-habit customization                                   :testing:

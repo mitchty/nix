@@ -160,7 +160,7 @@ try_git() {
 }
 
 mt() {
-  try_git "ssh://gitea@git.mitchty.net:2222/${1}" "${2:-master}"
+  try_git "https://git.mitchty.net/${1}" "${2:-master}"
 }
 
 gi() {
