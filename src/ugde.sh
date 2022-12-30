@@ -16,8 +16,8 @@ _dots=0
 _time=0
 
 startit() {
-    _time=$(date +%s)
-    # printf "start: %s\n" "$*" >&2
+  _time=$(date +%s)
+  # printf "start: %s\n" "$*" >&2
 }
 
 # Used from lib.sh functions
@@ -25,41 +25,53 @@ startit() {
 LIMITERINITFN=startit
 
 iterit() {
-    sleep 1
-    _dots=$((_dots + 1))
-    printf "." >&2
+  rsleep 3
+  _dots=$((_dots + 1))
+  printf "." >&2
+}
+
+newline() {
+  if [ "${_dots}" -gt 0 ]; then
+    printf "\n" >&2
+  fi
 }
 
 # Used from lib.sh functions
 #shellcheck disable=SC2034
 LIMITERFN=iterit
 
-failit() {
-    if [ "${_dots}" -gt 0 ]; then
-        printf "\n" >&2
-    fi
-}
+# Used from lib.sh functions
+#shellcheck disable=SC2034
+LIMITERFAILFN=newline
 
 # Used from lib.sh functions
 #shellcheck disable=SC2034
-LIMITERFAILFN=failit
-okit() {
-    if [ "${_dots}" -gt 0 ]; then
-        printf "\n" >&2
+LIMITEROKFN=newline
+
+cwd=$(pwd)
+ok=0
+cnt=1
+
+# Basically just loop through each node making sure the remote git diff
+# sha256sum = local checksum, loop until it is. Then let something else run
+# after this to "do stuff" knowing its up to date.
+until [ "${ok}" -eq "${cnt}" ]; do
+  ok=0
+  cnt=0
+
+  # Yeah I know its for future, not a problem.
+  #shellcheck disable=SC2043
+  for host in srv.home.arpa; do
+    cnt=$((cnt + 1))
+    rem="$(ssh -q ${host} 'cd '"${cwd}"' && git diff 2> /dev/null | sha256sum')"
+    if [ "${rem}" = "$(git diff 2> /dev/null | sha256sum)" ]; then
+      ok=$((ok + 1))
     fi
-}
+  done
 
-# Used from lib.sh functions
-#shellcheck disable=SC2034
-LIMITEROKFN=okit
-
-# Until Git Diff Equal
-#
-# Syncthing is slow af, so to make sure we have a sync point for this repo check
-# the sha256sum of its git diff. for that just check each remote host for
-# checksum against local via uniq -c if its not exactly 1 repeat.
-until [ "$((for host in srv; do ssh -q ${host} 'cd ~/src/pub/github.com/mitchty/nix && git diff 2> /dev/null | sha256sum'; done; gi mitchty/nix 2> /dev/null && git diff 2> /dev/null| sha256sum) | sort -u | wc -l)" = "1" ]; do
-  printf "." >&2
-  rsleep 3
+  if [ "${ok}" -ne "${cnt}" ]; then
+    iterit
+  fi
 done
-printf "\n" >&2
+
+newline
