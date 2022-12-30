@@ -26,6 +26,10 @@ let
   yeet = (pkgs.writeScriptBin "yeet" (builtins.readFile ../../src/yeet.sh)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
+
+  ugde = (pkgs.writeScriptBin "ugde" (builtins.readFile ../../static/src/ugde.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
 in
 {
   options = {
@@ -54,6 +58,7 @@ in
       notify
       wtf
       yeet
+      ugde
     ];
 
     system.activationScripts.postActivation.text = ''
