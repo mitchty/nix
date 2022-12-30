@@ -9,6 +9,7 @@
     dropwatch
     dstat
     inputs.unstable.legacyPackages.${pkgs.system}.polkit
+    inputs.seaweedfs.packages.${pkgs.system}.seaweedfs
     iotop
     jq
     linux-firmware

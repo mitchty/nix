@@ -66,6 +66,7 @@ let
     10.10.10.5 srv.home.arpa srv
     10.10.10.6 cl1.home.arpa cl1
     10.10.10.7 cl2.home.arpa cl2
+    10.10.10.8 cl3.home.arpa cl3
 
     10.10.10.10 pikvm.home.arpa pikvm
     10.10.10.20 mb.home.arpa mb
@@ -81,6 +82,9 @@ let
     10.10.10.129 grafana.home.arpa grafana
     10.10.10.130 prometheus.home.arpa prometheus
     10.10.10.131 nixcache.home.arpa nixcache
+
+    # Cluster ip address
+    10.10.10.200 cluster.home.arpa cluster
 
     # For testing dns works or not
     10.10.10.254 canary.home.arpa canary
@@ -334,6 +338,7 @@ in
         # Storage nas cluster of whatever I throw on it
         dhcp-host=6c:bf:b5:02:a7:9d,cl1,10.10.10.6
         dhcp-host=6c:bf:b5:02:89:cf,cl2,10.10.10.7
+        dhcp-host=6c:bf:b5:02:ab:e1,cl3,10.10.10.8
 
         # pikvm is here now
         dhcp-host=e4:5f:01:92:cc:1f,pikvm,10.10.10.10

@@ -117,6 +117,14 @@ in
                 alias = "cl2.home.arpa";
               };
             }
+            {
+              targets = [
+                "cl3.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              ];
+              labels = {
+                alias = "cl3.home.arpa";
+              };
+            }
           ];
         }
         {

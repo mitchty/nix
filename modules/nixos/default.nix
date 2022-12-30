@@ -16,6 +16,7 @@ in
 {
   # imports = [ mylib.nixFiles ./. ];
   imports = [
+    ./cluster.nix
     ./grafana.nix
     ./gui.nix
     ./highmem.nix

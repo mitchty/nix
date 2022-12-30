@@ -11,22 +11,23 @@ let
   nexus = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJCQJlqfzBYIjuWAIl72Q4o264vMEKWc4b+Tc30cqgtO";
   dfs1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMIIXtwtlXD59ni6Y/+jYr2opNqvG6sTTXKbVN4OBLTA";
 
-  cl1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFyW7Mfy5qvn4OJuWn4DpDoPHcQhsSM09KCFAwH9xY98";
-  cl2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILZ/09r8RWtbKF6blryM1rv8tYIsJj8E0Saamw0dxnsm";
+  cl1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPf0zKWj6ZKKeiny8w9QOY3Dbyw0Gg/6H18f4kIgZ0Dl";
+  cl2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO9/+zDNc2RTZNn25SN0z/iKBc6RrT+uleTUaJT+nPIh";
+  cl3 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFjWCCiZOEVe0MWZgpJSMQKrXdA26x8MuaTM7gI6qLYN";
 
   wmb = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINWlH6mfb4+v6z+uXNBDr+pPkhgTI7v3TMYl8UDNiKT1";
 
   # To make the following a skosh simpler/easier
   homeusers = [ mitch ];
-  homehosts = [ mb srv nexus dfs1 gw cl1 cl2 ];
+  homehosts = [ mb srv nexus dfs1 gw cl1 cl2 cl3 ];
 
   workhosts = [ wmb ];
 
   # TODO: Remove dfs1 from here this is a hack for now
-  git = [ mb srv nexus wmb dfs1 gw cl1 cl2 ] ++ homeusers;
+  git = [ mb srv nexus wmb dfs1 gw cl1 cl2 cl3 ] ++ homeusers;
   restic = [ mb srv nexus ];
 
-  allnixos = [ dfs1 srv nexus gw cl1 cl2 ];
+  allnixos = [ dfs1 srv nexus gw cl1 cl2 cl3 ];
 
   # Some secrets should be usable everywhere
   allusers = homeusers;

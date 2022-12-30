@@ -84,6 +84,8 @@ in
       "kernel.sysrq" = 1;
     };
 
+    isoImage.squashfsCompression = "zstd -Xcompression-level 6";
+
     environment = {
       variables = {
         # Since we have no swap, have the heap be a bit less extreme

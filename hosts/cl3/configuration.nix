@@ -18,8 +18,8 @@
       { devices = [ "nodev" ]; path = "/boot1"; }
     ];
     networking = {
-      hostName = "cl2";
-      hostId = "b3dca20b";
+      hostName = "cl3";
+      hostId = "3d2578c6";
 
       interfaces = {
         enp1s0.useDHCP = true;

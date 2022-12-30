@@ -212,6 +212,9 @@
       ];
 
       # Autoinstall vars
+      defBootSize = "512MiB";
+      defSwapSize = "16GiB";
+      smallSwapSize = "512MiB";
 
       # vm autoinstall test runners, note no by-id links cause qemu doens't get them
       simpleAutoinstall = {
@@ -221,8 +224,8 @@
           rootDevices = [
             "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001"
           ];
-          bootSize = "512MiB";
-          swapSize = "512MiB";
+          bootSize = defBootSize;
+          swapSize = smallSwapSize;
           osSize = "20GiB";
         };
       };
@@ -237,10 +240,12 @@
             "/dev/disk/by-id/wwn-0x5000cca02f0bad08"
             "/dev/disk/by-id/wwn-0x5000cca02f0bbb04"
           ];
-          swapSize = "16GiB";
+          swapSize = defSwapSize;
           osSize = "538GiB";
         };
       };
+
+      cluOsSize = "768GiB";
 
       # Start of a Terramaster tm4-423 cluster
       cl1Autoinstall = {
@@ -251,8 +256,8 @@
             "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T918828M"
             "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T920857X"
           ];
-          swapSize = "16GiB";
-          osSize = "96GiB";
+          swapSize = defSwapSize;
+          osSize = cluOsSize;
         };
       };
 
@@ -265,8 +270,22 @@
             "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T814942M"
             "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T801235B"
           ];
-          swapSize = "16GiB";
-          osSize = "96GiB";
+          swapSize = defSwapSize;
+          osSize = cluOsSize;
+        };
+      };
+
+      # Third node
+      cl3Autoinstall = {
+        autoinstall = {
+          flavor = "zfs";
+          hostName = "cl3";
+          rootDevices = [
+            "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T918913H"
+            "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T924424L"
+          ];
+          swapSize = defSwapSize;
+          osSize = cluOsSize;
         };
       };
 
@@ -426,6 +445,18 @@
           ];
           format = "install-iso";
         };
+        isoCl3 = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            cl3Autoinstall
+            {
+              autoinstall.debug = true;
+              autoinstall.wipe = true;
+            }
+          ];
+          format = "install-iso";
+        };
         isoGw = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [
@@ -566,12 +597,8 @@
             networking.knownNetworkServices = [
               "Wi-Fi"
             ];
-            services.work = {
-              enable = true;
-            };
-            services.mitchty = {
-              enable = true;
-            };
+            services.work.enable = true;
+            services.mitchty.enable = true;
           }];
         };
       };
@@ -612,7 +639,6 @@
             age.secrets = ageHomeNixosWithBackup homeUser;
             services.role = {
               grafana.enable = true;
-              gui.enable = true;
               highmem.enable = true;
               intel.enable = true;
               loki.enable = true;
@@ -653,6 +679,88 @@
             unstable = unstable.legacyPackages.${x86-linux};
           };
         };
+        cl1 = (makeOverridable nixosSystem) {
+          system = "x86_64-linux";
+          modules = nixOSModules ++ [
+            ./hosts/cl1/configuration.nix
+          ] ++ [{
+            users = {
+              primaryUser = homeUser;
+              primaryGroup = "users";
+            };
+            age.secrets = ageHomeNixos homeUser;
+            services.role = {
+              cluster.enable = true;
+              intel.enable = true;
+              mosh.enable = true;
+              promtail.enable = true;
+              node-exporter = {
+                enable = true;
+                exporterIface = "enp1s0";
+              };
+            };
+            # fileSystems = {
+            #   # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F
+            #   "/data/disk0" = {
+            #     device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F";
+            #     fsType = "ext4";
+            #     options = [ "nofail" ];
+            #   };
+            #   # mdadm --create /dev/md1 --run --level=1 --raid-devices=2 --metadata=1.0 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T918828M-part4 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T920857X-part4
+            #   # mkfs.ext4 -j /dev/disk/by-id/md-uuid-5f13e228:5f3b00ce:c030d5e2:67ba4d49
+            #   "/data/ssd" = {
+            #     device = "/dev/disk/by-id/md-uuid-5f13e228:5f3b00ce:c030d5e2:67ba4d49";
+            #     fsType = "ext4";
+            #     options = [ "nofail" ];
+            #   };
+            # };
+            # services.seaweedfs = {
+            #   master = {
+            #     enable = true;
+            #     openIface = "enp1s0";
+            #     settings = {
+            #       sequencer = {
+            #         type = "snowflake";
+            #         sequencer_snowflake_id = 0;
+            #       };
+            #       maintenance = {
+            #         sleep_minutes = 47;
+            #         scripts = ''
+            #           lock
+            #           ec.encode -fullPercent=95 -quietFor=1h
+            #           ec.rebuild -force
+            #           ec.balance -force
+            #           volume.balance -force
+            #           unlock
+            #         '';
+            #       };
+            #     };
+            #     defaultReplication = "001";
+            #     mdir = "/data/ssd/weed/mdir";
+            #     peers = weedMasters;
+            #     volumeSizeLimitMB = 1024;
+            #     volumePreallocate = true;
+            #   };
+            #   volume = {
+            #     enable = true;
+            #     stores.disk0 = {
+            #       dir = "/data/disk0/weed";
+            #       server = weedMasters;
+            #       maxVolumes = 18432;
+            #     };
+            #   };
+            #   filer.enable = true;
+            #   iam.enable = true;
+            #   # s3.enable = true;
+            #   webdav.enable = true;
+            #   staticUser.enable = true;
+            # };
+          }];
+          specialArgs = {
+            inherit inputs;
+            unstable = unstable.legacyPackages.${x86-linux};
+          };
+        };
         cl2 = (makeOverridable nixosSystem) {
           system = "x86_64-linux";
           modules = nixOSModules ++ [
@@ -664,6 +772,7 @@
             };
             age.secrets = ageHomeNixos homeUser;
             services.role = {
+              cluster.enable = true;
               intel.enable = true;
               mosh.enable = true;
               promtail.enable = true;
@@ -673,96 +782,184 @@
               };
             };
 
-            #   fileSystems = {
-            #     "/data/disk0" = {
-            #       device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF";
-            #       fsType = "ext4";
-            #       options = [ "nofail" ];
-            #     };
-            #     # mdadm --create /dev/md1 --run --level=1 --raid-devices=2 --metadata=1.0 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T801235B-part4 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T814942M-part4
-            #     "/data/ssd" = {
-            #       device = "/dev/disk/by-id/md-uuid-2608ed18:6dad2d62:ee16d3fb:3a073e23";
-            #       fsType = "ext4";
-            #       options = [ "nofail" ];
-            #     };
-            #     # "/data/srv" = {
-            #     #   device = "/datta/disk0";
-            #     #   fsType = "fuse.mergerfs";
-            #     #   options = [
-            #     #     "defaults"
-            #     #     "allow_other"
-            #     #     "use_ino"
-            #     #     "cache.files=partial"
-            #     #     "dropcacheonclose=true"
-            #     #     "category.create=epmfs"
-            #     #     "nofail"
-            #     #   ];
-            #     #   wantedBy = [ "seaweedfs-master.target" ];
-            #     # };
+            # fileSystems = {
+            #   # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF
+            #   "/data/disk0" = {
+            #     device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF";
+            #     fsType = "ext4";
+            #     options = [ "nofail" ];
             #   };
+            #   # mdadm --create /dev/md1 --run --level=1 --raid-devices=2 --metadata=1.0 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T801235B-part4 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T814942M-part4
+            #   # mkfs.ext4 -j /dev/disk/by-id/md-uuid-19ab8a7a:1c217da0:c68fee85:adfcdd14
+            #   "/data/ssd" = {
+            #     device = "/dev/disk/by-id/md-uuid-19ab8a7a:1c217da0:c68fee85:adfcdd14";
+            #     fsType = "ext4";
+            #     options = [ "nofail" ];
+            #   };
+            # };
 
-            #   # systemd.mounts = [
-            #   #   {
-            #   #     after = [ "data-ssd.mount" "data-disk0.mount" ];
-            #   #     what = "/data/disk0"; # :next:next
-            #   #     where = "/data/srv";
-            #   #     type = "fuse.mergerfs";
-            #   #     options = "defaults,allow_other,use_ino,cache.files=partial,dropcacheonclose=true,category.create=epmfs,nofail";
-            #   #     wantedBy = [ "seaweedfs-master.target" ];
-            #   #   }
-            #   # ];
+            # #     # "/data/srv" = {
+            # #     #   device = "/datta/disk0";
+            # #     #   fsType = "fuse.mergerfs";
+            # #     #   options = [
+            # #     #     "defaults"
+            # #     #     "allow_other"
+            # #     #     "use_ino"
+            # #     #     "cache.files=partial"
+            # #     #     "dropcacheonclose=true"
+            # #     #     "category.create=epmfs"
+            # #     #     "nofail"
+            # #     #   ];
+            # #     #   wantedBy = [ "seaweedfs-master.target" ];
+            # #     # };
+            # #   };
 
-            #   services.seaweedfs = {
-            #     master = {
-            #       enable = true;
-            #       settings = {
-            #         sequencer = "snowflake";
-            #         sequencer_snowflake_id = 0;
+            # #   # systemd.mounts = [
+            # #   #     after = [ "data-ssd.mount" "data-disk0.mount" ];
+            # #   #     what = "/data/disk0"; # :next:next
+            # #   #     where = "/data/srv";
+            # #   #     type = "fuse.mergerfs";
+            # #   #     options = "defaults,allow_other,use_ino,cache.files=partial,dropcacheonclose=true,category.create=epmfs,nofail";
+            # #   #     wantedBy = [ "seaweedfs-master.target" ];
+            # #   #   }
+            # #   # ];
+
+            # # mountpoint /data/disk0 && install -dm755 --owner weed --group weed /data/disk0/weed
+            # # mountpoint /data/ssd && { install -dm755 --owner weed --group weed /data/ssd/weed && install -dm755 --owner weed --group weed /data/ssd/weed/mdir; }
+
+            # services.seaweedfs = {
+            #   master = {
+            #     enable = true;
+            #     openIface = "enp1s0";
+            #     settings = {
+            #       sequencer = {
+            #         type = "snowflake";
+            #         sequencer_snowflake_id = 1;
             #       };
-            #       mdir = "/data/ssd/weed/mdir";
+            #       # maintenance = {
+            #       #   sleep_minutes = 47;
+            #       #   scripts = ''
+            #       #     lock
+            #       #     ec.encode -fullPercent=95 -quietFor=1h
+            #       #     ec.rebuild -force
+            #       #     ec.balance -force
+            #       #     volume.balance -force
+            #       #     unlock
+            #       #   '';
+            #       # };
             #     };
-            #     volume = {
-            #       enable = true;
-            #       stores.disk0 = { dir = "/data/disk0/weed"; };
-            #     };
-            #     filer.enable = true;
-            #     # iam.enable = true;
-            #     # s3.enable = true;
-            #     webdav.enable = true;
-            #     staticUser.enable = true;
+            #     defaultReplication = "001";
+            #     mdir = "/data/ssd/weed/mdir";
+            #     peers = weedMasters;
+            #     volumeSizeLimitMB = 1024;
+            #     volumePreallocate = true;
             #   };
+            #   volume = {
+            #     enable = true;
+            #     stores.disk0 = {
+            #       dir = "/data/disk0/weed";
+            #       server = weedMasters;
+            #       maxVolumes = 18432;
+            #     };
+            #   };
+            #   filer.enable = true;
+            #   iam.enable = true;
+            #   # s3.enable = true;
+            #   webdav.enable = true;
+            #   staticUser.enable = true;
+            # };
           }];
           specialArgs = {
             inherit inputs;
             unstable = unstable.legacyPackages.${x86-linux};
           };
         };
-        cl1 = (makeOverridable nixosSystem)
-          {
-            system = "x86_64-linux";
-            modules = nixOSModules ++ [
-              ./hosts/cl1/configuration.nix
-            ] ++ [{
-              users = {
-                primaryUser = homeUser;
-                primaryGroup = "users";
-              };
-              age.secrets = ageHomeNixos homeUser;
-              services.role = {
-                intel.enable = true;
-                mosh.enable = true;
-                promtail.enable = true;
-                node-exporter = {
-                  enable = true;
-                  exporterIface = "enp1s0";
-                };
-              };
-            }];
-            specialArgs = {
-              inherit inputs;
-              unstable = unstable.legacyPackages.${x86-linux};
+        cl3 = (makeOverridable nixosSystem) {
+          system = "x86_64-linux";
+          modules = nixOSModules ++ [
+            ./hosts/cl3/configuration.nix
+          ] ++ [{
+            users = {
+              primaryUser = homeUser;
+              primaryGroup = "users";
             };
+            age.secrets = ageHomeNixos homeUser;
+            services.role = {
+              cluster.enable = true;
+              intel.enable = true;
+              mosh.enable = true;
+              promtail.enable = true;
+              node-exporter = {
+                enable = true;
+                exporterIface = "enp1s0";
+              };
+            };
+
+            # fileSystems = {
+            #   # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F
+            #   "/data/disk0" = {
+            #     device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F";
+            #     fsType = "ext4";
+            #     options = [ "nofail" ];
+            #   };
+            #   # mdadm --create /dev/md1 --run --level=1 --raid-devices=2 --metadata=1.0 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T918913H-part4  /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T924424L-part4
+            #   # mkfs.ext4 -j /dev/disk/by-id/md-uuid-f2cfe540:e6d05128:b89a2d2e:1066c3a4
+            #   "/data/ssd" = {
+            #     device = "/dev/disk/by-id/md-uuid-f2cfe540:e6d05128:b89a2d2e:1066c3a4";
+            #     fsType = "ext4";
+            #     options = [ "nofail" ];
+            #   };
+            # };
+            # # mountpoint /data/disk0 && install -dm755 --owner weed --group weed /data/disk0/weed
+            # # mountpoint /data/ssd && { install -dm755 --owner weed --group weed /data/ssd/weed && install -dm755 --owner weed --group weed /data/ssd/weed/mdir; }
+
+            # services.seaweedfs = {
+            #   master = {
+            #     enable = true;
+            #     openIface = "enp1s0";
+            #     settings = {
+            #       sequencer = {
+            #         type = "snowflake";
+            #         sequencer_snowflake_id = 2;
+            #       };
+            #       # maintenance = {
+            #       #   sleep_minutes = 47;
+            #       #   scripts = ''
+            #       #     lock
+            #       #     ec.encode -fullPercent=95 -quietFor=1h
+            #       #     ec.rebuild -force
+            #       #     ec.balance -force
+            #       #     volume.balance -force
+            #       #     unlock
+            #       #   '';
+            #       # };
+            #     };
+            #     defaultReplication = "001";
+            #     mdir = "/data/ssd/weed/mdir";
+            #     peers = weedMasters;
+            #     volumeSizeLimitMB = 1024;
+            #     volumePreallocate = true;
+            #   };
+            #   volume = {
+            #     enable = true;
+            #     stores.disk0 = {
+            #       dir = "/data/disk0/weed";
+            #       server = weedMasters;
+            #       maxVolumes = 18432;
+            #     };
+            #   };
+            #   filer.enable = true;
+            #   iam.enable = true;
+            #   # s3.enable = true;
+            #   webdav.enable = true;
+            #   staticUser.enable = true;
+            # };
+          }];
+          specialArgs = {
+            inherit inputs;
+            unstable = unstable.legacyPackages.${x86-linux};
           };
+        };
         dfs1 = nixosSystem
           {
             system = "x86_64-linux";
@@ -826,6 +1023,12 @@
             hostname = "cl2.home.arpa";
             profiles.system = {
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."cl2";
+            };
+          };
+          "cl3" = {
+            hostname = "cl3.home.arpa";
+            profiles.system = {
+              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."cl3";
             };
           };
           "dfs1" = {
