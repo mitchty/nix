@@ -71,12 +71,14 @@ OneDrive*
 # SIP says no and gives errors on these so just exclude em, we can't back it up
 # anyway to improve the backup/output logs to not have errors on open() calls
 Library/Accounts
+Library/Application\ Support/AppleMediaServices
 Library/Application\ Support/AddressBook
 Library/Application\ Support/CallHistoryDB
 Library/Application\ Support/CallHistoryTransactions
 Library/Application\ Support/CloudDocs/session/db
 Library/Application\ Support/CrashReporter
 Library/Application\ Support/Dock/desktoppicture.db
+Library/Application\ Support/FaceTime
 Library/Application\ Support/FileProvider
 Library/Application\ Support/Google/Chrome/*/*/*/*.log
 Library/Application\ Support/Knowledge
@@ -92,14 +94,17 @@ Library/Autosave\ Information
 Library/Biome
 Library/Calendars
 Library/Caches
+Library/com.apple.aiml.instrumentation
 Library/Containers
 Library/Cookies
 Library/CoreFollowUp
 Library/Developer
+Library/DoNotDisturb
 Library/DuetExpertCenter
 Library/Google/GoogleSoftwareUpdate
 Library/Group\ Containers/
 Library/HomeKit
+Library/ItelligencePlatform
 Library/IdentityServices
 Library/Logs
 Library/Mail
@@ -120,6 +125,7 @@ Library/Sharing
 Library/Shortcuts
 Library/StatusKit
 Library/Suggestions
+Library/Trial
 Library/studentd
 Pictures/Photos\ Library.photoslibrary
 
