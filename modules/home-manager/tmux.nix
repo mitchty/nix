@@ -181,12 +181,6 @@ rec {
     windows = [ initial syncthing btop ];
   });
 
-  home.file.".config/tmuxp/sys1.yml".text = (lib.generators.toYAML { } {
-    start_directory = "~/";
-    session_name = "sys1";
-    windows = [ initial btop ];
-  });
-
   home.file.".config/tmuxp/wmb.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "wmb";

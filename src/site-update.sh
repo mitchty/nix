@@ -34,7 +34,7 @@ deployrs() {
   fi
 }
 
-check
+[ -z "${CHECK:-}" ] && check
 
 if [ $# -gt 0 ]; then
   deployrs "$@"

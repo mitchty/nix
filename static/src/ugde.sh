@@ -8,7 +8,7 @@ export _base _dir
 
 set "${SETOPTS:--eu}"
 
-#shellcheck source=../static/src/lib.sh
+#shellcheck source=./lib.sh
 . ~/src/pub/github.com/mitchty/nix/static/src/lib.sh
 
 _dots=0

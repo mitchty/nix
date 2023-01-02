@@ -8,6 +8,7 @@
     mitchty.url = "github:mitchty/nixos";
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-22.11-darwin";
+    nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
 
     darwin = {
       url = "github:LnL7/nix-darwin";
@@ -57,6 +58,7 @@
     , dnsblacklist
     , flake-utils
     , seaweedfs
+    , nixpkgs-pacemaker
     , ...
     }:
     let
@@ -72,10 +74,19 @@
           "/home/${user}"
         else "";
 
-      nixpkgsConfig = extras: {
+      nixpkgsConfig = extras: rec {
         overlays = [
           emacs.overlay
           rust.overlays.default
+          (
+            # force in the ocf-resource-agents/pacemaker I patched into nixpkgs-pacemaker
+            # ignore system as for now all it runs on is x86_64-linux so
+            # whatever
+            final: prev: rec {
+              pacemaker = nixpkgs-pacemaker.legacyPackages.x86_64-linux.pacemaker;
+              ocf-resource-agents = nixpkgs-pacemaker.legacyPackages.x86_64-linux.ocf-resource-agents;
+            }
+          )
           # No longer neeeded here for future me to use to copypasta new patches
           # in if needed.
           # (self: super:
@@ -184,6 +195,9 @@
         )
       ];
 
+
+      pacemakerPath = "services/cluster/pacemaker/default.nix";
+
       nixOSModules = attrValues
         {
           users = import ./modules/users.nix;
@@ -192,12 +206,24 @@
         ./modules/nixos
         agenix.nixosModules.age
         seaweedfs.nixosModules.seaweedfs
+        "${inputs.nixpkgs-pacemaker}/nixos/modules/${pacemakerPath}"
         (
           { config, ... }:
           let
             inherit (config.users) primaryUser;
           in
           {
+            # From: https://github.com/NixOS/nixpkgs/blob/c653577537d9b16ffd04e3e2f3bc702cacc1a343/nixos/doc/manual/development/replace-modules.section.md
+            #
+            # TODO: Remove most of me once
+            # https://github.com/NixOS/nixpkgs/pull/208298/files merged Disable the built.
+            #
+            # in pacemaker module in lieu of my fixed version until the basic version is
+            # merged.
+            #
+            # Will also be testing out some other module updates to make it less of a PITA to use.
+            disabledModules = [ pacemakerPath ];
+
             nixpkgs = nixpkgsConfig [ seaweedfs.overlays.default ];
             users.users.${primaryUser}.home = homeDir "x86_64-linux" primaryUser;
             home-manager.useGlobalPkgs = true;

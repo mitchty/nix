@@ -19,7 +19,7 @@ sshcopy() {
     fi
     size=$(echo "${size}" | awk '{print $1}')
     echo "Copying $size to $dst"
-    (ssh "${srchost}" "/bin/cat ${src}" | pv -cb -N copied - | ssh "$dsthost" "/bin/cat - > ${dst}") 2> /dev/null
+    (ssh "${srchost}" "cat ${src}" | pv -cb -N copied - | ssh "$dsthost" "cat - > ${dst}") 2> /dev/null
   fi
 }
 
