@@ -47,6 +47,7 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       # TODO: Gotta make my nixos flake an overlay, future me problem.
+      inputs.mitchty.packages.${pkgs.system}.nheko
       inputs.mitchty.packages.${pkgs.system}.obs-studio
       inputs.mitchty.packages.${pkgs.system}.stats
       inputs.mitchty.packages.${pkgs.system}.stretchly
