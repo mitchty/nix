@@ -1,0 +1,2 @@
+[includeIf "gitdir:~/src/wrk/"]
+   path = .gitconfig-work

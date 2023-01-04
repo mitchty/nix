@@ -6,6 +6,7 @@ let
       export NIX_PATH="${nixpkgs-path}:$NIX_PATH"
     fi
   '';
+  work = (builtins.readFile ../../static/home/profile-work);
 in
 {
   # Options ref:
@@ -49,6 +50,6 @@ in
     };
 
     # Everything we can't define ^^thataway^^
-    initExtra = (builtins.readFile ../../static/home/zshrc) + (builtins.readFile ../../static/src/lib.sh) + shenanigans;
+    initExtra = (builtins.readFile ../../static/home/zshrc) + (builtins.readFile ../../static/src/lib.sh) + shenanigans + work;
   };
 }
