@@ -44,13 +44,13 @@ clear; nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .
    Or use the wrapper function in [[file:static/home/profile][.profile]]:
 
 #+begin_src shell
-deploy
+rebuild
 #+end_src
 
-   To run a deploy with a *nix flake check* run:
+   To run a deploy without running *nix flake check*:
 
 #+begin_src shell
-deploy check
+CHECK=false rebuild check
 #+end_src
 
 And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Aka that without builder setup cannot deploy to a macos system from linux. This is on my TODO list to fix at some point.

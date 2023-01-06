@@ -205,10 +205,26 @@ in
     };
   };
 
-  # TODO: Remove the unneeded stuff once its ran once
+  # Add to home managers dag to make sure the activation fails if emacs can't
+  # parse the init files and nuke any temp dirs we don't need/want to stick
+  # around if present.
   home.activation.freshEmacs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     printf "modules/home-manager/default.nix: clean ~/.emacs.d\n" >&2
     $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.emacs.d/init.el ~/.emacs.d/init.elc ~/.emacs.d/elpa ~/.emacs.d/eln-cache
+    printf "modules/home-manager/default.nix: validate emacs config is loadable\n" >&2
+    $DRY_RUN_CMD ${emacsWithConfig}/bin/emacs --debug-init --batch -u $USER
+  '';
+
+  # Complain if we find > 10 diskimage-helper processes so I can debug *why* the
+  # eff its happening on macos.
+  home.activation.Wtf = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [ "Darwin" = "$(uname -s)" ]; then
+      printf "modules/home-manager/default.nix: make sure not a ton of diskimage-helper processes are running\n" >&2
+      if [ "$(pgrep -lif diskimages-helper | wc -l)" -gt 50 ]; then
+        printf "Too many diskimages-helper process, something probably went crazy, uncomment the pkill if we want to kill them all\n" >&2
+        #$DRY_RUN_CMD pkill -lif diskimages-helper
+      fi
+    fi
   '';
 
   # Programs not (yet) worthy of their own .nix setup... so far

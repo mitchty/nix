@@ -85,11 +85,11 @@ let
     panes = [ "pane" ];
   };
 
-  deploy = {
+  rebuild = {
     shell_command = [
       "gi mitchty/nix"
       {
-        cmd = "deploy";
+        cmd = "rebuild";
         enter = false;
       }
     ];
@@ -105,14 +105,14 @@ let
     ];
   };
 
-  deployall = {
-    window_name = "deploy";
-    panes = [ site-update deploy ];
+  rebuildall = {
+    window_name = "rebuild";
+    panes = [ site-update rebuild ];
   };
 
-  deploylocal = {
-    window_name = "deploy";
-    panes = [ site-update deploy ];
+  rebuildlocal = {
+    window_name = "rebuild";
+    panes = [ rebuild ];
   };
 
   # nix = {
@@ -131,7 +131,7 @@ let
   #       shell_command = [
   #         "gi mitchty/nix"
   #         {
-  #           cmd = "deploy";
+  #           cmd = "rebuild";
   #           enter = "false";
   #         }
   #       ];
@@ -164,7 +164,7 @@ rec {
   home.file.".config/tmuxp/mb.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "mb";
-    windows = [ initial syncthing deployall ];
+    windows = [ initial syncthing rebuildall ];
   });
 
   # TODO: Get syncthing into a user systemd unit or something
@@ -184,6 +184,6 @@ rec {
   home.file.".config/tmuxp/wmb.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "wmb";
-    windows = [ initial deploylocal yolo wip ];
+    windows = [ initial rebuildlocal yolo wip ];
   });
 }

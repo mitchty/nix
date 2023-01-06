@@ -19,10 +19,6 @@ let
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
 
-  wtf = (pkgs.writeScriptBin "wtf" (builtins.readFile ../../static/src/wtf.sh)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
   yeet = (pkgs.writeScriptBin "yeet" (builtins.readFile ../../src/yeet.sh)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
@@ -57,7 +53,6 @@ in
       close
       gohome
       notify
-      wtf
       yeet
       ugde
     ];

@@ -1,37 +1,23 @@
-#!/usr/bin/env nix-shell
+#!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
-#!nix-shell -i bash -p bash git
-# NOTE: home-manager missing from ^^ -p(ackage) list in lieu of system's until
-# the base nixpkgs includes flake support by default.
-# File: rebuild.sh
+# SPDX-License-Identifier: BlueOak-1.0.0
+# Description: Wrapper script to simplify running deploy-rs or whatever locally
+# to rebuild the local node only from a flake checkout.
 _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 
-cd "${_dir}/.." || exit 126
+set "${SETOPTS:--eux}"
 
-# Don't sudo when we don't need it sudo as root is... rather sad
-as_root() {
-  if [ "root" = "$(id -un)" ]; then
-    "$@"
-  else
-    sudo "$@"
-  fi
-}
+# Note args are just what we would pass directly into nix build or
+# darwin-rebuild... this is just an easier way to use whichever is right for
+# each platform.
 
-set -e
+# Only check flake if CHECK is set
+[ -z "${CHECK:-}" ] && nix flake check --show-trace "$@"
 
-uname_s="$(uname -s)"
-args="--show-trace switch --flake .#"
-
-# Rebuild based on system type
-if [[ "${uname_s}" = "Darwin" ]]; then
-  darwin-rebuild ${args}
-elif [[ "${uname_s}" = "Linux" ]]; then
-  as_root nixos-rebuild ${args}
+if [ "Linux" = "$(uname -s)" ]; then
+  nix run github:serokell/deploy-rs -- -s .
 else
-  printf "fatal: not yet configured for an os type of %s" "${uname_s}"
-  exit 1
+  darwin-rebuild switch --flake .# "$@"
 fi
-
-exit $?
