@@ -18,7 +18,7 @@ Use use-package to configure emacs itself.
   :ensure
   :demand t
   :bind (("C-x ," . kill-whole-line)
-         ("C-c %" . query-replace)) ;; because modern macos has yeeted this away from me...
+         ("C-x %" . query-replace)) ;; because modern macos has yeeted this away from me...
   :config
   (setq-default debug-on-error t)
   (setq-default bidi-paragraph-direction 'left-to-right)
