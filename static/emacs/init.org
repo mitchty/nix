@@ -118,13 +118,33 @@ Cause the macros *use-packge* can generate are... not entirely easy to debug. Th
         ("C-c C-e" . macrostep-expand)))
 #+END_SRC
 
+View epub's in emacs directly
+
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package nov
   :ensure
-  :defer t
+  :defer
   :config
   (setq nov-text-width 80)
   :mode (("\\.epub\\'" . nov-mode)))
+#+END_SRC
+
+minimap so my emacs can be more like the cool kids, won't turn it on everywhere yet only when i want it for now.
+
+FUTURE MITCH DO NOT ADD *text-mode* or magit will get the minimap too probably a lot of other stuff too.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package minimap
+  :ensure
+  :defer
+  :diminish minimap-mode
+  :bind (("C-x i" . minimap-create))
+  :custom
+  (minimap-minimum-width 20)
+  (minimap-major-modes '(prog-mode org-mode))
+  (minimap-recreate-window t)
+  (minimap-update-delay 0)
+  (minimap-window-location 'left))
 #+END_SRC
 
 *** TESTING theme
