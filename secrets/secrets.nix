@@ -11,7 +11,7 @@ let
   nexus = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJCQJlqfzBYIjuWAIl72Q4o264vMEKWc4b+Tc30cqgtO";
   dfs1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMIIXtwtlXD59ni6Y/+jYr2opNqvG6sTTXKbVN4OBLTA";
 
-  cl1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPf0zKWj6ZKKeiny8w9QOY3Dbyw0Gg/6H18f4kIgZ0Dl";
+  cl1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOxV4KEVMkikEM4L9QCvd8QcMwvDK3nryBL28L0BFffZ";
   cl2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO9/+zDNc2RTZNn25SN0z/iKBc6RrT+uleTUaJT+nPIh";
   cl3 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFjWCCiZOEVe0MWZgpJSMQKrXdA26x8MuaTM7gI6qLYN";
 
@@ -33,6 +33,9 @@ let
   allusers = homeusers;
   allhosts = homehosts ++ workhosts;
 
+  # Just routers
+  router = [ gw ];
+
   everything = allusers ++ allhosts;
 in
 {
@@ -50,4 +53,7 @@ in
   # nixos specific
   "passwd/root.age".publicKeys = allnixos ++ ageadmins;
   "passwd/mitch.age".publicKeys = allnixos ++ ageadmins;
+
+  # Only the router needs the the hostapd stuff
+  "wifi/passphrase.age".publicKeys = router ++ ageadmins;
 }

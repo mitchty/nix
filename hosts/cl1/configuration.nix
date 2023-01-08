@@ -19,7 +19,7 @@
     ];
     networking = {
       hostName = "cl1";
-      hostId = "c38b5592";
+      hostId = "616c0dcf";
 
       interfaces = {
         enp1s0.useDHCP = true;

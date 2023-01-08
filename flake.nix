@@ -386,9 +386,17 @@
         };
       };
 
+      wifiSecrets = user: {
+        "wifi/passphrase" = {
+          file = ./secrets/wifi/passphrase.age;
+          owner = user;
+        };
+      };
+
       # Make age.secrets = a bit simpler with some defined variables
       homeUser = "mitch";
       workUser = "tishmack";
+      rootUser = "root";
 
       ageDefault = user: canarySecret user;
       ageGit = user: gitSecret user // ghcliPubSecret user;
@@ -639,7 +647,7 @@
               primaryUser = homeUser;
               primaryGroup = "users";
             };
-            age.secrets = ageHomeNixos homeUser;
+            age.secrets = ageHomeNixos homeUser // wifiSecrets rootUser;
             services.role = {
               intel.enable = true;
               mosh.enable = true;

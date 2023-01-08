@@ -83,8 +83,10 @@ let
     10.10.10.130 prometheus.home.arpa prometheus
     10.10.10.131 nixcache.home.arpa nixcache
 
-    # Cluster ip address
+    # ha cluster ip address(es)
     10.10.10.200 cluster.home.arpa cluster
+    10.10.10.201 nixcache.cluster.home.arpa
+    10.10.10.202 nas.cluster.home.arpa
 
     # For testing dns works or not
     10.10.10.254 canary.home.arpa canary
@@ -127,6 +129,11 @@ in
       default = "br0";
       description = "interface (lan)";
     };
+    wlanIface = mkOption {
+      type = types.str;
+      default = "wlp0s21f0u2";
+      description = "interface (wlan)";
+    };
   };
 
   config = mkIf cfg.enable rec {
@@ -146,6 +153,25 @@ in
       };
     };
 
+    # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/networking/hostapd.nix
+    services.hostapd = {
+      enable = true;
+      interface = cfg.wlanIface;
+      hwMode = "g";
+      countryCode = "US";
+      ssid = "newhotness";
+      wpa = true;
+      extraConfig = ''
+        auth_algs=1
+        ignore_broadcast_ssid=0
+        wpa_pairwise=GCMP CCMP
+        rsn_pairwise=GCMP CCMP
+        ieee80211n=1
+        wmm_enabled=1
+        wpa_psk_file=${config.age.secrets."wifi/passphrase".path}
+      '';
+    };
+
     networking = {
       # Only using dhcp for the wan interface
       useDHCP = false;
@@ -161,15 +187,17 @@ in
       # But probably best to just leave it as is.
       nameservers = [ "127.0.0.1" ] ++ upstreamdns;
 
-      bridges.br0.interfaces = [ "enp2s0" "enp3s0" "enp6s0" ];
+      bridges.br0.interfaces = [ "enp2s0" "enp3s0" "enp6s0" cfg.wlanIface ];
 
       interfaces = {
         eno1.useDHCP = true;
 
-        # br0 is all these 3 devices
+        # br0 is basically "just" the switch+wireless nic
+        # TODO: Future me maybe throw in vlans and setup more security
         enp2s0.useDHCP = false;
         enp3s0.useDHCP = false;
         enp6s0.useDHCP = false;
+        wlp0s21f0u2.useDHCP = false;
 
         br0 = {
           ipv4.addresses = [
@@ -271,6 +299,7 @@ in
         };
       '';
     };
+    systemd.services.dnsmasq.requires = [ "br0-netdev.service" ];
     services.dnsmasq = {
       enable = true;
       servers = upstreamdns;
