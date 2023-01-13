@@ -135,13 +135,14 @@ FUTURE MITCH DO NOT ADD *text-mode* or magit will get the minimap too probably a
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package minimap
+  :if (memq window-system '(mac ns))
   :ensure
   :defer
   :diminish minimap-mode
   :bind (("C-x i" . minimap-create))
   :custom
   (minimap-minimum-width 20)
-  (minimap-major-modes '(prog-mode org-mode))
+  (minimap-major-modes '(prog-mode org-mode nix-mode))
   (minimap-recreate-window t)
   (minimap-update-delay 0)
   (minimap-window-location 'left))
@@ -161,9 +162,10 @@ Sick of solarized, going back to good old black on white minimalism like paper. 
   :config (load-theme 'zenburn t))
 
 (use-package auto-dark
+  :if (memq window-system '(mac ns))
   :after minimal-theme
   :ensure
-  :if (memq window-system '(mac ns))
+  :defer
   :init (auto-dark-mode)
   :custom
   (auto-dark--dark-theme 'zenburn)
@@ -178,6 +180,7 @@ Customize whitespace mode to make tabs obvious as boxes, and to highlight lines 
 (use-package hl-line
   :after org
   :ensure
+  :defer
   :hook ((prog-mode text-mode org-mode) . hl-line-mode)
   :custom-face
   (hl-line ((t (:background "#ffc0cb")))))
@@ -334,6 +337,7 @@ If editorconfig is around use it.
 (use-package editorconfig
   :diminish
   :ensure
+  :defer
   :config
   (editorconfig-mode 1))
 #+END_SRC
@@ -357,8 +361,8 @@ Turns out that someone wrote this exact thing already. Yay get to drop my own cr
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package exec-path-from-shell
-  :ensure
   :if (memq window-system '(mac ns))
+  :ensure
   :config
   (exec-path-from-shell-initialize)
   )
@@ -376,8 +380,8 @@ Use the silver searcher for quick searches.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package osx-clipboard
-  :ensure
   :if (memq window-system '(mac ns))
+  :ensure
   :config
   (osx-clipboard-mode +1))
 #+END_SRC
