@@ -5,7 +5,7 @@
         "@admin"
       ];
       substituters = [
-        "http://nixcache.home.arpa"
+        "http://cache.cluster.home.arpa"
         "https://cache.nixos.org"
         "https://nix-community.cachix.org"
       ];

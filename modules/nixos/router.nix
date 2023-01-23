@@ -85,7 +85,7 @@ let
 
     # ha cluster ip address(es)
     10.10.10.200 cluster.home.arpa cluster
-    10.10.10.201 nixcache.cluster.home.arpa
+    10.10.10.201 cache.cluster.home.arpa
     10.10.10.202 nas.cluster.home.arpa
 
     # For testing dns works or not
