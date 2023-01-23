@@ -8,18 +8,19 @@ export _base _dir
 
 set "${SETOPTS:--eu}"
 
+DEPLOYOPTS="${DEPLOYOPTS:-}"
+
 #shellcheck source=../static/src/lib.sh
 . ~/src/pub/github.com/mitchty/nix/static/src/lib.sh
 
 nixossys=srv.home.arpa
 
 check() {
-  # nix flake check segfaults all the damn time on macos grr..
-  ugde && ssh -t "${nixossys}" "zsh --login -i -c 'gi mitchty/nix && nix flake check --show-trace'"
+  gi mitchty/nix && nix flake check --show-trace
 }
 
 _deployrs() {
-  ugde && ssh -t "${nixossys}" "zsh --login -i -c 'gi mitchty/nix && nix run github:serokell/deploy-rs -- -s ${1}'"
+  ugde && ssh -t "${nixossys}" "zsh --login -i -c 'gi mitchty/nix && nix run github:serokell/deploy-rs -- -s ${1} -- ${DEPLOYOPTS}'"
 }
 
 deployrs() {
