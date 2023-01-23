@@ -75,6 +75,10 @@
       $DRY_RUN_CMD sudo install -dm755 $VERBOSE_ARG /etc/resolver
       $DRY_RUN_CMD printf "domain home.arpa\nsearch home.arpa\nnameserver 10.10.10.1\n" | sudo tee /etc/resolver/home.arpa
       $DRY_RUN_CMD sudo killall -HUP mDNSResponder
+
+      printf "modules/darwin/default.nix: defaults not in nix-darwin\n" >&2
+      $DRY_RUN_CMD defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+      $DRY_RUN_CMD defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
     '';
   };
 }
