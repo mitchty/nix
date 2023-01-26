@@ -432,3 +432,35 @@ backoff() {
   fi
   return 0
 }
+
+# Encompass the nonsense behind sed -e ... -i '' /some/file between bsd and non bsd sed
+_sed_inplace_once_memo=false
+
+_sed_inplace_once() {
+  unset SED_NEEDS_WHITESPACE || :
+  if ! ${_sed_inplace_once_memo}; then
+    _sed_inplace_once_tmp=$(mktemp -t sedXXXXXXXX > /dev/null 2>&1)
+    if ${SED:-sed} -e 's/foo/bar/g' -i'' "${_sed_inplace_once_tmp}" > /dev/null 2>&1; then
+      SED_NEEDS_WHITESPACE=
+    fi
+    rm -f "${_sed_inplace_once_tmp}"
+    _sed_inplace_once_memo=true
+  fi
+}
+
+# For unit tests only to make sure we're calling what we expect to
+_sut_sed_inplace() {
+  _sed_inplace_once
+  echo "-i${SED_NEEDS_WHITESPACE- }''"
+}
+
+# Cause bsd/gnu sed differ in -i/inplace semantics/arg parsing
+#
+# macos/bsd sed needs -i '' (note the space!)
+# gnu/busybox sed require -i'' (note no space!)
+#
+# So abuse eval/param expansion to make a portable-er/ish wrapper
+sed_inplace() {
+  #shellspec disable=SC2119
+  ${SED:-sed} "$(_sut_sed_inplace)" "$@"
+}
