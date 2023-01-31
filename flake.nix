@@ -1093,6 +1093,10 @@
             ${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt --check ${./.}
             install -dm755 $out
           '';
+          shellspec = pkgs.runCommand "check-shellspec" { } ''
+            ${pkgs.shellspec}/bin/shellspec -c ${./.}
+            install -dm755 $out
+          '';
         };
       }
       );
