@@ -20,6 +20,7 @@ let
           <op id="cluvip-stop-interval-0s" interval="0s" name="stop" timeout="20s"/>
         </operations>
       </primitive>
+
       <!-- cache.cluster.home.arpa vip used for cluster-y things not general apps -->
       <primitive class="ocf" id="cachevip" provider="heartbeat" type="IPaddr2">
         <instance_attributes id="cachevip-instance_attributes">
@@ -33,6 +34,7 @@ let
           <op id="cachevip-stop-interval-0s" interval="0s" name="stop" timeout="20s"/>
         </operations>
       </primitive>
+
       <!-- nas.cluster.home.arpa vip for mounting /gluster/nas -->
       <primitive class="ocf" id="nasvip" provider="heartbeat" type="IPaddr2">
         <instance_attributes id="nasvip-instance_attributes">
@@ -46,6 +48,7 @@ let
           <op id="nasvip-stop-interval-0s" interval="0s" name="stop" timeout="20s"/>
         </operations>
       </primitive>
+
       <!-- canary.home.arpa vip for use with netcat, not really useful should delete -->
       <primitive class="ocf" id="canaryvip" provider="heartbeat" type="IPaddr2">
         <instance_attributes id="canaryvip-instance_attributes">
@@ -62,16 +65,41 @@ let
 
       <primitive id="cat" class="systemd" type="canary-cat">
         <operations>
-          <op id="stop-cat" name="stop" interval="0" timeout="1s"/>
-          <op id="start-cat" name="start" interval="0" timeout="1s"/>
-          <op id="monitor-cat" name="monitor" interval="1s" timeout="1s"/>
+          <op id="stop-cat" name="stop" interval="0" timeout="10s"/>
+          <op id="start-cat" name="start" interval="0" timeout="10s"/>
+          <op id="monitor-cat" name="monitor" interval="10s" timeout="20s"/>
         </operations>
       </primitive>
+
       <primitive id="samba" class="systemd" type="samba-smbd">
         <operations>
-          <op id="stop-samba" name="stop" interval="0" timeout="10s"/>
-          <op id="start-samba" name="start" interval="0" timeout="1s"/>
-          <op id="monitor-samba" name="monitor" interval="1s" timeout="1s"/>
+          <op id="stop-samba-smbd" name="stop" interval="0" timeout="10s"/>
+          <op id="start-samba-smbd" name="start" interval="0" timeout="10s"/>
+          <op id="monitor-samba-smbd" name="monitor" interval="10s" timeout="20s"/>
+        </operations>
+      </primitive>
+
+      <primitive id="nginx" class="systemd" type="nginx">
+        <operations>
+          <op id="stop-nginx" name="stop" interval="0" timeout="10s"/>
+          <op id="start-nginx" name="start" interval="0" timeout="10s"/>
+          <op id="monitor-nginx" name="monitor" interval="10s" timeout="20s"/>
+        </operations>
+      </primitive>
+
+      <primitive id="nfsd" class="systemd" type="nfs-server">
+        <operations>
+          <op id="stop-nfs-server" name="stop" interval="0" timeout="10s"/>
+          <op id="start-nfs-server" name="start" interval="0" timeout="10s"/>
+          <op id="monitor-nfs-server" name="monitor" interval="10s" timeout="20s"/>
+        </operations>
+      </primitive>
+
+      <primitive id="maint" class="systemd" type="seaweedfs-maintenance">
+        <operations>
+          <op id="stop-maint" name="stop" interval="0" timeout="10s"/>
+          <op id="start-maint" name="start" interval="0" timeout="10s"/>
+          <op id="monitor-maint" name="monitor" interval="10s" timeout="20s"/>
         </operations>
       </primitive>
     </resources>
@@ -87,21 +115,33 @@ let
     <constraints>
       <rsc_order id="order-cat" first="canaryvip" then="cat" kind="Mandatory"/>
       <rsc_colocation id="colocate-cat" rsc="canaryvip" with-rsc="cat" score="INFINITY"/>
+      <rsc_colocation id="colocate-maint" rsc="canaryvip" with-rsc="maint" score="INFINITY"/>
+
       <rsc_order id="order-samba" first="nasvip" then="samba" kind="Mandatory"/>
       <rsc_colocation id="colocate-samba" rsc="nasvip" with-rsc="samba" score="INFINITY"/>
+
+      <rsc_order id="order-nfsd" first="cluvip" then="nfsd" kind="Mandatory"/>
+      <rsc_colocation id="colocate-nfsd" rsc="cluvip" with-rsc="nfsd" score="INFINITY"/>
+
+      <rsc_order id="order-nginx" first="cachevip" then="nginx" kind="Mandatory"/>
+      <rsc_colocation id="colocate-nginx" rsc="cachevip" with-rsc="nginx" score="INFINITY"/>
     </constraints>
   '';
 
   pacemakerTrampoline = pkgs.writeScriptBin "pacemaker-trampoline" ''#!${pkgs.runtimeShell}
     set -eux
     AWK=${pkgs.gawk}/bin/awk
-    PATH=$PATH:${pkgs.pacemaker}/bin
+    PATH=$PATH:${pkgs.pacemaker}/bin:${pkgs.xmlstarlet}/bin
 
     . ${../../static/src/lib.sh}
 
     if [ "cl1" = "$(uname -n)" ]; then
+      dir=$(mktemp -d XXXXXXXX -t )
+      trap "rm -fr $dir" EXIT
+
+      cfg="$dir/config.xml"
+
       lim=5
-      rsleep $lim
       # Since I have no stonith device, have to run in super cereal scary mode
       crm_attribute --type crm_config --name stonith-enabled --update false
   #    crm_attribute --type crm_config --name no-quorum-policy --update ignore
@@ -109,8 +149,26 @@ let
       rsleep $lim
       cibadmin --replace --scope constraints --xml-file ${constraintsEmpty}
       cibadmin --replace --scope resources --xml-file ${resources}
-      cibadmin --replace --scope constraints --xml-file ${constraints}
+      cibadmin --replace --sc
+      # cibadmin --query > $cfg
+      # xmlstarlet edit --inplace --update '//cib/configuration/resources' --value $(cat ${resources}) $cfg
+      # xmlstarlet edit --inplace --update '//cib/configuration/constraints' --value $(cat ${constraints}) $cfg
+      # cibadmin --replace --xml-file $cfg
     fi
+  '';
+
+  sambaTrampoline = pkgs.writeScriptBin "samba-trampoline" ''#!${pkgs.runtimeShell}
+    set -eux
+
+    for dir in /gluster/nas /gluster/src; do
+      install -dm755 --owner=mitch --group=users $dir
+    done
+
+    priv=/var/lib/samba/private
+    install -dm755 $priv
+    install -m600 /gluster/cfg/nas/passdb.tdb $priv/passwd.tdb
+    install -m600 /gluster/cfg/nas/netlogon_creds_cli.tdb $priv/netlogon_creds_cli.tdb
+    install -m600 /gluster/cfg/nas/secrets.tdb $priv/secrets.tdb
 
     # then sleeeeeeeeep!
     while true; do
@@ -118,16 +176,12 @@ let
     done
   '';
 
-  sambaTrampoline = pkgs.writeScriptBin "samba-trampoline" ''#!${pkgs.runtimeShell}
+  cacheTrampoline = pkgs.writeScriptBin "cache-trampoline" ''#!${pkgs.runtimeShell}
     set -eux
 
-    install -dm755 /gluster/nas
-
-    priv=/var/lib/samba/private
-    install -dm755 $priv
-    install -m600 /gluster/cfg/nas/passdb.tdb $priv/passwd.tdb
-    install -m600 /gluster/cfg/nas/netlogon_creds_cli.tdb $priv/netlogon_creds_cli.tdb
-    install -m600 /gluster/cfg/nas/secrets.tdb $priv/secrets.tdb
+    for dir in ${bindPrefix} ${bindCacheDir} ${bindRootDir}; do
+      install -dm755 $dir
+    done
 
     # then sleeeeeeeeep!
     while true; do
@@ -154,6 +208,83 @@ let
   # for samba
   sambaTcpPorts = [ 445 139 ];
   sambaUdpPorts = [ 137 138 ];
+
+  # nginx nix package cache
+  nginxCfg = config.services.nginx;
+
+  cacheFallbackConfig = {
+    proxyPass = "$upstream_endpoint";
+    extraConfig = ''
+      proxy_http_version 1.1;
+      proxy_set_header Connection "";
+      proxy_set_header Host $proxy_host;
+      proxy_cache cachecache;
+      proxy_cache_valid 200 302 60m;
+      proxy_cache_valid 404 1m;
+
+      expires max;
+      add_header Cache-Control $cache_header always;
+    '';
+  };
+
+  # Bind mount targets
+  cachePrefix = "/var/cache/nginx";
+  cacheDir = "${cachePrefix}/cache";
+  rootDir = "${cachePrefix}/root";
+
+  # We're bind mounting over the gluster client mount(s) to ^^^
+  bindPrefix = "/gluster/nginx";
+  bindCacheDir = "${bindPrefix}/cache";
+  bindRootDir = "${bindPrefix}/root";
+
+  nginxTcpPorts = [ 80 443 ];
+
+  weedMasters = "10.10.10.6:9333,10.10.10.7:9333,10.10.10.8:9333";
+  weedMountMasters = "10.10.10.6:8888,10.10.10.7:8888,10.10.10.8:8888";
+
+  # Setup the zfs ssd pool
+  seaweedTrampoline = pkgs.writeScriptBin "seaweed-trampoline" ''#!${pkgs.runtimeShell}
+    set -eux
+    PATH=$PATH:${pkgs.zfs}/bin
+
+    zfs list zroot/data || zfs create zroot/data -o compression=zstd -o mountpoint=/data
+    zfs list zroot/data/weed || zfs create zroot/data/weed -o compression=zstd
+    zfs list zroot/data/weed/ssd || zfs create zroot/data/weed/ssd -o compression=zstd
+    zfs list zroot/data/weed/mdir || zfs create zroot/data/weed/mdir -o compression=zstd
+
+    install -dm755 --owner weed --group weed /data/weed/ssd
+    install -dm755 --owner weed --group weed /data/weed/mdir
+    install -dm755 --owner weed --group weed /data/disk/0/weed
+
+    # then sleeeeeeeeep!
+    while true; do
+      sleep 30d
+    done
+  '';
+
+  # Just a simple looping script to be ran by pacemaker on one node via systemd
+  seaweedMaintenance = pkgs.writeScriptBin "seaweedfs-maintenance" ''#!${pkgs.runtimeShell}
+    PATH=$PATH:${inputs.seaweedfs.packages.${pkgs.system}.seaweedfs}/bin
+
+    . ${../../static/src/lib.sh}
+
+    lim=3600
+
+    while true; do
+      rsleep $lim
+
+      weed shell <<FIN
+      lock
+      ec.encode -fullPercent=95 -quietFor=1h
+      ec.rebuild -force
+      ec.balance -force
+      volume.balance -force
+      unlock
+      FIN
+    done
+  '';
+
+  nfsPorts = [ 111 2049 config.services.nfs.server.statdPort config.services.nfs.server.lockdPort config.services.nfs.server.mountdPort ];
 in
 {
   options.services.role.cluster = {
@@ -170,14 +301,20 @@ in
         Specify the corosync auth key in use for the cluster for node to node communication.
       '';
     };
+
+    cname = mkOption {
+      type = types.str;
+      default = "cache.cluster.home.arpa";
+      description = "Internal dns domain to use for the cluster http cache cname";
+    };
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf cfg.enable rec {
     networking = {
       firewall = {
         allowedTCPPortRanges = [ ] ++ glusterTcpPortRanges;
-        allowedTCPPorts = [ ] ++ pacemakerTcpPorts ++ glusterTcpPorts ++ sambaTcpPorts;
-        allowedUDPPorts = [ ] ++ pacemakerUdpPorts ++ glusterUdpPorts ++ sambaUdpPorts;
+        allowedTCPPorts = [ ] ++ pacemakerTcpPorts ++ glusterTcpPorts ++ sambaTcpPorts ++ nginxTcpPorts ++ nfsPorts;
+        allowedUDPPorts = [ ] ++ pacemakerUdpPorts ++ glusterUdpPorts ++ sambaUdpPorts ++ nfsPorts;
       };
     };
 
@@ -287,22 +424,54 @@ in
 
     # Note the system here is only used at initial mount, once mounted that node
     # can go down. So for simplicity, use the first node for this.
-    systemd.mounts = [{
-      wantedBy = [ "multi-user.target" ];
-      what = "cluster.home.arpa:/data-gluster";
-      where = "/gluster";
-      description = "/gluster client mountpoint";
-      after = [ "glusterd.service" ];
-      requires = [ "glusterd.service" ];
-      type = "glusterfs";
-      # Note if we hit a timeout its likely due to misconfiguration
-      mountConfig.TimeoutSec = "10s";
-    }];
+    systemd.mounts = [
+      {
+        wantedBy = [ "multi-user.target" ];
+        what = "cluster.home.arpa:/data-gluster";
+        where = "/gluster";
+        description = "/gluster client mountpoint";
+        after = [ "glusterd.service" ];
+        requires = [ "glusterd.service" ];
+        type = "glusterfs";
+        # Note if we hit a timeout its likely due to misconfiguration
+        mountConfig.TimeoutSec = "10s";
+      }
+      {
+        what = "${bindCacheDir}";
+        where = "${cacheDir}";
+        description = "${bindCacheDir} bind mount";
+        requires = [ "gluster.mount" "cache-trampoline.service" ];
+        type = "none";
+        mountConfig = {
+          TimeoutSec = "10s";
+          Options = "bind";
+        };
+      }
+      {
+        what = "${bindRootDir}";
+        where = "${rootDir}";
+        description = "${bindRootDir} bind mount";
+        requires = [ "gluster.mount" "cache-trampoline.service" ];
+        type = "none";
+        mountConfig = {
+          TimeoutSec = "10s";
+          Options = "bind";
+        };
+      }
+    ];
+
+    systemd.services.cache-trampoline = {
+      enable = true;
+      requires = [ "gluster.mount" ];
+      serviceConfig.ExecStart = "${cacheTrampoline}/bin/cache-trampoline";
+      reloadIfChanged = true;
+    };
 
     systemd.services.samba-trampoline = {
       enable = true;
       requires = [ "gluster.mount" "pacemaker-trampoline.service" ];
       serviceConfig.ExecStart = "${sambaTrampoline}/bin/samba-trampoline";
+      reloadIfChanged = true;
     };
 
     services.samba = {
@@ -313,7 +482,7 @@ in
       securityType = "user";
       extraConfig = ''
         log level = 3
-        interfaces = 10.10.10.202
+        interfaces = 10.10.10.201
         workgroup = WORKGROUP
         server role = standalone server
         dns proxy = no
@@ -365,6 +534,18 @@ in
           "delete veto files" = "yes";
           "wide links" = "yes";
         };
+        src = {
+          path = "/gluster/src";
+          browseable = "yes";
+          "valid users" = "mitch";
+          "read only" = "no";
+          "guest ok" = "no";
+          "create mask" = "0644";
+          "directory mask" = "0755";
+          "veto files" = "/.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/";
+          "delete veto files" = "yes";
+          "wide links" = "yes";
+        };
       };
     };
 
@@ -379,8 +560,166 @@ in
       wantedBy = lib.mkForce [ ];
       requires = [ "samba-trampoline.service" ];
     };
+
+    systemd.tmpfiles.rules = [
+      "d ${cachePrefix} 0755 ${nginxCfg.user} ${nginxCfg.group}"
+      "d ${cacheDir} 0755 ${nginxCfg.user} ${nginxCfg.group}"
+      "d ${rootDir} 0755 ${nginxCfg.user} ${nginxCfg.group}"
+    ];
+
+    # So I'm trying out pacemaker *just* starting a systemd unit, this will be
+    # it it is the thing that has all the "I need xyz running" logic to it. So
+    # basically either it fails or starts.
+
+    systemd.services.nginx = {
+      wantedBy = lib.mkForce [ ];
+      requires = [ "var-cache-nginx-cache.mount" "var-cache-nginx-root.mount" ];
+    };
+
+    # Bind mounts from /gluster/nginx/{cache,root} -> /var/cache/nginx/{cache,root}
+    services.nginx = {
+      enable = true;
+
+      appendHttpConfig = ''
+        proxy_cache_path ${cacheDir} levels=1:2 keys_zone=cachecache:100m max_size=100g inactive=60d use_temp_path=off;
+
+        map $status $cache_header {
+          200     "public";
+          302     "public";
+          default "no-cache";
+        }
+      '';
+
+      virtualHosts."${cfg.cname}" = {
+        listen = [
+          { addr = "10.10.10.201"; port = 80; }
+          { addr = "10.10.10.201"; port = 443; }
+        ];
+        extraConfig = ''
+          resolver 10.10.10.1 ipv6=off valid=10s;
+          set $upstream_endpoint https://cache.nixos.org;
+        '';
+
+        locations."/" =
+          {
+            root = "${rootDir}";
+            extraConfig = ''
+              expires max;
+              add_header Cache-Control $cache_header always;
+
+              error_page 404 = @fallback;
+
+              # Don't bother logging the above 404.
+              log_not_found off;
+            '';
+          };
+
+        locations."@fallback" = cacheFallbackConfig;
+        locations."= /nix-cache-info" = cacheFallbackConfig;
+      };
+    };
+
+    systemd.services.seaweed-trampoline = {
+      enable = true;
+      requires = [ "data-disk-0.mount" ];
+      serviceConfig.ExecStart = "${seaweedTrampoline}/bin/seaweed-trampoline";
+    };
+
+    # Enabled but won't start via systemd by default
+    systemd.services.seaweedfs-maintenance = {
+      enable = true;
+      # wantedBy = lib.mkForce [ ];
+      serviceConfig.ExecStart = "${seaweedMaintenance}/bin/seaweedfs-maintenance";
+    };
+
+    systemd.services.seaweedfs-volume = {
+      # wantedBy = lib.mkForce [ ];
+      requires = [ "data-disk-0.mount" "seaweed-trampoline.service" "data-weed-ssd.mount" ];
+    };
+
+    # Note: this isn't in pacemaker/corosync cause it doesn't need to be.
+    services.seaweedfs = {
+      master = {
+        enable = true;
+        openIface = "enp1s0";
+        settings = {
+          sequencer = {
+            type = "snowflake";
+            sequencer_snowflake_id = 0;
+          };
+        };
+        defaultReplication = "001";
+        mdir = "/data/weed/mdir";
+        peers = weedMasters;
+        volumeSizeLimitMB = 1024;
+        volumePreallocate = true;
+      };
+      volume = {
+        enable = true;
+        # Around 18TiB of volumes for this disk
+        stores.disk0 = {
+          dir = "/data/disk/0/weed";
+          server = weedMasters;
+          maxVolumes = 18432;
+          diskTag = "hdd";
+        };
+        # 100GiB of space for ssd usage before it gets shuffled off to
+        # spinning rust.
+        stores.ssd = {
+          dir = "/data/weed/ssd";
+          server = weedMasters;
+          maxVolumes = 100;
+          diskTag = "ssd";
+        };
+      };
+      filer.enable = true;
+      iam.enable = true;
+      # s3.enable = true;
+      webdav.enable = true;
+      staticUser.enable = true;
+    };
+
+    environment.systemPackages = [ inputs.seaweedfs.packages.${pkgs.system}.seaweedfs ];
+
+    services.nfs.server = {
+      enable = true;
+
+      statdPort = 32765;
+      lockdPort = 32766;
+      mountdPort = 32767;
+
+      extraNfsdConfig = ''
+        vers2=n
+        vers3=n
+        vers4=y
+        vers4.0=y
+        vers4.1=n
+        vers4.2=n
+      '';
+      exports = ''
+        /weed/test 10.10.10.0/24(rw,no_subtree_check,all_squash,anonuid=65534,anongid=65534,crossmnt,sync,fsid=0,insecure)
+      '';
+    };
+
+    fileSystems = {
+      "/weed/test" = {
+        device = "fuse";
+        fsType = "weed";
+        options = [
+          "filer='10.10.10.6:8888,10.10.10.7:8888,10.10.10.8:8888',filer.path=/test"
+          "nofail"
+        ];
+        # wantedBy = [ "seaweedfs-master.target" ];
+      };
+    };
+    # systemd.services.nfs-server.reloadIfChanged = true;
+    # users.users.nas = {
+    #   createHome = false;
+    #   shell = "/run/current-system/sw/bin/nologin";
+    #   group = "nas";
+    #   uid = 40000;
+    # };
+    # users.groups.nas.gid = 40000;
+    #   };
   };
-  #  services.samba.openFirewall = true;
-  # networking.firewall.enable = true;
-  #  networking.firewall.allowPing = true;
 }
