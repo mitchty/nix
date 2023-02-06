@@ -119,7 +119,6 @@ in
     mercurial
     minio-client
     moreutils
-    ncdu
     nix-prefetch-github
     nix-prefetch-scripts
     nixpkgs-fmt
