@@ -161,7 +161,6 @@ in
     lshw
     podman
     podman-compose
-    seaweedfs
     tcpdump
     tio
     traitor

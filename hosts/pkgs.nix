@@ -5,11 +5,11 @@
   environment.systemPackages = with pkgs; [
     btop
     conntrack-tools
+    cifs-utils
     dmidecode
     dropwatch
     dstat
     inputs.unstable.legacyPackages.${pkgs.system}.polkit
-    inputs.seaweedfs.packages.${pkgs.system}.seaweedfs
     iotop
     jq
     linux-firmware
@@ -18,10 +18,12 @@
     masscan
     mosh
     nftables
+    nfs-utils
     nmap
     pciutils
     powertop
     psmisc
+    smem
     s-tui
     strace
     tcpdump
