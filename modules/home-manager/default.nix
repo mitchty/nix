@@ -211,6 +211,11 @@ in
       source = ../../static/emacs/init.org;
       recursive = true;
     };
+    # Make everything in my lib.sh available for all .envrc files
+    ".config/direnv/lib/mycrap.sh" = {
+      source = ../../static/src/lib.sh;
+      recursive = true;
+    };
   };
 
   # Todo: have a mkmerge mkIf section for macos only stuff in general?
