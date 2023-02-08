@@ -733,6 +733,20 @@ https://github.com/integral-dw/org-superstar-mode
   )
 #+END_SRC
 
+**** TODO org-download                                              :testing:
+
+Start using this or try to deal with say screenshots for org-journal or whatever notes.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package org-download
+  :defer t
+  :ensure
+  :after org
+  :config
+  (require 'org-download)
+  (add-hook 'dired-mode-hook 'org-download-enable))
+#+END_SRC
+
 *** flycheck
 
 Flycheck for on the fly checking of code.
