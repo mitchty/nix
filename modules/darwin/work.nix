@@ -5,46 +5,7 @@ with lib;
 let
   cfg = config.services.work;
   fake = lib.fakeSha256;
-  uri = "https://artifactory.algol60.net/artifactory/vshasta-support-generic-local/stable";
 
-  # Nix version for vshasta/craypc is bogus, just picking the YYYY.mm.DD this
-  # derivation was last updated.
-  datever = "2022.06.02";
-
-  # Note: both these derivations depend on vpn to work might be an issue for
-  # future me with build offloading at some point. Sorry future me.
-  vshasta = pkgs.stdenv.mkDerivation rec {
-    name = "vshasta-${version}";
-    version = datever;
-
-    src = pkgs.fetchurl {
-      url = "${uri}/vshasta/darwin-amd64/vshasta";
-      sha256 = "sha256-DsWwsHq92a7tkPhq+DRyqO3MqtjLbl8ha1FopWHPQFU=";
-    };
-
-    # We don't need to do anything but install from src ^^
-    phases = [ "installPhase" ];
-
-    installPhase = ''
-      install -m755 -D $src $out/bin/vshasta
-    '';
-  };
-  craypc = pkgs.stdenv.mkDerivation rec {
-    name = "craypc-${version}";
-    version = datever;
-
-    src = pkgs.fetchurl {
-      url = "${uri}/craypc/latest/macos-amd64/craypc";
-      sha256 = "sha256-egOemDFw16H+S1mzCeMEK33FQDvzWCvVIDXYwHw7rU8=";
-    };
-
-    # We don't need to do anything but install from src ^^
-    phases = [ "installPhase" ];
-
-    installPhase = ''
-      install -m755 -D $src $out/bin/craypc
-    '';
-  };
   snyk = pkgs.stdenv.mkDerivation rec {
     name = "snyk-${version}";
     version = "1.988.0";
@@ -62,6 +23,60 @@ let
     '';
   };
 
+  terragrunt_0324 = pkgs.stdenv.mkDerivation rec {
+    name = "terragrunt-${version}";
+    version = "0.32.4";
+
+    src = pkgs.fetchurl {
+      url = "https://github.com/gruntwork-io/terragrunt/releases/download/v${version}/terragrunt_darwin_amd64";
+      sha256 = "sha256-+DRsS6U7agtU+RAmBCi6yL4k8tFEuI8KDEP0JwrR+5I=";
+    };
+
+    # We don't need to do anything but install from src ^^
+    phases = [ "installPhase" ];
+
+    installPhase = ''
+      install -m755 -D $src $out/bin/terragrunt
+    '';
+  };
+
+  # TODO: For work see if newer stuff works later, for now use the blessed
+  # version.
+  #
+  # Just using overrideAttrs doesn't work like you'd think ref:
+  # https://github.com/NixOS/nixpkgs/issues/86349
+  #
+  # Go modules are ass.
+  #
+  # terragrunt_0324 = pkgs.terragrunt.overrideAttrs (old: rec {
+  #   pname = "terragrunt";
+  #   version = "0.32.4";
+  #   src = pkgs.fetchFromGitHub {
+  #     owner = "gruntwork-io";
+  #     repo = pname;
+  #     rev = "refs/tags/v${version}";
+  #     sha256 = "sha256-bqJlUjnyV3lNO9wHlK9uEHC6TsuQ3HIPzLaZu8sCj9Q=";
+  #   };
+  #   vendorHash = pkgs.lib.fakeSha256;
+  # });
+  # This no work either future me figure out how to override go module builds, this is lame af.
+  # terragrunt_0324 =
+  #   let
+  #     pname = "terragrunt";
+  #     version = "0.32.4";
+  #     src = pkgs.fetchFromGitHub {
+  #       owner = "gruntwork-io";
+  #       repo = pname;
+  #       rev = "refs/tags/v${version}";
+  #       sha256 = "sha256-bqJlUjnyV3lNO9wHlK9uEHC6TsuQ3HIPzLaZu8sCj9Q=";
+  #     };
+  #   in
+  #   (inputs.terragrunt-old.legacyPackages.${pkgs.system}.terragrunt.override {
+  #     buildGoModule = args: pkgs.buildGoModule (args // {
+  #       vendorSha256 = "sha256-y84EFmoJS4SeA5YFIVFU0iWa5NnjU5yvOj7OFE+jGN0=";
+  #       inherit src version;
+  #     });
+  #   });
 in
 {
   options = {
@@ -79,16 +94,27 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       colima
+      dive
       docker
+      docker-distribution
+      docker-credential-helpers
       google-cloud-sdk
       kubectl
+      kubent
       kubernetes-helm
+      lima
+      pluto
+      qemu
       yq-go
     ] ++ [
+      coreutils
+      mkdocs
+      terragrunt_0324
+      inputs.terraform-old.legacyPackages.${pkgs.system}.terraform
       inputs.mitchty.packages.${pkgs.system}.jira-cli
-      craypc
-      vshasta
+      skopeo
       snyk
+      xlsx2csv
     ];
   };
 }
