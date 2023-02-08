@@ -43,6 +43,11 @@ let
   whoson = (pkgs.writeScriptBin "whoson" (builtins.readFile ../../static/src/whoson)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
+
+  # Non old af crap that might be better off in mitchty/nixos, future me figure it out.
+  bwcli = (pkgs.writeScriptBin "b" (builtins.readFile ../../static/src/b.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
 in
 {
   imports = [
@@ -80,6 +85,7 @@ in
     aspellDicts.la
     aspellDicts.pt_PT
     bind
+    bitwarden-cli
     clang
     clang-tools
     coreutils
@@ -177,6 +183,8 @@ in
     gecos
     ifinfo
     whoson
+
+    bwcli
     # testing nursery...
   ] ++ [
     ccls
