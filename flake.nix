@@ -29,7 +29,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     deploy-rs.url = "github:serokell/deploy-rs";
-    agenix-darwin.url = "github:montchr/agenix/darwin-support";
+    # https://github.com/ryantm/agenix/pull/141 merged so we'll run with that
+    # and not an old af fork with this pr's predecessor
     agenix.url = "github:ryantm/agenix";
     rust = {
       url = "github:oxalica/rust-overlay";
@@ -40,6 +41,8 @@
       flake = false;
     };
     seaweedfs.url = "github:/mitchty/nixos-seaweedfs/wip";
+
+    terraform-old.url = "github:NixOS/nixpkgs/8c909dd2613323a939c90efddd089c88c0536fbf";
   };
 
   outputs =
@@ -53,12 +56,12 @@
     , deploy-rs
     , emacs
     , rust
-    , agenix-darwin
     , agenix
     , dnsblacklist
     , flake-utils
     , seaweedfs
     , nixpkgs-pacemaker
+    , terraform-old
     , ...
     }:
     let
@@ -136,7 +139,7 @@
         } ++ [
         home-manager.darwinModules.home-manager
         ./modules/darwin
-        agenix-darwin.darwinModules.age
+        agenix.darwinModules.age
         (
           { config, pkgs, ... }:
           let
