@@ -8,8 +8,8 @@
     mitchty.url = "github:mitchty/nixos";
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-22.11-darwin";
-    # nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
-    nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
+    nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
+    # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
     darwin = {
       url = "github:LnL7/nix-darwin";
