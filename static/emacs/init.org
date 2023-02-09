@@ -153,20 +153,25 @@ FUTURE MITCH DO NOT ADD *text-mode* or magit will get the minimap too probably a
 Sick of solarized, going back to good old black on white minimalism like paper. Also note auto-dark is macos only.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package minimal-theme
-  :ensure
-  :config (load-theme 'minimal-light t))
-
 (use-package zenburn-theme
   :ensure
   :config (load-theme 'zenburn t))
 
+(use-package minimal-theme
+  :ensure
+  :config (load-theme 'minimal-light t))
+
 (use-package auto-dark
   :if (memq window-system '(mac ns))
-  :after minimal-theme
+  :after (minimal-theme zenburn-theme)
   :ensure
   :defer
-  :init (auto-dark-mode)
+  :init
+  ;; Its wack but if I don't have light go first some random face gets a grey color.
+  (load-theme 'minimal-light t)
+  (load-theme 'zenburn t)
+  (load-theme 'minimal-light t)
+  (auto-dark-mode)
   :custom
   (auto-dark--dark-theme 'zenburn)
   (auto-dark--light-theme 'minimal-light))
@@ -1197,7 +1202,7 @@ TODO: What use-package can I stick this in?
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package sh-script
-  :hook (sh-mode . shfmtstuff)
+  ;; :hook (sh-mode . shfmtstuff)
   :config
   (setq auto-insert-alist
         (append
@@ -1304,22 +1309,36 @@ Ref:
   :hook ((python-mode cc-mode go-mode nix-mode yaml-mode rust-mode) . eglot-ensure))
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 ;; investigate this instead
-;; (use-package apheleia
-;;   :defer
-;; ;;  :init
-;; ;;  (apheleia-global-mode +1)
-;;   :config
-;;   (add-to-list 'apheleia-formatters '(shfmt     . ("shfmt" "-ci" "-p" "-i" "2" "-bn" "-sr")))
-;;   (add-to-list 'apheleia-mode-alist '(haskell-mode    . hindent))
-;;   (add-to-list 'apheleia-mode-alist '(emacs-lisp-mode . lisp-indent))
-;;   (add-to-list 'apheleia-mode-alist '(rust-mode        . rustfmt))
-;;   )
+(use-package apheleia
+  :defer
+  :ensure
+  :init
+  (apheleia-global-mode +1)
+  :config
+  (dolist (formatter '((shfmt . ("shfmt" "-ci" "-p" "-i" "2" "-bn" "-sr")))
+nil)
+(add-to-list #'apheleia-formatters formatter))
+
+  (dolist (formatter '((emacs-lisp-mode . lisp-indent)
+                       (rust-mode        . rustfmt))
+                          nil)
+    (add-to-list #'apheleia-mode-alist formatter)))
+
+;; TODO: where the hell is this its not in melpa...
+;; (use-package eglot-ltex
+;;   :ensure
+;;   :hook ((text-mode latex-mode org-mode) . (lambda ()
+;;     (require 'eglot-ltex)
+;;        (call-interactively #'eglot))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package reformatter
- :ensure
- :config
- (progn
+  :defer
+  :config
+  (progn
    (defvar shfmt-args '("-ci" "-p" "-i" "2" "-bn" "-sr")
      "shfmt default args")
    (reformatter-define shfmt

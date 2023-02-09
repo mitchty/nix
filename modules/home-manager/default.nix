@@ -6,8 +6,7 @@ let
   # sys = pkgs.lib.last (pkgs.lib.splitString "-" pkgs.system);
   emacsWithConfig = (pkgs.emacsWithPackagesFromUsePackage {
     config = ../../static/emacs/init.org;
-    # Until emacs 29 is in emacsNativeComp
-    package = pkgs.emacsGit.overrideAttrs (super: {
+    package = pkgs.emacs29.overrideAttrs (super: {
       patches = [
         (pkgs.fetchpatch {
           name = "gc-block-align-patch";
@@ -109,6 +108,7 @@ in
     gitFull
     gnumake
     gron
+    gnupg1
     htop
     hyperfine
     iftop
@@ -120,6 +120,7 @@ in
     inputs.rust.packages.${pkgs.system}.rust
     jless
     less
+    ltex-ls
     manix
     mapcidr
     mercurial

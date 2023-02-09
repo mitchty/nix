@@ -100,11 +100,11 @@ try_git() {
   rrepo="${proto}://${git_dir}"
 
   # strip user@, :NNN, and .git from input uri's
-  repo="${destination}/"$(printf "%s" "${git_dir}" |
-    sed -e 's/\.git$//g' |
-    sed -e 's|.*\@||g' |
-    sed -e 's|\:[[:digit:]]\{1,\}\/|/|g' |
-    tr -d '~')
+  repo="${destination}/"$(printf "%s" "${git_dir}" \
+    | sed -e 's/\.git$//g' \
+    | sed -e 's|.*\@||g' \
+    | sed -e 's|\:[[:digit:]]\{1,\}\/|/|g' \
+    | tr -d '~')
 
   # Loop through the def(ault)branches looking for a git repo to clone
   ocwd=$(pwd)
@@ -189,10 +189,10 @@ try_hg() {
   rrepo="${proto}://${hg_dir}"
 
   # strip user@, :NNN from input uri's
-  repo="${destination}/"$(printf "%s" "${hg_dir}" |
-    sed -e 's|.*\@||g' |
-    sed -e 's|\:[[:digit:]]\{1,\}\/|/|g' |
-    tr -d '~')
+  repo="${destination}/"$(printf "%s" "${hg_dir}" \
+    | sed -e 's|.*\@||g' \
+    | sed -e 's|\:[[:digit:]]\{1,\}\/|/|g' \
+    | tr -d '~')
 
   # Loop through the def(ault)branches looking for a git repo to clone
   ocwd=$(pwd)

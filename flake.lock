@@ -137,6 +137,23 @@
         "type": "github"
       }
     },
+    "emacs-upstream": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1675910905,
+        "narHash": "sha256-7uLDJT/hifM556M0J0rUtFV9GfGhxYHPT62Eagrdux4=",
+        "owner": "emacs-mirror",
+        "repo": "emacs",
+        "rev": "973c1d24c6ab7515da7cda56200f7b8a1d91ad2f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "emacs-mirror",
+        "ref": "emacs-29",
+        "repo": "emacs",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -517,6 +534,7 @@
         "deploy-rs": "deploy-rs",
         "dnsblacklist": "dnsblacklist",
         "emacs": "emacs",
+        "emacs-upstream": "emacs-upstream",
         "flake-utils": "flake-utils_2",
         "home-manager": "home-manager",
         "master": "master",

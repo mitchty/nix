@@ -10,6 +10,34 @@ let
 in
 {
   config = {
+    nix = {
+      # Cleanup old generations we likely don't need, only on nixos though
+      gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 14d";
+      };
+
+      settings = {
+        substituters = [
+          "http://cache.cluster.home.arpa"
+          "https://cache.nixos.org"
+          "https://nix-community.cachix.org"
+        ];
+        trusted-public-keys = [
+          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+          "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+        ];
+      };
+
+      # Lets things download in parallel
+      extraOptions = ''
+        binary-caches-parallel-connections = 100
+        auto-optimise-store = true
+        experimental-features = nix-command flakes
+      '';
+    };
+
     system.stateVersion = "22.11";
 
     # BIG TODO: merge the runtime config and this autoinstall setup

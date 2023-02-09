@@ -94,14 +94,6 @@ let
           <op id="monitor-nfs-server" name="monitor" interval="10s" timeout="20s"/>
         </operations>
       </primitive>
-
-      <primitive id="maint" class="systemd" type="seaweedfs-maintenance">
-        <operations>
-          <op id="stop-maint" name="stop" interval="0" timeout="10s"/>
-          <op id="start-maint" name="start" interval="0" timeout="10s"/>
-          <op id="monitor-maint" name="monitor" interval="10s" timeout="20s"/>
-        </operations>
-      </primitive>
     </resources>
   '';
 
@@ -149,7 +141,7 @@ let
       rsleep $lim
       cibadmin --replace --scope constraints --xml-file ${constraintsEmpty}
       cibadmin --replace --scope resources --xml-file ${resources}
-      cibadmin --replace --sc
+      cibadmin --replace --scope constraints --xml-file ${constraints}
       # cibadmin --query > $cfg
       # xmlstarlet edit --inplace --update '//cib/configuration/resources' --value $(cat ${resources}) $cfg
       # xmlstarlet edit --inplace --update '//cib/configuration/constraints' --value $(cat ${constraints}) $cfg
@@ -239,52 +231,9 @@ let
 
   nginxTcpPorts = [ 80 443 ];
 
-  weedMasters = "10.10.10.6:9333,10.10.10.7:9333,10.10.10.8:9333";
-  weedMountMasters = "10.10.10.6:8888,10.10.10.7:8888,10.10.10.8:8888";
-
-  # Setup the zfs ssd pool
-  seaweedTrampoline = pkgs.writeScriptBin "seaweed-trampoline" ''#!${pkgs.runtimeShell}
-    set -eux
-    PATH=$PATH:${pkgs.zfs}/bin
-
-    zfs list zroot/data || zfs create zroot/data -o compression=zstd -o mountpoint=/data
-    zfs list zroot/data/weed || zfs create zroot/data/weed -o compression=zstd
-    zfs list zroot/data/weed/ssd || zfs create zroot/data/weed/ssd -o compression=zstd
-    zfs list zroot/data/weed/mdir || zfs create zroot/data/weed/mdir -o compression=zstd
-
-    install -dm755 --owner weed --group weed /data/weed/ssd
-    install -dm755 --owner weed --group weed /data/weed/mdir
-    install -dm755 --owner weed --group weed /data/disk/0/weed
-
-    # then sleeeeeeeeep!
-    while true; do
-      sleep 30d
-    done
-  '';
-
-  # Just a simple looping script to be ran by pacemaker on one node via systemd
-  seaweedMaintenance = pkgs.writeScriptBin "seaweedfs-maintenance" ''#!${pkgs.runtimeShell}
-    PATH=$PATH:${inputs.seaweedfs.packages.${pkgs.system}.seaweedfs}/bin
-
-    . ${../../static/src/lib.sh}
-
-    lim=3600
-
-    while true; do
-      rsleep $lim
-
-      weed shell <<FIN
-      lock
-      ec.encode -fullPercent=95 -quietFor=1h
-      ec.rebuild -force
-      ec.balance -force
-      volume.balance -force
-      unlock
-      FIN
-    done
-  '';
-
   nfsPorts = [ 111 2049 config.services.nfs.server.statdPort config.services.nfs.server.lockdPort config.services.nfs.server.mountdPort ];
+
+  garagePorts = [ 3901 3902 ];
 in
 {
   options.services.role.cluster = {
@@ -313,7 +262,7 @@ in
     networking = {
       firewall = {
         allowedTCPPortRanges = [ ] ++ glusterTcpPortRanges;
-        allowedTCPPorts = [ ] ++ pacemakerTcpPorts ++ glusterTcpPorts ++ sambaTcpPorts ++ nginxTcpPorts ++ nfsPorts;
+        allowedTCPPorts = [ ] ++ pacemakerTcpPorts ++ glusterTcpPorts ++ sambaTcpPorts ++ nginxTcpPorts ++ nfsPorts ++ garagePorts;
         allowedUDPPorts = [ ] ++ pacemakerUdpPorts ++ glusterUdpPorts ++ sambaUdpPorts ++ nfsPorts;
       };
     };
@@ -382,7 +331,7 @@ in
     # FUTURE: dns lease data for dnsmasq
     #
     # Structure is simply
-    # environment.systemPackages = [ pkgs.glusterfs ];
+    environment.systemPackages = [ pkgs.glusterfs pkgs.mergerfs pkgs.mergerfs-tools ];
 
     services.glusterfs.enable = true;
 
@@ -458,6 +407,17 @@ in
           Options = "bind";
         };
       }
+      {
+        what = "/gluster/src";
+        where = "/nfs/src";
+        description = "/nfs/src bind mount";
+        requires = [ "gluster.mount" ];
+        type = "none";
+        mountConfig = {
+          TimeoutSec = "10s";
+          Options = "bind";
+        };
+      }
     ];
 
     systemd.services.cache-trampoline = {
@@ -469,9 +429,10 @@ in
 
     systemd.services.samba-trampoline = {
       enable = true;
-      requires = [ "gluster.mount" "pacemaker-trampoline.service" ];
+      requires = [ "gluster.mount" "pacemaker-trampoline.service" "glusterd.service" ];
+      # after = [ "glusterd.service" ];
       serviceConfig.ExecStart = "${sambaTrampoline}/bin/samba-trampoline";
-      reloadIfChanged = true;
+      # reloadIfChanged = true;
     };
 
     services.samba = {
@@ -481,7 +442,7 @@ in
       enableWinbindd = false;
       securityType = "user";
       extraConfig = ''
-        log level = 3
+        log level = 1
         interfaces = 10.10.10.201
         workgroup = WORKGROUP
         server role = standalone server
@@ -491,10 +452,10 @@ in
         pam password change = yes
         map to guest = bad user
         usershare allow guests = yes
-        create mask = 0664
-        force create mode = 0664
-        directory mask = 0775
-        force directory mode = 0775
+        create mask = 0644
+        force create mode = 0644
+        directory mask = 0755
+        force directory mode = 0755
         load printers = no
         printing = bsd
         printcap name = /dev/null
@@ -537,12 +498,13 @@ in
         src = {
           path = "/gluster/src";
           browseable = "yes";
+          "follow symlinks" = "no";
           "valid users" = "mitch";
           "read only" = "no";
           "guest ok" = "no";
           "create mask" = "0644";
           "directory mask" = "0755";
-          "veto files" = "/.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/";
+          "veto files" = "/.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/result/";
           "delete veto files" = "yes";
           "wide links" = "yes";
         };
@@ -565,6 +527,7 @@ in
       "d ${cachePrefix} 0755 ${nginxCfg.user} ${nginxCfg.group}"
       "d ${cacheDir} 0755 ${nginxCfg.user} ${nginxCfg.group}"
       "d ${rootDir} 0755 ${nginxCfg.user} ${nginxCfg.group}"
+      "d /data/garage 0755 ${services.garage.user} ${services.garage.group}"
     ];
 
     # So I'm trying out pacemaker *just* starting a systemd unit, this will be
@@ -619,67 +582,9 @@ in
       };
     };
 
-    systemd.services.seaweed-trampoline = {
-      enable = true;
-      requires = [ "data-disk-0.mount" ];
-      serviceConfig.ExecStart = "${seaweedTrampoline}/bin/seaweed-trampoline";
+    systemd.services.nfsd = {
+      wantedBy = lib.mkForce [ ];
     };
-
-    # Enabled but won't start via systemd by default
-    systemd.services.seaweedfs-maintenance = {
-      enable = true;
-      # wantedBy = lib.mkForce [ ];
-      serviceConfig.ExecStart = "${seaweedMaintenance}/bin/seaweedfs-maintenance";
-    };
-
-    systemd.services.seaweedfs-volume = {
-      # wantedBy = lib.mkForce [ ];
-      requires = [ "data-disk-0.mount" "seaweed-trampoline.service" "data-weed-ssd.mount" ];
-    };
-
-    # Note: this isn't in pacemaker/corosync cause it doesn't need to be.
-    services.seaweedfs = {
-      master = {
-        enable = true;
-        openIface = "enp1s0";
-        settings = {
-          sequencer = {
-            type = "snowflake";
-            sequencer_snowflake_id = 0;
-          };
-        };
-        defaultReplication = "001";
-        mdir = "/data/weed/mdir";
-        peers = weedMasters;
-        volumeSizeLimitMB = 1024;
-        volumePreallocate = true;
-      };
-      volume = {
-        enable = true;
-        # Around 18TiB of volumes for this disk
-        stores.disk0 = {
-          dir = "/data/disk/0/weed";
-          server = weedMasters;
-          maxVolumes = 18432;
-          diskTag = "hdd";
-        };
-        # 100GiB of space for ssd usage before it gets shuffled off to
-        # spinning rust.
-        stores.ssd = {
-          dir = "/data/weed/ssd";
-          server = weedMasters;
-          maxVolumes = 100;
-          diskTag = "ssd";
-        };
-      };
-      filer.enable = true;
-      iam.enable = true;
-      # s3.enable = true;
-      webdav.enable = true;
-      staticUser.enable = true;
-    };
-
-    environment.systemPackages = [ inputs.seaweedfs.packages.${pkgs.system}.seaweedfs ];
 
     services.nfs.server = {
       enable = true;
@@ -690,26 +595,60 @@ in
 
       extraNfsdConfig = ''
         vers2=n
-        vers3=n
+        vers3=y
         vers4=y
         vers4.0=y
-        vers4.1=n
-        vers4.2=n
+        vers4.1=y
+        vers4.2=y
       '';
       exports = ''
-        /weed/test 10.10.10.0/24(rw,no_subtree_check,all_squash,anonuid=65534,anongid=65534,crossmnt,sync,fsid=0,insecure)
+        /nfs/src 10.10.10.0/24(rw,no_subtree_check,all_squash,crossmnt,sync,fsid=0,insecure)
       '';
+      # exports = ''
+      #   /weed/test 10.10.10.0/24(rw,no_subtree_check,all_squash,anonuid=65534,anongid=65534,crossmnt,sync,fsid=0,insecure)
+      # '';
     };
 
     fileSystems = {
-      "/weed/test" = {
-        device = "fuse";
-        fsType = "weed";
+      # Because garagefs can't seme to have more than 1 data folder... fake it with mergerfs
+      #
+      # TBD: How often should mergerfs rebalance data? Figure this out when/if I
+      # start using this in earnest.
+      "/data/disks" = {
+        device = "/data/disk/0"; # When adding new disks add :/data/disk/N:/data/disk/N+1 etc....
+        fsType = "fuse.mergerfs";
         options = [
-          "filer='10.10.10.6:8888,10.10.10.7:8888,10.10.10.8:8888',filer.path=/test"
+          "defaults"
+          "allow_other"
+          "use_ino"
+          "cache.files=partial"
+          "dropcacheonclose=true"
+          "category.create=epmfs"
           "nofail"
         ];
-        # wantedBy = [ "seaweedfs-master.target" ];
+      };
+    };
+
+    services.garage = {
+      enable = true;
+      logLevel = "debug";
+      settings = {
+        rpc_bind_addr = "[::]:3901";
+        rpc_secret = "testsecretsupercerealsecretnobodywilltotesknowitforsure";
+        metadata_dir = "/data/garage";
+        data_dir = "/data/disks/garage";
+        replication_mode = 3;
+        s3_api = {
+          s3_region = "garage";
+          api_bind_addr = "[::]:3900";
+          root_domain = ".home.arpa";
+        };
+
+        s3_web = {
+          bind_addr = "[::]:3902";
+          root_domain = ".home.arpa";
+          index = "index.html";
+        };
       };
     };
     # systemd.services.nfs-server.reloadIfChanged = true;

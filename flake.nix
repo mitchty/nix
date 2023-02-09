@@ -8,7 +8,8 @@
     mitchty.url = "github:mitchty/nixos";
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-22.11-darwin";
-    nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
+    # nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
+    nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
     darwin = {
       url = "github:LnL7/nix-darwin";
@@ -17,10 +18,15 @@
 
     # TODO: Set this up as an overlay or pr it to nixpkgs
     # https://github.com/lyderichti59/nixpkgs/commit/e2fa180f56918615d27fef71db14a0f79c60560b
-    nixpkgs-mitchty.url = "github:/mitchty/nixpkgs/mitchty";
+    nixpkgs-mitchty.url = "github:mitchty/nixpkgs/mitchty";
     emacs = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs-mitchty";
+    };
+
+    emacs-upstream = {
+      url = "github:emacs-mirror/emacs/emacs-29";
+      flake = false;
     };
 
     home-manager.url = "github:nix-community/home-manager/release-22.05";
@@ -40,7 +46,6 @@
       url = "github:notracking/hosts-blocklists";
       flake = false;
     };
-    seaweedfs.url = "github:/mitchty/nixos-seaweedfs/wip";
 
     terraform-old.url = "github:NixOS/nixpkgs/8c909dd2613323a939c90efddd089c88c0536fbf";
   };
@@ -55,11 +60,11 @@
     , nixos-generators
     , deploy-rs
     , emacs
+    , emacs-upstream
     , rust
     , agenix
     , dnsblacklist
     , flake-utils
-    , seaweedfs
     , nixpkgs-pacemaker
     , terraform-old
     , ...
@@ -90,6 +95,13 @@
               ocf-resource-agents = nixpkgs-pacemaker.legacyPackages.x86_64-linux.ocf-resource-agents;
             }
           )
+          (final: prev: {
+            emacs29 = prev.emacsGit.overrideAttrs (old: {
+              name = "emacs29";
+              version = emacs-upstream.shortRev;
+              src = emacs-upstream;
+            });
+          })
           # No longer neeeded here for future me to use to copypasta new patches
           # in if needed.
           # (self: super:
@@ -153,6 +165,7 @@
             home-manager.extraSpecialArgs = {
               inherit inputs nixpkgs;
               age = config.age;
+              role = config.role;
             };
             nix.registry.my.flake = self;
 
@@ -208,7 +221,6 @@
         home-manager.nixosModules.home-manager
         ./modules/nixos
         agenix.nixosModules.age
-        seaweedfs.nixosModules.seaweedfs
         "${inputs.nixpkgs-pacemaker}/nixos/modules/${pacemakerPath}"
         (
           { config, ... }:
@@ -227,7 +239,7 @@
             # Will also be testing out some other module updates to make it less of a PITA to use.
             disabledModules = [ pacemakerPath ];
 
-            nixpkgs = nixpkgsConfig [ seaweedfs.overlays.default ];
+            nixpkgs = nixpkgsConfig [ ];
             users.users.${primaryUser}.home = homeDir "x86_64-linux" primaryUser;
             home-manager.useGlobalPkgs = true;
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
@@ -736,62 +748,14 @@
                 exporterIface = "enp1s0";
               };
             };
-            # fileSystems = {
-            #   # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F
-            #   "/data/disk0" = {
-            #     device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F";
-            #     fsType = "ext4";
-            #     options = [ "nofail" ];
-            #   };
-            #   # mdadm --create /dev/md1 --run --level=1 --raid-devices=2 --metadata=1.0 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T918828M-part4 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T920857X-part4
-            #   # mkfs.ext4 -j /dev/disk/by-id/md-uuid-5f13e228:5f3b00ce:c030d5e2:67ba4d49
-            #   "/data/ssd" = {
-            #     device = "/dev/disk/by-id/md-uuid-5f13e228:5f3b00ce:c030d5e2:67ba4d49";
-            #     fsType = "ext4";
-            #     options = [ "nofail" ];
-            #   };
-            # };
-            # services.seaweedfs = {
-            #   master = {
-            #     enable = true;
-            #     openIface = "enp1s0";
-            #     settings = {
-            #       sequencer = {
-            #         type = "snowflake";
-            #         sequencer_snowflake_id = 0;
-            #       };
-            #       maintenance = {
-            #         sleep_minutes = 47;
-            #         scripts = ''
-            #           lock
-            #           ec.encode -fullPercent=95 -quietFor=1h
-            #           ec.rebuild -force
-            #           ec.balance -force
-            #           volume.balance -force
-            #           unlock
-            #         '';
-            #       };
-            #     };
-            #     defaultReplication = "001";
-            #     mdir = "/data/ssd/weed/mdir";
-            #     peers = weedMasters;
-            #     volumeSizeLimitMB = 1024;
-            #     volumePreallocate = true;
-            #   };
-            #   volume = {
-            #     enable = true;
-            #     stores.disk0 = {
-            #       dir = "/data/disk0/weed";
-            #       server = weedMasters;
-            #       maxVolumes = 18432;
-            #     };
-            #   };
-            #   filer.enable = true;
-            #   iam.enable = true;
-            #   # s3.enable = true;
-            #   webdav.enable = true;
-            #   staticUser.enable = true;
-            # };
+            fileSystems = {
+              # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F
+              "/data/disk/0" = {
+                device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F";
+                fsType = "ext4";
+                options = [ "nofail" ];
+              };
+            };
           }];
           specialArgs = {
             inherit inputs;
@@ -819,92 +783,14 @@
               };
             };
 
-            # fileSystems = {
-            #   # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF
-            #   "/data/disk0" = {
-            #     device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF";
-            #     fsType = "ext4";
-            #     options = [ "nofail" ];
-            #   };
-            #   # mdadm --create /dev/md1 --run --level=1 --raid-devices=2 --metadata=1.0 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T801235B-part4 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T814942M-part4
-            #   # mkfs.ext4 -j /dev/disk/by-id/md-uuid-19ab8a7a:1c217da0:c68fee85:adfcdd14
-            #   "/data/ssd" = {
-            #     device = "/dev/disk/by-id/md-uuid-19ab8a7a:1c217da0:c68fee85:adfcdd14";
-            #     fsType = "ext4";
-            #     options = [ "nofail" ];
-            #   };
-            # };
-
-            # #     # "/data/srv" = {
-            # #     #   device = "/datta/disk0";
-            # #     #   fsType = "fuse.mergerfs";
-            # #     #   options = [
-            # #     #     "defaults"
-            # #     #     "allow_other"
-            # #     #     "use_ino"
-            # #     #     "cache.files=partial"
-            # #     #     "dropcacheonclose=true"
-            # #     #     "category.create=epmfs"
-            # #     #     "nofail"
-            # #     #   ];
-            # #     #   wantedBy = [ "seaweedfs-master.target" ];
-            # #     # };
-            # #   };
-
-            # #   # systemd.mounts = [
-            # #   #     after = [ "data-ssd.mount" "data-disk0.mount" ];
-            # #   #     what = "/data/disk0"; # :next:next
-            # #   #     where = "/data/srv";
-            # #   #     type = "fuse.mergerfs";
-            # #   #     options = "defaults,allow_other,use_ino,cache.files=partial,dropcacheonclose=true,category.create=epmfs,nofail";
-            # #   #     wantedBy = [ "seaweedfs-master.target" ];
-            # #   #   }
-            # #   # ];
-
-            # # mountpoint /data/disk0 && install -dm755 --owner weed --group weed /data/disk0/weed
-            # # mountpoint /data/ssd && { install -dm755 --owner weed --group weed /data/ssd/weed && install -dm755 --owner weed --group weed /data/ssd/weed/mdir; }
-
-            # services.seaweedfs = {
-            #   master = {
-            #     enable = true;
-            #     openIface = "enp1s0";
-            #     settings = {
-            #       sequencer = {
-            #         type = "snowflake";
-            #         sequencer_snowflake_id = 1;
-            #       };
-            #       # maintenance = {
-            #       #   sleep_minutes = 47;
-            #       #   scripts = ''
-            #       #     lock
-            #       #     ec.encode -fullPercent=95 -quietFor=1h
-            #       #     ec.rebuild -force
-            #       #     ec.balance -force
-            #       #     volume.balance -force
-            #       #     unlock
-            #       #   '';
-            #       # };
-            #     };
-            #     defaultReplication = "001";
-            #     mdir = "/data/ssd/weed/mdir";
-            #     peers = weedMasters;
-            #     volumeSizeLimitMB = 1024;
-            #     volumePreallocate = true;
-            #   };
-            #   volume = {
-            #     enable = true;
-            #     stores.disk0 = {
-            #       dir = "/data/disk0/weed";
-            #       server = weedMasters;
-            #       maxVolumes = 18432;
-            #     };
-            #   };
-            #   filer.enable = true;
-            #   iam.enable = true;
-            #   # s3.enable = true;
-            #   webdav.enable = true;
-            #   staticUser.enable = true;
-            # };
+            fileSystems = {
+              # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF
+              "/data/disk/0" = {
+                device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF";
+                fsType = "ext4";
+                options = [ "nofail" ];
+              };
+            };
           }];
           specialArgs = {
             inherit inputs;
@@ -932,65 +818,14 @@
               };
             };
 
-            # fileSystems = {
-            #   # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F
-            #   "/data/disk0" = {
-            #     device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F";
-            #     fsType = "ext4";
-            #     options = [ "nofail" ];
-            #   };
-            #   # mdadm --create /dev/md1 --run --level=1 --raid-devices=2 --metadata=1.0 /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T918913H-part4  /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T924424L-part4
-            #   # mkfs.ext4 -j /dev/disk/by-id/md-uuid-f2cfe540:e6d05128:b89a2d2e:1066c3a4
-            #   "/data/ssd" = {
-            #     device = "/dev/disk/by-id/md-uuid-f2cfe540:e6d05128:b89a2d2e:1066c3a4";
-            #     fsType = "ext4";
-            #     options = [ "nofail" ];
-            #   };
-            # };
-            # # mountpoint /data/disk0 && install -dm755 --owner weed --group weed /data/disk0/weed
-            # # mountpoint /data/ssd && { install -dm755 --owner weed --group weed /data/ssd/weed && install -dm755 --owner weed --group weed /data/ssd/weed/mdir; }
-
-            # services.seaweedfs = {
-            #   master = {
-            #     enable = true;
-            #     openIface = "enp1s0";
-            #     settings = {
-            #       sequencer = {
-            #         type = "snowflake";
-            #         sequencer_snowflake_id = 2;
-            #       };
-            #       # maintenance = {
-            #       #   sleep_minutes = 47;
-            #       #   scripts = ''
-            #       #     lock
-            #       #     ec.encode -fullPercent=95 -quietFor=1h
-            #       #     ec.rebuild -force
-            #       #     ec.balance -force
-            #       #     volume.balance -force
-            #       #     unlock
-            #       #   '';
-            #       # };
-            #     };
-            #     defaultReplication = "001";
-            #     mdir = "/data/ssd/weed/mdir";
-            #     peers = weedMasters;
-            #     volumeSizeLimitMB = 1024;
-            #     volumePreallocate = true;
-            #   };
-            #   volume = {
-            #     enable = true;
-            #     stores.disk0 = {
-            #       dir = "/data/disk0/weed";
-            #       server = weedMasters;
-            #       maxVolumes = 18432;
-            #     };
-            #   };
-            #   filer.enable = true;
-            #   iam.enable = true;
-            #   # s3.enable = true;
-            #   webdav.enable = true;
-            #   staticUser.enable = true;
-            # };
+            fileSystems = {
+              # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F
+              "/data/disk/0" = {
+                device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F";
+                fsType = "ext4";
+                options = [ "nofail" ];
+              };
+            };
           }];
           specialArgs = {
             inherit inputs;
