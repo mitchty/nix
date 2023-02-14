@@ -1,5 +1,9 @@
 { lib, ... }:
 let
+  # Cause stuff can be slow to warm up before a prompt shows up wait this long
+  # first.
+  sleepDefault = 3;
+
   # TODO: Learn how to unit test this stuff
   base = {
     start_directory = "~/";
@@ -8,7 +12,12 @@ let
   # TODO: need to nix-ify the syncthing setup I have
   syncthing = {
     window_name = "syncthing";
-    panes = [ "pkill syncthing; syncthing" ];
+    panes = [{
+      shell_command = [
+        "pkill syncthing; syncthing"
+      ];
+      sleep_before = sleepDefault;
+    }];
   };
 
   initial = {
@@ -25,7 +34,12 @@ let
   nix = {
     window_name = "gh/nix";
     layout = "even-vertical";
-    panes = [ "gi mitchty/nix" ];
+    panes = [{
+      shell_command = [
+        "gi mitchty/nix"
+      ];
+      sleep_before = sleepDefault;
+    }];
   };
 
   nixos = {
@@ -36,18 +50,21 @@ let
         shell_command = [
           "ssh -t srv.home.arpa \"zsh --login -i -c 'gi mitchty/nixos && nci'\""
         ];
+        sleep_before = sleepDefault;
       }
       {
         shell_command = [
           "gi mitchty/nixos"
           "nci"
         ];
+        sleep_before = sleepDefault;
       }
       {
         focus = true;
         shell_command = [
           "gi mitchty/nixos"
         ];
+        sleep_before = sleepDefault;
       }
     ];
   };
@@ -60,24 +77,32 @@ let
         shell_command = [
           "ssh -t srv.home.arpa \"zsh --login -i -c 'cd ~/src/pub/wip/ria/grep-lite && nrsci'\""
         ];
+        sleep_before = sleepDefault;
       }
       {
         shell_command = [
           "cd ~/src/pub/wip/ria/grep-lite && nrsci"
         ];
+        sleep_before = sleepDefault;
       }
       {
         focus = true;
         shell_command = [
           "~/src/pub/wip/ria/grep-lite"
         ];
+        sleep_before = sleepDefault;
       }
     ];
   };
 
   yolo = {
     window_name = "yolo";
-    panes = [ ". ~/src/pub/github.com/mitchty/nix/static/src/ssh.sh" ];
+    panes = [{
+      shell_command = [
+        ". ~/src/pub/github.com/mitchty/nix/static/src/ssh.sh"
+      ];
+      sleep_before = sleepDefault;
+    }];
   };
 
   wip = {
@@ -93,6 +118,7 @@ let
         enter = false;
       }
     ];
+    sleep_before = sleepDefault;
   };
 
   site-update = {
@@ -103,6 +129,7 @@ let
         enter = false;
       }
     ];
+    sleep_before = sleepDefault;
   };
 
   rebuildall = {
