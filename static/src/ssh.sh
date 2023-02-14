@@ -13,7 +13,10 @@ _yolo() {
 yolo() {
   # Non issue in this instance, we've unit tests to prove the behavior is ok
   #shellcheck disable=SC2155 disable=SC2030
-  (export SSHOPTS="$(_yolo)"; "$@")
+  (
+    export SSHOPTS="$(_yolo)"
+    "$@"
+  )
 }
 
 # Internal wrapper used for testing SSHOPTS usage in ssh()
@@ -94,54 +97,54 @@ sshpass() {
 # arg 1 is ssh/scp to note
 yeet() {
   (
-  # We parse out the hostname differently if we're sshing or scp'ing
-  action="${1:-help}"
-  shift
+    # We parse out the hostname differently if we're sshing or scp'ing
+    action="${1:-help}"
+    shift
 
-  # $1 should now include the hostname for a lookup this ones easy
-  # just strip off anything before @ if it exists
-  if [ "ssh" = "${action}" ]; then
-    # quoting ${1} in this echo $() exec is silly/unneeded
-    #shellcheck disable=SC2086
-     host="$(echo ${1} | sed -e 's/.*\@//g')"
-  elif [ "scp" = "${action}" ]; then
-    # Bit harder, but scp could be
-    # THING USER@HOST:/DEST
-    # THING THING1 ... THINGN USER@HOST:/DEST
-    # USER@HOST:/SRC/THING THING
-    #
-    # So the only thing that makes sense to me is to find whatever has a : in it
-    # and hope thats the hostname.
-    for s in "$@"; do
-      # If this is smething like user@host:/blah strip off :->eol and bol->@
-      if echo "${s}" | grep '[:]' > /dev/null 2>&1; then
-        host=$(echo "${s}" | sed -e 's/.*\@//g' -e 's/\:.*//g')
+    # $1 should now include the hostname for a lookup this ones easy
+    # just strip off anything before @ if it exists
+    if [ "ssh" = "${action}" ]; then
+      # quoting ${1} in this echo $() exec is silly/unneeded
+      #shellcheck disable=SC2086
+      host="$(echo ${1} | sed -e 's/.*\@//g')"
+    elif [ "scp" = "${action}" ]; then
+      # Bit harder, but scp could be
+      # THING USER@HOST:/DEST
+      # THING THING1 ... THING USER@HOST:/DEST
+      # USER@HOST:/SRC/THING THING
+      #
+      # So the only thing that makes sense to me is to find whatever has a : in it
+      # and hope thats the hostname.
+      for s in "$@"; do
+        # If this is something like user@host:/blah strip off :->eol and bol->@
+        if echo "${s}" | grep '[:]' > /dev/null 2>&1; then
+          host=$(echo "${s}" | sed -e 's/.*\@//g' -e 's/\:.*//g')
+          break
+        fi
+      done
+    else
+      printf "yeet should only start with ssh or scp as first arg\n" >&2
+      return
+    fi
+
+    # Be sure this is set by now...
+    host="${host?}"
+
+    for s in $(echo "${YEET}" | tr ':' ' '); do
+      lhs=$(echo "${s}" | sed -e "s/\=.*//g")
+      rhs=$(echo "${s}" | sed -e "s/.*\=//g")
+      if [ "${lhs}" = "${host}" ]; then
+        password="${rhs}"
         break
       fi
     done
-  else
-    printf "yeet should only start with ssh or scp as first arg\n" >&2
-    return
-  fi
 
-  # Be sure this is set by now...
-  host="${host?}"
+    password="${password?}"
 
-  for s in $(echo "${YEET}" | tr ':' ' '); do
-    lhs=$(echo "${s}" | sed -e "s/\=.*//g")
-    rhs=$(echo "${s}" | sed -e "s/.*\=//g")
-    if [ "${lhs}" = "${host}" ]; then
-      password="${rhs}"
-      break
-    fi
-  done
+    export SSHPASSOPTS="-p ${password}"
 
-  password="${password?}"
-
-  export SSHPASSOPTS="-p ${password}"
-
-  # For this function neither of these matter
-  #shellcheck disable=SC2294 disable=SC2046
-  eval sshpass $(_yolo_"${action}e") "$@"
+    # For this function neither of these matter
+    #shellcheck disable=SC2294 disable=SC2046
+    eval sshpass $(_yolo_"${action}e") "$@"
   )
 }
