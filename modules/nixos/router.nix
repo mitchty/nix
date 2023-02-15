@@ -155,19 +155,25 @@ in
 
     # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/networking/hostapd.nix
     services.hostapd = {
+      logLevel = 1;
       enable = true;
       interface = cfg.wlanIface;
+      # 5 ghz = a, 2.5 = g
       hwMode = "g";
+      channel = 10;
       countryCode = "US";
       ssid = "newhotness";
-      wpa = true;
+      wpa = false;
       extraConfig = ''
         auth_algs=1
-        ignore_broadcast_ssid=0
-        wpa_pairwise=GCMP CCMP
-        rsn_pairwise=GCMP CCMP
+        ieee80211d=1
         ieee80211n=1
+        ignore_broadcast_ssid=0
+        rsn_pairwise=GCMP CCMP
         wmm_enabled=1
+        wpa_key_mgmt=WPA-PSK
+        wpa_pairwise=GCMP CCMP
+        wpa=2
         wpa_psk_file=${config.age.secrets."wifi/passphrase".path}
       '';
     };
