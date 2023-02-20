@@ -2,26 +2,6 @@
 with lib;
 
 let
-  # TODO: figure out a way to import based on this...
-  # sys = pkgs.lib.last (pkgs.lib.splitString "-" pkgs.system);
-  emacsWithConfig = (pkgs.emacsWithPackagesFromUsePackage {
-    config = ../../static/emacs/init.org;
-    package = pkgs.emacs29.overrideAttrs (super: {
-      patches = [
-        (pkgs.fetchpatch {
-          name = "gc-block-align-patch";
-          url = "https://github.com/tyler-dodge/emacs/commit/36d2a8d5a4f741ae99540e139fff2621bbacfbaa.patch";
-          sha256 = "sha256-/hJa8LIqaAutny6RX/x6a+VNpNET86So9xE8zdh27p8=";
-        })
-      ];
-    });
-    # Force these two even though they're outside of the org config.
-    extraEmacsPackages = epkgs: [
-      epkgs.use-package
-      epkgs.org
-    ];
-  });
-
   # Old scripts I have laying around future me purge as appropriate
   cidr = (pkgs.writeScriptBin "cidr" (builtins.readFile ../../static/src/cidr)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
@@ -200,7 +180,7 @@ in
   # TODO: Finish porting emacs config over future me fix
   programs.emacs = lib.mkIf pkgs.stdenv.isDarwin {
     enable = true;
-    package = emacsWithConfig;
+    package = pkgs.emacsWithConfig;
   };
 
   home.file = {
@@ -237,7 +217,7 @@ in
   # Only test emacs config on macos for now
   home.activation.testEmacs = lib.mkIf pkgs.stdenv.isDarwin (lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     printf "modules/home-manager/default.nix: test emacs\n" >&2
-    $DRY_RUN_CMD ${emacsWithConfig}/bin/emacs --debug-init --batch -u $USER
+    $DRY_RUN_CMD ${pkgs.emacsWithConfig}/bin/emacs --debug-init --batch -u $USER
   '');
 
   # Ensure that certain defaults are set

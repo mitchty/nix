@@ -82,56 +82,78 @@
           "/home/${user}"
         else "";
 
-      nixpkgsConfig = extras: rec {
-        overlays = [
-          emacs.overlay
-          rust.overlays.default
-          (
-            # force in the ocf-resource-agents/pacemaker I patched into nixpkgs-pacemaker
-            # ignore system as for now all it runs on is x86_64-linux so
-            # whatever
-            final: prev: rec {
-              pacemaker = nixpkgs-pacemaker.legacyPackages.x86_64-linux.pacemaker;
-              ocf-resource-agents = nixpkgs-pacemaker.legacyPackages.x86_64-linux.ocf-resource-agents;
-            }
-          )
-          (final: prev: {
-            emacs29 = prev.emacsGit.overrideAttrs (old: {
-              name = "emacs29";
-              version = emacs-upstream.shortRev;
-              src = emacs-upstream;
+      nixpkgsOverlays = [
+        emacs.overlay
+        rust.overlays.default
+        (
+          # force in the ocf-resource-agents/pacemaker I patched into nixpkgs-pacemaker
+          # ignore system as for now all it runs on is x86_64-linux so
+          # whatever
+          final: prev: rec {
+            pacemaker = nixpkgs-pacemaker.legacyPackages.x86_64-linux.pacemaker;
+            ocf-resource-agents = nixpkgs-pacemaker.legacyPackages.x86_64-linux.ocf-resource-agents;
+          }
+        )
+        (final: prev: {
+          emacs29 = prev.emacsGit.overrideAttrs (old: {
+            name = "emacs29";
+            version = emacs-upstream.shortRev;
+            src = emacs-upstream;
+          });
+          # TODO: figure out a way to import based on this...
+          # sys = pkgs.lib.last (pkgs.lib.splitString "-" pkgs.system);
+          emacsWithConfig = (prev.emacsWithPackagesFromUsePackage {
+            # config = builtins.readFile "../../static/emacs/init.org";
+            config = ./static/emacs/init.org;
+            package = final.emacs29.overrideAttrs (super: {
+              patches = [
+                (prev.fetchpatch {
+                  name = "gc-block-align-patch";
+                  url = "https://github.com/tyler-dodge/emacs/commit/36d2a8d5a4f741ae99540e139fff2621bbacfbaa.patch";
+                  sha256 = "sha256-/hJa8LIqaAutny6RX/x6a+VNpNET86So9xE8zdh27p8=";
+                })
+              ];
             });
-          })
-          # No longer neeeded here for future me to use to copypasta new patches
-          # in if needed.
-          # (self: super:
-          #   rec {
-          #     polkit = super.polkit.overrideAttrs (old: rec {
-          #       patches = (old.patches or [ ]) ++ [ ./patches/CVE-2021-4034.patch ];
-          #     });
-          #   })
-        ] ++ extras;
-        # TODO: later
-        # singleton (
-        #   # Sub in x86 version of packages that don't build on Apple Silicon yet
-        #   final: prev: (optionalAttrs (prev.stdenv.system == "aarch64-darwin") {
-        #     inherit (final.pkgs-x86)
-        #       idris2
-        #       nix-index
-        #       niv;
+            # Force these two even though they're outside of the org config.
+            extraEmacsPackages = epkgs: [
+              epkgs.use-package
+              epkgs.org
+            ];
+          });
+        })
+        # No longer neeeded here for future me to use to copypasta new patches
+        # in if needed.
+        # (self: super:
+        #   rec {
+        #     polkit = super.polkit.overrideAttrs (old: rec {
+        #       patches = (old.patches or [ ]) ++ [ ./patches/CVE-2021-4034.patch ];
+        #     });
         #   })
-        # );
-        # Default roles is empty intentionally
-        # defaultRoles = [ ];
+      ];
+      # TODO: later
+      # singleton (
+      #   # Sub in x86 version of packages that don't build on Apple Silicon yet
+      #   final: prev: (optionalAttrs (prev.stdenv.system == "aarch64-darwin") {
+      #     inherit (final.pkgs-x86)
+      #       idris2
+      #       nix-index
+      #       niv;
+      #   })
+      # );
+      # Default roles is empty intentionally
+      # defaultRoles = [ ];
 
-        # mkNixOSSystem = { hostname, system, roles, users }: nixosSystem {
-        #   system = "x86_64-linux";
-        #   modules = nixOSModules ++ [
-        #     ./hosts/nexus/configuration.nix
-        #   ] ++ [{
-        #     users.primaryUser = "mitch";
-        #   }];
-        # };
+      # mkNixOSSystem = { hostname, system, roles, users }: nixosSystem {
+      #   system = "x86_64-linux";
+      #   modules = nixOSModules ++ [
+      #     ./hosts/nexus/configuration.nix
+      #   ] ++ [{
+      #     users.primaryUser = "mitch";
+      #   }];
+      # };
+
+      nixpkgsConfig = extras: {
+        overlays = nixpkgsOverlays ++ extras;
       };
 
       homeManagerStateVersion = "21.11";
