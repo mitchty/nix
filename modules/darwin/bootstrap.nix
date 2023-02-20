@@ -16,7 +16,7 @@
     };
     configureBuildUsers = true;
     extraOptions = ''
-      auto-optimise-store = true
+      auto-optimise-store = false
       experimental-features = nix-command flakes
     '';
   };
