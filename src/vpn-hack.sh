@@ -4,14 +4,14 @@
 # Description: Cause sometimes I'm at a coffee shoppe with conflicting ip ranges
 # to stuff in/on vpn and need to route internal traffic to it.
 #
-# e.g. one coffee shoppe has a 10.0.0.0/24 range (yeah... its derp)
+# e.g. one coffee shoppe has a 10.0.0.0/8 range (yeah... its derp)
 _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 set "${SETOPTS:--eu}"
 
 vpniface="${vpniface:-utun2}"
-route="${route:=/sbin/route}"
+route="${route:-/sbin/route}"
 
 add_one_thing() {
   sudo "${route}" add "${1?}" -interface "${vpniface}"
