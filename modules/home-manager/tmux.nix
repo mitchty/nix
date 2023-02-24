@@ -99,7 +99,7 @@ let
     window_name = "yolo";
     panes = [{
       shell_command = [
-        ". ~/src/pub/github.com/mitchty/nix/static/src/ssh.sh"
+        ". ~/src/pub/github.com/mitchty/nix/static/src/ssh.sh && ~/src/yolo"
       ];
       sleep_before = sleepDefault;
     }];
