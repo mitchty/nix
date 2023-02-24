@@ -17,7 +17,11 @@ bw_items() {
 get() {
   thing="${1}"
   shift
-  echo "$@" | jq -r ".login.${thing}"
+  out=$(echo "$@" | jq -r ".login.${thing}")
+  if [ "null" = "${out}" ]; then
+    printf "fatal: got a null value for %s probably not what was wanted but you do you\n" "${thing}" >&2
+  fi
+  printf "%s" "${out}"
 }
 
 # Copy some "thing" to clipboard then clobber it with something different after
@@ -56,3 +60,5 @@ login=$(get_one_login "${matches}")
 for thing in "username" "password"; do
   copy "${thing}" "${login}"
 done
+
+wait_and_junk_to_clipboard "whatever is left"
