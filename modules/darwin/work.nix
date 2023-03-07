@@ -96,9 +96,10 @@ in
       colima
       dive
       docker
-      docker-distribution
       docker-credential-helpers
+      docker-distribution
       google-cloud-sdk
+      k9s
       kubectl
       kubent
       kubernetes-helm
