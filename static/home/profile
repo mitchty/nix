@@ -174,3 +174,9 @@ nrsci() {
 nci() {
   find . \( -name "*.lock" -o -name "*.nix" \) -type f | entr -d sh -c "time nix build && time nix flake check; printf '%s %s\n' \"\`date\`\" \$(git diff | sha256sum | awk '{print \$1}')"
 }
+
+nixgc() {
+  nix-collect-garbage --delete-older-than 31d
+  nix-store --gc
+  nix-store --optimise
+}
