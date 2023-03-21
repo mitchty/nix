@@ -349,12 +349,20 @@ If editorconfig is around use it.
 
 *** tramp
 
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; Turn vc mode off in find-file cause if its removed who gives a crap if its in
+;; version control?
+
+(defun vc-off-if-remote ()
+  (if (file-remote-p (buffer-file-name))
+      (setq-local vc-handled-backends nil)))
+(add-hook 'find-file-hook 'vc-off-if-remote)
+
 (use-package tramp
-  :defer
-  :ensure
+  :after emacs
   :custom
   (tramp-default-method "ssh")
+  (vc-handled-backends '(Git))
   :config
   (add-to-list 'tramp-default-proxies-alist '(".*" "\`root\'" "/ssh:%h:"))
   )
