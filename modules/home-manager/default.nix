@@ -98,6 +98,7 @@ in
     inputs.mitchty.packages.${pkgs.system}.transcrypt
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
     inputs.rust.packages.${pkgs.system}.rust
+    inputs.nixinit.packages.${pkgs.system}.default
     jless
     less
     ltex-ls
