@@ -221,10 +221,27 @@ in
     $DRY_RUN_CMD ${pkgs.emacsWithConfig}/bin/emacs --debug-init --batch -u $USER
   '');
 
-  # Ensure that certain defaults are set
+  # Ensure that certain defaults are set, note need to restart SystemUIServer
+  # for menu bar changes to get picked up.
+  #
+  # TODO: didn't check if these are possible in nix-darwin future me task
   home.activation.defaults = lib.mkIf pkgs.stdenv.isDarwin (lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     printf "modules/home-manager/default.nix: defaults\n" >&2
     $DRY_RUN_CMD defaults write com.apple.scriptmenu ScriptMenuEnabled -bool true
+    $DRY_RUN_CMD defaults write com.apple.scriptmenu ShowLibraryScripts -bool false
+    $DRY_RUN_CMD defaults write com.apple.systemuiserver "NSStatusItem Visible Siri" -bool false
+    $DRY_RUN_CMD defaults write com.apple.systemuiserver menuExtras -array-add "/System/Library/CoreServices/Menu Extras/Bluetooth.menu"
+    $DRY_RUN_CMD defaults write com.apple.systemuiserver menuExtras -array-add "/System/Library/CoreServices/Menu Extras/Clock.menu"
+
+    $DRY_RUN_CMD defaults write com.apple.finder ShowPathbar -bool true
+
+    # I sometimes run without finder running
+    if pgrep Finder > /dev/null 2>&1; then
+      $DRY_RUN_CMD pkill Finder
+    fi
+
+    # This can't get shut off so nbd
+    $DRY_RUN_CMD killall -KILL SystemUIServer
   '');
 
   # Complain if we find > 10 diskimage-helper processes so I can debug *why* the
