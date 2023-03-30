@@ -1060,6 +1060,28 @@ Switch to rtags, or maybe even nuke entirely?
 #+END_SRC
 
 * mode related
+
+*** Reformatting
+
+TODO: need to make this not auto format on _spec.sh buffers.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package apheleia
+  :ensure
+  :config
+  (apheleia-global-mode +1)
+  (dolist (formatter '((shfmt-custom     . ("shfmt" "-ci" "-p" "-i" "2" "-bn" "-sr")))
+                        nil)
+  (add-to-list #'apheleia-formatters formatter))
+
+  (dolist (mode-formatter '((emacs-lisp-mode . lisp-indent)
+                           (rust-mode        . rustfmt)
+                           (go-mode          . gofmt)
+                           (sh-mode          . shfmt-custom))
+                         nil)
+  (add-to-list #'apheleia-mode-alist mode-formatter)))
+#+END_SRC
+
 *** common defaults
 
 Common mode defaults I think are sensible.
@@ -1342,9 +1364,10 @@ nil)
 ;;        (call-interactively #'eglot))))
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package reformatter
   :defer
+  :ensure
   :config
   (progn
    (defvar shfmt-args '("-ci" "-p" "-i" "2" "-bn" "-sr")
