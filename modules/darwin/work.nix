@@ -102,6 +102,11 @@ in
       k9s
       kubectl
       kubent
+      (pkgs.wrapHelm pkgs.kubernetes-helm {
+        plugins = [
+          inputs.mitchty.packages.${pkgs.system}.helm-unittest
+        ];
+      })
       kubernetes-helm
       lima
       pluto
@@ -111,8 +116,8 @@ in
       coreutils
       mkdocs
       terragrunt_0324
-      inputs.terraform-old.legacyPackages.${pkgs.system}.terraform
       inputs.mitchty.packages.${pkgs.system}.jira-cli
+      inputs.terraform-old.legacyPackages.${pkgs.system}.terraform
       skopeo
       snyk
       xlsx2csv
