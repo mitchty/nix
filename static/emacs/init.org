@@ -1340,31 +1340,6 @@ Ref:
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle no
-;; investigate this instead
-(use-package apheleia
-  :defer
-  :ensure
-  :init
-  (apheleia-global-mode +1)
-  :config
-  (dolist (formatter '((shfmt . ("shfmt" "-ci" "-p" "-i" "2" "-bn" "-sr")))
-nil)
-(add-to-list #'apheleia-formatters formatter))
-
-  (dolist (formatter '((emacs-lisp-mode . lisp-indent)
-                       (rust-mode        . rustfmt))
-                          nil)
-    (add-to-list #'apheleia-mode-alist formatter)))
-
-;; TODO: where the hell is this its not in melpa...
-;; (use-package eglot-ltex
-;;   :ensure
-;;   :hook ((text-mode latex-mode org-mode) . (lambda ()
-;;     (require 'eglot-ltex)
-;;        (call-interactively #'eglot))))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
 (use-package reformatter
   :defer
   :ensure
