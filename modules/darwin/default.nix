@@ -12,11 +12,11 @@
   config = {
     # Minimal setup of what we want installed outside of home-manager
     environment.systemPackages = with pkgs; [
-      vim
-      mosh
       git
-      tmux
       jq
+      mosh
+      tmux
+      vim
     ];
 
     # Sets up /etc/pam/sudo to use touchid for sudo
