@@ -1,13 +1,19 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
-# Dumb wrapper around osascript to make macos notifications easy to create.
-message=${1:-"no message"}; shift
-extra=""
+# SPDX-License-Identifier: BlueOak-1.0.0
+# Description: Dumb wrapper around osascript to make macos notifications easy to create.
+_base=$(basename "$0")
+_dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
+export _base _dir
+set "${SETOPTS:--eu}"
 
-if [ -n "$*" ]; then
-  extra="with title \"$*\""
+msg=${1:-"no message"}; shift
+title=
+
+if [ $# -gt 0 ]; then
+  title="with title \"$*\""
 fi
 
 osascript <<END
-display notification "${message}" ${extra}
+display notification "${msg}" ${title}
 END
