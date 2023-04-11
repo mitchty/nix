@@ -13,8 +13,7 @@ set "${SETOPTS:--eu}"
 # darwin-rebuild... this is just an easier way to use whichever is right for
 # each platform.
 
-# Only check flake if CHECK is set
-[ -z "${CHECK:-}" ] && nix flake check --show-trace "$@"
+[ "true" = "${CHECK:-true}" ] && nix flake check --show-trace "$@"
 
 if [ "Linux" = "$(uname -s)" ]; then
   nix run github:serokell/deploy-rs -- -s .
