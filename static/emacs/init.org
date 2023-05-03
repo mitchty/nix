@@ -131,7 +131,7 @@ View epub's in emacs directly
 
 minimap so my emacs can be more like the cool kids, won't turn it on everywhere yet only when i want it for now.
 
-FUTURE MITCH DO NOT ADD *text-mode* or magit will get the minimap too probably a lot of other stuff too.
+FUTURE MITCH DO NOT ADD *text-mode* or magit will get the minimap too probably a lot of other stuff too listen to jerk past you for once, this comment isn't here for funsies no cap.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package minimap
@@ -259,7 +259,6 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
 * appearance
 *** focus on current text
 
-TESTING
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package dimmer
   :ensure t)
@@ -1232,7 +1231,6 @@ TODO: What use-package can I stick this in?
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package sh-script
-  ;; :hook (sh-mode . shfmtstuff)
   :config
   (setq auto-insert-alist
         (append
