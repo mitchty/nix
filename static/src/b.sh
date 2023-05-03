@@ -48,6 +48,8 @@ matches=$(bw_items "$@")
 get_one_login() {
   len=$(echo "$@" | jq ". | length")
   if [ 1 -eq "${len}" ]; then
+    single=$(echo "$@" | jq '.[0].name')
+    printf "one match found using: %s\n" "${single}" >&2
     echo "$@" | jq '.[0]'
   else
     name=$(echo "$@" | jq -r '.[].name' | fzf --reverse)
