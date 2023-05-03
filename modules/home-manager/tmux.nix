@@ -116,7 +116,7 @@ let
       {
         # Use caffeinate to keep the laptop(s) from sleeping during rebuild and
         # notify when done.
-        cmd = "caffeinate -s rebuild && {say rebuild done &; notify done rebuild &; wait}";
+        cmd = "caffeinate -si rebuild && {say rebuild done &; notify done rebuild &; wait}";
         enter = false;
       }
     ];
@@ -127,7 +127,7 @@ let
     shell_command = [
       "gi mitchty/nix"
       {
-        cmd = "caffeinate -s site-update {say site update done &; notify done 'site update' &; wait}";
+        cmd = "caffeinate -si site-update {say site update done &; notify done 'site update' &; wait}";
         enter = false;
       }
     ];
