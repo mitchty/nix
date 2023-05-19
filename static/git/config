@@ -27,7 +27,11 @@
 
 # Stuff I really need to go through at some point.
 [alias]
-  nix = !git checkout flake.lock && git syn
+  # The git diff -u here is cause sometimes git stash pop fails and reflog was
+  # missing data and ungh so whatever just save a unified diff of changes just
+  # in case too to make future me's life sometimes easier if at work laptop
+  # where I can't depend on restic backups to save me.
+  nix = !git diff -u > b4.diff && git checkout flake.lock && git syn
   bage = for-each-ref --sort='authordate:iso8601' --format=' %(color:green)%(authordate:relative)%09%(color:white)%(refname:short)' refs/heads
   begin = !git init && git commit --allow-empty -m 'Initial empty commit'
   up = !git pull --rebase && git push
@@ -77,8 +81,8 @@
   defremote = !git branch -rvv | egrep 'HEAD' | awk '{print $1}' | sed -e 's|/HEAD||g'
   # push branch while setting the upstream to the default remote
   pbr = !git push --set-upstream $(git defremote) $(git bn)
-  # ^ but forcefully
-  fpbr = !git push --set-upstream --force $(git defremote) $(git bn)
+  # ^^^ but forcefully, with a lease just in case
+  pbrf = !git push --set-upstream --force-with-lease $(git defremote) $(git bn)
   # what files are getting updated a lot descending output
   churn = !git log --all -M -C --name-only --format='format:' "$@" | sort | grep -v '^$' | uniq -c | sort -r | awk 'BEGIN {print "count,file"} {print $1 "," $2}' | grep -Ev '^\\s+$'
   # My defremote hack depends on $remote/HEAD to point to somewhere
