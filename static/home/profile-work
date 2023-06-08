@@ -1,3 +1,6 @@
+#-*-mode: Shell-script; coding: utf-8;-*-
+# SPDX-License-Identifier: BlueOak-1.0.0
+
 # Silly function to "convert" (mostly) an openrc file from openstack to a .envrc file
 # TODO: Future me figure out a better option maybe with age maybe?
 openrctoenvrc() {
@@ -60,4 +63,93 @@ j() {
 
   # TODO: Evil eval hack, future me don't be so lazy but meh.
   eval "jira ${args}"
+}
+
+# Get current firewall ips as a comma delimited list
+hpe_gcp_fw_current() {
+  project="${1?}"
+
+  gcloud compute --project ${project?} firewall-rules describe nmn-allow-ing-ssh-trusted-any --format="value[delimiter=',',terminator=','](sourceRanges)"
+}
+
+# Append to sys gcp firewall ip address
+hpe_gcp_append_ip() {
+  sys="${1?}"
+  shift
+  ip="${1?}"
+
+  project=$(hpe_gcp_project ${sys})
+  gcloud compute --project ${project?} firewall-rules update nmn-allow-ing-ssh-trusted-any --source-ranges="$(hpe_gcp_fw_current ${project})${ip}"
+}
+
+# Remove from system firewall ip address
+hpe_gcp_remove_ip() {
+  sys="${1?}"
+  shift
+  ip="${1?}"
+
+  project=$(hpe_gcp_project ${sys})
+  gcloud compute --project ${project?} firewall-rules update nmn-allow-ing-ssh-trusted-any --source-ranges="$(hpe_gcp_fw_current ${project})#${ip},"
+}
+
+# $ hpe_gcp_ssh beau
+# gcloud compute --project hpe-beau-csm-livecd-18a5 ssh root@pit --zone=us-central1-a
+# $ hpe_gcp_ssh fearne
+# gcloud compute --project hpe-fearne-csm-livecd-3e07 ssh root@pit --zone=us-central1-c
+# $ hpe_gcp_ssh caleb
+# $
+
+hpe_gcp_project() {
+  sys="${1?}"
+  gcloud projects list --filter="name = hpe-${sys}-csm-livecd" --format="value(PROJECT_ID)"
+}
+
+hpe_gcp_zone() {
+  sys="${1?}"
+  gcloud compute instances list --filter="pit" --format="value(zone)" --project $(hpe_gcp_project ${sys}) | head -n1
+}
+
+# spits out the gcloud ssh nonsense if wanted
+hpe_gcp_ssh() {
+  sys="${1?}"
+  project=$(hpe_gcp_project ${sys})
+  zone=$(hpe_gcp_zone ${project?})
+
+  if [ -n "${zone}" ]; then
+    printf "gcloud compute --project %s ssh root@pit --zone=%s\n" "${project}" "${zone}"
+  fi
+}
+
+# spits out the gcloud scp nonsense if wanted
+hpe_gcp_scp() {
+  sys="${1?}"
+  project=$(hpe_gcp_project ${sys})
+  zone=$(hpe_gcp_zone ${project?})
+
+  if [ -n "${zone}" ]; then
+    printf "gcloud compute --project %s scp root@pit --zone=%s\n" "${project}" "${zone}"
+  fi
+}
+
+# Setup ~/.ssh/config-gcp with this project
+#
+# Include it in your ~/.ssh/config file if you want to use it.
+hpe_gcp_ssh_config_add() {
+  sys="${1?}"
+
+  project=$(hpe_gcp_project ${sys})
+  gcloud config set project ${project?}
+  gcloud compute config-ssh --ssh-config-file "${HOME}/.ssh/config-gcp"
+}
+
+# Do I even need this? I put all this stuff in its own ssh config file so I can
+# just remove the file... Here for future me to figure out if it matters at all.
+# Sorry future me past me is a jerk again. TODO: keep me or refactor to just rm
+# the file? Only the shadow knows.
+hpe_gcp_ssh_config_rm() {
+  sys="${1?}"
+
+  project=$(hpe_gcp_project ${sys})
+  gcloud config set project ${project?}
+  gcloud compute config-ssh --remove --ssh-config-file "${HOME}/.ssh/config-gcp"
 }
