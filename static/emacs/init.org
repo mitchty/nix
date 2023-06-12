@@ -411,7 +411,7 @@ Will try this other mode line out (seems to just block startup sooo no?).
   :config (sml/setup))
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (defun my-flycheck-lighter (state)
   "formats the mode-line fycheck error/warning/note junk"
   (let* ((counts (flycheck-count-errors flycheck-current-errors))
@@ -1068,7 +1068,6 @@ TODO: need to make this not auto format on _spec.sh buffers.
 (use-package apheleia
   :ensure
   :config
-  (apheleia-global-mode +1)
   (dolist (formatter '((shfmt-custom     . ("shfmt" "-ci" "-p" "-i" "2" "-bn" "-sr")))
                         nil)
   (add-to-list #'apheleia-formatters formatter))
