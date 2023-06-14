@@ -73,18 +73,19 @@ in
     dateutils
     deadnix
     difftastic
+    diffoscopeMinimal
     du-dust
     entr
     file
     fio
-    gh
-    (pkgs.hiPrio go) # Ensure this is the go to use in the case of collision
+    (pkgs.hiPrio go) # Ensure this is the go to use in case of collision
     gist
     git-extras
     git-lfs
     git-quick-stats
     git-recent
     git-sizer
+    git-vendor
     gitFull
     gnumake
     gron
@@ -99,6 +100,10 @@ in
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
     inputs.rust.packages.${pkgs.system}.rust
     inputs.nixinit.packages.${pkgs.system}.default
+    ipcalc
+    ipinfo
+    ispell
+    jid
     jless
     less
     ltex-ls
@@ -242,19 +247,22 @@ in
 
     # This can't get shut off so nbd
     $DRY_RUN_CMD killall -KILL SystemUIServer
+
+    # Prevent bluetooth headphones from opening or mess with itunes
+    $DRY_RUN_CMD launchctl stop com.apple.rcd || :
+    $DRY_RUN_CMD launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist || :
   '');
 
-  # Complain if we find > 10 diskimage-helper processes so I can debug *why* the
-  # eff its happening on macos. The pkill "works" but has its own issues.
-  home.activation.Wtf = lib.mkIf pkgs.stdenv.isDarwin (lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    printf "modules/home-manager/default.nix: make sure not a ton of diskimage-helper processes are running\n" >&2
-    if [ "$(pgrep -lif diskimages-helper | wc -l)" -gt 50 ]; then
-      printf "Too many diskimages-helper process, something probably went crazy, uncomment the pkill if we want to kill them all\n" >&2
-      #$DRY_RUN_CMD pkill -lif diskimages-helper
-    fi
-  '');
-
-  # Programs not (yet) worthy of their own .nix setup... so far
+  # Programs not (yet) worthy of their own .nix setup... so far who knows what
+  # the future holds.
+  programs.gh = {
+    enable = true;
+    package = inputs.unstable.legacyPackages.${pkgs.system}.gh;
+    extensions = with inputs.unstable.legacyPackages.${pkgs.system}; [
+      gh-dash
+      gh-cal
+    ];
+  };
   programs.fzf.enable = true;
   programs.go.enable = true;
   programs.jq.enable = true;

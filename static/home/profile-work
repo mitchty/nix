@@ -113,22 +113,18 @@ hpe_gcp_zone() {
 hpe_gcp_ssh() {
   sys="${1?}"
   project=$(hpe_gcp_project ${sys})
-  zone=$(hpe_gcp_zone ${project?})
+  zone=$(hpe_gcp_zone ${sys})
 
-  if [ -n "${zone}" ]; then
-    printf "gcloud compute --project %s ssh root@pit --zone=%s\n" "${project}" "${zone}"
-  fi
+  printf "gcloud compute --project %s ssh root@pit --zone=%s\n" "${project?}" "${zone?}"
 }
 
 # spits out the gcloud scp nonsense if wanted
 hpe_gcp_scp() {
   sys="${1?}"
   project=$(hpe_gcp_project ${sys})
-  zone=$(hpe_gcp_zone ${project?})
+  zone=$(hpe_gcp_zone ${sys})
 
-  if [ -n "${zone}" ]; then
-    printf "gcloud compute --project %s scp root@pit --zone=%s\n" "${project}" "${zone}"
-  fi
+  printf "gcloud compute --project %s scp root@pit --zone=%s\n" "${project?}" "${zone?}"
 }
 
 # Setup ~/.ssh/config-gcp with this project

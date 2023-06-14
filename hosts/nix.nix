@@ -19,7 +19,7 @@
 
     settings = {
       substituters = [
-        "http://cache.cluster.home.arpa"
+        # "http://cache.cluster.home.arpa"
         "https://cache.nixos.org"
         "https://nix-community.cachix.org"
       ];
@@ -31,6 +31,7 @@
 
     # Lets things download in parallel
     extraOptions = ''
+      fallback = true
       binary-caches-parallel-connections = 100
       auto-optimise-store = true
       experimental-features = nix-command flakes

@@ -180,3 +180,15 @@ nixgc() {
   nix-store --gc
   nix-store --optimise
 }
+
+# Wrapped entr to handle when the directory gets updated and it exits and just
+# restart using the last files input, also handle if/when you control-c (rc >
+# 128 basically assuming a non crap non posix compliant exec() shell should be
+# rc 130) Pass the stuff to watch on stdin and args are what is passed to entr
+wentr() {
+  files="$(cat /dev/stdin)"
+  while [ $? -le 128 ]; do
+    sleep 1
+    echo "${files}" | entr -ad "$@"
+  done
+}

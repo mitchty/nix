@@ -24,6 +24,16 @@
 
     # Keyboard shenanigans
     system = {
+      # TODO: Need to ensure xcode dev tools are installed for emacs 29+ tree
+      # sitter note this needs to exist prior to the activation so not sure how
+      # to square this circle yet, thinking a stupid shell installer/wrapper
+      # might be simplest.
+      #
+      # activationScripts.extraUserActivation = ''
+      #   printf "modules/darwin/default.nix: ensure xcode is installed this will throw up a prompt if not\n" >&2
+      #   $DRY_RUN_CMD xcode-select -p || xcode-select --install
+      # '';
+
       keyboard = {
         enableKeyMapping = true;
         remapCapsLockToControl = true;

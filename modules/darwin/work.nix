@@ -101,6 +101,7 @@ in
       google-cloud-sdk
       k9s
       kubectl
+      kubectl-convert
       kubent
       (pkgs.wrapHelm pkgs.kubernetes-helm {
         plugins = [
@@ -108,6 +109,7 @@ in
         ];
       })
       kubernetes-helm
+      kubespy
       lima
       pluto
       qemu
@@ -118,6 +120,7 @@ in
       terragrunt_0324
       inputs.mitchty.packages.${pkgs.system}.jira-cli
       inputs.terraform-old.legacyPackages.${pkgs.system}.terraform
+      pandoc
       skopeo
       snyk
       xlsx2csv

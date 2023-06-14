@@ -1,6 +1,7 @@
 let
   # User keys
   mitch = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV";
+  tishmack = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIqzTMAWTY4CBzGztPUO7I56fIQP0224rVR6xeQRX6ZI";
 
   ageadmins = [ mitch ];
 
@@ -21,6 +22,7 @@ let
   homeusers = [ mitch ];
   homehosts = [ mb srv nexus dfs1 gw cl1 cl2 cl3 ];
 
+  workusers = [ tishmack ];
   workhosts = [ wmb ];
 
   # TODO: Remove dfs1 from here this is a hack for now
@@ -30,12 +32,13 @@ let
   allnixos = [ dfs1 srv nexus gw cl1 cl2 cl3 ];
 
   # Some secrets should be usable everywhere
-  allusers = homeusers;
+  allusers = homeusers ++ workusers;
   allhosts = homehosts ++ workhosts;
 
   # Just routers
   router = [ gw ];
 
+  # Mostly for the canary secret for testing
   everything = allusers ++ allhosts;
 in
 {

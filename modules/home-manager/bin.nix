@@ -21,6 +21,12 @@ let
   stconflicts = (pkgs.writeScriptBin "stconflicts" (builtins.readFile ../../static/src/st-conflicts.zsh)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
+  wscp = (pkgs.writeScriptBin "wscp" (builtins.readFile ../../static/src/wscp.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+  wssh = (pkgs.writeScriptBin "wssh" (builtins.readFile ../../static/src/wssh.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
 in
 {
   home.packages = [

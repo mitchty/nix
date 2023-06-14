@@ -464,3 +464,9 @@ sed_inplace() {
   #shellspec disable=SC2119
   ${SED:-sed} "$(_sut_sed_inplace)" "$@"
 }
+
+# Bitwarden cli wrapper stuff to make it usable as a cli and not a thing that
+# just yeets json.... such a crap cli ux.
+bw_items() {
+  bw list items --search "$*"
+}

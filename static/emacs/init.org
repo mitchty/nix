@@ -92,18 +92,6 @@ Use use-package to configure emacs itself.
   )
 #+END_SRC
 
-*** Testing area
-
-TESTING tooltip mode
-
-Puts all tooltips in the echo arear.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(tooltip-mode -1)
-(custom-set-variables
- '(tooltip-use-echo-area t))
-#+END_SRC
-
 *** use-package debugging
 
 Cause the macros *use-packge* can generate are... not entirely easy to debug. This helps make it easier than using builtins.
@@ -410,6 +398,9 @@ Will try this other mode line out (seems to just block startup sooo no?).
   :ensure
   :config (sml/setup))
 #+END_SRC
+
+2023/05/30 This KEEPS causing startup failures due to emacs startup issues with precompiled files and I've had enough, will switch off of it I need updates more than I need a small mode line. Will investigate this as a replacement:
+https://github.com/Lambda-Emacs/lambda-line
 
 #+BEGIN_SRC emacs-lisp :tangle no
 (defun my-flycheck-lighter (state)
@@ -1300,7 +1291,24 @@ Probably need to check if this file exists first...
 
 Stuff thats getting tested...
 
-Iffy.... Does some jank ass wack stuff in fullscreen mode on cocoa emacs in macos.
+Puts all tooltips in the echo arear.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(tooltip-mode -1)
+(custom-set-variables
+ '(tooltip-use-echo-area t))
+#+END_SRC
+
+Giving this osx library a go, since I tend to only run gooey emacs on macos generally might as well make using the emacs on it a bit easier to use the say command and/or throw up notifications etc...
+url: https://github.com/raghavgautam/osx-lib
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package osx-lib
+  :if (memq window-system '(mac ns))
+  :ensure)
+#+END_SRC
+
+Iffy.... Does some jank ass wack stuff in fullscreen mode on cocoa emacs in macos. Need to find a way to clamp the max rows it can display or something.
 
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package mini-frame
@@ -1350,4 +1358,14 @@ Ref:
  (defun shfmtstuff()
    (unless (or (eq sh-shell 'zsh) (string-match-p "_spec.sh" (buffer-file-name)))
      (shfmt-on-save-mode))))
+#+END_SRC
+
+ref: https://github.com/Malabarba/emacs-google-this
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package google-this
+  :defer
+  :ensure
+  :config
+  (google-this-mode 1))
 #+END_SRC

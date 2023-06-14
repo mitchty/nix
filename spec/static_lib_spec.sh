@@ -62,4 +62,32 @@ Describe 'lib.sh'
       The output should eq "-i''"
     End
   End
+
+  Context 'bw cli functions'
+    Describe 'one bitwarden cli match'
+      bw_items() {
+        %text
+        #|---
+        #|{
+        #|  "object": "item",
+        #|  "id": "some-uuid",
+        #|  "organizationId": null,
+        #|  "folderId": "some-other-uuid",
+        #|  "type": 2,
+        #|  "reprompt": 0,
+        #|  "name": "somename",
+        #|  "notes": "",
+        #|  "favorite": false,
+        #|  "secureNote": {
+        #|    "type": 0
+        #|  },
+        #|  "collectionIds": [],
+        #|  "revisionDate": "2022-03-17T15:28:28.798Z",
+        #|  "deletedDate": null
+        #|}
+      }
+
+
+    End
+  End
 End
