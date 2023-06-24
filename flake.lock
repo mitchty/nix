@@ -377,11 +377,11 @@
         "unstable": "unstable"
       },
       "locked": {
-        "lastModified": 1685240673,
-        "narHash": "sha256-xyDs+eZvVS/Xfcw30bNsD5JeIg22VQlgi0MwRdZ1zF0=",
+        "lastModified": 1687568991,
+        "narHash": "sha256-s1DHslRgwzKRFyY5OurJCkuo7veuTiltKHEjwSTKzus=",
         "owner": "mitchty",
         "repo": "nixos",
-        "rev": "b41a9cb9294102bb4a8d023d757c73911ef2906b",
+        "rev": "27a7b0469c44584231e5df4089aeb123e7cda094",
         "type": "github"
       },
       "original": {
