@@ -1252,7 +1252,7 @@ Note: this is at the end so that anything that might get eval()'d from the deskt
 
 Desktop saving of session information handy to keep the same buffers between sessions.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (defun desktop-setup ()
 
 (require 'desktop)
