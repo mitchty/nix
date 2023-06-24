@@ -776,7 +776,7 @@ Spellcheek is useful.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package wucuo
   :ensure
-  :hook (text-mode . #'wucuo-start))
+  :hook (text-mode . wucuo-mode))
 #+END_SRC
 
 *** auto-complete
