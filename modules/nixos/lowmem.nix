@@ -13,7 +13,7 @@ in
   # Other stuff uses this to indicate if things should(n't) be installed
   config = mkIf cfg.enable {
     boot = {
-      cleanTmpDir = true;
+      tmp.cleanOnBoot = true;
       kernel.sysctl = {
         # Be a bit (too) aggressive with swapping old pages
         # "vm.swappiness" = 50;

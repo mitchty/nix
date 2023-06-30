@@ -12,9 +12,11 @@ in
 
   config = mkIf cfg.enable {
     boot = {
-      cleanTmpDir = true;
-      tmpOnTmpfs = true;
-      tmpOnTmpfsSize = "25%";
+      tmp = {
+        cleanOnBoot = true;
+        useTmpfs = true;
+        tmpfsSize = "25%";
+      };
     };
   };
 }

@@ -6,7 +6,7 @@
       # Ordering of imports is for understanding not alphanumeric sorted
       ./hardware-configuration.nix
       ../kernel.nix
-      ../pipewire.nix
+      # ../pipewire.nix
       ../virtualization.nix
       ../desktop.nix
       ../zfs.nix

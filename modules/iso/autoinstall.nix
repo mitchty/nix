@@ -92,7 +92,9 @@ in
     # Let me ssh in by default
     services.openssh = {
       enable = true;
-      permitRootLogin = "yes";
+      settings = {
+        PermitRootLogin = "yes";
+      };
     };
 
     # Don't flush to the backing store
@@ -112,7 +114,10 @@ in
       "kernel.sysrq" = 1;
     };
 
-    isoImage.squashfsCompression = "zstd -Xcompression-level 6";
+    isoImage = {
+      isoName = mkForce "custom.iso";
+      squashfsCompression = "zstd -Xcompression-level 6";
+    };
 
     environment = {
       variables = {

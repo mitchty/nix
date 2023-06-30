@@ -2,12 +2,12 @@
   description = "mitchty nixos flake setup";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
     master.url = "github:NixOS/nixpkgs/master";
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     mitchty.url = "github:mitchty/nixos";
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-22.11-darwin";
+    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.05-darwin";
     nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
     # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
@@ -29,7 +29,7 @@
       flake = false;
     };
 
-    home-manager.url = "github:nix-community/home-manager/release-22.11";
+    home-manager.url = "github:nix-community/home-manager/release-23.05";
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -158,6 +158,7 @@
 
       nixpkgsConfig = extras: {
         overlays = nixpkgsOverlays ++ extras;
+        config.permittedInsecurePackages = [ "garage-0.7.3" ];
       };
 
       homeManagerStateVersion = "21.11";

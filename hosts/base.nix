@@ -44,8 +44,10 @@
       };
       openssh = {
         enable = true;
-        passwordAuthentication = false;
-        permitRootLogin = "yes";
+        settings = {
+          PasswordAuthentication = false;
+          PermitRootLogin = "yes";
+        };
       };
       journald.extraConfig = ''
         MaxFileSec=1day

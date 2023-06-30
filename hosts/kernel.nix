@@ -23,7 +23,7 @@
     };
 
     # Always clean out /tmp
-    cleanTmpDir = true;
+    tmp.cleanOnBoot = true;
 
     # always want sysrq keys in case I need to middle finger things to reboot
     kernel.sysctl = {
