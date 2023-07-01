@@ -73,7 +73,6 @@ in
     dateutils
     deadnix
     difftastic
-    diffoscopeMinimal
     du-dust
     entr
     file
@@ -97,6 +96,7 @@ in
     inputs.mitchty.packages.${pkgs.system}.hatools
     inputs.mitchty.packages.${pkgs.system}.hwatch
     inputs.mitchty.packages.${pkgs.system}.transcrypt
+    inputs.nixpkgs.legacyPackages.${pkgs.system}.diffoscopeMinimal
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
     inputs.rust.packages.${pkgs.system}.rust
     inputs.nixinit.packages.${pkgs.system}.default
@@ -114,6 +114,7 @@ in
     moreutils
     nix-prefetch-github
     nix-prefetch-scripts
+    nix-tree
     nixpkgs-fmt
     nvd
     openssl

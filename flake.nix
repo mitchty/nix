@@ -19,10 +19,7 @@
     # TODO: Set this up as an overlay or pr it to nixpkgs
     # https://github.com/lyderichti59/nixpkgs/commit/e2fa180f56918615d27fef71db14a0f79c60560b
     nixpkgs-mitchty.url = "github:mitchty/nixpkgs/mitchty";
-    emacs = {
-      url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "nixpkgs-mitchty";
-    };
+    emacs.url = "github:nix-community/emacs-overlay";
 
     emacs-upstream = {
       url = "github:emacs-mirror/emacs/emacs-29";
