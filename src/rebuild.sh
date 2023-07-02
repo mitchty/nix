@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env zsh
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
 # Description: Wrapper script to simplify running deploy-rs or whatever locally
@@ -18,5 +18,30 @@ set "${SETOPTS:--eu}"
 if [ "Linux" = "$(uname -s)" ]; then
   nix run github:serokell/deploy-rs -- -s .
 else
-  darwin-rebuild switch --flake .# "$@"
+  darwin-rebuild switch --flake .# "$@" &
+
+  ok=0
+  hungtest=0
+
+  # Has to be the foreground due to sudo
+  until [ 0 -lt ${ok} ]; do
+    # If the rebuild is done, nothing to do.
+    if ! pgrep -lif darwin-rebuild > /dev/null 2>&1; then
+      ((ok=ok+1))
+    fi
+
+    if grep -vxF -f =(pgrep -U $(id -u)) =(pgrep -lif emacs) | grep 'seq-tests.el' | grep -Ev '(true)' > /dev/null 2>&1; then
+      ((hungtest=hungtest+1))
+      sleep 60
+    fi
+
+    if [ ${hungtest} -ge 3 ]; then
+      victim="$(grep -vxF -f =(pgrep -U $(id -u)) =(pgrep -lif emacs) | grep 'seq-tests.el' | grep -Ev '(true)')"
+      pid="$(echo ${victim} | awk '{print $1}')"
+      printf "\nnote: will kill hung test pid %s\n" "${victim}" >&2
+      sudo kill -TERM ${pid}
+    fi
+    sleep 1
+  done
+  wait
 fi
