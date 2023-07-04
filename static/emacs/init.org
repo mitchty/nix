@@ -386,23 +386,32 @@ Use the silver searcher for quick searches.
   (osx-clipboard-mode +1))
 #+END_SRC
 
-*** TESTING mode-line setup
+*** mode-line setup
 
-Using some hacked together minimal mode line stuff now, spaceline is too much
-oomph with all the crap it did.
+Converted this all back to straight up manual mode line setup, all the packages take too much cpu and slow stuff down. Easier to just do what I want here than use all that extra elisp I don't use.
 
-Will try this other mode line out (seems to just block startup sooo no?).
+TODO: Need to customize the faces in the mode line to cover the atrocious
+defaults. Future me task, also need to integrate my flycheck lighter in so I can
+get error/warning/info summaries when present that link to the
+errors/warnings/whatever. And put in the start..end region thing too to replace
+line:column when a regions selected like I had. Mostly just copypastad a lot of
+crap I found on github.
 
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package smart-mode-line
-  :ensure
-  :config (sml/setup))
-#+END_SRC
+#+BEGIN_SRC emacs-lisp
+(defun my-mode-line-fill (reserve)
+  (let ((real-reserve (if (and window-system (eq 'right (get-scroll-bar-mode)))
+                          (- reserve 3)
+                        reserve)))
+    (propertize " "
+                'display `((space :align-to (- (+ right right-fringe right-margin) ,real-reserve))))))
 
-2023/05/30 This KEEPS causing startup failures due to emacs startup issues with precompiled files and I've had enough, will switch off of it I need updates more than I need a small mode line. Will investigate this as a replacement:
-https://github.com/Lambda-Emacs/lambda-line
 
-#+BEGIN_SRC emacs-lisp :tangle no
+(defun my-mode-line-fill-center (reserve)
+  "Return empty space to the center of remaining space leaving RESERVE space on the right."
+  (propertize " "
+              'display `((space :align-to (- (+ center (0.5 . right-margin)) ,reserve
+                                             (0.5 . left-margin))))))
+
 (defun my-flycheck-lighter (state)
   "formats the mode-line fycheck error/warning/note junk"
   (let* ((counts (flycheck-count-errors flycheck-current-errors))
@@ -411,36 +420,69 @@ https://github.com/Lambda-Emacs/lambda-line
          (running (eq 'running flycheck-last-status-change)))
     (if (or errorp running) (format "•%s" err))))
 
-(use-package mini-modeline
-  :ensure
-  :config
-  (mini-modeline-mode)
-  ;; (add-hook 'after-init-hook (mini-modeline-mode))
-  :custom
-  (mini-modeline-truncate-p nil)
-  (mini-modeline-echo-duration 5)
-  (mini-modeline-display-gui-line nil)
-  (mini-modeline-r-format '((:eval
-                             (when (and (bound-and-true-p flycheck-mode)
-                                        (or flycheck-current-errors
-                                            (eq 'running flycheck-last-status-change)))
-                               (concat
-                                " "
-                                (cl-loop for state in '((error . "#FB4933")
-                                                        (warning . "#FABD2F")
-                                                        (info . "#83A598"))
-                                         as lighter = (my-flycheck-lighter (car state))
-                                         when lighter
-                                         concat (propertize
-                                                 lighter
-                                                 'face `(:foreground ,(cdr state))))
-                                )))
-                            "%e %b %c"
-                            (:eval (if (use-region-p)
-                                       (if (eq (point) (region-beginning))
-                                           (format "%%l … %d" (line-number-at-pos (region-end)))
-                                         (format "%d … %%l" (line-number-at-pos (region-beginning))))
-                                     ":%l")))))
+(setq-default mode-line-format
+  (list "%e"
+        mode-line-front-space
+        '(:eval (when (file-remote-p default-directory)
+                  (propertize "%1@"
+                              'mouse-face 'mode-line-highlight
+                              'help-echo (concat "remote: " default-directory))))
+        '(:eval (cond (buffer-read-only "%* ")
+                      ((buffer-modified-p) "! ")
+                      (t "  ")))
+        '(:eval (propertize "%12b" 'face 'mode-line-buffer-id 'help-echo default-directory))
+        ;; TODO: get this working from old mini-modeline setup and while at it
+        ;; let it somehow propertize links to errors or something dunno.
+        ;; '(:eval
+        ;;                      (when (and (bound-and-true-p flycheck-mode)
+        ;;                                 (or flycheck-current-errors
+        ;;                                     (eq 'running flycheck-last-status-change)))
+        ;;                        (concat
+        ;;                         " "
+        ;;                         (cl-loop for state in '((error . "#FB4933")
+        ;;                                                 (warning . "#FABD2F")
+        ;;                                                 (info . "#83A598"))
+        ;;                                  as lighter = (my-flycheck-lighter (car state))
+        ;;                                  when lighter
+        ;;                                  concat (propertize
+        ;;                                          lighter
+        ;;                                          'face `(:foreground ,(cdr state))))
+        ;;                         )))
+        '(:eval (let* ((vc-state (if (stringp vc-mode)
+                                     (let* ((branch-name (replace-regexp-in-string
+                                                          (format "^\s*%s:?-?" (vc-backend buffer-file-name))
+                                                          ""
+                                                          vc-mode))
+                                            (formatted-branch-name branch-name)
+                                            (buffer-vc-state (vc-state buffer-file-name))
+                                            (f (cond ((string= "up-to-date" buffer-vc-state)
+                                                      '((:slant normal)))
+                                                     (t
+                                                      '((:slant italic))))))
+                                       (propertize formatted-branch-name 'face f))
+                                   ""))
+                       (ctr (format-mode-line (list  vc-state))))
+                  (list (my-mode-line-fill-center (/ (length ctr) 2))
+                        ctr)))
+        ;; TODO: Port this over too at some point in a boring meeting or
+        ;; whatever, the examples I found for line/column number were easier to
+        ;; put in but that could probably just be the else clause to if we're in
+        ;; a region predicate? Future me figure out past me's a jerk and just
+        ;; wants mini-modeline to stop being ass at not loading.
+        ;; '(:eval (if (use-region-p)
+        ;;                                (if (eq (point) (region-beginning))
+        ;;                                    (format "%%l … %d" (line-number-at-pos (region-end)))
+        ;;                                  (format "%d … %%l" (line-number-at-pos (region-beginning))))
+        ;;                              ":%l"))
+        '(:eval (let* ((row (format-mode-line (list (propertize "%l" 'help-echo "Line number"))))
+                       (col (format-mode-line (list ":" (propertize "%c" 'help-echo "Column number"))))
+                       (col-length (max 5 (+ (length col))))
+                       (row-length (+ col-length (length row))))
+                  (list
+                   (my-mode-line-fill row-length)
+                   row
+                   (my-mode-line-fill col-length)
+                   col)))))
 #+END_SRC
 
 *** yasnippet
