@@ -18,7 +18,11 @@ set "${SETOPTS:--eu}"
 if [ "Linux" = "$(uname -s)" ]; then
   nix run github:serokell/deploy-rs -- -s .
 else
-  darwin-rebuild switch --flake .# "$@" &
+  rc=0
+  {
+    darwin-rebuild switch --flake .# "$@"
+    rc=$?
+  } &
 
   ok=0
   hungtest=0
@@ -41,7 +45,8 @@ else
       printf "\nnote: will kill hung test pid %s\n" "${victim}" >&2
       sudo kill -TERM ${pid}
     fi
-    sleep 1
+    sleep 3
   done
-  wait
+
+  exit ${rc}
 fi
