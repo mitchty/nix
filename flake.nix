@@ -16,10 +16,11 @@
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
-    # TODO: Set this up as an overlay or pr it to nixpkgs
-    # https://github.com/lyderichti59/nixpkgs/commit/e2fa180f56918615d27fef71db14a0f79c60560b
-    nixpkgs-mitchty.url = "github:mitchty/nixpkgs/mitchty";
-    emacs.url = "github:nix-community/emacs-overlay";
+    # TODO: If? this gets merged then go back to the regular overlay.
+    # https://github.com/nix-community/emacs-overlay/pull/343
+    # emacs.url = "github:nix-community/emacs-overlay";
+    emacs.url = "github:mitchty/emacs-overlay/allow-silencing-notice-message";
+    # emacs.url = "path:/Users/mitch/src/pub/github.com/nix-community/emacs-overlay";
 
     emacs-upstream = {
       url = "github:emacs-mirror/emacs/emacs-29";
@@ -96,7 +97,7 @@
           }
         )
         (final: prev: {
-          emacs29 = prev.emacsGit.overrideAttrs (old: {
+          emacs29 = prev.emacs-git.overrideAttrs (old: {
             name = "emacs29";
             version = emacs-upstream.shortRev;
             src = emacs-upstream;
@@ -104,6 +105,7 @@
           # TODO: figure out a way to import based on this...
           # sys = pkgs.lib.last (pkgs.lib.splitString "-" pkgs.system);
           emacsWithConfig = (prev.emacsWithPackagesFromUsePackage {
+            withoutNotice = true;
             # config = builtins.readFile "../../static/emacs/init.org";
             config = ./static/emacs/init.org;
             package = final.emacs29.overrideAttrs (super: {
