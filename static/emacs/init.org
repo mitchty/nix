@@ -397,7 +397,7 @@ errors/warnings/whatever. And put in the start..end region thing too to replace
 line:column when a regions selected like I had. Mostly just copypastad a lot of
 crap I found on github.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (defun my-mode-line-fill (reserve)
   (let ((real-reserve (if (and window-system (eq 'right (get-scroll-bar-mode)))
                           (- reserve 3)
