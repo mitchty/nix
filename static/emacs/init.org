@@ -398,20 +398,6 @@ line:column when a regions selected like I had. Mostly just copypastad a lot of
 crap I found on github.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(defun my-mode-line-fill (reserve)
-  (let ((real-reserve (if (and window-system (eq 'right (get-scroll-bar-mode)))
-                          (- reserve 3)
-                        reserve)))
-    (propertize " "
-                'display `((space :align-to (- (+ right right-fringe right-margin) ,real-reserve))))))
-
-
-(defun my-mode-line-fill-center (reserve)
-  "Return empty space to the center of remaining space leaving RESERVE space on the right."
-  (propertize " "
-              'display `((space :align-to (- (+ center (0.5 . right-margin)) ,reserve
-                                             (0.5 . left-margin))))))
-
 (defun my-flycheck-lighter (state)
   "formats the mode-line fycheck error/warning/note junk"
   (let* ((counts (flycheck-count-errors flycheck-current-errors))
@@ -431,23 +417,7 @@ crap I found on github.
                       ((buffer-modified-p) "! ")
                       (t "  ")))
         '(:eval (propertize "%12b" 'face 'mode-line-buffer-id 'help-echo default-directory))
-        ;; TODO: get this working from old mini-modeline setup and while at it
-        ;; let it somehow propertize links to errors or something dunno.
-        ;; '(:eval
-        ;;                      (when (and (bound-and-true-p flycheck-mode)
-        ;;                                 (or flycheck-current-errors
-        ;;                                     (eq 'running flycheck-last-status-change)))
-        ;;                        (concat
-        ;;                         " "
-        ;;                         (cl-loop for state in '((error . "#FB4933")
-        ;;                                                 (warning . "#FABD2F")
-        ;;                                                 (info . "#83A598"))
-        ;;                                  as lighter = (my-flycheck-lighter (car state))
-        ;;                                  when lighter
-        ;;                                  concat (propertize
-        ;;                                          lighter
-        ;;                                          'face `(:foreground ,(cdr state))))
-        ;;                         )))
+        mode-line-front-space
         '(:eval (let* ((vc-state (if (stringp vc-mode)
                                      (let* ((branch-name (replace-regexp-in-string
                                                           (format "^\s*%s:?-?" (vc-backend buffer-file-name))
@@ -462,8 +432,28 @@ crap I found on github.
                                        (propertize formatted-branch-name 'face f))
                                    ""))
                        (ctr (format-mode-line (list  vc-state))))
-                  (list (my-mode-line-fill-center (/ (length ctr) 2))
-                        ctr)))
+                  (list ctr)))
+        mode-line-front-space
+        '(:eval (let* ((row (format-mode-line (list (propertize "%l" 'help-echo "Line number"))))
+                       (col (format-mode-line (list ":" (propertize "%c" 'help-echo "Column number")))))
+                  (list row col)))
+        mode-line-front-space
+        '(:eval (when (and (bound-and-true-p flycheck-mode)
+                                        (or flycheck-current-errors
+                                            (eq 'running flycheck-last-status-change)))
+                               (concat
+                                " "
+                                (cl-loop for state in '((error . "#FB4933")
+                                                        (warning . "#FABD2F")
+                                                        (info . "#83A598"))
+                                         as lighter = (my-flycheck-lighter (car state))
+                                         when lighter
+                                         concat (propertize
+                                                 lighter
+                                                 'help-echo state
+                                                 'face `(:foreground ,(cdr state))))
+                                )))
+)
         ;; TODO: Port this over too at some point in a boring meeting or
         ;; whatever, the examples I found for line/column number were easier to
         ;; put in but that could probably just be the else clause to if we're in
@@ -474,15 +464,6 @@ crap I found on github.
         ;;                                    (format "%%l … %d" (line-number-at-pos (region-end)))
         ;;                                  (format "%d … %%l" (line-number-at-pos (region-beginning))))
         ;;                              ":%l"))
-        '(:eval (let* ((row (format-mode-line (list (propertize "%l" 'help-echo "Line number"))))
-                       (col (format-mode-line (list ":" (propertize "%c" 'help-echo "Column number"))))
-                       (col-length (max 5 (+ (length col))))
-                       (row-length (+ col-length (length row))))
-                  (list
-                   (my-mode-line-fill row-length)
-                   row
-                   (my-mode-line-fill col-length)
-                   col)))))
 #+END_SRC
 
 *** yasnippet
