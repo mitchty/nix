@@ -193,12 +193,15 @@ wentr() {
   done
 }
 
-# TODO: Improve this gh related stuff
-PUBTOKEN="${HOME}/.gh-cli-pub"
+h() {
+  # PUBTOKEN="${HOME}/.gh-cli-pub${CATEGORY+-}${CATEGORY-}"
+  PUBTOKEN="${HOME}/.gh-cli-${CATEGORY:-pub}"
 
-if [ -e "${PUBTOKEN}" ]; then
-  # Double quote my ass this is useless here
-  #shellcheck disable=SC2086
-  GH_TOKEN="$(cat ${PUBTOKEN})"
-  export GH_TOKEN
-fi
+  if [ -e "${PUBTOKEN}" ]; then
+    # Double quote my ass this is useless here
+    #shellcheck disable=SC2086
+    GH_TOKEN="$(cat ${PUBTOKEN})" gh "$@"
+  else
+    printf "warn: didn't find public token file %s\n" "${PUBTOKEN}" >&2
+  fi
+}
