@@ -93,6 +93,12 @@ in
           exit 1
         fi
 
+        # If battery is under 20% also stop backing up
+        if [ $(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1) -lt 20 ]; then
+          printf "fatal: battery below 20%, not bothering to backup\n" >&2
+          exit 1
+        fi
+
         # Hack here as the activation script order has launchd before any of the
         # secret generation, so if we are doing a deploy we need to wait a bit
         # before we can expect these files (symlinks really) to exist.
