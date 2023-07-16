@@ -18,11 +18,7 @@ set "${SETOPTS:--eu}"
 if [ "Linux" = "$(uname -s)" ]; then
   nix run github:serokell/deploy-rs -- -s .
 else
-  rc=0
-  {
-    darwin-rebuild switch --flake .# "$@"
-    rc=$?
-  } &
+  darwin-rebuild switch --flake .# "$@" &
 
   ok=0
   hungtest=0
@@ -42,11 +38,21 @@ else
     if [ ${hungtest} -ge 3 ]; then
       victim="$(grep -vxF -f =(pgrep -U $(id -u)) =(pgrep -lif emacs) | grep 'seq-tests.el' | grep -Ev '(true)')"
       pid="$(echo ${victim} | awk '{print $1}')"
-      printf "\nnote: will kill hung test pid %s\n" "${victim}" >&2
-      sudo kill -TERM ${pid}
+
+      # I let this run for a long time and it eventually exited, but that was
+      # like hours, ain't nobody got time for that and killing the test seems
+      # fine.
+      if [ "${pid}" = "" ]; then
+        hungtest=0
+      else
+        printf "\nnote: will kill hung test pid %s\n" "${victim}" >&2
+        sudo kill -TERM ${pid} || : # We don't want to accidentally exit from this
+      fi
     fi
     sleep 3
   done
 
-  exit ${rc}
+  wait $!
+
+  exit $?
 fi
