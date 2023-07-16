@@ -413,7 +413,7 @@ crap I found on github.
                   (propertize "%1@"
                               'mouse-face 'mode-line-highlight
                               'help-echo (concat "remote: " default-directory))))
-        '(:eval (cond (buffer-read-only "%* ")
+        '(:eval (cond (buffer-read-only "ro ")
                       ((buffer-modified-p) "! ")
                       (t "  ")))
         '(:eval (propertize "%12b" 'face 'mode-line-buffer-id 'help-echo default-directory))
@@ -453,7 +453,7 @@ crap I found on github.
                                                  'help-echo state
                                                  'face `(:foreground ,(cdr state))))
                                 )))
-)
+))
         ;; TODO: Port this over too at some point in a boring meeting or
         ;; whatever, the examples I found for line/column number were easier to
         ;; put in but that could probably just be the else clause to if we're in

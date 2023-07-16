@@ -16,11 +16,7 @@
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
-    # TODO: If? this gets merged then go back to the regular overlay.
-    # https://github.com/nix-community/emacs-overlay/pull/343
-    # emacs.url = "github:nix-community/emacs-overlay";
-    emacs.url = "github:mitchty/emacs-overlay/allow-silencing-notice-message";
-    # emacs.url = "path:/Users/mitch/src/pub/github.com/nix-community/emacs-overlay";
+    emacs.url = "github:nix-community/emacs-overlay";
 
     emacs-upstream = {
       url = "github:emacs-mirror/emacs/emacs-29";
@@ -105,8 +101,6 @@
           # TODO: figure out a way to import based on this...
           # sys = pkgs.lib.last (pkgs.lib.splitString "-" pkgs.system);
           emacsWithConfig = (prev.emacsWithPackagesFromUsePackage {
-            withoutNotice = true;
-            # config = builtins.readFile "../../static/emacs/init.org";
             config = ./static/emacs/init.org;
             package = final.emacs29.overrideAttrs (super: {
               patches = [
