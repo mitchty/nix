@@ -63,6 +63,67 @@ Describe 'lib.sh'
     End
   End
 
+  # TODO: more _s function unit tests...
+
+  # Helper for doing evil things with ssh passing in options you never really
+  # should if you care about security.
+  Describe '_yolo() without SSHOPTS'
+    Before 'setup'
+    setup() {
+      unset SSHOPTS
+    }
+
+    It "_yolo dumps default options when nothing set"
+      When call _yolo
+      The output should eq "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+    End
+  End
+
+  Describe '_yolo() with SSHOPTS set'
+    Before 'setup'
+    After 'teardown'
+
+    setup() {
+      export SSHOPTS='-o somekey=someval'
+    }
+
+    teardown() {
+      unset SSHOPTS
+    }
+
+    It "_yolo wraps stuff when set"
+      When call _yolo
+      The output should eq "${SSHOPTS} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+    End
+  End
+
+  # Helper stuff for the _s ssh/scp using sshpass wrapper, note the ssh/scp is
+  # stripped at this point.
+  Describe '_s_host parsing'
+    Parameters
+      "user@host" host
+      "user@host uptime" host
+      "user@host:/dest" host
+      "host" host
+      "host uptime" host
+      "foo.bar user@host:/tmp/blah" host
+      "foo.bar host:/tmp/blah" host
+      "host:/tmp/blah" host
+    End
+    It "parses arg strings appropriately to the hostname host"
+      When call _s_host "$1"
+      The output should eq "$2"
+    End
+  End
+
+  # Test out the ~/.ssh/file parsing wrapping via ssh
+  # Describe '_s_args parsing'
+  #   It "blah"
+  #     When call _s_args ssh hostname /some/file
+  #     The output should eq "ssh hostname -F /some/file -G"
+  #   End
+  # End
+
   Context 'bw cli functions'
     Describe 'one bitwarden cli match'
       bw_items() {
@@ -86,8 +147,6 @@ Describe 'lib.sh'
         #|  "deletedDate": null
         #|}
       }
-
-
     End
   End
 End

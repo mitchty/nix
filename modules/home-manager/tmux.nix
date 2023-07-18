@@ -95,16 +95,6 @@ let
     ];
   };
 
-  yolo = {
-    window_name = "yolo";
-    panes = [{
-      shell_command = [
-        ". ~/src/pub/github.com/mitchty/nix/static/src/ssh.sh && ~/src/yolo"
-      ];
-      sleep_before = sleepDefault;
-    }];
-  };
-
   wip = {
     window_name = "wip";
     panes = [ "pane" ];
@@ -213,6 +203,6 @@ rec {
   home.file.".config/tmuxp/wmb.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "wmb";
-    windows = [ initial rebuildlocal yolo wip ];
+    windows = [ initial rebuildlocal wip ];
   });
 }

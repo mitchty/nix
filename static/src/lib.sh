@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
+# Allow using local even though its not "posix"
+#shellcheck disable=SC3043
 #
 # General library utility functions I end up re-writing all over the damn place
 # in random scripts I create. No more! Shared library it is for once.
@@ -255,11 +257,11 @@ try_hg() {
 #
 # Note: this then means can't call them with the final arg for say gh/bb
 wrk() {
-  DEST="${HOME}/src/${0}" "$@"
+  CATEGORY=wrk DEST="${HOME}/src/${0}" "$@"
 }
 
 prv() {
-  DEST="${HOME}/src/${0}" "$@"
+  CATEGORY=prv DEST="${HOME}/src/${0}" "$@"
 }
 
 # To be lazy
@@ -463,6 +465,127 @@ _sut_sed_inplace() {
 sed_inplace() {
   #shellspec disable=SC2119
   ${SED:-sed} "$(_sut_sed_inplace)" "$@"
+}
+
+# To make other runtime stuff simpler
+SSH="${SSH:-$(command -v ssh)}"
+SCP="${SCP:-$(command -v scp)}"
+# SSHOPTS="${SSHOPTS--o LogLevel=quiet}"
+
+# Going to start (ab)using the V to control verbose ish output not in logging
+# frameworks.
+
+# Allow local usage for this stuff
+_s_defaultfile="${_s_defaultfile:-${HOME}/.ssh/sshpass}"
+
+#
+_s() {
+  local cmd="$1"
+  shift
+
+  # I'm abusing assignment here
+  #shellcheck disable=SC2155,SC2046
+  local fullcmd="${SSH}"
+  if [ "${cmd}" = "scp" ]; then
+    fullcmd="${SCP}"
+  fi
+  #shellcheck disable=SC2155,SC2046
+  local host=$(_s_host "$@")
+  #shellcheck disable=SC2155,SC2046
+  local wrapcommand=$(_s_wrapcmd "${host}")
+  #shellcheck disable=SC2155,SC2046
+  local wrapargs=$(_s_args "${fullcmd}")
+
+  if [ -z "${wrapcommand}" ]; then
+    ${fullcmd} "$(_yolo)" "$@"
+  else
+    # Meh, this is a boolean for me...
+    #shellcheck disable=SC2086
+    [ -n "${V}" ] && echo "${wrapcommand} ${wrapargs} $*" | sed -e 's/^ //g' >&2
+    eval "${wrapcommand} ${wrapargs} $*"
+  fi
+}
+
+# Helper function to extract out the hostname or whatever looks to be the
+# hostname from the _s (ssh|scp) blah... string
+_s_host() {
+  local hascolon=false
+  local hasat=false
+
+  if echo "$@" | grep '@' > /dev/null 2>&1; then
+    hasat=true
+  fi
+  if echo "$@" | grep ':' > /dev/null 2>&1; then
+    hascolon=true
+  fi
+  if $hascolon && $hasat; then
+    echo "$@" | awk -F'@' '{print $NF}' | sed -e 's/[:].*//g' | awk '{print $NF}'
+  elif $hascolon; then
+    echo "$@" | sed -e 's/[:].*//g' | awk '{print $NF}'
+  elif $hasat; then
+    echo "$@" | awk -F'@' '{print $NF}' | awk '{print $1}'
+  else
+    echo "$@" | awk '{print $1}'
+  fi
+}
+
+_s_args() {
+  local cmd="$1"
+  shift
+  local filename="${_s_defaultfile}"
+
+  echo "${cmd}" "$(_yolo) -F ${filename}"
+}
+
+_s_wrapcmd() {
+  local host="$1"
+
+  # I'm abusing assignment here
+  #shellcheck disable=SC2155,SC2046
+  local hostcmd=$(grep -A2 -E "^Host ${host}" ~/.ssh/sshpass | awk '/^  LocalCommand/ {$1=""; print $0}')
+  if [ -z "${hostcmd}" ]; then
+    hostcmd=$(grep -A1 -E "^Hostname ${host}" ~/.ssh/sshpass | awk '/^  LocalCommand/ {$1=""; print $0}')
+  fi
+  echo "${hostcmd}"
+}
+
+# Add host (or alias whatever...) to ~/.ssh/sshpass
+_s_addhost() {
+  host="${1?first arg needs to be the full hostname}"
+  shift
+  alias="${1?the shorter alias for the host}"
+  shift
+  password="${1?second arg needs to be the password}"
+
+  # First remove any entry that might already exist
+  # if [ -f "${_s_defaultfile}" ]; then
+  # TODO: fixme
+  #sed_inplace -n "/^#BEGIN_${alias}/,/^#END_${alias}/d" "${_s_defaultfile}"
+  # fi
+
+  cat >> "${_s_defaultfile}" << FIN
+#BEGIN_${alias}
+Host ${alias}
+  Hostname ${host}
+  LocalCommand sshpass -p "${password}"
+  ControlMaster auto
+  LogLevel quiet
+  UserKnownHostsFile ${_s_defaultfile}-known-hosts
+#END_${alias}
+FIN
+}
+
+_yolo() {
+  printf "%s" "${SSHOPTS-}${SSHOPTS:+ }-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+}
+
+yolo() {
+  # Non issue in this instance, we've unit tests to prove the behavior is ok
+  #shellcheck disable=SC2155 disable=SC2030
+  (
+    export SSHOPTS="$(_yolo)"
+    "$@"
+  )
 }
 
 # Bitwarden cli wrapper stuff to make it usable as a cli and not a thing that
