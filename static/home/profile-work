@@ -154,3 +154,14 @@ hpe_gcp_ssh_config_rm() {
   gcloud config set project ${project?}
   gcloud compute config-ssh --remove --ssh-config-file "${HOME}/.ssh/config-gcp"
 }
+
+# From https://github.com/bkahlert/kill-zscaler mostly
+start_zscaler() {
+  open -a /Applications/Zscaler/Zscaler.app --hide
+  sudo find /Library/LaunchDaemons -name '*zscaler*' -exec launchctl load {} \;
+}
+
+stop_zscaler() {
+  find /Library/LaunchAgents -name '*zscaler*' -exec launchctl unload -w {} \;
+  sudo find /Library/LaunchDaemons -name '*zscaler*' -exec launchctl unload -w {} \;
+}
