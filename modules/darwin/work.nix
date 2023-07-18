@@ -98,6 +98,7 @@ in
       docker
       docker-credential-helpers
       docker-distribution
+      git-vendor
       google-cloud-sdk
       k9s
       kubectl
