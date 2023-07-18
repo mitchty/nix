@@ -493,12 +493,13 @@ _s() {
   local host=$(_s_host "$@")
   #shellcheck disable=SC2155,SC2046
   local wrapcommand=$(_s_wrapcmd "${host}")
-  #shellcheck disable=SC2155,SC2046
-  local wrapargs=$(_s_args "${fullcmd}")
 
-  if [ -z "${wrapcommand}" ]; then
+  if [ "${wrapcommand}" = "" ]; then
     ${fullcmd} "$(_yolo)" "$@"
   else
+    #shellcheck disable=SC2155,SC2046
+    local wrapargs=$(_s_args "${fullcmd}")
+
     # Meh, this is a boolean for me...
     #shellcheck disable=SC2086
     [ -n "${V}" ] && echo "${wrapcommand} ${wrapargs} $*" | sed -e 's/^ //g' >&2
@@ -525,7 +526,14 @@ _s_host() {
   elif $hasat; then
     echo "$@" | awk -F'@' '{print $NF}' | awk '{print $1}'
   else
-    echo "$@" | awk '{print $1}'
+    # skip anything starting with - as its an argument most likely use first non - word
+    #shellcheck disable=SC2068
+    for x in $@; do
+      if ! echo "${x}" | grep -q '^-'; then
+        echo "$x" | awk '{print $1}'
+        break
+      fi
+    done
   fi
 }
 

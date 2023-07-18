@@ -101,6 +101,7 @@ Describe 'lib.sh'
   # stripped at this point.
   Describe '_s_host parsing'
     Parameters
+      "-v host" host
       "user@host" host
       "user@host uptime" host
       "user@host:/dest" host
