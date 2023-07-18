@@ -74,9 +74,9 @@ hpe_gcp_fw_current() {
 
 # Append to sys gcp firewall ip address
 hpe_gcp_append_ip() {
-  sys="${1?}"
-  shift
-  ip="${1?}"
+  sys="${1?require first arg to be the system name to append to}"
+  shift || :
+  ip="${1:=$(curl -s ifconfig.me)/32}"
 
   project=$(hpe_gcp_project ${sys})
   gcloud compute --project ${project?} firewall-rules update nmn-allow-ing-ssh-trusted-any --source-ranges="$(hpe_gcp_fw_current ${project})${ip}"
@@ -101,7 +101,12 @@ hpe_gcp_remove_ip() {
 
 hpe_gcp_project() {
   sys="${1?}"
-  gcloud projects list --filter="name = hpe-${sys}-csm-livecd" --format="value(PROJECT_ID)"
+  projects=$(gcloud projects list --filter="name = hpe-${sys}-csm-livecd" --format="value(PROJECT_ID)")
+  if [ 1 -eq "$(echo ${projects} | wc -l)" ]; then
+    echo "${projects}"
+  else
+    echo "${projects}" | fzf
+  fi
 }
 
 hpe_gcp_zone() {
