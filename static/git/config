@@ -72,6 +72,7 @@
   wtr = "!git worktree list --porcelain | grep -B2 \"branch refs/heads/$1\" | head -n1 | sed -e 's|worktree ||' #"
   nwt = "!git worktree add $(git gr)@$1 $1 #"
   bwt = "!git branch $1 ${2:-HEAD} && git nwt $1 #"
+  ghwt = "!git fetch origin pull/$1/head:pr-$1; git nwt pr-$1"
   gr = "!git rev-parse --absolute-git-dir | sed -e 's|/[.]git.*||' #"
   # Pull all the commits missed from a git pull --depth N clone
   unshallow = pull --unshallow
