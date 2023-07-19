@@ -32,6 +32,8 @@
   # in case too to make future me's life sometimes easier if at work laptop
   # where I can't depend on restic backups to save me.
   nix = !git diff -u > b4.diff && git checkout flake.lock && git syn
+  # remove uncommitted crap interactively
+  rmuc = !git clean -di
   bage = for-each-ref --sort='authordate:iso8601' --format=' %(color:green)%(authordate:relative)%09%(color:white)%(refname:short)' refs/heads
   begin = !git init && git commit --allow-empty -m 'Initial empty commit'
   up = !git pull --rebase && git push
