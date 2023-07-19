@@ -9,7 +9,7 @@
     dmidecode
     dropwatch
     dstat
-    inputs.unstable.legacyPackages.${pkgs.system}.polkit
+    inputs.latest.legacyPackages.${pkgs.system}.polkit
     iotop
     jq
     linux-firmware

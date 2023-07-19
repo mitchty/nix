@@ -27,6 +27,15 @@ let
   bwcli = (pkgs.writeScriptBin "b" (builtins.readFile ../../static/src/b.sh)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
+
+  # Having issues with the unstable build of util-linux building on macos, so
+  # call "nixpkgs" the darwin package set. nixos can stay on bleeding edge
+  # stuff.
+  nixpkgs =
+    if pkgs.stdenv.isDarwin then
+      inputs.nixpkgs-darwin.legacyPackages
+    else
+      inputs.latest.legacyPackages;
 in
 {
   imports = [
@@ -53,7 +62,7 @@ in
   # TODO: should have a grouping or module setup where I can turn stuff on/off
   # aka have something to control: is this a box for streaming? if so add
   # obs-studio etc.. something akin to roles in ansible.
-  home.packages = with inputs.unstable.legacyPackages.${pkgs.system}; [
+  home.packages = with nixpkgs.${pkgs.system}; [
     (pkgs.hiPrio gcc11) # Both this and clang provide c++ executable, so prefer gcc's for no reason than because
     act
     aspell
@@ -258,8 +267,8 @@ in
   # the future holds.
   programs.gh = {
     enable = true;
-    package = inputs.unstable.legacyPackages.${pkgs.system}.gh;
-    extensions = with inputs.unstable.legacyPackages.${pkgs.system}; [
+    package = nixpkgs.${pkgs.system}.gh;
+    extensions = with nixpkgs.${pkgs.system}; [
       gh-dash
       gh-cal
     ];

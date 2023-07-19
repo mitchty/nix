@@ -3,8 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
-    master.url = "github:NixOS/nixpkgs/master";
-    unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    latest.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     mitchty.url = "github:mitchty/nixos";
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.05-darwin";
@@ -26,7 +25,6 @@
     home-manager.url = "github:nix-community/home-manager/release-23.05";
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
     deploy-rs.url = "github:serokell/deploy-rs";
     # https://github.com/ryantm/agenix/pull/141 merged so we'll run with that
@@ -34,7 +32,6 @@
     agenix.url = "github:ryantm/agenix";
     rust = {
       url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "unstable";
     };
     dnsblacklist = {
       url = "github:notracking/hosts-blocklists";
@@ -50,7 +47,7 @@
   outputs =
     inputs@{ self
     , nixpkgs
-    , unstable
+    , latest
     , mitchty
     , darwin
     , home-manager
@@ -693,7 +690,7 @@
           }];
           specialArgs = {
             inherit inputs;
-            unstable = unstable.legacyPackages.${x86-linux};
+            latest = latest.legacyPackages.${x86-linux};
           };
         };
         srv = (makeOverridable nixosSystem) {
@@ -721,7 +718,7 @@
           }];
           specialArgs = {
             inherit inputs;
-            unstable = unstable.legacyPackages.${x86-linux};
+            latest = latest.legacyPackages.${x86-linux};
           };
         };
         nexus = (makeOverridable nixosSystem) {
@@ -745,7 +742,7 @@
           }];
           specialArgs = {
             inherit inputs;
-            unstable = unstable.legacyPackages.${x86-linux};
+            latest = latest.legacyPackages.${x86-linux};
           };
         };
         cl1 = (makeOverridable nixosSystem) {
@@ -779,7 +776,7 @@
           }];
           specialArgs = {
             inherit inputs;
-            unstable = unstable.legacyPackages.${x86-linux};
+            latest = latest.legacyPackages.${x86-linux};
           };
         };
         cl2 = (makeOverridable nixosSystem) {
@@ -814,7 +811,7 @@
           }];
           specialArgs = {
             inherit inputs;
-            unstable = unstable.legacyPackages.${x86-linux};
+            latest = latest.legacyPackages.${x86-linux};
           };
         };
         cl3 = (makeOverridable nixosSystem) {
@@ -849,7 +846,7 @@
           }];
           specialArgs = {
             inherit inputs;
-            unstable = unstable.legacyPackages.${x86-linux};
+            latest = latest.legacyPackages.${x86-linux};
           };
         };
         dfs1 = nixosSystem
@@ -873,7 +870,7 @@
             }];
             specialArgs = {
               inherit inputs;
-              unstable = unstable.legacyPackages.${x86-linux};
+              latest = latest.legacyPackages.${x86-linux};
             };
           };
       };

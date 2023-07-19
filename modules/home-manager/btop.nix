@@ -1,5 +1,5 @@
 { inputs, pkgs, ... }: {
-  home.packages = with inputs.unstable.legacyPackages.${pkgs.system}; [
+  home.packages = with inputs.latest.legacyPackages.${pkgs.system}; [
     btop
   ];
 
