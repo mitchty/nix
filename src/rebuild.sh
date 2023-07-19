@@ -7,7 +7,7 @@ _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 
-set "${SETOPTS:--eu}"
+set "${SETOPTS:--u}"
 
 # Note args are just what we would pass directly into nix build or
 # darwin-rebuild... this is just an easier way to use whichever is right for
@@ -53,6 +53,6 @@ else
   done
 
   wait $!
-
-  exit $?
 fi
+
+exit $?
