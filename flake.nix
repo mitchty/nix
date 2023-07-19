@@ -106,6 +106,17 @@
                   url = "https://github.com/tyler-dodge/emacs/commit/36d2a8d5a4f741ae99540e139fff2621bbacfbaa.patch";
                   sha256 = "sha256-/hJa8LIqaAutny6RX/x6a+VNpNET86So9xE8zdh27p8=";
                 })
+                # (prev.fetchpatch {
+                #   name = "buffer-process-output-on-thread-patch";
+                #   url = "https://github.com/emacs-mirror/emacs/commit/b386047f311af495963ad6a25ddda128acc1d461.patch";
+                #   sha256 = "sha256-dRkiowEtu/oOLh29/b7VSXGKsV5qE0PxMWrox5/LRoM=";
+                # })
+                # (prev.fetchpatch {
+                #   name = "immediate-output-notification-patch";
+                #   url = "https://github.com/emacs-mirror/emacs/commit/3f49c824f23b2fa4ce5512f80abdb0888a73c4a1.patch";
+                #   sha256 = "sha256-ShQsS9ixc15cyrPGYDLxbbsgySK4JUuCSqk6+XE0U4Q=";
+                # })
+                ./patches/emacs-use-correct-window-role.patch
               ];
             });
             # Force these two even though they're outside of the org config.
