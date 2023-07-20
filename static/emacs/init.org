@@ -406,6 +406,9 @@ crap I found on github.
          (running (eq 'running flycheck-last-status-change)))
     (if (or errorp running) (format "•%s" err))))
 
+(display-battery-mode 1)
+(setq-default battery-mode-line-format "%b%p%% %t")
+
 (setq-default mode-line-format
   (list "%e"
         mode-line-front-space
@@ -415,7 +418,7 @@ crap I found on github.
                               'help-echo (concat "remote: " default-directory))))
         '(:eval (cond (buffer-read-only "ro ")
                       ((buffer-modified-p) "! ")
-                      (t "  ")))
+                      (t " ")))
         '(:eval (propertize "%12b" 'face 'mode-line-buffer-id 'help-echo default-directory))
         mode-line-front-space
         '(:eval (let* ((vc-state (if (stringp vc-mode)
@@ -453,6 +456,11 @@ crap I found on github.
                                                  'help-echo state
                                                  'face `(:foreground ,(cdr state))))
                                 )))
+        ;; Only append in the battery thingy on macos, don't have nixos/linux
+        ;; laptops... yet?
+        (if (memq window-system '(mac ns)) mode-line-front-space)
+        (if (memq window-system '(mac ns)) 'battery-mode-line-string)
+
 ))
         ;; TODO: Port this over too at some point in a boring meeting or
         ;; whatever, the examples I found for line/column number were easier to
