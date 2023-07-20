@@ -8,11 +8,11 @@ openrctoenvrc() {
 }
 
 stash() {
-  wrk try_git "https://stash.us.cray.com/scm/${1}.git" "${2:-master main develop}"
+  wrk try_git "https://stash.us.cray.com/scm/${1}.git" "${2:-}"
 }
 
 hgi() {
-  wrk try_git "https://github.hpe.com/${1}" "${2:-main master}"
+  wrk try_git "https://github.hpe.com/${1}" "${2:-}"
 }
 
 # Save on typing wrk gi ... all the time...

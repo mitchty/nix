@@ -92,7 +92,7 @@ try_git() {
   shift
   uproto=$(printf "%s" "${uri}" | grep '://' > /dev/null 2>&1 && printf "%s" "${uri}" | sed -e 's|[:]\/\/.*||g')
   proto=${uproto:-https}
-  defbranches="${1:-master main}"
+  wtbranch=${1:-}
   shift > /dev/null 2>&1
   # For wrapper functions, allow destination to be an env var iff unset and
   # nonnull and $3 is present use $3 or as a fallback use $HOME/src
@@ -108,48 +108,56 @@ try_git() {
     | sed -e 's|\:[[:digit:]]\{1,\}\/|/|g' \
     | tr -d '~')
 
-  # Loop through the def(ault)branches looking for a git repo to clone
+  # Abuse this to know if we cloned or created a worktree and cd'd into it or
+  # not.
   ocwd=$(pwd)
-  # For this function who cares about these warnings
-  # shellcheck disable=SC2116 disable=SC2086
-  for branch in $(echo ${defbranches}); do
-    # If we git clone(d) and/or changed to that dir already, don't bother
-    # looping, just break
-    [ "${ocwd}" != "$(pwd)" ] && break
 
-    if [ ! -d "${repo}" ]; then
-      if git ls-remote "${rrepo}" > /dev/null 2>&1; then
-        install -dm755 "${repo}"
-        printf "git clone %s %s\n" "${rrepo}" "${repo}" >&2
-        git clone --recursive "${rrepo}" "${repo}" || rmdir "${repo}"
-      else
-        printf "%s doesn't look to be a git repository\n" "${rrepo}" >&2
-        return 1
-      fi
+  # What dir should it end up in?
+  cdrepo="${repo}"
+
+  # The clone step.
+  if [ ! -d "${repo}" ]; then
+    if git ls-remote "${rrepo}" > /dev/null 2>&1; then
+      install -dm755 "${repo}"
+      printf "git clone %s %s\n" "${rrepo}" "${repo}" >&2
+      git clone --recursive "${rrepo}" "${repo}" || rmdir "${repo}"
+      cdrepo="${repo}"
+    else
+      printf "%s doesn't look to be a git repository\n" "${rrepo}" >&2
+      return 1
     fi
+  fi
 
-    # Treat branch(es) "master" and "main" as special branches we don't treat
-    # as workdir clone directories.
-    if [ "${branch}" != "master" ] && [ "${branch}" != "main" ]; then
-      wtdir="${repo}@${branch}"
+  # Handle if the last arg is a worktree dir or not
+  if [ -n "${wtbranch}" ]; then
+    # Find the default branch to not treat as a workspace
+    rhead=$(git ls-remote "${repo}" HEAD | awk '!/remotes/ {print $1}')
+    defbranch=$(git ls-remote "${repo}" 'refs/heads/*' | awk "/${rhead}/ {sub(/refs\/heads\//,X,\$0);print \$2}")
+
+    # Treat the defaultbranch only as not a worktree branch
+    if [ "${defbranch}" = "${wtbranch}" ]; then
+      printf "error: worktree branch %s is the default branch not creating a worktree dir\n" "${wtbranch}" >&2
+      return 1
+    else
+      # as workdir clone directories.
+      wtdir="${repo}@${wtbranch}"
+      cdrepo="${wtdir}"
+
       if [ ! -d "${wtdir}" ]; then
-        if git branch -r --list 'origin/*' | grep -E "^\s+origin/${branch}$" > /dev/null 2>&1; then
-          git worktree add "${repo}@${branch}" "${branch}"
+        if git branch -r --list 'origin/*' | grep -E "^\s+origin/${wtbranch}$" > /dev/null 2>&1; then
+          git worktree add "${repo}@${wtbranch}" "${wtbranch}"
         else
-          printf "%s at branch %s not present in repo %s\n" "${wtdir}" "${branch}" "${rrepo}" >&2
-          break
+          printf "error: branch named %s not present in repo %s\n" "${wtbranch}" "${rrepo}" >&2
+          return 1
         fi
       fi
-
-      # shellcheck disable=SC2164
-      cd "${wtdir}" && break
     fi
+  fi
 
-    if [ -d "${repo}" ]; then
-      # shellcheck disable=SC2164
-      cd "${repo}"
-    fi
-  done
+  if ! cd "${cdrepo}"; then
+    printf "error: couldn't cd to checkout %s\n" "${cdrepo}" >&2
+    return 1
+  fi
 
   # If we didn't chdir() to the ${repo} let user know.
   if [ "${ocwd}" = "$(pwd)" ] && [ "$(pwd)" != "${repo}" ]; then
@@ -162,15 +170,15 @@ try_git() {
 }
 
 mt() {
-  try_git "https://git.mitchty.net/${1}" "${2:-master}"
+  try_git "https://git.mitchty.net/${1}" "${2:-}"
 }
 
 gi() {
-  try_git "https://github.com/${1}" "${2:-master main}"
+  try_git "https://github.com/${1}" "${2:-}"
 }
 
 bb() {
-  try_git "https://bitbucket.org/${1}" "${2:-master main}"
+  try_git "https://bitbucket.org/${1}" "${2:-}"
 }
 
 # TODO Shamelessly copy/pasting from try_git, future me figure out a way to bridge the two
