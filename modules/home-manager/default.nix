@@ -102,6 +102,7 @@ in
     hyperfine
     iftop
     inputs.agenix.packages.${pkgs.system}.agenix
+    inputs.mitchty.packages.${pkgs.system}.altshfmt
     inputs.mitchty.packages.${pkgs.system}.hatools
     inputs.mitchty.packages.${pkgs.system}.hwatch
     inputs.mitchty.packages.${pkgs.system}.transcrypt

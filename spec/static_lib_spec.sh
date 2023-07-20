@@ -26,8 +26,8 @@ Describe 'lib.sh'
 
     # How bsd sed behaves with -i'' (errors all over)
     sed() {
-        printf "sed: -I or -i may not be used with stdin\n" >&2
-        return 1
+      printf "sed: -I or -i may not be used with stdin\n" >&2
+      return 1
     }
     It "detects bsd style sed correctly and outputs -i ''"
       When call _sut_sed_inplace
@@ -101,15 +101,21 @@ Describe 'lib.sh'
   # stripped at this point.
   Describe '_s_host parsing'
     Parameters
+      "-v foo.bar user@host:/tmp/blah" host
+      "-v host uptime" host
       "-v host" host
-      "user@host" host
-      "user@host uptime" host
-      "user@host:/dest" host
-      "host" host
-      "host uptime" host
-      "foo.bar user@host:/tmp/blah" host
+      "-v host:/tmp/blah" host
+      "-v user@host uptime" host
+      "-v user@host" host
+      "-v user@host:/dest" host
       "foo.bar host:/tmp/blah" host
+      "foo.bar user@host:/tmp/blah" host
+      "host uptime" host
+      "host" host
       "host:/tmp/blah" host
+      "user@host uptime" host
+      "user@host" host
+      "user@host:/dest" host
     End
     It "parses arg strings appropriately to the hostname host"
       When call _s_host "$1"
