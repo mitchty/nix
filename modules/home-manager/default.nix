@@ -105,6 +105,7 @@ in
     inputs.mitchty.packages.${pkgs.system}.altshfmt
     inputs.mitchty.packages.${pkgs.system}.hatools
     inputs.mitchty.packages.${pkgs.system}.hwatch
+    inputs.mitchty.packages.${pkgs.system}.no-more-secrets
     inputs.mitchty.packages.${pkgs.system}.transcrypt
     inputs.nixpkgs.legacyPackages.${pkgs.system}.diffoscopeMinimal
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
