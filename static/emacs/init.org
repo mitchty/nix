@@ -80,7 +80,7 @@ Use use-package to configure emacs itself.
   (backup-by-copying t)
   (auto-save-list-file-prefix temporary-file-directory)
 
-  (global-auto-revert-mode t)
+  (global-auto-revert-mode 1)
   (auto-revert-remote-files t)
   (word-wrap t)
   (default-major-mode 'text-mode)
@@ -1094,15 +1094,19 @@ TODO: need to make this not auto format on _spec.sh buffers.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package apheleia
   :ensure
+  :hook (prog-mode . apheleia-mode)
   :config
-  (dolist (formatter '((shfmt-custom     . ("shfmt" "-ci" "-p" "-i" "2" "-bn" "-sr")))
-                        nil)
+  (dolist (formatter '((shfmt-custom . ("altshfmt" "-ci" "-i" "2" "-bn" "-sr"))
+                       (nix-custom   . ("nixpkgs-fmt")))
+                       nil)
   (add-to-list #'apheleia-formatters formatter))
 
-  (dolist (mode-formatter '((emacs-lisp-mode . lisp-indent)
-                           (rust-mode        . rustfmt)
-                           (go-mode          . gofmt)
-                           (sh-mode          . shfmt-custom))
+  (dolist (mode-formatter '((c-mode         . clang-format)
+                           (emacs-lisp-mode . lisp-indent)
+                           (nix-mode        . nix-custom)
+                           (rust-mode       . rustfmt)
+                           (go-mode         . gofmt)
+                           (sh-mode         . shfmt-custom))
                          nil)
   (add-to-list #'apheleia-mode-alist mode-formatter)))
 #+END_SRC
@@ -1123,7 +1127,6 @@ Common mode defaults I think are sensible.
              (setq flycheck-highlighting-mode 'symbols)
   ;; later...
   ;;             (add-hook 'before-save-hook 'clang-format-buffer nil t)
-             (c-toggle-auto-state 1)
              (setq-default c-basic-offset 2
                            tab-width 2
                            indent-tabs-mode nil
