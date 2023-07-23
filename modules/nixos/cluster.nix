@@ -544,7 +544,7 @@ in
       enable = true;
 
       appendHttpConfig = ''
-        proxy_cache_path ${cacheDir} levels=1:2 keys_zone=cachecache:100m max_size=100g inactive=60d use_temp_path=off;
+        proxy_cache_path ${cacheDir} levels=1:2 keys_zone=cachecache:100m max_size=100g inactive=180d use_temp_path=off;
 
         map $status $cache_header {
           200     "public";
