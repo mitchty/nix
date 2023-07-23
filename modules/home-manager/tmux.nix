@@ -106,7 +106,7 @@ let
       {
         # Use caffeinate to keep the laptop(s) from sleeping during rebuild and
         # notify when done.
-        cmd = "caffeinate -si rebuild && {say rebuild done &; notify done rebuild &; wait}";
+        cmd = "caffeinate -sid rebuild && {say rebuild done &; notify done rebuild &; wait}";
         enter = false;
       }
     ];
@@ -117,7 +117,7 @@ let
     shell_command = [
       "gi mitchty/nix"
       {
-        cmd = "caffeinate -si site-update {say site update done &; notify done 'site update' &; wait}";
+        cmd = "caffeinate -sid site-update {say site update done &; notify done 'site update' &; wait}";
         enter = false;
       }
     ];
@@ -133,30 +133,6 @@ let
     window_name = "rebuild";
     panes = [ rebuild ];
   };
-
-  # nix = {
-  #   window_name = "nixdev";
-  #   panes =[
-  #     {
-  #       shell_command = [
-  #         "gi mitchty/nix"
-  #         {
-  #           cmd = "site-update";
-  #           enter = "false";
-  #         }
-  #       ];
-  #     }
-  #     {
-  #       shell_command = [
-  #         "gi mitchty/nix"
-  #         {
-  #           cmd = "rebuild";
-  #           enter = "false";
-  #         }
-  #       ];
-  #     }
-  #   ];
-  # };
 in
 rec {
   programs.tmux = {
