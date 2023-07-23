@@ -960,7 +960,9 @@
             install -dm755 $out
           '';
           shellspec = pkgs.runCommand "check-shellspec" { } ''
-            ${pkgs.shellspec}/bin/shellspec -c ${./.}
+            for shell in ${pkgs.ksh}/bin/ksh ${pkgs.oksh}/bin/ksh ${pkgs.zsh}/bin/zsh ${pkgs.bash}/bin/bash; do
+              ${pkgs.python3}/bin/python3 -c 'import pty; pty.spawn("${pkgs.shellspec}/bin/shellspec -c ${./.} --shell \$shell -x")'
+            done
             install -dm755 $out
           '';
         };
