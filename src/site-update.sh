@@ -9,6 +9,7 @@ export _base _dir
 set "${SETOPTS:--eu}"
 
 DEPLOYOPTS="${DEPLOYOPTS:-}"
+LOCALCHECK="${LOCALCHECK:-}"
 
 #shellcheck source=../static/src/lib.sh
 . ~/src/pub/github.com/mitchty/nix/static/src/lib.sh
@@ -16,7 +17,12 @@ DEPLOYOPTS="${DEPLOYOPTS:-}"
 nixossys=srv.home.arpa
 
 check() {
-  gi mitchty/nix && nix flake check --show-trace
+  checkit='gi mitchty/nix && nix flake check --show-trace'
+  if [ -z "${LOCALCHECK}" ]; then
+    eval "${checkit}"
+  else
+    ugde && ssh -t "${nixossys}" "zsh --login -i -c '${checkit}'"
+  fi
 }
 
 _deployrs() {
