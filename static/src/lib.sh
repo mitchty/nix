@@ -1,7 +1,9 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
-# Allow using local even though its not "posix"
+#
+# Allow using local even though its not "posix" can't find a relevant shell that
+# doesn't support it. Even busybox sh does so eh.
 #shellcheck disable=SC3043
 #
 # General library utility functions I end up re-writing all over the damn place
@@ -30,6 +32,8 @@ onlinux() {
   fi
 }
 
+# These aren't args really just a way to chain commands.
+#shellcheck disable=SC2120
 onmac() {
   if [ "Darwin" = "$(uname -s)" ]; then
     "$@"
@@ -207,7 +211,7 @@ try_hg() {
   # Loop through the def(ault)branches looking for a git repo to clone
   ocwd=$(pwd)
   # For this function who cares about these warnings
-  # shellcheck disable=SC2116 disable=SC2086
+  # shellcheck disable=SC2116 disable=SC2086 disable=SC2034
   for branch in $(echo ${defbranches}); do
     # If we hg clone(d) and/or changed to that dir already, don't bother
     # looping, just break
@@ -608,4 +612,58 @@ yolo() {
 # just yeets json.... such a crap cli ux.
 bw_items() {
   bw list items --search "$*"
+}
+
+# easier way to use caffeinate -sid...
+nosleep() {
+  #shellcheck disable=SC2119
+  if onmac; then
+    caffeinate -sid "$@"
+  fi
+}
+
+# TODO: pick a name, this is the lazy refusal to make a name option
+wtf() {
+  action="${1?first arg must be an action rebuild or site-update}"
+  shift
+
+  # Default site update list of stuff to update and the order to do so in
+
+  rc=0
+
+  prefix=""
+
+  #shellcheck disable=SC2119
+  if onmac; then
+    prefix="caffeinate -sid"
+  fi
+
+  case "${action}" in
+    rebuild)
+      eval "${prefix} ${action} $*"
+      rc=$?
+      ;;
+    site-update)
+      eval "${prefix} ${action} $*"
+      rc=$?
+      ;;
+    *)
+      printf "fatal: action must be rebuild or site-update not: %s\n" "${action}" >&2
+      return 1
+      ;;
+  esac
+
+  # abuse notify/say so I can hear if something went sideways on macos.
+  #shellcheck disable=SC2119
+  if onmac; then
+    if [ "${rc}" -gt 0 ]; then
+      notify failed "${action}" &
+      say "${action}" "failed" &
+    else
+      notify 'done' "${action}" &
+      say "${action}" 'done' &
+    fi
+    wait
+  fi
+  return ${rc}
 }

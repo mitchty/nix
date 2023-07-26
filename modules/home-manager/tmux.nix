@@ -104,9 +104,7 @@ let
     shell_command = [
       "gi mitchty/nix"
       {
-        # Use caffeinate to keep the laptop(s) from sleeping during rebuild and
-        # notify when done.
-        cmd = "caffeinate -sid rebuild && {say rebuild done &; notify done rebuild &; wait}";
+        cmd = "wtf rebuild";
         enter = false;
       }
     ];
@@ -117,7 +115,7 @@ let
     shell_command = [
       "gi mitchty/nix"
       {
-        cmd = "caffeinate -sid site-update {say site update done &; notify done 'site update' &; wait}";
+        cmd = "wtf site-update";
         enter = false;
       }
     ];
