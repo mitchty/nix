@@ -91,40 +91,48 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-      colima
-      dive
-      docker
-      docker-credential-helpers
-      docker-distribution
-      git-vendor
-      google-cloud-sdk
-      k9s
-      kubectl
-      kubectl-convert
-      kubent
-      (pkgs.wrapHelm pkgs.kubernetes-helm {
-        plugins = [
-          inputs.mitchty.packages.${pkgs.system}.helm-unittest
+  config = mkIf cfg.enable
+    {
+      environment.etc."hosts" = {
+        copy = true;
+        text = builtins.readFile ./etc-hosts.default + ''
+          10.103.20.28    craystack.hpc.amslabs.hpecorp.net
+        '';
+      };
+      environment.systemPackages = with pkgs;
+        [
+          colima
+          dive
+          docker
+          docker-credential-helpers
+          docker-distribution
+          git-vendor
+          google-cloud-sdk
+          k9s
+          kubectl
+          kubectl-convert
+          kubent
+          (pkgs.wrapHelm pkgs.kubernetes-helm {
+            plugins = [
+              inputs.mitchty.packages.${pkgs.system}.helm-unittest
+            ];
+          })
+          kubernetes-helm
+          kubespy
+          lima
+          pluto
+          qemu
+          yq-go
+        ] ++ [
+          coreutils
+          mkdocs
+          terragrunt_0324
+          inputs.mitchty.packages.${pkgs.system}.jira-cli
+          inputs.terraform-old.legacyPackages.${pkgs.system}.terraform
+          pandoc
+          skopeo
+          snyk
+          xlsx2csv
         ];
-      })
-      kubernetes-helm
-      kubespy
-      lima
-      pluto
-      qemu
-      yq-go
-    ] ++ [
-      coreutils
-      mkdocs
-      terragrunt_0324
-      inputs.mitchty.packages.${pkgs.system}.jira-cli
-      inputs.terraform-old.legacyPackages.${pkgs.system}.terraform
-      pandoc
-      skopeo
-      snyk
-      xlsx2csv
-    ];
-  };
+    };
 }
