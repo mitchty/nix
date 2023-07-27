@@ -5,6 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
     latest.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     mitchty.url = "github:mitchty/nixos";
+    # mitchty.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixos";
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.05-darwin";
     nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";

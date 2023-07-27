@@ -273,6 +273,7 @@ in
     extensions = with nixpkgs.${pkgs.system}; [
       gh-dash
       gh-cal
+      inputs.mitchty.packages.${pkgs.system}.gh-actions-status
     ];
   };
   programs.fzf.enable = true;
