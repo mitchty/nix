@@ -476,19 +476,24 @@ _sut_sed_inplace() {
 # So abuse eval/param expansion to make a portable-er/ish wrapper
 sed_inplace() {
   #shellspec disable=SC2119
-  ${SED:-sed} "$(_sut_sed_inplace)" "$@"
+  ${SED} "$(_sut_sed_inplace)" "$@"
 }
 
-# To make other runtime stuff simpler
-SSH="${SSH:-$(command -v ssh)}"
-SCP="${SCP:-$(command -v scp)}"
-# SSHOPTS="${SSHOPTS--o LogLevel=quiet}"
+# To make other runtime stuff simpler, note if command -v fails we just "assume"
+# we can use the bare program name. That may not be valid though. But given i'm
+# using this in systemd minimal startup environments not sure the best option,
+# until they're used its not a problem and at that point things will fail on
+# exec() of ssh anyway so not a huge loss with an rc 127 at that point.
+SED="${SED:-$(command -v sed > /dev/null 2>&1 || echo sed)}"
+SSH="${SSH:-$(command -v ssh > /dev/null 2>&1 || echo ssh)}"
+SCP="${SCP:-$(command -v scp > /dev/null 2>&1 || echo scp)}"
+SSHOPTS="${SSHOPTS--o LogLevel=quiet}"
 
 # Going to start (ab)using the V to control verbose ish output not in logging
 # frameworks.
 
 # Allow local usage for this stuff
-_s_defaultfile="${_s_defaultfile:-${HOME}/.ssh/sshpass}"
+_s_defaultfile="${_s_defaultfile:-${HOME:-~}/.ssh/sshpass}"
 
 #
 _s() {

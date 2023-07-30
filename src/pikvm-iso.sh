@@ -36,13 +36,13 @@ KVMPASS=${KVMPASS:-admin}
 # note we are calling whatever command -v curl/jq/etc.. found directly to avoid
 # recursion
 curl() {
-  printf "curl $@\n" >&2
+  printf "curl %s\n" "$*" >&2
   ${CURL} --insecure --user $KVMUSER:$KVMPASS --silent "$@"
   printf "\n" >&2
 }
 
 post() {
-  printf "post $@\n" >&2
+  printf "post %s\n" "$*" >&2
   ${CURL} -X POST --insecure --user $KVMUSER:$KVMPASS --silent "$@"
   printf "\n" >&2
 }
@@ -56,7 +56,7 @@ disconnect_drive() {
 }
 
 remove_image() {
-  post ${KVMHOST}/api/msd/remove?image="$@"
+  post ${KVMHOST}/api/msd/remove?image="$*"
 }
 
 reset_msd() {
@@ -64,11 +64,15 @@ reset_msd() {
 }
 
 write_image() {
+  # not applicable shellcheck
+  #shellcheck disable=SC2046
   post ${KVMHOST}/api/msd/write?image=$(basename "$@") -T "$@"
 }
 
 set_params_image() {
-  post "${KVMHOST}/api/msd/set_params?image=$(basename $@)&cdrom=1"
+  # not applicable shellcheck
+  #shellcheck disable=SC2046
+  post ${KVMHOST}/api/msd/set_params?image=$(basename "$@")"&cdrom=1"
 }
 
 set_connected() {

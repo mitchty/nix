@@ -2,6 +2,8 @@
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
 # Description: Lib functions for autoinstall
+# abusing the systemd env for a lot of inputs
+#shellcheck disable=SC2154 disable=SC2317
 _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
@@ -23,16 +25,16 @@ sfdisklabel() {
   shift
   ossize=${1-6GiB}
 
-if [ "gpt" = "${label}" ]; then
+  if [ "gpt" = "${label}" ]; then
     if [ 0 -eq "${index}" ] && [ "" != "${dedicated}" ]; then
-    cat << FIN
+      cat << FIN
 label: ${label}
 
 1: type= uefi, bootable
 FIN
     else
 
-    cat << FIN
+      cat << FIN
 label: ${label}
 
 1: size=${bootsize}, type= uefi, bootable
@@ -58,7 +60,7 @@ wipe_disks() {
   printf "Wiping all lvm+md setup\n" >&2
   # Nuke lv's first
   for lv in /dev/mapper/*-*; do
-    printf "removing lv %s\n" "%{lv}"  >&2
+    printf "removing lv %s\n" "%{lv}" >&2
     wipefs --all --force "${lv}" || :
     lvremove -f "${lv}" || :
   done
@@ -119,7 +121,7 @@ clear_partition_table_reboot() {
 
 # wait for each device to complete initialization/settle
 device_settle() {
-  for disk in $@; do
+  for disk in "$@"; do
     dev=$(readlink -f ${disk})
     udevadm settle "${dev}"
     for part in "${dev}"-part*; do
@@ -131,7 +133,7 @@ device_settle() {
 # If we can reboot into firmware-setup via efi do that, otherwise poweroff so
 # the usb stick/iso can be yeeted out.
 reboot_into_firmware_or_shutdown() {
-  if ! systemctl reboot --firmware-setup ; then
+  if ! systemctl reboot --firmware-setup; then
     printf "reboot into efi firmware setup failed will shutdown in 30 seconds\n" >&2
     sleep 30
     shutdown now
@@ -155,7 +157,7 @@ return
 # TODO: Stuff that needs to be ported/tdd'd n stuff
 # If anything is leftover, activate it now so we can fail later due to
 # open filehandles from lvm to lower block devices in md/sd/nvme layer.
-[ "lvm" = $flavor ] && vgchange -a n
+[ "lvm" = "${flavor}" ] && vgchange -a n
 
 # Partition setup efi only
 #
@@ -181,10 +183,10 @@ return
 idx=0
 for disk in $disks; do
   if [ 1 -eq "${wipe}" ]; then
-     wipeit="yep"
+    wipeit="yep"
   fi
-  sfdisklabel gpt ${idx} "${dedicatedboot}" "${bootsize}" "${swapsize}" 50GiB | sfdisk --force ${wipeit+--wipe always --wipe-partitions always} "${disk}"
-  idx=$((idx+1))
+  sfdisklabel gpt "${idx}" "${dedicatedboot}" "${bootsize}" "${swapsize}" 50GiB | sfdisk --force ${wipeit+--wipe always --wipe-partitions always} "${disk}"
+  idx=$((idx + 1))
 done
 
 # Do not reboot in this instance
@@ -204,7 +206,7 @@ for disk in $disks; do
   if [ "${dedicatedboot}" != "" ] && [ "$idx" = "0" ]; then
     printf "skipping dedicated boot device\n" >&2
   else
-    count=$((count+1))
+    count=$((count + 1))
 
     swappart="$disk-part2"
     ospart="$disk-part3"
@@ -212,7 +214,7 @@ for disk in $disks; do
     md0="$md0 $swappart"
     md1="$md1 $ospart"
   fi
-  idx=$((idx+1))
+  idx=$((idx + 1))
 done
 
 # Need to do this or we can get errors because "device is in use" by
@@ -223,11 +225,10 @@ udevadm control --stop-exec-queue
 # iff we only have 1 device, fake the $count to 2 and add a missing device
 rcount=$count
 if [ "$count" = 1 ]; then
-  rcount=$(( count + 1 ))
-  mdextra=" missing"
+  rcount=$((count + 1))
 fi
 mdadm --create /dev/md0 --run --level=1 --raid-devices=$rcount --metadata=1.0 $md0 missing
-if [[ "lvm" = $flavor ]]; then
+if [ "lvm" = $flavor ]; then
   mdadm --create /dev/md1 --run --level=1 --raid-devices=$rcount --metadata=1.0 $md1 missing
 fi
 udevadm control --start-exec-queue
@@ -257,7 +258,7 @@ if [ "lvm" = $flavor ]; then
   install -dm755 /mnt/var /mnt/home
   mount /dev/mapper/vgroot-lvvar /mnt/var
   mount /dev/mapper/vgroot-lvhome /mnt/home
-elif [[ "zfs" = $flavor ]]; then
+elif [ "zfs" = $flavor ]; then
   # lz4 for everything in this pool, and what would be md1 in lvm is
   # where the zpool resides
 
@@ -285,17 +286,17 @@ fi
 
 idx=0
 mirrorboots=""
-for disk in $disks; do
+for disk in ${disks}; do
   dev="$disk-part1"
   mkfs.vfat $dev
   mntpt=/mnt/boot
-  if [[ "0" != "$idx" ]]; then
+  if [ "0" != "$idx" ]; then
     mirrorboots="$mirrorboots $disk"
     mntpt="$mntpt$idx"
   fi
   install -dm755 $mntpt
   mount $dev $mntpt
-  idx=$((idx+1))
+  idx=$((idx + 1))
 done
 
 # and finally setup the mirrored boot devices
@@ -312,7 +313,7 @@ for disk in $disks; do
 
   sed -i '$i    { devices = [ "nodev" ]; path = "'$out'"; }' $nixoscfg
 
-  idx=$((idx+1))
+  idx=$((idx + 1))
 done
 sed -i '$i  ];' $nixoscfg
 
