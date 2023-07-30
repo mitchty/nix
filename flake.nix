@@ -960,6 +960,10 @@
             ${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt --check ${./.}
             install -dm755 $out
           '';
+          shellcheck = pkgs.runCommand "check-shellcheck" { } ''
+            ${pkgs.shellcheck}/bin/shellcheck --severity warning --shell sh $(find ${./.} -type f -name "*.sh") --external-sources
+            install -dm755 $out
+          '';
           shellspec = pkgs.runCommand "check-shellspec" { } ''
             for shell in ${pkgs.ksh}/bin/ksh ${pkgs.oksh}/bin/ksh ${pkgs.zsh}/bin/zsh ${pkgs.bash}/bin/bash; do
               ${pkgs.python3}/bin/python3 -c 'import pty; pty.spawn("${pkgs.shellspec}/bin/shellspec -c ${./.} --shell \$shell -x")'
