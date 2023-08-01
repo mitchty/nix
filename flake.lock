@@ -149,11 +149,11 @@
     "emacs-upstream": {
       "flake": false,
       "locked": {
-        "lastModified": 1690657857,
-        "narHash": "sha256-Y4Bn/zal5fW36eT+6cO+w8WkbF2a/w0IqGcGQRjpljk=",
+        "lastModified": 1690888984,
+        "narHash": "sha256-XNyYwbkIBMVDF3l5EX5WWU/08y6hPxtGIadvyeODoXs=",
         "owner": "emacs-mirror",
         "repo": "emacs",
-        "rev": "7da1cee56b3cc35fad7ff6f67147bb77cda6bb98",
+        "rev": "608a8757d9fa54bc2fd57180b0347931db9c46b0",
         "type": "github"
       },
       "original": {
