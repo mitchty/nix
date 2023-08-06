@@ -49,6 +49,7 @@ Use use-package to configure emacs itself.
   (setq ediff-split-window-function 'split-window-horizontally)
   (setq inhibit-startup-screen t)
   (setq enable-recursive-minibuffers t)
+  (setq native-comp-async-report-warnings-errors 'silent)
   (add-hook 'before-save-hook 'delete-trailing-whitespace)
   (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
   (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
@@ -89,7 +90,8 @@ Use use-package to configure emacs itself.
   (sentence-end-double-space nil)
   (default-tab-width 2)
   (redisplay-dont-pause t)
-  )
+  ;; we get packages from the overlay never from the internet directly
+  (package-archives ()))
 #+END_SRC
 
 *** use-package debugging
