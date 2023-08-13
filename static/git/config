@@ -140,7 +140,7 @@
 
 # Make large git repos work better by increasing the post buffer.
 [http]
-  postBuffer = 209715200
+  postBuffer = 524288000
 
 # So much junk is using it, so... just make it a default bit of the gitconfig.
 [filter "lfs"]
