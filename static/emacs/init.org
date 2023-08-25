@@ -902,6 +902,45 @@ Shows in the fringe the status of lines added/removed/modified. Seems a skosh sl
   )
 #+END_SRC
 
+*** tree-sitter
+
+Since 29.1ish or whatever has it now lets just use it for all the things new hotness and avoid ide's like the plague as is tradition.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package tree-sitter
+  :ensure
+  :config
+  (require 'tree-sitter)
+  (global-tree-sitter-mode 1))
+(use-package tree-sitter-langs
+  :after tree-sitter
+  :ensure
+  :hook
+  (tree-sitter-after-on . tree-sitter-hl-mode)
+  :config
+  (require 'tree-sitter-langs))
+(use-package tree-sitter-indent
+  :after tree-sitter
+  :ensure
+  :hook
+  ((sh-mode nix-mode go-mode rust-mode c-mode) . tree-sitter-indent-mode))
+(use-package tsc :ensure :after tree-sitter-langs)
+#+END_SRC
+
+*** eglot/lsp-mode
+
+Also start using the lsp-mode stuff in 29.x or whatever too. If it works well enough maybe flycheck goes away? Doubt it cause eglots got that correct error at point integration to do an autofix soooo future me figure it out.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package eglot
+  :ensure
+  :hook ((sh-mode go-mode rust-mode nix-mode python-mode c-mode yaml-mode dockerfile-mode markdown-mode json-mode) . eglot-ensure))
+
+(use-package lsp-mode
+  :after eglot
+  :ensure)
+#+END_SRC
+
 *** yaml-mode
 
 For.. yaml
