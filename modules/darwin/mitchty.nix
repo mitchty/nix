@@ -47,6 +47,7 @@ in
       inputs.mitchty.packages.${pkgs.system}.hidden
       inputs.mitchty.packages.${pkgs.system}.maccy
       inputs.mitchty.packages.${pkgs.system}.nheko
+      inputs.mitchty.packages.${pkgs.system}.keepingyouawake
       inputs.mitchty.packages.${pkgs.system}.obs-studio
       inputs.mitchty.packages.${pkgs.system}.stats
       inputs.mitchty.packages.${pkgs.system}.stretchly
@@ -60,9 +61,17 @@ in
       ugde
     ];
 
+    # randretry as some of these open -a runs fail for whatever reason with a
+    # NSOSStatusErrorDomain saying no eligible process with specified descriptor.
+    #
+    # But then magically it'll work. Whatever be semi-resilient and just bail if
+    # enough failures happen.
     system.activationScripts.postActivation.text = ''
+      . ${../../static/src/lib.sh}
       printf "modules/darwin/mitchty.nix: macos app shenanigans\n" >&2
-      $DRY_RUN_CMD reopen Stats Stretchly Maccy 'Hidden Bar'
+      for app in Stats Stretchly Maccy 'Hidden Bar' KeepingYouAwake; do
+        $DRY_RUN_CMD randretry 5 5 reopen "$app"
+      done
     '';
   };
 }
