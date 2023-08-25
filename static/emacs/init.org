@@ -81,8 +81,15 @@ Use use-package to configure emacs itself.
   (backup-by-copying t)
   (auto-save-list-file-prefix temporary-file-directory)
 
+  (use-dialog-box nil)
+  (history-length 50)
+  (savehist-mode 1)
+  (save-place-mode 1)
+
   (global-auto-revert-mode 1)
+  (global-auto-revert-non-file-buffers t)
   (auto-revert-remote-files t)
+
   (word-wrap t)
   (default-major-mode 'text-mode)
   (fill-column 80)
@@ -202,24 +209,6 @@ This breaks in :hook for some reason I can't be assed to figure out.
 #+END_SRC
 
 *** osx specific
-
-**** no yes-or-no gui windows
-
-On osx, don't ever display the gui dialog box. Taken from http://superuser.com/questions/125569/how-to-fix-emacs-popup-dialogs-on-mac-os-x
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(when (and on-osx (window-system))
-  (defadvice yes-or-no-p (around prevent-dialog activate)
-    "Prevent yes-or-no-p from activating a dialog"
-    (let ((use-dialog-box nil))
-      ad-do-it))
-  (defadvice y-or-n-p (around prevent-dialog-yorn activate)
-    "Prevent y-or-n-p from activating a dialog"
-    (let ((use-dialog-box nil))
-      ad-do-it))
-  )
-#+END_SRC
-
 **** make osx gui emacs keyboard setup match console
 
 Command should be meta on cocoa emacs like the old carbon/macports version.
