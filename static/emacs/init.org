@@ -19,7 +19,9 @@ Use use-package to configure emacs itself.
   :demand t
   :bind (("C-x ," . kill-whole-line)
          ("C-x %" . query-replace)) ;; because modern macos has yeeted this away from me...
-  :hook ((prog-mode text-mode org-mode) . hl-line-mode)
+  :hook
+  ((prog-mode text-mode org-mode) . hl-line-mode)
+  ((after-init) . recentf-mode)
   :config
   (setq-default debug-on-error t)
   (setq-default bidi-paragraph-direction 'left-to-right)
@@ -66,6 +68,8 @@ Use use-package to configure emacs itself.
   (set-selection-coding-system 'utf-8)
   (prefer-coding-system 'utf-8)
   :custom
+  (recentf-max-menu-items 15)
+  (recentf-max-saved-items 100)
   (locale-coding-system 'utf-8)
   (frame-inhibit-implied-resize t)
   (inhibit-startup-echo-area-message t)
@@ -146,18 +150,25 @@ FUTURE MITCH DO NOT ADD *text-mode* or magit will get the minimap too probably a
   (minimap-window-location 'left))
 #+END_SRC
 
-*** TESTING theme
+*** recentf setup
+
+Note that the defaults for this are setup in the emacs package.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package init-open-recentf
+  :ensure
+  :after emacs
+  ;; :custom (init-open-recentf-interface 'counsel)
+  :config (init-open-recentf))
+#+END_SRC
+
+*** theme setup
 
 Sick of solarized, going back to good old black on white minimalism like paper. Also note auto-dark is macos only.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package zenburn-theme
-  :ensure
-  :config (load-theme 'zenburn t))
-
-(use-package minimal-theme
-  :ensure
-  :config (load-theme 'minimal-light t))
+(use-package zenburn-theme :ensure)
+(use-package minimal-theme :ensure)
 
 (use-package auto-dark
   :if (memq window-system '(mac ns))
@@ -165,10 +176,6 @@ Sick of solarized, going back to good old black on white minimalism like paper. 
   :ensure
   :defer
   :init
-  ;; Its wack but if I don't have light go first some random face gets a grey color.
-  (load-theme 'minimal-light t)
-  (load-theme 'zenburn t)
-  (load-theme 'minimal-light t)
   (auto-dark-mode)
   :custom
   (auto-dark--dark-theme 'zenburn)
@@ -178,16 +185,6 @@ Sick of solarized, going back to good old black on white minimalism like paper. 
 *** whitespace
 
 Customize whitespace mode to make tabs obvious as boxes, and to highlight lines over 80 characters in length.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package hl-line
-  :after org
-  :ensure
-  :defer
-  :hook ((prog-mode text-mode org-mode) . hl-line-mode)
-  :custom-face
-  (hl-line ((t (:background "#ffc0cb")))))
-#+END_SRC
 
 This breaks in :hook for some reason I can't be assed to figure out.
 
