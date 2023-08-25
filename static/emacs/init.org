@@ -240,8 +240,7 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
 *** focus on current text
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package dimmer
-  :ensure t)
+(use-package dimmer :ensure)
 #+END_SRC
 
 *** fonts setup
@@ -345,6 +344,20 @@ If editorconfig is around use it.
   :config
   (add-to-list 'tramp-default-proxies-alist '(".*" "\`root\'" "/ssh:%h:"))
   )
+#+END_SRC
+
+*** envrc-mode
+
+Direnv and *.envrc* integration/automagic stuff in emacs too.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package envrc
+  :defer
+  :ensure
+  :diminish envrc-mode
+  :commands envrc-global-mode
+  :init
+  (envrc-global-mode))
 #+END_SRC
 
 *** exec-path-from-shell
