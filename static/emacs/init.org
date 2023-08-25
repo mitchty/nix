@@ -919,11 +919,6 @@ Since 29.1ish or whatever has it now lets just use it for all the things new hot
   (tree-sitter-after-on . tree-sitter-hl-mode)
   :config
   (require 'tree-sitter-langs))
-(use-package tree-sitter-indent
-  :after tree-sitter
-  :ensure
-  :hook
-  ((sh-mode nix-mode go-mode rust-mode c-mode) . tree-sitter-indent-mode))
 (use-package tsc :ensure :after tree-sitter-langs)
 #+END_SRC
 
@@ -936,9 +931,13 @@ Also start using the lsp-mode stuff in 29.x or whatever too. If it works well en
   :ensure
   :hook ((sh-mode go-mode rust-mode nix-mode python-mode c-mode yaml-mode dockerfile-mode markdown-mode json-mode) . eglot-ensure))
 
-(use-package lsp-mode
-  :after eglot
-  :ensure)
+(use-package lsp-mode :after eglot :ensure)
+
+(use-package flycheck-eglot
+  :ensure
+  :after (flycheck eglot)
+  :config
+  (global-flycheck-eglot-mode 1))
 #+END_SRC
 
 *** yaml-mode
