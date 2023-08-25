@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+#-*-mode: Shell-script; coding: utf-8;-*-
+# SPDX-License-Identifier: BlueOak-1.0.0
+# Description: macos only reopen command to make close+open -a apps easy peasy.
+if [ $# -lt 1 ]; then
+  printf "usage: %s app_name\n" "$0" >&2
+  exit 1
+fi
+
+set -e
+
+for app in "$@"; do
+  printf "reopening: %s\n" "${app}" >&2
+  osascript << END
+tell application "${app}"
+    quit
+end tell
+END
+
+  # note -j so the app(s) are hidden by default as this is called non
+  # interactively so no good in having an app jump to the front of the line.
+  open -j -a "${app}"
+done

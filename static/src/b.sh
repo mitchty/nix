@@ -34,12 +34,12 @@ copy() {
 }
 
 wait_and_junk_to_clipboard() {
-  printf "type any key to clear clipboard of %s" "$@" >&2
-  # n/a i'm just using read as an interactive nonsense thing piss off shellcheck
-  # this isn't a problem i'm not even using the read data...
+  printf "clear macos clipboard of %s data" "$@" >&2
+  # Not applicable I'm just using read as an interactive nonsense thing piss
+  # off, this isn't a problem I'm not even using the read data...
   #shellcheck disable=SC2162
   read
-  echo "clearing" | pbcopy
+  echo "the sound of silence" | pbcopy
 }
 
 matches=$(bw_items "$@")
@@ -63,4 +63,4 @@ for thing in "username" "password"; do
   copy "${thing}" "${login}"
 done
 
-wait_and_junk_to_clipboard "whatever is left"
+wait_and_junk_to_clipboard "remainders"

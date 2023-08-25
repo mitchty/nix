@@ -96,6 +96,7 @@ in
     git-vendor
     gitFull
     gnumake
+    graphviz
     gron
     gnupg1
     htop

@@ -22,6 +22,10 @@ let
   ugde = (pkgs.writeScriptBin "ugde" (builtins.readFile ../../static/src/ugde.sh)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
+
+  reopen = (pkgs.writeScriptBin "reopen" (builtins.readFile ../../static/src/reopen)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
 in
 {
   options = {
@@ -39,6 +43,9 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       # TODO: Gotta make my nixos flake an overlay, future me problem.
+      inputs.mitchty.packages.${pkgs.system}.clocker
+      inputs.mitchty.packages.${pkgs.system}.hidden
+      inputs.mitchty.packages.${pkgs.system}.maccy
       inputs.mitchty.packages.${pkgs.system}.nheko
       inputs.mitchty.packages.${pkgs.system}.obs-studio
       inputs.mitchty.packages.${pkgs.system}.stats
@@ -49,15 +56,13 @@ in
       close
       gohome
       notify
+      reopen
       ugde
     ];
 
     system.activationScripts.postActivation.text = ''
-      printf "modules/darwin/mitchty.nix: macos shenanigans\n" >&2
-      $DRY_RUN_CMD install -dm755 $VERBOSE_ARG ~/.cache/swiftbar
-      $DRY_RUN_CMD close stats
-      $DRY_RUN_CMD pkill nettop || :
-      $DRY_RUN_CMD open -a /Applications/Nix\ Apps/Stats.app
+      printf "modules/darwin/mitchty.nix: macos app shenanigans\n" >&2
+      $DRY_RUN_CMD reopen Stats Stretchly Maccy 'Hidden Bar'
     '';
   };
 }

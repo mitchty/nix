@@ -111,6 +111,7 @@ in
           k9s
           kubectl
           kubectl-convert
+          kubectl-doctor
           kubent
           (pkgs.wrapHelm pkgs.kubernetes-helm {
             plugins = [
@@ -121,6 +122,7 @@ in
           kubespy
           lima
           pluto
+          helmfile
           qemu
           yq-go
         ] ++ [
