@@ -81,6 +81,7 @@ in
             Battery_mini_position = 1;
             Battery_processes = 10;
             Battery_timeFormat = "long";
+            Battery_updateInterval = 10;
             Battery_widget = "battery_details";
             CPU_barChart_position = 4;
             CPU_label_position = 1;
