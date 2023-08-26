@@ -14,6 +14,7 @@
   - https://ryantm.github.io/nixpkgs/functions/library/strings/
   - https://wiki.nikitavoloboev.xyz/operating-systems/linux/nixos
   - https://stephank.nl/p/2020-06-01-a-nix-primer-by-a-newcomer.html
+  * https://ertt.ca/nix/patch-nixpkgs/
 
   NixOS option search, for when you want to know what you can set.
   https://search.nixos.org/options
@@ -41,16 +42,16 @@
 clear; nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .
 #+end_src
 
-   Or use the wrapper function in [[file:static/home/profile][.profile]]:
+   Or use the wrapper function+script in [[file:static/src/lib.sh][lib.sh]] and [[file:src/rebuild.zsh][rebuild]] script:
 
 #+begin_src shell
-rebuild
+wtf rebuild
 #+end_src
 
    To run a deploy without running *nix flake check*:
 
 #+begin_src shell
-CHECK=false rebuild check
+CHECK=anyvalue wtf rebuild
 #+end_src
 
 And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Aka that without builder setup cannot deploy to a macos system from linux. This is on my TODO list to fix at some point.
@@ -69,6 +70,15 @@ And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Ak
    - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use.
 
 * Todo's
+** Fonts
+
+Add or try em?
+
+https://www.fontget.com/font/among-us
+https://www.fontget.com/font/among-us-filled/
+https://www.monolisa.dev/
+https://github.com/intel/intel-one-mono
+
 ** Linode
 
 Need to get vps using nix as well now that 22.11 has image build support.
