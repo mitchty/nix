@@ -102,6 +102,7 @@ Use use-package to configure emacs itself.
   (sentence-end-double-space nil)
   (default-tab-width 2)
   (redisplay-dont-pause t)
+  (vc-handled-backends '(Git))
   ;; we get packages from the overlay never from the internet directly
   (package-archives ()))
 #+END_SRC
