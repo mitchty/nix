@@ -64,6 +64,21 @@ in
     system = {
       defaults = {
         CustomUserPreferences = {
+          "info.marcel-dierkes.KeepingYouAwake" = {
+            "info.marcel-dierkes.KeepingYouAwake.AllowDisplaySleep" = true;
+          };
+          "org.p0deje.Maccy" = {
+            SUSendProfileInfo = false;
+            pasteByDefault = false;
+            SUEnableAutomaticChecks = false;
+            clearSystemClipboard = true;
+          };
+          "net.hovancik.stretchly" = {
+            NSFullScreenMenuItemEverywhere = false;
+            AppleTextDirection = true;
+            NSForceRightToLeftWritingDirection = false;
+            NSTreatUnknownArgumentsAsOpen = "NO";
+          };
           "eu.exelban.Stats" = {
             "sensor_Average System Total" = false;
             "sensor_Fastest Fan" = true;
