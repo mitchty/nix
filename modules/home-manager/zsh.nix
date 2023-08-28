@@ -35,6 +35,7 @@ in
     # Probably need to put more in here
     shellAliases = {
       edirs = "ls -d **/*(/^F)"; # empty directories
+      dl = "cd ~/Desktop && noglob yt-dlp --";
     };
 
     # Maybe make these uppercase? Meh been fine so far
