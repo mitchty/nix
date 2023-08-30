@@ -36,6 +36,7 @@ in
     shellAliases = {
       edirs = "ls -d **/*(/^F)"; # empty directories
       dl = "cd ~/Desktop && noglob yt-dlp --";
+      eod = "mt mitchty/org && git add journal && git ci -m \"journal: $(date +%Y-%b-%d)\"";
     };
 
     # Maybe make these uppercase? Meh been fine so far
