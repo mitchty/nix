@@ -24,9 +24,11 @@ wgi() {
 # have so it can fall through to the cli if its not known. That way this acts
 # like a fancy alias with extra features.
 j() {
+  args=$@
+
   if [ "todo" = "$1" ]; then
     shift
-    args="issue list -a "$(jira me)" --plain --jql 'project IS NOT EMPTY AND status not in (Closed,Done)' --no-headers --columns KEY,TYPE,STATUS,SUMMARY"
+    args="issue list -a "$(jira me)" --plain --jql 'project is not empty and status not in (Closed,Done)' --no-headers --columns KEY,TYPE,STATUS,SUMMARY"
   elif [ "unassign" = "$1" ]; then
     shift
     args="issue assign $1 x"
@@ -58,13 +60,14 @@ j() {
     shift
     args="issue view --comments 10000 --plain $1"
   else
-    args=$@
+    jira $*
   fi
 
   # TODO: Evil eval hack, future me don't be so lazy but meh.
-  eval "jira ${args}"
+  jira ${args}
 }
 
+# Note I largely (ab)used https://stackoverflow.com/questions/62356589/how-to-use-gcloud-cli-to-update-firewall-rules-to-append-new-ip-addresses-to-sou for this nonsense and it woiks.
 # Get current firewall ips as a comma delimited list
 hpe_gcp_fw_current() {
   project="${1?}"
@@ -115,21 +118,45 @@ hpe_gcp_zone() {
 }
 
 # spits out the gcloud ssh nonsense if wanted
-hpe_gcp_ssh() {
-  sys="${1?}"
+_hpe_gcp_ssh() {
+  sys="${1?need a system to ssh to}"
+  shift
   project=$(hpe_gcp_project ${sys})
   zone=$(hpe_gcp_zone ${sys})
 
-  printf "gcloud compute --project %s ssh root@pit --zone=%s\n" "${project?}" "${zone?}"
+  printf "gcloud compute --project %s ssh root@pit --zone=%s -- %s\n" "${project?}" "${zone?}" "$@"
 }
 
 # spits out the gcloud scp nonsense if wanted
-hpe_gcp_scp() {
-  sys="${1?}"
+_hpe_gcp_scp() {
+  sys="${1?need a system to scp to}"
+  shift
   project=$(hpe_gcp_project ${sys})
   zone=$(hpe_gcp_zone ${sys})
 
-  printf "gcloud compute --project %s scp root@pit --zone=%s\n" "${project?}" "${zone?}"
+  lhs="${1?need a lhs to copy from/to}"
+  shift
+  rhs="${1?need a rhs to copy from/to}"
+
+  # The shorthand here is whichever of the lhs/rhs start with an : determines
+  # what gcloud scp command we output to cover :remote local and local :remote
+  # cases, if neither just bail as user error.
+  if echo "${lhs}" | grep -q '^:'; then
+    printf "gcloud compute --project %s scp root@pit%s %s --zone=%s\n" "${project?}" "${lhs}" "${rhs}" "${zone?}"
+  elif echo "${rhs}" | grep -q '^:'; then
+    printf "gcloud compute --project %s scp %s root@pit%s --zone=%s\n" "${project?}" "${lhs}" "${rhs}" "${zone?}"
+  else
+    printf "Need at least one arg that specifies a remote destination with :\n" >&2
+    return 1
+  fi
+}
+
+hpe_gcp_ssh() {
+  eval $(_hpe_gcp_ssh "$@")
+}
+
+hpe_gcp_scp() {
+  eval $(_hpe_gcp_scp "$@")
 }
 
 # Setup ~/.ssh/config-gcp with this project
