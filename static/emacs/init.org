@@ -56,9 +56,8 @@ Use use-package to configure emacs itself.
   (add-hook 'before-save-hook 'delete-trailing-whitespace)
   (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
   (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
+  (add-hook 'after-init-hook (function (lambda () (make-directory temporary-file-directory :parents))))
   (put 'upcase-region 'disabled nil)
-
-  (make-directory temporary-file-directory :parents)
 
   (delete-selection-mode 1)
 
@@ -505,12 +504,6 @@ crap I found on github.
 Switching to ivy mode+swiper
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package projectile
-  :defer
-  :ensure
-  :config
-  (projectile-global-mode))
-
 (use-package counsel
   :ensure
   :bind (("C-x C-f" . counsel-find-file)
@@ -524,7 +517,6 @@ Switching to ivy mode+swiper
   (counsel-find-file-at-point t))
 
 (use-package swiper
-  :diminish
   :ensure
   :bind (("C-s" . swiper)
          ("M-x" . counsel-M-x))
@@ -930,7 +922,7 @@ Also start using the lsp-mode stuff in 29.x or whatever too. If it works well en
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package eglot
   :ensure
-  :hook ((sh-mode go-mode rust-mode nix-mode python-mode c-mode yaml-mode dockerfile-mode markdown-mode json-mode) . eglot-ensure))
+  :hook ((sh-mode go-mode rust-mode nix-mode python-mode c-mode cc-mode yaml-mode dockerfile-mode markdown-mode json-mode) . eglot-ensure))
 
 (use-package lsp-mode :after eglot :ensure)
 
@@ -975,10 +967,8 @@ So I write gooder. Me fail English? Thats unpossible.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package rust-mode
-  :diminish rust-mode
-  :commands rust-mode
   :ensure
-  )
+  :commands rust-mode)
 
 (use-package rustic
   :after eglot
@@ -1416,12 +1406,6 @@ Ref:
   (setq fancy-dabbrev-expansion-on-preview-only t)
   (setq fancy-dabbrev-indent-command 'tab-to-tab-stop)
   (setq fancy-dabbrev-no-expansion-for '(multiple-cursors-mode magit-mode org-mode)))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package eglot
-  :ensure
-  :hook ((python-mode cc-mode go-mode nix-mode yaml-mode rust-mode) . eglot-ensure))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle no
