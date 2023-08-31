@@ -528,6 +528,21 @@ Switching to ivy mode+swiper
   (ivy-use-virtual-buffers t)
   (ivy-height 10)
   (ivy-count-format "(%d/%d) "))
+
+(use-package projectile
+  :ensure
+  :custom
+  (projectile-cache-file (concat temporary-file-directory "/projectile.cache"))
+  (projectile-known-projects-file (concat temporary-file-directory "/projectile.projects"))
+  (projectile-enable-caching t)
+  ;; (projectile-globally-ignored-files (quote ("TAGS" "GTAGS" "result")))
+  :config
+  (projectile-global-mode))
+
+(use-package counsel-projectile
+  :ensure
+  :after counsel
+  :config (counsel-projectile-mode))
 #+END_SRC
 
 *** magit
