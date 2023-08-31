@@ -5,10 +5,13 @@
 # basically this is an exec wrapper to turn that off for "thing" then turn it
 # back on after.
 
+revert() {
+  defaults write org.p0deje.Maccy ignoreEvents false
+}
+
+trap revert EXIT TERM INT QUIT
+
 # As that "thing" can fail we don't care if it errors so no set -e
 defaults write org.p0deje.Maccy ignoreEvents true
-"$@"
-rc=$?
-defaults write org.p0deje.Maccy ignoreEvents false
 
-exit "${rc}"
+eval "$*"
