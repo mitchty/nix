@@ -11,6 +11,10 @@ let
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
 
+  nopb = (pkgs.writeScriptBin "nopb" (builtins.readFile ../../static/src/nopb)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+
   notify = (pkgs.writeScriptBin "notify" (builtins.readFile ../../static/src/notify)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
@@ -56,6 +60,7 @@ in
       inputs.mitchty.packages.${pkgs.system}.wireshark
       close
       gohome
+      nopb
       notify
       reopen
       ugde
