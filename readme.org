@@ -70,10 +70,44 @@ And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Ak
    - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use.
 
 * Todo's
+** Macos
+
+Nice lists of open source stuff to poke at someday.
+https://github.com/serhii-londar/open-source-mac-os-apps
+https://github.com/jaywcjlove/awesome-mac
+
+** Macos Emacs
+
+Try out more patches from here? https://tdodge.consulting/blog/living-the-emacs-garbage-collection-dream
+
+https://github.com/tyler-dodge/emacs/commit/b386047f311af495963ad6a25ddda128acc1d461.patch
+
+Some interesting org packages here.
+https://github.com/chrisbarrett/nursery
+
+Some interesting macos integration ideas.
+https://xenodium.com/emacs-macos-sharing-dwim-style-improved/
+https://github.com/xenodium/dwim-shell-command/commit/20e782b4bf1ea01fecfce3cc8ac4c5a74518cd80
+
+Need to try out xwidget support and nov-xwidget on macos
+https://macowners.club/posts/using-xwidgets-on-macos/
+and
+https://github.com/chenyanming/nov-xwidget
+
+Also need to start abusing anki+org notes for cards
+https://yiufung.net/post/anki-org/
+
+And explore this for org notes to auto get graphviz images into docs.
+https://orgmode.org/worg/org-contrib/babel/languages/ob-doc-dot.html
+
+Set this up?
+https://en.liujiacai.net/2022/11/26/oh-my-github-1-0/
+
 ** Fonts
 
 Add or try em?
 
+https://input.djr.com/info/
 https://www.fontget.com/font/among-us
 https://www.fontget.com/font/among-us-filled/
 https://www.monolisa.dev/
