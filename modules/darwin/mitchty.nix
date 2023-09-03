@@ -62,6 +62,7 @@ in
       gohome
       nopb
       notify
+      multitail
       reopen
       ugde
     ];
@@ -82,7 +83,7 @@ in
             NSFullScreenMenuItemEverywhere = false;
             AppleTextDirection = true;
             NSForceRightToLeftWritingDirection = false;
-            NSTreatUnknownArgumentsAsOpen = "NO";
+            NSTreatUnknownArgumentsAsOpen = false;
           };
           "eu.exelban.Stats" = {
             "sensor_Average System Total" = false;
@@ -186,11 +187,6 @@ in
       };
     };
 
-    # Following line should allow us to avoid a logout/login cycle
-    system.activationScripts.postUserActivation.text = ''
-      /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
-    '';
-
     # randretry as some of these open -a runs fail for whatever reason with a
     # NSOSStatusErrorDomain saying no eligible process with specified descriptor.
     #
@@ -202,6 +198,21 @@ in
       for app in Stats Stretchly Maccy 'Hidden Bar' KeepingYouAwake; do
         $DRY_RUN_CMD randretry 5 5 reopen "$app"
       done
+    '';
+
+    # Following should allow us to avoid a logout/login cycle to disable
+    # CMD-% or shift-command-5, but it doesn't always work ungh.
+    # plutil -extract AppleSymbolicHotKeys.184.enabled raw ~/Library/Preferences/com.apple.symbolichotkeys.plist
+    # https://assert.cc/posts/maybe-dont-script-macos-prefs/
+    #
+    # maybe osascript?
+    # https://apple.stackexchange.com/questions/13598/updating-modifier-key-mappings-through-defaults-command-tool
+    # https://apple.stackexchange.com/questions/201816/how-do-i-change-mission-control-shortcuts-from-the-command-line
+    system.activationScripts.postUserActivation.text = ''
+      printf "modules/darwin/mitchty.nix: login related changes (may require a login/logout cycle if it doesn't work)\n" >&2
+      plutil -replace AppleSymbolicHotKeys.184.enabled -bool NO ~/Library/Preferences/com.apple.symbolichotkeys.plist
+      /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings
+      /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
     '';
   };
 }

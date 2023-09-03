@@ -2,10 +2,12 @@
   imports = [
     ./bootstrap.nix
     ../../hosts/nix-basic.nix
-    ./restic.nix
-    ./nix-index.nix
-    ./mitchty.nix
     ./home.nix
+    ./mitchty.nix
+    ./mutagen.nix
+    ./nix-index.nix
+    ./restic.nix
+    ./syncthing.nix
     ./work.nix
   ];
 

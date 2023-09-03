@@ -17,8 +17,7 @@ Use use-package to configure emacs itself.
 (use-package emacs
   :ensure
   :demand t
-  :bind (("C-x ," . kill-whole-line)
-         ("C-x %" . query-replace)) ;; because modern macos has yeeted this away from me...
+  :bind ("C-x ," . kill-whole-line)
   :hook
   ((prog-mode text-mode org-mode) . hl-line-mode)
   ((after-init) . recentf-mode)
@@ -66,7 +65,9 @@ Use use-package to configure emacs itself.
   (set-keyboard-coding-system 'utf-8)
   (set-selection-coding-system 'utf-8)
   (prefer-coding-system 'utf-8)
+  (tooltip-mode -1)
   :custom
+  (tooltip-use-echo-area t)
   (recentf-max-menu-items 15)
   (recentf-max-saved-items 100)
   (locale-coding-system 'utf-8)
@@ -120,7 +121,7 @@ Cause the macros *use-packge* can generate are... not entirely easy to debug. Th
         ("C-c C-e" . macrostep-expand)))
 #+END_SRC
 
-View epub's in emacs directly
+View epub's in emacs directly https://depp.brause.cc/nov.el/
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package nov
@@ -726,10 +727,10 @@ Try out org journal https://github.com/bastibe/org-journal
 (use-package org-journal
   :ensure
   :defer
-  :init
-  (setq org-journal-prefix-key "C-c j ")
-  :config
-  (setq org-journal-dir (concat org-directory "/journal")
+  :bind ("M-g j" . org-journal-new-entry)
+  :custom
+  (org-journal-prefix-key "C-c j ")
+  (org-journal-dir (concat org-directory "/journal")
         org-journal-date-format "%A, %d %B %Y"))
 #+END_SRC
 
@@ -880,7 +881,7 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
   )
 #+END_SRC
 
-*** TESTING diff-hl
+*** diff-hl
 
 Shows in the fringe the status of lines added/removed/modified. Seems a skosh slow.
 
@@ -1376,14 +1377,6 @@ Probably need to check if this file exists first...
 
 Stuff thats getting tested...
 
-Puts all tooltips in the echo arear.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(tooltip-mode -1)
-(custom-set-variables
- '(tooltip-use-echo-area t))
-#+END_SRC
-
 Giving this osx library a go, since I tend to only run gooey emacs on macos generally might as well make using the emacs on it a bit easier to use the say command and/or throw up notifications etc...
 url: https://github.com/raghavgautam/osx-lib
 
@@ -1421,22 +1414,6 @@ Ref:
   (setq fancy-dabbrev-expansion-on-preview-only t)
   (setq fancy-dabbrev-indent-command 'tab-to-tab-stop)
   (setq fancy-dabbrev-no-expansion-for '(multiple-cursors-mode magit-mode org-mode)))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package reformatter
-  :defer
-  :ensure
-  :config
-  (progn
-   (defvar shfmt-args '("-ci" "-p" "-i" "2" "-bn" "-sr")
-     "shfmt default args")
-   (reformatter-define shfmt
-                       :program "shfmt"
-                       :args shfmt-args))
- (defun shfmtstuff()
-   (unless (or (eq sh-shell 'zsh) (string-match-p "_spec.sh" (buffer-file-name)))
-     (shfmt-on-save-mode))))
 #+END_SRC
 
 ref: https://github.com/Malabarba/emacs-google-this

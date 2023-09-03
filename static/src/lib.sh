@@ -672,3 +672,28 @@ wtf() {
   fi
   return ${rc}
 }
+
+# A simple file rotation scheme, rotate N times for file(s).
+#
+# Basically rm file.N mv file.N-1 file.N .... then for file -> file.0 copy but
+# then truncate file.
+rotatelog() {
+  lim="${1:?Need a limit to support}"
+  shift
+
+  for file in "$@"; do
+    idx=${lim}
+
+    until [ "${idx}" -eq 0 ]; do
+      prev=$((idx - 1))
+      if [ -e "${file}.${prev}" ]; then
+        mv "${file}.${prev}" "${file}.${idx}"s
+      fi
+      idx=$((idx - 1))
+      if [ "${idx}" -eq 0 ]; then
+        cp "${file}" "${file}.0"
+        : > "${file}"
+      fi
+    done
+  done
+}

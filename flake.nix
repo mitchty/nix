@@ -653,12 +653,10 @@
               enable = true;
               repo = "s3:http://dfs1.home.arpa:8333/restic";
             };
-            services.mitchty = {
-              enable = true;
-            };
-            services.home = {
-              enable = true;
-            };
+            services.home.enable = true;
+            services.mitchty.enable = true;
+            services.mutagen.enable = true;
+            services.syncthing.enable = true;
           }];
         };
         wmb = darwinSystem {

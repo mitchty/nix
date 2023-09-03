@@ -4,6 +4,9 @@ with lib;
 
 let
   cfg = config.services.restic;
+  name = "restic";
+  label = "net.mitchty";
+  fulllabel = "${label}.${name}";
   # Backup fragment only applicable to macos for the wrapper restic backup junk
   #
   # All this fragment does is uses mdfind to find stuff tagged with "don't back me up"
@@ -74,18 +77,27 @@ in
           Path to backup, defaults to ~/$HOME
         '';
       };
+
+      package = mkOption {
+        default = pkgs.restic;
+        defaultText = "pkgs.restic";
+        description = "Which restic derivation to use";
+        type = types.package;
+      };
     };
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [ restic ];
+    environment.systemPackages = with pkgs; [ cfg.package ];
     launchd.user.agents.restic-backup = {
       script = ''
         #!/bin/bash
         # Note: /bin/bash so that I can add /bin/bash in security so
         # ~/Desktop... can be backed up via launchd
         #-*-mode: Shell-script; coding: utf-8;-*-
-        : > ${cfg.logDir}/restic-backup-stderr.log
+        ${pkgs.coreutils}/bin/install -Ddm755 ${cfg.logDir}/${label}/${name}.backup
+        . ${../../static/src/lib.sh}
+        rotatelog 5 ${cfg.logDir}/${label}/${name}.backup/stderr.log ${cfg.logDir}/${label}/${name}.backup/stdout.log
 
         # Don't bother backing up if we're not on a/c
         if command -v pmset > /dev/null 2>&1 && ! pmset -g ps | grep AC > /dev/null 2>&1; then
@@ -132,16 +144,16 @@ in
         printf 'fin\n' >&2
         exit 0
       '';
-      path = [ pkgs.restic pkgs.moreutils pkgs.coreutils pkgs.gnugrep ];
+      path = [ config.environment.systemPath pkgs.moreutils pkgs.coreutils pkgs.gnugrep ];
 
       # low priority io cause the backup doesn't need to take precedence for any i/o operations
       serviceConfig = {
-        Label = "net.mitchty.restic-backup";
+        Label = "${fulllabel}.backup";
         LowPriorityIO = true;
         ProcessType = "Adaptive";
         RunAtLoad = true;
-        StandardErrorPath = "${cfg.logDir}/restic-backup-stderr.log";
-        StandardOutPath = "${cfg.logDir}/restic-backup.log";
+        StandardErrorPath = "${cfg.logDir}/${label}/${name}.backup/stderr.log";
+        StandardOutPath = "${cfg.logDir}/${label}/${name}.backup/stdout.log";
         StartInterval = 3600;
       };
     };
@@ -149,7 +161,9 @@ in
       script = ''
         #!${pkgs.bash}
         #-*-mode: Shell-script; coding: utf-8;-*-
-        : > ${cfg.logDir}/restic-prune-stderr.log
+        ${pkgs.coreutils}/bin/install -Ddm755 ${cfg.logDir}/${label}/${name}.prune
+        . ${../../static/src/lib.sh}
+        rotatelog 5 ${cfg.logDir}/${label}/${name}.prune/stderr.log ${cfg.logDir}/${label}/${name}.prune/stdout.log
 
         if [ ! -f ${config.age.secrets."restic/env.sh".path} ]; then
           printf "fatal: cannot find env file\n" >&2
@@ -168,16 +182,16 @@ in
         printf 'fin\n' >&2
         exit 0
       '';
-      path = [ pkgs.restic pkgs.moreutils pkgs.coreutils pkgs.gnugrep ];
+      path = [ config.environment.systemPath pkgs.moreutils pkgs.coreutils pkgs.gnugrep ];
 
       # low priority io cause the backup doesn't need to take precedence for any i/o operations
       serviceConfig = {
-        Label = "net.mitchty.restic-prune";
+        Label = "${fulllabel}.prune";
         LowPriorityIO = true;
         ProcessType = "Background";
         RunAtLoad = false;
-        StandardErrorPath = "${cfg.logDir}/restic-prune-stderr.log";
-        StandardOutPath = "${cfg.logDir}/restic-prune.log";
+        StandardErrorPath = "${cfg.logDir}/${label}/${name}.prune/stderr.log";
+        StandardOutPath = "${cfg.logDir}/${label}/${name}.prune/stdout.log";
         StartInterval = 36000;
       };
     };
