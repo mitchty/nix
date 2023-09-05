@@ -48,6 +48,7 @@ in
     environment.systemPackages = with pkgs; [
       # TODO: Gotta make my nixos flake an overlay, future me problem.
       inputs.mitchty.packages.${pkgs.system}.clocker
+      inputs.mitchty.packages.${pkgs.system}.ferdium
       inputs.mitchty.packages.${pkgs.system}.hidden
       inputs.mitchty.packages.${pkgs.system}.maccy
       inputs.mitchty.packages.${pkgs.system}.nheko
