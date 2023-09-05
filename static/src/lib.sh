@@ -686,12 +686,11 @@ rotatelog() {
 
     until [ "${idx}" -eq 0 ]; do
       prev=$((idx - 1))
-      prevfile="${file}.${prev}"
-      if [ -e "${prevfile}" ] && [ -n "${prevfile}" ]; then
-        mv "${file}.${prev}" "${file}.${idx}"
+      if [ -e "${file}.${prev}" ]; then
+        mv "${file}.${prev}" "${file}.${idx}"s
       fi
       idx=$((idx - 1))
-      if [ "${idx}" -eq 0 ] && [ -n "${file}" ]; then
+      if [ "${idx}" -eq 0 ]; then
         cp "${file}" "${file}.0"
         : > "${file}"
       fi

@@ -9,6 +9,17 @@ let
     start_directory = "~/";
   };
 
+  # TODO: need to nix-ify the syncthing setup I have
+  syncthing = {
+    window_name = "syncthing";
+    panes = [{
+      shell_command = [
+        "pkill syncthing; syncthing"
+      ];
+      sleep_before = sleepDefault;
+    }];
+  };
+
   initial = {
     window_name = "sh";
     panes = [ "pane" ];
@@ -146,19 +157,21 @@ rec {
   home.file.".config/tmuxp/mb.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "mb";
-    windows = [ initial rebuildall ];
+    windows = [ initial syncthing rebuildall ];
   });
 
+  # TODO: Get syncthing into a user systemd unit or something
   home.file.".config/tmuxp/srv.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "srv";
-    windows = [ initial btop ];
+    windows = [ initial syncthing btop ];
   });
 
+  # TODO: Get syncthing into a user systemd unit or something
   home.file.".config/tmuxp/nexus.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "nexus";
-    windows = [ initial btop ];
+    windows = [ initial syncthing btop ];
   });
 
   home.file.".config/tmuxp/wmb.yml".text = (lib.generators.toYAML { } {
