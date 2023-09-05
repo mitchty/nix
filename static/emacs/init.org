@@ -892,6 +892,14 @@ Shows in the fringe the status of lines added/removed/modified. Seems a skosh sl
   (global-diff-hl-mode))
 #+END_SRC
 
+*** hl-indent
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package hl-indent
+  :ensure
+  :hook ((sh-mode go-mode rust-mode nix-mode python-mode c-mode cc-mode yaml-mode dockerfile-mode markdown-mode json-mode) . hl-indent-mode))
+#+END_SRC
+
 *** git gutter
 
 #+BEGIN_SRC emacs-lisp :tangle no
