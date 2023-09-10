@@ -42,6 +42,17 @@ let
     }];
   };
 
+  journal = {
+    window_name = "mt/org";
+    layout = "even-vertical";
+    panes = [{
+      shell_command = [
+        "mt mitchty/org"
+      ];
+      sleep_before = sleepDefault;
+    }];
+  };
+
   nixos = {
     window_name = "gh/nixos";
     layout = "even-vertical";
@@ -157,7 +168,7 @@ rec {
   home.file.".config/tmuxp/mb.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "mb";
-    windows = [ initial syncthing rebuildall ];
+    windows = [ initial syncthing rebuildall journal ];
   });
 
   # TODO: Get syncthing into a user systemd unit or something
@@ -177,6 +188,6 @@ rec {
   home.file.".config/tmuxp/wmb.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "wmb";
-    windows = [ initial rebuildlocal wip ];
+    windows = [ initial rebuildlocal journal wip ];
   });
 }
