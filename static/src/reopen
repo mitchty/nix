@@ -17,7 +17,18 @@ tell application "${app}"
 end tell
 END
 
-  # note -j so the app(s) are hidden by default as this is called non
-  # interactively so no good in having an app jump to the front of the line.
-  open -j -a "${app}"
+  # Some of these gooey apps seem to start then fail but restarting works, so
+  # leat the caller know if the restart didn't result in the app running.
+  lim=0
+  until pgrep -lf "${app}" > /dev/null 2>&1; do
+    # note -j so the app(s) are hidden by default as this is called non
+    # interactively so no good in having an app jump to the front of the line.
+    open -j -a "${app}"
+
+    sleep 3
+    lim=$((lim + 1))
+    if [ "${lim}" -gt 3 ]; then
+      exit 1
+    fi
+  done
 done
