@@ -439,6 +439,8 @@
 
       # Make age.secrets = a bit simpler with some defined variables
       homeUser = "mitch";
+      homeGroup = "users";
+
       workUser = "tishmack";
       rootUser = "root";
 
@@ -656,7 +658,7 @@
             services.home.enable = true;
             services.mitchty.enable = true;
             services.mutagen.enable = true;
-            services.syncthing.enable = true;
+            services.shared.syncthing.enable = true;
           }];
         };
         wmb = darwinSystem {
@@ -687,7 +689,7 @@
           ] ++ [{
             users = {
               primaryUser = homeUser;
-              primaryGroup = "users";
+              primaryGroup = homeGroup;
             };
             age.secrets = ageHomeNixos homeUser // wifiSecrets rootUser;
             services.role = {
@@ -710,7 +712,7 @@
           ] ++ [{
             users = {
               primaryUser = homeUser;
-              primaryGroup = "users";
+              primaryGroup = homeGroup;
             };
             age.secrets = ageHomeNixosWithBackup homeUser;
             services.role = {
@@ -723,7 +725,11 @@
               nixcache.enable = true;
               prometheus.enable = true;
               promtail.enable = true;
-              syncthing.enable = true;
+            };
+            services.shared.syncthing = {
+              enable = true;
+              user = homeUser;
+              group = homeGroup;
             };
           }];
           specialArgs = {
@@ -738,7 +744,7 @@
           ] ++ [{
             users = {
               primaryUser = homeUser;
-              primaryGroup = "users";
+              primaryGroup = homeGroup;
             };
             age.secrets = ageHomeNixosWithBackup homeUser;
             services.role = {
@@ -747,7 +753,11 @@
               mosh.enable = true;
               node-exporter.enable = true;
               promtail.enable = true;
-              syncthing.enable = true;
+            };
+            services.shared.syncthing = {
+              enable = true;
+              user = homeUser;
+              group = homeGroup;
             };
           }];
           specialArgs = {
@@ -762,7 +772,7 @@
           ] ++ [{
             users = {
               primaryUser = homeUser;
-              primaryGroup = "users";
+              primaryGroup = homeGroup;
             };
             age.secrets = ageHomeNixos homeUser;
             services.role = {
@@ -796,7 +806,7 @@
           ] ++ [{
             users = {
               primaryUser = homeUser;
-              primaryGroup = "users";
+              primaryGroup = homeGroup;
             };
             age.secrets = ageHomeNixos homeUser;
             services.role = {
@@ -831,7 +841,7 @@
           ] ++ [{
             users = {
               primaryUser = homeUser;
-              primaryGroup = "users";
+              primaryGroup = homeGroup;
             };
             age.secrets = ageHomeNixos homeUser;
             services.role = {
@@ -867,7 +877,7 @@
             ] ++ [{
               users = {
                 primaryUser = homeUser;
-                primaryGroup = "users";
+                primaryGroup = homeGroup;
               };
               age.secrets = ageHomeNixos homeUser;
               services.role = {

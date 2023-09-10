@@ -30,6 +30,6 @@ in
     ./prometheus.nix
     ./promtail.nix
     ./router.nix
-    ./syncthing.nix
+    ../shared/default.nix
   ];
 }
