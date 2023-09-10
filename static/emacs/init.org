@@ -892,9 +892,17 @@ Shows in the fringe the status of lines added/removed/modified. Seems a skosh sl
   (global-diff-hl-mode))
 #+END_SRC
 
-*** hl-indent
+*** TODO highlight indentation setup
+
+hl-indent has issues in light mode I don't wanna deal with try highlight-indent-guides instead.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
+(use-package highlight-indent-guides
+  :ensure
+  :hook (prog-mode . highlight-indent-guides-mode))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package hl-indent
   :ensure
   :hook ((sh-mode go-mode rust-mode nix-mode python-mode c-mode cc-mode yaml-mode dockerfile-mode markdown-mode json-mode) . hl-indent-mode))
