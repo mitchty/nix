@@ -5,7 +5,6 @@
     ../shared/default.nix
     ./home.nix
     ./mitchty.nix
-    ./mutagen.nix
     ./nix-index.nix
     ./restic.nix
     ./work.nix
