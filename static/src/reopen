@@ -25,8 +25,9 @@ END
     # interactively so no good in having an app jump to the front of the line.
     open -j -a "${app}"
 
-    sleep 3
     lim=$((lim + 1))
+    sleep ${lim}
+
     if [ "${lim}" -gt 3 ]; then
       exit 1
     fi
