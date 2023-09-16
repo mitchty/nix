@@ -59,9 +59,6 @@ in
           rotatelog 5 ${cfg.logDir}/${label}/${name}/stderr.log ${cfg.logDir}/${label}/${name}/stdout.log
 
           # Stop any existing daemon if present
-          pkill ${name} || :
-
-          # Stop any existing daemon if present
           ${cfg.package}/bin/${name} daemon stop || :
 
           #
