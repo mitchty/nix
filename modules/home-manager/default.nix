@@ -63,8 +63,8 @@ in
   # aka have something to control: is this a box for streaming? if so add
   # obs-studio etc.. something akin to roles in ansible.
   home.packages = with nixpkgs.${pkgs.system}; [
-    (pkgs.hiPrio gcc11) # Both this and clang provide c++ executable, so prefer gcc's for no reason than because
     act
+    gcc11
     aspell
     aspellDicts.de
     aspellDicts.en
@@ -74,7 +74,7 @@ in
     aspellDicts.pt_PT
     bind
     bitwarden-cli
-    clang
+    (pkgs.hiPrio clang)
     clang-tools
     coreutils
     curl
@@ -151,7 +151,6 @@ in
     silver-searcher
     sipcalc
     sshpass
-    syncthing
     tldr
     unzip
     vim
@@ -263,9 +262,8 @@ in
     # This can't get shut off so nbd
     $DRY_RUN_CMD killall -KILL SystemUIServer
 
-    # Prevent bluetooth headphones from opening or mess with itunes
-    $DRY_RUN_CMD launchctl stop com.apple.rcd || :
-    $DRY_RUN_CMD launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist || :
+    # With notunes now turning this back on will nuke it soon
+    $DRY_RUN_CMD launchctl load -w /System/Library/LaunchAgents/com.apple.rcd.plist || :
   '');
 
   # Programs not (yet) worthy of their own .nix setup... so far who knows what
