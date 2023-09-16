@@ -657,8 +657,8 @@
             };
             services.home.enable = true;
             services.mitchty.enable = true;
-            services.mutagen.enable = true;
-            services.shared.syncthing.enable = true;
+            services.shared.mutagen.enable = true;
+            services.shared.syncthing.enable = false;
           }];
         };
         wmb = darwinSystem {
@@ -727,6 +727,11 @@
               promtail.enable = true;
             };
             services.shared.syncthing = {
+              enable = false;
+              user = homeUser;
+              group = homeGroup;
+            };
+            services.shared.mutagen = {
               enable = true;
               user = homeUser;
               group = homeGroup;
@@ -755,6 +760,11 @@
               promtail.enable = true;
             };
             services.shared.syncthing = {
+              enable = false;
+              user = homeUser;
+              group = homeGroup;
+            };
+            services.shared.mutagen = {
               enable = true;
               user = homeUser;
               group = homeGroup;

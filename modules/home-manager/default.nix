@@ -216,6 +216,8 @@ in
       source = ../../static/src/lib.sh;
       recursive = true;
     };
+    # Setup the default mutagen ignore list/config
+    ".mutagen.yml".source = ../../static/home/mutagen.yaml;
   };
 
   # Todo: have a mkmerge mkIf section for macos only stuff in general?

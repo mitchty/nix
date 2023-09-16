@@ -1,0 +1,14 @@
+sync:
+  defaults:
+    ignore:
+      paths:
+        - ".direnv"
+        - ".#*"
+        - "*.desktop"
+        - "result"
+        - "*.sync-conflict-*"
+        - ".DS_Store"
+        - ".directory"
+        - "*.swp"
+        - ".terraform"
+      vcs: false
