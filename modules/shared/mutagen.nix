@@ -57,11 +57,6 @@ in
           ${pkgs.coreutils}/bin/install -Ddm755 ${cfg.logDir}/${label}/${name}
           . ${../../static/src/lib.sh}
           rotatelog 5 ${cfg.logDir}/${label}/${name}/stderr.log ${cfg.logDir}/${label}/${name}/stdout.log
-
-          # Stop any existing daemon if present
-          ${cfg.package}/bin/${name} daemon stop || :
-
-          #
           exec ${cfg.package}/bin/${name} daemon start
         '';
         path = [ config.environment.systemPath ];
@@ -80,6 +75,7 @@ in
     }))
     (optionalAttrs (options ? systemd.services) (mkIf (pkgs.hostPlatform.isLinux) {
       environment.systemPackages = [ cfg.package ];
+
       systemd.services.${name} = {
         enable = true;
         wantedBy = [ "default.target" ];
