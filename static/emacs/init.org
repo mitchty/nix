@@ -730,6 +730,8 @@ Try out org journal https://github.com/bastibe/org-journal
   :bind ("M-g j" . org-journal-new-entry)
   :custom
   (org-journal-prefix-key "C-c j ")
+  (org-journal-find-file 'find-file)
+  (org-journal-file-format "%Y%m%d.org")
   (org-journal-dir (concat org-directory "/journal")
         org-journal-date-format "%A, %d %B %Y"))
 #+END_SRC
