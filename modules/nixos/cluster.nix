@@ -105,10 +105,6 @@ let
 
   constraints = builtins.toFile "constraints.xml" ''
     <constraints>
-      <rsc_order id="order-cat" first="canaryvip" then="cat" kind="Mandatory"/>
-      <rsc_colocation id="colocate-cat" rsc="canaryvip" with-rsc="cat" score="INFINITY"/>
-      <rsc_colocation id="colocate-maint" rsc="canaryvip" with-rsc="maint" score="INFINITY"/>
-
       <rsc_order id="order-samba" first="nasvip" then="samba" kind="Mandatory"/>
       <rsc_colocation id="colocate-samba" rsc="nasvip" with-rsc="samba" score="INFINITY"/>
 
@@ -117,6 +113,9 @@ let
 
       <rsc_order id="order-nginx" first="cachevip" then="nginx" kind="Mandatory"/>
       <rsc_colocation id="colocate-nginx" rsc="cachevip" with-rsc="nginx" score="INFINITY"/>
+
+      <rsc_order id="order-cat" first="canaryvip" then="cat" kind="Mandatory"/>
+      <rsc_colocation id="colocate-cat" rsc="canaryvip" with-rsc="cat" score="INFINITY"/>
     </constraints>
   '';
 
@@ -233,7 +232,7 @@ let
 
   nfsPorts = [ 111 2049 config.services.nfs.server.statdPort config.services.nfs.server.lockdPort config.services.nfs.server.mountdPort ];
 
-  garagePorts = [ 3901 3902 ];
+  garagePorts = [ 3900 3901 3902 ];
 in
 {
   options.services.role.cluster = {
@@ -512,7 +511,7 @@ in
     };
 
     # Ok so this is jank af but we have to 'enable' the samba module, so that
-    # the systemd service is define and not masked and wants to run. BUT if we
+    # the systemd service is defined and not masked and is able to run. BUT if we
     # set enable = mkForce false at the systemd level that gets the service
     # masked and can't be started by pacemaker. Which is annoying af. However,
     # if we force wantedBy to be empty, systemd won't start the service. Which
@@ -527,7 +526,7 @@ in
       "d ${cachePrefix} 0755 ${nginxCfg.user} ${nginxCfg.group}"
       "d ${cacheDir} 0755 ${nginxCfg.user} ${nginxCfg.group}"
       "d ${rootDir} 0755 ${nginxCfg.user} ${nginxCfg.group}"
-      "d /data/garage 0755 ${services.garage.user} ${services.garage.group}"
+      "d /data/garage 0755 ${systemd.services.garage.serviceConfig.User} ${systemd.services.garage.serviceConfig.Group}"
     ];
 
     # So I'm trying out pacemaker *just* starting a systemd unit, this will be
@@ -610,11 +609,12 @@ in
     };
 
     fileSystems = {
-      # Because garagefs can't seme to have more than 1 data folder... fake it with mergerfs
+      # Because garagefs can't seem to have more than 1 data folder... fake it with mergerfs
       #
       # TBD: How often should mergerfs rebalance data? Figure this out when/if I
       # start using this in earnest.
       "/data/disks" = {
+        depends = [ "/data/disk/0" ];
         device = "/data/disk/0"; # When adding new disks add :/data/disk/N:/data/disk/N+1 etc....
         fsType = "fuse.mergerfs";
         options = [
@@ -625,29 +625,73 @@ in
           "dropcacheonclose=true"
           "category.create=epmfs"
           "nofail"
+          "uid=2000,gid=2000"
         ];
+      };
+    };
+
+    users = {
+      users.garage = {
+        isSystemUser = true;
+        description = "Garagefs user";
+        home = "/dev/null";
+        createHome = false;
+        shell = pkgs.zsh;
+        group = "garage";
+        uid = 2000;
+      };
+      groups.garage.gid = 2000;
+    };
+
+    systemd.services.garage = {
+      requires = [ "data-disks.mount" ];
+      serviceConfig = {
+        User = "garage";
+        Group = "garage";
+        DynamicUser = lib.mkForce false;
+      };
+      environment = {
+        RUST_LOG = "debug";
       };
     };
 
     services.garage = {
       enable = true;
       logLevel = "debug";
+      package = pkgs.garage_0_8;
       settings = {
-        rpc_bind_addr = "[::]:3901";
-        rpc_secret = "testsecretsupercerealsecretnobodywilltotesknowitforsure";
+        bootstrap_peers = [
+          "3dff9b2df766dffe91c99fffc3854459d09e4a5eb7906ce6c3e39a073eda590d@10.254.128.1:3901"
+          "8372374eb8550066b34ce937e4494bcf160506079b398e28cf8ac4d1595c2a75@10.254.128.2:3901"
+          "5c76107bde3deab22948550b70497a04de5d44ec6fc430971c3a2733876aa651@10.254.128.3:3901"
+        ];
+        rpc_bind_addr = "0.0.0.0:3901";
+        rpc_public_addr = "${(builtins.head config.networking.interfaces.vlan100.ipv4.addresses).address}:3901";
+        # Migrate the actual thing to an age secret file once this all works
+        rpc_secret = "97cf75317d13d32a558e3cecd639c62ac0d132f6775dfe45b5729f675098efff";
+        # Ends up on zfs which is on nvme storage so metadata updates is fastish
+        # or at least fast compared to spinning rust
         metadata_dir = "/data/garage";
-        data_dir = "/data/disks/garage";
-        replication_mode = 3;
+        # This is the mergerfs fs above that merges /data/disk/N ->
+        # /data/disks so I can expand capacity without recreating a node
+        # Removals gonna be a bitch but eh if something fails its an event anyway.
+        data_dir = "/data/disks";
+        replication_mode = 2;
+        db_engine = "lmdb";
+        block_size = 1048576;
+        compression_level = -99;
         s3_api = {
           s3_region = "garage";
-          api_bind_addr = "[::]:3900";
-          root_domain = ".home.arpa";
+          api_bind_addr = "0.0.0.0:3900";
+          root_domain = "cluster.home.arpa";
         };
-
         s3_web = {
-          bind_addr = "[::]:3902";
-          root_domain = ".home.arpa";
+          bind_addr = "0.0.0.0:3902";
+          root_domain = "cluster.home.arpa";
           index = "index.html";
+        };
+        admin = {
+          api_bind_addr = "127.0.0.1:3903";
         };
       };
     };
