@@ -9,18 +9,27 @@ fi
 
 set -e
 
-for app in "$@"; do
+all=$#
+
+reopen() {
+  app=${1?need a name}
   printf "reopening: %s\n" "${app}" >&2
   osascript << END
 tell application "${app}"
     quit
 end tell
 END
+}
 
+is_running() {
+  pgrep -lf "${app}" > /dev/null 2>&1
+}
+
+check_if_running() {
   # Some of these gooey apps seem to start then fail but restarting works, so
   # leat the caller know if the restart didn't result in the app running.
-  lim=0
-  until pgrep -lf "${app}" > /dev/null 2>&1; do
+  lim=3
+  until is_running; do
     # note -j so the app(s) are hidden by default as this is called non
     # interactively so no good in having an app jump to the front of the line.
     open -j -a "${app}"
@@ -28,8 +37,28 @@ END
     lim=$((lim + 1))
     sleep ${lim}
 
-    if [ "${lim}" -gt 3 ]; then
+    if [ "${lim}" -eq 0 ]; then
       exit 1
     fi
   done
+}
+
+running=""
+
+for app in "$@"; do
+  ok=0
+
+  while
+    if ! echo "${running}" | grep -q "${app}"; then
+      reopen "${app}"
+      check_if_running "${app}"
+    fi
+
+    if is_running; then
+      ok=$((ok + 1))
+      running="${running} ${app}"
+    fi
+
+    [ ${ok} -eq ${all} ]
+  do :; done
 done
