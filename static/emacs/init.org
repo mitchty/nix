@@ -719,7 +719,7 @@ Validate that this installs from scratch fine, blocking babel executions is ass.
 (use-package ob-async :after org :ensure)
 #+END_SRC
 
-**** TODO org-journal                                            :validation:
+**** org-journal                                                 :validation:
 
 Try out org journal https://github.com/bastibe/org-journal
 
@@ -866,13 +866,15 @@ Make buffer names unique based on their directory and not have <N> or other nons
 (custom-set-variables '(uniquify-buffer-name-style 'post-forward))
 #+END_SRC
 
-*** super-save
+*** TODO super-save
 
-REMOVE ME && TODO IF THIS WORKS
+Ok so super save is kinda sus, with eglot+auto format on saves I'm getting competing writes and ending up with garbage at the end of some rust files. ITS THE DUMBEST THING EVER.
+
+So for now lets turn it off entirely, can go back to old school always save defensively.
 
 Saves buffers like with auto-save but on focus loss, when idle etc...
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package super-save
   :diminish
   :ensure
