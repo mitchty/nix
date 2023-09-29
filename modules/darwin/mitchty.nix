@@ -52,6 +52,7 @@ in
       inputs.mitchty.packages.${pkgs.system}.hidden
       inputs.mitchty.packages.${pkgs.system}.maccy
       inputs.mitchty.packages.${pkgs.system}.nheko
+      inputs.mitchty.packages.${pkgs.system}.notunes
       inputs.mitchty.packages.${pkgs.system}.keepingyouawake
       inputs.mitchty.packages.${pkgs.system}.obs-studio
       inputs.mitchty.packages.${pkgs.system}.stats
@@ -196,9 +197,7 @@ in
     system.activationScripts.postActivation.text = ''
       . ${../../static/src/lib.sh}
       printf "modules/darwin/mitchty.nix: macos app shenanigans\n" >&2
-      for app in Stats Stretchly Maccy 'Hidden Bar' KeepingYouAwake; do
-        $DRY_RUN_CMD randretry 5 5 reopen "$app"
-      done
+      $DRY_RUN_CMD reopen Stats Stretchly Maccy 'Hidden Bar' KeepingYouAwake noTunes
     '';
 
     # Following should allow us to avoid a logout/login cycle to disable
@@ -209,9 +208,11 @@ in
     # maybe osascript?
     # https://apple.stackexchange.com/questions/13598/updating-modifier-key-mappings-through-defaults-command-tool
     # https://apple.stackexchange.com/questions/201816/how-do-i-change-mission-control-shortcuts-from-the-command-line
+    #
+    # GGGGGGGGAAAAAAHAHHHHH y no worky all time
     system.activationScripts.postUserActivation.text = ''
       printf "modules/darwin/mitchty.nix: login related changes (may require a login/logout cycle if it doesn't work)\n" >&2
-      plutil -replace AppleSymbolicHotKeys.184.enabled -bool NO ~/Library/Preferences/com.apple.symbolichotkeys.plist
+      # plutil -replace AppleSymbolicHotKeys.184.enabled -bool false ~/Library/Preferences/com.apple.symbolichotkeys.plist
       /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings
       /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
     '';
