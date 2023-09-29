@@ -88,6 +88,7 @@ in
     fio
     (pkgs.hiPrio go) # Ensure this is the go to use in case of collision
     gist
+    git-absorb
     git-extras
     git-lfs
     git-quick-stats
@@ -112,6 +113,7 @@ in
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
     inputs.rust.packages.${pkgs.system}.rust
     inputs.nixinit.packages.${pkgs.system}.default
+    inputs.deploy-rs.packages.${pkgs.system}.deploy-rs
     ipcalc
     ipinfo
     ispell
