@@ -60,7 +60,9 @@
   ri = rebase --interactive --autosquash
   ra = rebase --abort
   effit = reset --hard
+  # Both of these work to get the current branch name (if any), not sure which is best
   bn = rev-parse --abbrev-ref HEAD
+  cb = branch --show-current
   cp = log --no-merges --cherry --graph --oneline
   short = rev-parse --short
   # git clone with submodules
@@ -80,12 +82,18 @@
   unshallow = pull --unshallow
   # Set the origin to not allow pushing, to be on the safe side.
   nopush = remote set-url --push origin no_push
-  # default remote, note depends on the repo having been git cloned
-  defremote = !git branch -rvv | egrep 'HEAD' | awk '{print $1}' | sed -e 's|/HEAD||g'
+  # default remote, note depends on the repo having been git cloned and not
+  # being in a detached HEAD state.
+  # Which of these two to use? Second is my total hack of a thing that worked on
+  # ancient git, former is more new hotness. Since first ones one command and I
+  # save 3 exec()'s gonna prefer that. Leaving old n busted here just in case.
+  # Future me swap back to old if its problematic somehow.
+  defremote = !sh -c "git branch --list $(git cb) --format='%(upstream:remotename)'"
+  # defremote = !git branch -rvv | egrep 'HEAD' | awk '{print $1}' | sed -e 's|/HEAD||g'
   # push branch while setting the upstream to the default remote
   pbr = !git push --set-upstream $(git defremote) $(git bn)
   # ^^^ but forcefully, with a lease just in case
-  pbrf = !git push --set-upstream --force-with-lease $(git defremote) $(git bn)
+  pbrf = !git push --force-with-lease --set-upstream $(git defremote) $(git bn)
   # what files are getting updated a lot descending output
   churn = !git log --all -M -C --name-only --format='format:' "$@" | sort | grep -v '^$' | uniq -c | sort -r | awk 'BEGIN {print "count,file"} {print $1 "," $2}' | grep -Ev '^\\s+$'
   # My defremote hack depends on $remote/HEAD to point to somewhere
