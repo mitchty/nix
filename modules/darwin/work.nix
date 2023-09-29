@@ -108,29 +108,31 @@ in
           docker-distribution
           git-vendor
           google-cloud-sdk
+          helmfile
           k9s
           kubectl
           kubectl-convert
           kubectl-doctor
           kubent
+          kubernetes-helm
+          kubespy
+          lima
+          pluto
+          qemu
+          skaffold
+          yq-go
+        ] ++ [
           (pkgs.wrapHelm pkgs.kubernetes-helm {
             plugins = [
               inputs.mitchty.packages.${pkgs.system}.helm-unittest
             ];
           })
-          kubernetes-helm
-          kubespy
-          lima
-          pluto
-          helmfile
-          qemu
-          yq-go
         ] ++ [
           coreutils
           mkdocs
           terragrunt_0324
           inputs.mitchty.packages.${pkgs.system}.jira-cli
-          inputs.terraform-old.legacyPackages.${pkgs.system}.terraform
+          # inputs.terraform-old.legacyPackages.${pkgs.system}.terraform
           pandoc
           skopeo
           snyk

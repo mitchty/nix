@@ -39,7 +39,7 @@
       flake = false;
     };
 
-    terraform-old.url = "github:NixOS/nixpkgs/8c909dd2613323a939c90efddd089c88c0536fbf";
+    # terraform-old.url = "github:NixOS/nixpkgs/8c909dd2613323a939c90efddd089c88c0536fbf";
 
     # the nixpkgs it ships doesn't compile bash on darwin from what I can find.
     nixinit.url = "github:nix-community/nix-init";
@@ -61,7 +61,7 @@
     , dnsblacklist
     , flake-utils
     , nixpkgs-pacemaker
-    , terraform-old
+      # , terraform-old
     , nixinit
     , ...
     }:
