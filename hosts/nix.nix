@@ -10,12 +10,12 @@
   # Until nix 2.4 is shipped in a version of nixos, bit of hacks to get things
   # to work.
   nix = {
-    # Cleanup old generations we likely don't need, only on nixos though
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 14d";
-    };
+    # Cleanup old generations we likely don't need, only on nixos though on hold
+    # gc = {
+    #   automatic = true;
+    #   dates = "weekly";
+    #   options = "--delete-older-than 14d";
+    # };
 
     settings = {
       substituters = [
@@ -33,7 +33,7 @@
     extraOptions = ''
       fallback = true
       binary-caches-parallel-connections = 100
-      auto-optimise-store = true
+      auto-optimise-store = false
       experimental-features = nix-command flakes
     '';
   };
