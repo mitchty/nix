@@ -14,6 +14,12 @@
 Use use-package to configure emacs itself.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
+(defun my/display-startup-timing()
+  (message "emacs startup took %s, gc also ran %d times."
+           (format "%.2f seconds"
+                   (float-time
+                    (time-subtract after-init-time before-init-time)))
+           gcs-done))
 (use-package emacs
   :ensure
   :demand t
@@ -29,10 +35,16 @@ Use use-package to configure emacs itself.
   (show-paren-mode)
   (load "server")
   (unless (server-running-p) (server-start))
-  (defun my-minibuffer-setup-hook ()
-    (setq gc-cons-threshold most-positive-fixnum))
-  (defun my-minibuffer-exit-hook ()
-    (setq gc-cons-threshold 8000000))
+  ;; Note, we set the gc threshold high at startup to improve perf there and
+  ;; save gc's, in after-init we reduce that back down so interactive usage is
+  ;; ok and there are less long gc pauses interactively.
+  (setq gc-cons-threshold (* 8 1000 1000))
+  (add-hook 'after-init-hook (function (lambda () (setq gc-cons-threshold (* 2 1000 1000)))))
+
+  (setq gc-cons-threshold most-positive-fixnum)
+  ;; 1MiB, helps out lsp mode stuffs a skosh
+  (setq read-process-output-max (* 1024 1024))
+
   (defun string/ends-with (string suffix)
     "Return t if STRING ends with SUFFIX."
     (and (string-match (rx-to-string `(: ,suffix eos) t)
@@ -44,8 +56,6 @@ Use use-package to configure emacs itself.
     "Am I running under osx?")
   (defvar on-linux (string-match "gnu/linux" (symbol-name system-type))
     "Am I running under linux?")
-  (add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
-  (add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
   (fset 'yes-or-no-p 'y-or-n-p)
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (setq ediff-split-window-function 'split-window-horizontally)
@@ -53,9 +63,11 @@ Use use-package to configure emacs itself.
   (setq enable-recursive-minibuffers t)
   (setq native-comp-async-report-warnings-errors 'silent)
   (add-hook 'before-save-hook 'delete-trailing-whitespace)
+  (add-hook 'emacs-startup-hook #'my/display-startup-timing)
   (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
   (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
   (add-hook 'after-init-hook (function (lambda () (make-directory temporary-file-directory :parents))))
+
   (put 'upcase-region 'disabled nil)
 
   (delete-selection-mode 1)
