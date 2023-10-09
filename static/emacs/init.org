@@ -170,9 +170,14 @@ Note that the defaults for this are setup in the emacs package.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package init-open-recentf
   :ensure
-  :after emacs
+  :after emacs no-littering
   ;; :custom (init-open-recentf-interface 'counsel)
-  :config (init-open-recentf))
+  :config
+  (add-to-list 'recentf-exclude
+               (recentf-expand-file-name no-littering-var-directory))
+  (add-to-list 'recentf-exclude
+               (recentf-expand-file-name no-littering-etc-directory))
+  (init-open-recentf))
 #+END_SRC
 
 *** theme setup
@@ -1383,7 +1388,7 @@ Probably need to check if this file exists first...
 * TESTING
 
 Stuff thats getting tested...
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package no-littering :ensure :custom (create-lockfiles nil))
 #+END_SRC
 
