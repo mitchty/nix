@@ -1383,6 +1383,9 @@ Probably need to check if this file exists first...
 * TESTING
 
 Stuff thats getting tested...
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package no-littering :ensure :custom (create-lockfiles nil))
+#+END_SRC
 
 Giving this osx library a go, since I tend to only run gooey emacs on macos generally might as well make using the emacs on it a bit easier to use the say command and/or throw up notifications etc...
 url: https://github.com/raghavgautam/osx-lib
