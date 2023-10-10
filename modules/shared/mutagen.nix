@@ -49,21 +49,24 @@ in
     (optionalAttrs (options ? launchd.user.agents) (mkIf (pkgs.hostPlatform.isDarwin) {
       environment.systemPackages = [ cfg.package ];
       launchd.user.agents.${name} = {
-        script = ''
-          #!/bin/bash
-          # Note: /bin/bash so that I can add /bin/bash in security so
-          # ~/Desktop... can be backed up via launchd
-          #-*-mode: Shell-script; coding: utf-8;-*-
-          ${pkgs.coreutils}/bin/install -Ddm755 ${cfg.logDir}/${label}/${name}
-          . ${../../static/src/lib.sh}
-          rotatelog 5 ${cfg.logDir}/${label}/${name}/stderr.log ${cfg.logDir}/${label}/${name}/stdout.log
-          exec ${cfg.package}/bin/${name} daemon start
-        '';
         path = [ config.environment.systemPath ];
 
-        # low priority io cause the sync doesn't need priority i/o wise generally
+        # For this to save on security shenanigans in the gooey, abuse /bin/bash
+        # for doing work along with ProgramArguments instead of script.
         serviceConfig = {
+          EnvironmentVariables.MUTAGEN_LOG_LEVEL = "trace";
+          ProgramArguments = [
+            "/bin/bash"
+            "-c"
+            ''
+              ${pkgs.coreutils}/bin/install -Ddm755 ${cfg.logDir}/${label}/${name};
+              . ${../../static/src/lib.sh};
+              rotatelog 5 ${cfg.logDir}/${label}/${name}/stderr.log ${cfg.logDir}/${label}/${name}/stdout.log
+              exec ${cfg.package}/bin/${name} daemon run
+            ''
+          ];
           Label = fulllabel;
+          # low priority io cause the sync doesn't need priority i/o wise generally
           LowPriorityIO = true;
           ProcessType = "Adaptive";
           RunAtLoad = true;
@@ -83,11 +86,11 @@ in
         serviceConfig = {
           User = cfg.user;
           Group = cfg.group;
-          Type = "forking";
           Description = "${name} user daemon";
           Restart = "on-failure";
-          ExecStart = "${cfg.package}/bin/${name} daemon start";
+          ExecStart = "${cfg.package}/bin/${name} daemon run";
         };
+        environment.MUTAGEN_LOG_LEVEL = "trace";
       };
     }))
   ]);
