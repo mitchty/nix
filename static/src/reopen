@@ -11,28 +11,49 @@ set -e
 
 all=$#
 
+getapp() {
+  app=${1?need an app name bra}
+
+  # So looks like Finder/whatever when you use AppName can miss the latest
+  # version that nix installs/symlinks into /Applications/Nix Apps, sooooo....
+  # to make this transparent, if we find /Applications/Nix\ Apps/$NAME.app,
+  # use that path to ensure we get the most up to date thing in the store just
+  # in case of some caching shenangians.
+  nixapp="/Applications/Nix\ Apps/${app}.app"
+  if [ -e "${nixapp}" ]; then
+    app="${nixapp}"
+  fi
+  echo "${app}"
+}
 reopen() {
-  app=${1?need a name}
+  app=${1?need an app name bra}
   printf "reopening: %s\n" "${app}" >&2
-  osascript << END
+  until ! is_running "${app}"; do
+    osascript << END
 tell application "${app}"
     quit
 end tell
 END
+    # Give any running apps some time to die
+    sleep 1
+  done
 }
 
 is_running() {
-  pgrep -lf "${app}" > /dev/null 2>&1
+  app=${1?need an app name bra}
+  pgrep -lf "${app}.app" > /dev/null 2>&1
 }
 
 check_if_running() {
+  app=${1?need an app name bra}
+  realapp=$(getapp "${app}")
   # Some of these gooey apps seem to start then fail but restarting works, so
   # leat the caller know if the restart didn't result in the app running.
   lim=3
-  until is_running; do
+  until is_running "${app}"; do
     # note -j so the app(s) are hidden by default as this is called non
     # interactively so no good in having an app jump to the front of the line.
-    open -j -a "${app}"
+    open -j -a "${realapp}"
 
     lim=$((lim + 1))
     sleep ${lim}
@@ -54,7 +75,7 @@ for app in "$@"; do
       check_if_running "${app}"
     fi
 
-    if is_running; then
+    if is_running "${app}"; then
       ok=$((ok + 1))
       running="${running} ${app}"
     fi

@@ -134,7 +134,7 @@ in
             GPU_tachometer_position = 4;
             GPU_updateInterval = 10;
             GPU_widget = "line_chart";
-            LaunchAtLoginNext = true;
+            LaunchAtLoginNext = false; # Causing issues for some reason with duplicate Stats instances now, watever
             Network_label_position = 1;
             Network_networkChart_position = 0;
             Network_network_chart_box = false;
