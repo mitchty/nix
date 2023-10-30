@@ -16,23 +16,36 @@
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
-    emacs.url = "github:nix-community/emacs-overlay";
+    emacs = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     emacs-upstream = {
       url = "github:emacs-mirror/emacs/emacs-29";
       flake = false;
     };
 
-    home-manager.url = "github:nix-community/home-manager/release-23.05";
+    home-manager = {
+      url = "github:nix-community/home-manager/release-23.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
-    deploy-rs.url = "github:serokell/deploy-rs";
-    # https://github.com/ryantm/agenix/pull/141 merged so we'll run with that
-    # and not an old af fork with this pr's predecessor
-    agenix.url = "github:ryantm/agenix";
+    deploy-rs = {
+      url = "github:serokell/deploy-rs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     rust = {
       url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     dnsblacklist = {
       url = "github:notracking/hosts-blocklists";
@@ -42,7 +55,10 @@
     # terraform-old.url = "github:NixOS/nixpkgs/8c909dd2613323a939c90efddd089c88c0536fbf";
 
     # the nixpkgs it ships doesn't compile bash on darwin from what I can find.
-    nixinit.url = "github:nix-community/nix-init";
+    nixinit = {
+      url = "github:nix-community/nix-init";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
