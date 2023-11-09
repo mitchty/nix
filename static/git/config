@@ -93,6 +93,10 @@
   # Future me note: this fails if you create a non tracking branch locally and try to push
   # defremote = !sh -c "git branch --list $(git cb) --format='%(upstream:remotename)'"
   upstream = !git remote | head -n1
+  # Get current branches remote upstream branch name
+  bupstream = !git rev-parse --abbrev-ref HEAD@{upstream}
+  # Get all branches tracking data
+  tracks = !git for-each-ref --format='%(refname:short) tracks %(upstream:short)' refs/heads/*
   # push branch while setting the upstream to the default remote
   pbr = !git push --set-upstream $(git defremote) $(git bn)
   # ^^^ but forcefully, with a lease just in case
