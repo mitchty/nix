@@ -1347,37 +1347,34 @@ Desktop saving of session information handy to keep the same buffers between ses
 
 #+BEGIN_SRC emacs-lisp :tangle no
 (defun desktop-setup ()
+  (require 'desktop)
 
-(require 'desktop)
+  (desktop-save-mode 1)
 
-(desktop-save-mode 1)
+  (custom-set-variables
+    '(desktop-restore-eager 5)
+    '(desktop-path '("~/.emacs.d"))
+    '(desktop-dirname  "~/.emacs.d")
+    '(desktop-base-file-name "desktop"))
 
-(custom-set-variables
- '(desktop-restore-eager 5)
- '(desktop-path '("~/.emacs.d"))
- '(desktop-dirname  "~/.emacs.d")
- '(desktop-base-file-name "desktop")
- )
-
-(defun local-desktop-save ()
-  (interactive)
-  (if (eq (desktop-owner) (emacs-pid))
-      (desktop-save desktop-dirname)))
-)
+  (defun local-desktop-save ()
+    (interactive)
+    (if (eq (desktop-owner) (emacs-pid))
+      (desktop-save desktop-dirname))))
 
 (add-hook 'after-init-hook 'desktop-setup)
 #+END_SRC
 
 * custom
 
-Load this up last to allow for local customization if needed and to keep from custom writing to the init.el file.
+Load this up last to allow for local customization if needed in home-manager and to keep from custom writing to the init.el file.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
 #+END_SRC
 
-* TODO Load any local definitions                                    :broken:
+* Load any local definitions
 
 Probably need to check if this file exists first...
 
