@@ -264,9 +264,6 @@ in
 
     # This can't get shut off so nbd
     $DRY_RUN_CMD killall -KILL SystemUIServer
-
-    # With notunes now turning this back on will nuke it soon
-    $DRY_RUN_CMD launchctl load -w /System/Library/LaunchAgents/com.apple.rcd.plist || :
   '');
 
   # Programs not (yet) worthy of their own .nix setup... so far who knows what
