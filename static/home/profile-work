@@ -20,21 +20,32 @@ wgi() {
   wrk gi "$@"
 }
 
+wbod() {
+  cd ~/src/wrk/wip
+  j todo > todo
+  git add todo && git ci -m "bod: $(date +%Y-%b-%d)"
+}
+
+weod() {
+  cd ~/src/wrk/wip
+  j todo > todo
+  git add todo && git ci -m "eod: $(date +%Y-%b-%d)"
+  eod
+}
+
 # Daily jira cli alias, first arg should always be something jira-cli doens't
 # have so it can fall through to the cli if its not known. That way this acts
 # like a fancy alias with extra features.
 j() {
-  args=$@
-
   if [ "todo" = "$1" ]; then
     shift
-    args="issue list -a "$(jira me)" --plain --jql 'project is not empty and status not in (Closed,Done)' --no-headers --columns KEY,TYPE,STATUS,SUMMARY"
+    jira issue list -a "$(jira me)" --plain --jql 'project is not empty and status not in (Closed,Done)' --no-headers --columns KEY,TYPE,STATUS,SUMMARY
   elif [ "unassign" = "$1" ]; then
     shift
-    args="issue assign $1 x"
+    jira issue assign $1 x
   elif [ "self" = "$1" ]; then
     shift
-    args="issue assign $1 $(jira me)"
+    jira issue assign $1 $(jira me)
     # Special arg that assigns and moves the ticket to in progress
   elif [ "wip" = "$1" ]; then
     shift
