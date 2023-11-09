@@ -230,7 +230,8 @@ in
 
   # Add to home managers dag to make sure the activation fails if emacs can't
   # parse the init files and nuke any temp dirs we don't need/want to stick
-  # around if present.
+  # around if present. Most of these are just caches though init.el(c) need to
+  # get yeeted into the nix store somehow.
   home.activation.freshEmacs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     printf "modules/home-manager/default.nix: clean ~/.emacs.d\n" >&2
     $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.emacs.d/init.el ~/.emacs.d/init.elc ~/.emacs.d/elpa ~/.emacs.d/eln-cache
