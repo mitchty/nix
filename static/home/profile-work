@@ -54,28 +54,25 @@ j() {
     return
   elif [ "inprogress" = "$1" ]; then
     shift
-    args="issue move $1 'In Progress'"
+    jira issue move $1 'In Progress'
   elif [ "inreview" = "$1" ]; then
     shift
-    args="issue move $1 'In Review'"
+    jira issue move $1 'In Review'
   elif [ "done" = "$1" ]; then
     shift
-    args="issue move $1 'Done'"
+    jira issue move $1 'Done'
   elif [ "comment" = "$1" ]; then
     shift
-    args="issue comment add '$*'"
+    jira issue comment add '$*'
   elif [ "spy" = "$1" ]; then
     shift
-    args="issue view --comments 3 --plain $1"
+    jira issue view --comments 3 --plain $1
   elif [ "deluge" = "$1" ]; then
     shift
-    args="issue view --comments 10000 --plain $1"
+    jira issue view --comments 10000 --plain $1
   else
-    jira $*
+    jira $@
   fi
-
-  # TODO: Evil eval hack, future me don't be so lazy but meh.
-  jira ${args}
 }
 
 # Note I largely (ab)used https://stackoverflow.com/questions/62356589/how-to-use-gcloud-cli-to-update-firewall-rules-to-append-new-ip-addresses-to-sou for this nonsense and it woiks.
