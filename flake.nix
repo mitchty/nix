@@ -16,7 +16,7 @@
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
-    emacs = {
+    emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -70,7 +70,7 @@
     , home-manager
     , nixos-generators
     , deploy-rs
-    , emacs
+    , emacs-overlay
     , emacs-upstream
     , rust
     , agenix
@@ -95,7 +95,7 @@
         else "";
 
       nixpkgsOverlays = [
-        emacs.overlay
+        emacs-overlay.overlay
         rust.overlays.default
         (
           # force in the ocf-resource-agents/pacemaker I patched into nixpkgs-pacemaker
