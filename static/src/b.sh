@@ -9,6 +9,8 @@ _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 set "${SETOPTS:--eu}"
 
+BWGET="${BWGET:-username password}"
+
 bw_items() {
   bw list items --search "$*"
 }
@@ -59,8 +61,8 @@ get_one_login() {
 
 login=$(get_one_login "${matches}")
 
-for thing in "username" "password"; do
+for thing in ${BWGET}; do
   copy "${thing}" "${login}"
 done
 
-wait_and_junk_to_clipboard "remainders"
+wait_and_junk_to_clipboard "who knows what dangerous data lurks in the heart of the clipboard"
