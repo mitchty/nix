@@ -201,20 +201,36 @@ in
     '';
 
     # Following should allow us to avoid a logout/login cycle to disable
-    # CMD-% or shift-command-5, but it doesn't always work ungh.
-    # plutil -extract AppleSymbolicHotKeys.184.enabled raw ~/Library/Preferences/com.apple.symbolichotkeys.plist
-    # https://assert.cc/posts/maybe-dont-script-macos-prefs/
-    #
-    # maybe osascript?
+    # shortcuts that conflict withe emacs.
     # https://apple.stackexchange.com/questions/13598/updating-modifier-key-mappings-through-defaults-command-tool
     # https://apple.stackexchange.com/questions/201816/how-do-i-change-mission-control-shortcuts-from-the-command-line
     #
-    # GGGGGGGGAAAAAAHAHHHHH y no worky all time
+    # https://superuser.com/questions/1211108/remove-osx-spotlight-keyboard-shortcut-from-command-line
     system.activationScripts.postUserActivation.text = ''
       printf "modules/darwin/mitchty.nix: login related changes (may require a login/logout cycle if it doesn't work)\n" >&2
-      # plutil -replace AppleSymbolicHotKeys.184.enabled -bool false ~/Library/Preferences/com.apple.symbolichotkeys.plist
-      /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings
-      /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+
+      # Disables command+shift+5 which conflicts with emacs meta+%
+      $DRY_RUN_CMD /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist \
+        -c "Delete :AppleSymbolicHotKeys:184" \
+        -c "Add :AppleSymbolicHotKeys:184:enabled bool false" \
+        -c "Add :AppleSymbolicHotKeys:184:value:parameters array" \
+        -c "Add :AppleSymbolicHotKeys:184:value:parameters: integer 53" \
+        -c "Add :AppleSymbolicHotKeys:184:value:parameters: integer 53" \
+        -c "Add :AppleSymbolicHotKeys:184:value:parameters: integer 1179648" \
+        -c "Add :AppleSymbolicHotKeys:184:type string standard"
+
+      # Disables command+space shortcut
+      $DRY_RUN_CMD /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist \
+        -c "Delete :AppleSymbolicHotKeys:64" \
+        -c "Add :AppleSymbolicHotKeys:64:enabled bool false" \
+        -c "Add :AppleSymbolicHotKeys:64:value:parameters array" \
+        -c "Add :AppleSymbolicHotKeys:64:value:parameters: integer 32" \
+        -c "Add :AppleSymbolicHotKeys:64:value:parameters: integer 49" \
+        -c "Add :AppleSymbolicHotKeys:64:value:parameters: integer 1048576" \
+        -c "Add :AppleSymbolicHotKeys:64:type string standard"
+
+      $DRY_RUN_CMD /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings
+      $DRY_RUN_CMD /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
     '';
   };
 }
