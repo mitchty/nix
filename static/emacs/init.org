@@ -38,7 +38,7 @@ Use use-package to configure emacs itself.
   ;; Note, we set the gc threshold high at startup to improve perf there and
   ;; save gc's, in after-init we reduce that back down so interactive usage is
   ;; ok and there are less long gc pauses interactively.
-  (setq gc-cons-threshold (* 8 1000 1000))
+  (setq gc-cons-threshold (* 256 1000 1000))
   (add-hook 'after-init-hook (function (lambda () (setq gc-cons-threshold (* 2 1000 1000)))))
 
   (setq gc-cons-threshold most-positive-fixnum)
