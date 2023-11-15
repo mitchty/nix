@@ -49,6 +49,7 @@ in
       # TODO: Gotta make my nixos flake an overlay, future me problem.
       inputs.mitchty.packages.${pkgs.system}.clocker
       inputs.mitchty.packages.${pkgs.system}.ferdium
+      inputs.mitchty.packages.${pkgs.system}.freetube
       inputs.mitchty.packages.${pkgs.system}.hidden
       inputs.mitchty.packages.${pkgs.system}.maccy
       inputs.mitchty.packages.${pkgs.system}.nheko
@@ -231,6 +232,10 @@ in
 
       $DRY_RUN_CMD /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings
       $DRY_RUN_CMD /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+
+      # Really need to figure out where this junks coming from
+      printf "modules/darwin/mitchty.nix: cleanup Stats diskimages\n" >&2
+      $DRY_RUN_CMD rm -f ~/Downloads/Stats*.dmg
     '';
   };
 }
