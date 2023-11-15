@@ -82,11 +82,11 @@ in
       systemd.services.${name} = {
         enable = true;
         wantedBy = [ "default.target" ];
+        description = "${name} user daemon";
 
         serviceConfig = {
           User = cfg.user;
           Group = cfg.group;
-          Description = "${name} user daemon";
           Restart = "on-failure";
           ExecStart = "${cfg.package}/bin/${name} daemon run";
         };
