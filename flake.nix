@@ -117,7 +117,32 @@
           emacsWithConfig = (prev.emacsWithPackagesFromUsePackage {
             config = ./static/emacs/init.org;
             package = final.emacs29.overrideAttrs (super: {
+              # buildInputs = super.buildInputs ++
+              #   nixpkgs.lib.attrsets.attrVals [
+              #     "Cocoa"
+              #     "WebKit"
+              #   ]
+              #     nixpkgs-darwin.legacyPackages.x86_64-darwin.apple_sdk.frameworks;
+              preConfigure = ''
+                sed -i -e 's/headerpad_extra=1000/headerpad_extra=2000/' configure.ac
+                autoreconf
+              '';
+              configureFlags = super.configureFlags ++ [
+                # "--with-native-comp"
+                # "--with-xwidgets"
+                "--with-natural-title-bar"
+              ];
               patches = [
+                # (prev.fetchpatch {
+                #   name = "mac-gui-loop-block-lifetime";
+                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0001-mac-gui-loop-block-lifetime.patch";
+                #   sha256 = "sha256-HqcRxXfZB9LDemkC7ThNfHuSHc5H5B2MQ102ZyifVYM=";
+                # })
+                # (prev.fetchpatch {
+                #   name = "mac-gui-loop-block-autorelease";
+                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0002-mac-gui-loop-block-autorelease.patch";
+                #   sha256 = "sha256-CBELVTAWwgaXrnkTzMsYH9R18qBnFBFHMOaVeC/F+I8=";
+                # })
                 (prev.fetchpatch {
                   name = "gc-block-align-patch";
                   url = "https://github.com/tyler-dodge/emacs/commit/36d2a8d5a4f741ae99540e139fff2621bbacfbaa.patch";
