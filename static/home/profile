@@ -205,3 +205,12 @@ h() {
     printf "warn: didn't find public token file %s\n" "${PUBTOKEN}" >&2
   fi
 }
+
+# mutagen wrapper to let me get at data I need quicker
+mut() {
+  if [ "status" = "$1" ]; then
+    mutagen sync list --template="{{ json . }}" | jq -r ".[] | [.name, .status, .alpha.path, \"->\", .beta.host, .beta.path] | @tsv" | sed -e "s|$HOME|~|g"
+  else
+    mutagen "$@"
+  fi
+}
