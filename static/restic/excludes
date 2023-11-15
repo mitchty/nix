@@ -71,6 +71,8 @@ OneDrive*
 # SIP says no and gives errors on these so just exclude em, we can't back it up
 # anyway to improve the backup/output logs to not have errors on open() calls
 Library/Accounts
+Library/AppleMediaServices
+Library/IntelligencePlatform
 Library/Application\ Support/AppleMediaServices
 Library/Application\ Support/AddressBook
 Library/Application\ Support/CallHistoryDB
