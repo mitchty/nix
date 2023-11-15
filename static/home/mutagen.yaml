@@ -2,6 +2,7 @@ sync:
   defaults:
     ignore:
       paths:
+        - ".zfs"
         - ".direnv"
         - ".#*"
         - "*.desktop"
