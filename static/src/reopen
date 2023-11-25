@@ -19,7 +19,7 @@ getapp() {
   # to make this transparent, if we find /Applications/Nix\ Apps/$NAME.app,
   # use that path to ensure we get the most up to date thing in the store just
   # in case of some caching shenangians.
-  nixapp="/Applications/Nix\ Apps/${app}.app"
+  nixapp="/Applications/Nix Apps/${app}.app"
   if [ -e "${nixapp}" ]; then
     app="${nixapp}"
   fi
