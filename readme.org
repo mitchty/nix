@@ -15,12 +15,15 @@
   - https://wiki.nikitavoloboev.xyz/operating-systems/linux/nixos
   - https://stephank.nl/p/2020-06-01-a-nix-primer-by-a-newcomer.html
   * https://ertt.ca/nix/patch-nixpkgs/
+  * https://nixos.org/manual/nix/stable/introduction (reference guide to the language)
 
   NixOS option search, for when you want to know what you can set.
   https://search.nixos.org/options
+  https://nixos.org/manual/nix/stable/language/builtins.html?search=mkIf
 
   Home-manager equivalent.
-  https://rycee.gitlab.io/home-manager/options.html
+
+https://mipmip.github.io/home-manager-option-search/?query=
 
   A nice cli that searches both is https://github.com/mlvzk/manix
 
