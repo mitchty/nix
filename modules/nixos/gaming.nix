@@ -13,7 +13,7 @@ in
   # Other stuff uses this to indicate if things should(n't) be installed
   config = mkIf cfg.enable {
     programs.steam.enable = true;
-    hardware.opengl.driSupport32bit = true;
+    hardware.opengl.driSupport32Bit = true;
     nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
       "steam"
       "steam-original"
