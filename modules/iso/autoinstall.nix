@@ -33,7 +33,6 @@ in
       # Lets things download in parallel
       extraOptions = ''
         binary-caches-parallel-connections = 100
-        auto-optimise-store = true
         experimental-features = nix-command flakes
       '';
     };
@@ -53,25 +52,8 @@ in
       terminal_input serial
       terminal_output serial
     ";
-    # boot.kernelPackages = mkDefault pkgs.linuxPackages_testing_bcachefs;
 
-    # boot.supportedFilesystems = [ "zfs" "bcachefs" "xfs" ];
-
-    boot.supportedFilesystems = [ "xfs" ];
-    # boot.kernelPackages = pkgs.linuxPackages_latest;
-
-    # kernelPatches = pkgs.lib.singleton {
-    #   name = "Custom extra kernel config + maybe patches at some point";
-    #   patch = null;
-    #   # The default nixpkgs kernel has these as modules, but whatever just
-    #   # compile them in statically
-    #   extraConfig = ''
-    #      DM_CACHE m
-    #      DM_INTEGRITY m
-    #      DM_VERITY m
-    #      DM_THIN_PROVISIONING m
-    #   '';
-    # };
+    boot.supportedFilesystems = [ "xfs" "zfs" "ext4" ];
 
     # No docs on the install iso
     documentation.enable = false;
@@ -107,6 +89,9 @@ in
       # Don't log failed connections
       firewall.logRefusedConnections = mkDefault false;
       hostName = "autoinstall";
+
+      wireless.enable = false;
+      networkmanager.enable = true;
     };
 
     # I want my magic sysrq triggers to work
@@ -161,6 +146,11 @@ in
         default = false;
         description = "If we should exit before installing or not to let debugging occur";
       };
+      hostId = mkOption {
+        type = types.str;
+        default = "auto";
+        description = "set hostid manually or autogenerate one (more for zfs)";
+      };
       hostName = mkOption {
         type = types.str;
         default = "changeme";
@@ -183,7 +173,7 @@ in
       };
       osSize = mkOption {
         type = types.str;
-        default = "10GiB";
+        default = "30GiB";
         description = "size of / partition/whatever basically";
       };
       wipe = mkOption {
@@ -196,11 +186,6 @@ in
         default = false;
         description = "zero out devices prior to install (time consuming)";
       };
-      dedicatedBoot = mkOption {
-        type = types.str;
-        default = "";
-        description = "If there should be a dedicated /boot device fill this in with the device name.";
-      };
       # Needs a lot more testing somehow, vm's?
       flavor = mkOption {
         type = types.enum [ "single" "zfs" "lvm" ];
@@ -209,6 +194,25 @@ in
       };
     };
   };
+  # config.systemd.services.wiffy = {
+  #   description = "setup wifi for autoinstall";
+  #   wantedBy = [ "multi-user.target" ];
+  #   after = [ "network.target" "polkit.service" ];
+  #   path = with pkgs; [
+  #     "/run/current-system/sw/"
+  #     "/usr/bin/"
+  #     "${systemd}/bin/"
+  #   ];
+  #   serviceConfig = {
+  #     ExecStart = ''
+  #       ${pkgs.networkmanager}/bin/nmcli device wifi connect 00:C0:CA:B3:F6:14 password zomgletmeinkthx
+  #     '';
+  #     #        ${pkgs.networkmanager}/bin/nmcli device wifi connect newhotness password zomgletmeinkthx bssid 00:C0:CA:B3:F6:14;
+  #     Type = "oneshot";
+  #     Restart = "on-failure";
+  #     RestartSec = 10;
+  #   };
+  # };
   config.systemd.services.autoinstall = {
     description = "NixOS Autoinstall";
     wantedBy = [ "multi-user.target" ];
@@ -223,15 +227,15 @@ in
       inherit (config.environment.sessionVariables) NIX_PATH;
       HOME = "/root";
       LIBSH = "${./lib.sh}:${../../static/src/lib.sh}";
-      disks = "${config.autoinstall.dedicatedBoot} ${toString config.autoinstall.rootDevices}";
+      disks = "${toString config.autoinstall.rootDevices}";
       wipe = "${toString config.autoinstall.wipe}";
       zero = "${toString config.autoinstall.zero}";
-      flavor = "${config.autoinstall.flavor}";
       debug = "${toString config.autoinstall.debug}";
-      dedicatedboot = "${config.autoinstall.dedicatedBoot}";
       bootsize = "${config.autoinstall.bootSize}";
       swapsize = "${config.autoinstall.swapSize}";
       ossize = "${config.autoinstall.osSize}";
+      flavor = "${config.autoinstall.flavor}";
+      hostid = "${config.autoinstall.hostId}";
       host = "${config.autoinstall.hostName}";
       configuration = ./configuration.nix;
     };

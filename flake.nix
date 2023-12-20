@@ -201,7 +201,16 @@
 
       nixpkgsConfig = extras: {
         overlays = nixpkgsOverlays ++ extras;
-        config.permittedInsecurePackages = [ "garage-0.7.3" ];
+        # config.permittedInsecurePackages = [ "garage-0.7.3" ];
+        config.permittedInsecurePackages = [ "python3.10-django-3.1.14" ];
+        config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
+          "unrar"
+          "google-chrome"
+          "plexmediaserver"
+          "steam"
+          "steam-original"
+          "steam-run"
+        ];
       };
 
       homeManagerStateVersion = "21.11";
@@ -235,7 +244,7 @@
             home-manager.extraSpecialArgs = {
               inherit inputs nixpkgs;
               age = config.age;
-              role = config.role;
+              role = config.services.role;
             };
             nix.registry.my.flake = self;
 
@@ -313,10 +322,12 @@
             users.users.${primaryUser}.home = homeDir "x86_64-linux" primaryUser;
             home-manager.useGlobalPkgs = true;
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
-            home-manager.extraSpecialArgs = {
-              inherit inputs nixpkgs;
-              age = config.age;
-            };
+            home-manager.extraSpecialArgs =
+              {
+                inherit inputs nixpkgs;
+                age = config.age;
+                role = config.services.role;
+              };
             nix.registry.my.flake = self;
           }
         )
@@ -327,13 +338,28 @@
       defSwapSize = "16GiB";
       smallSwapSize = "512MiB";
 
-      # vm autoinstall test runners, note no by-id links cause qemu doens't get them
+      # vm autoinstall test runners
       simpleAutoinstall = {
         autoinstall = {
           flavor = "single";
           hostName = "simple";
           rootDevices = [
             "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001"
+          ];
+          bootSize = defBootSize;
+          swapSize = smallSwapSize;
+          osSize = "20GiB";
+        };
+      };
+
+      # Two disk test
+      zfsAutoinstall = {
+        autoinstall = {
+          flavor = "zfs";
+          hostName = "zfs";
+          rootDevices = [
+            "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001"
+            "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00002"
           ];
           bootSize = defBootSize;
           swapSize = smallSwapSize;
@@ -357,6 +383,19 @@
       };
 
       cluOsSize = "768GiB";
+
+      wm2Autoinstall = {
+        autoinstall = {
+          flavor = "zfs";
+          hostName = "wm2";
+          rootDevices = [
+            "/dev/disk/by-id/nvme-CWESR02TBTLCZ-27J-2_511231016041001198"
+            "/dev/disk/by-id/nvme-Sabrent_Rocket_Q4_48821081708402"
+          ];
+          swapSize = defSwapSize;
+          osSize = "1840GiB";
+        };
+      };
 
       # Start of a Terramaster tm4-423 cluster
       cl1Autoinstall = {
@@ -478,6 +517,34 @@
         };
       };
 
+      s3fsGeneral = user: {
+        "s3/bucket-general" = {
+          file = ./secrets/s3/bucket-general.age;
+          owner = user;
+        };
+      };
+
+      s3fsSrc = user: {
+        "s3/bucket-src" = {
+          file = ./secrets/s3/bucket-src.age;
+          owner = user;
+        };
+      };
+
+      s3fsMedia = user: {
+        "s3/bucket-media" = {
+          file = ./secrets/s3/bucket-media.age;
+          owner = user;
+        };
+      };
+
+      s3fsConfig = user: {
+        "s3/bucket-config" = {
+          file = ./secrets/s3/bucket-config.age;
+          owner = user;
+        };
+      };
+
       # Make age.secrets = a bit simpler with some defined variables
       homeUser = "mitch";
       homeGroup = "users";
@@ -488,6 +555,7 @@
       ageDefault = user: canarySecret user;
       ageGit = user: gitSecret user // ghcliPubSecret user;
       ageRestic = user: resticSecret user;
+      ageS3fs = s3fsGeneral rootUser // s3fsSrc rootUser // s3fsMedia rootUser // s3fsConfig rootUser;
 
       ageHome = user: ageDefault user // ageGit user;
       ageHomeWithBackup = user: ageHome user // ageRestic user;
@@ -530,14 +598,50 @@
           ];
           format = "install-iso";
         };
-        isoSrv = nixos-generators.nixosGenerate {
+        isoSimpleTest = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [
             ./modules/iso/autoinstall.nix
-            srvAutoinstall
+            simpleAutoinstall
             {
               autoinstall.debug = true;
-              autoinstall.wipe = true;
+            }
+          ];
+          format = "install-iso";
+        };
+        isoZfsTest = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            zfsAutoinstall
+            {
+              autoinstall.debug = true;
+            }
+          ];
+          format = "install-iso";
+        };
+        # isoSrv = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   modules = [
+        #     ./modules/iso/autoinstall.nix
+        #     srvAutoinstall
+        #     {
+        #       autoinstall.debug = true;
+        #       autoinstall.wipe = true;
+        #     }
+        #   ];
+        #   format = "install-iso";
+        # };
+        isoWm2 = nixos-generators.nixosGenerate {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            wm2Autoinstall
+            {
+              autoinstall = {
+                wipe = true;
+                debug = true;
+              };
             }
           ];
           format = "install-iso";
@@ -554,42 +658,42 @@
           ];
           format = "install-iso";
         };
-        isoCl2 = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            ./modules/iso/autoinstall.nix
-            cl2Autoinstall
-            {
-              autoinstall.debug = true;
-              autoinstall.wipe = true;
-            }
-          ];
-          format = "install-iso";
-        };
-        isoCl3 = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            ./modules/iso/autoinstall.nix
-            cl3Autoinstall
-            {
-              autoinstall.debug = true;
-              autoinstall.wipe = true;
-            }
-          ];
-          format = "install-iso";
-        };
-        isoGw = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            ./modules/iso/autoinstall.nix
-            gwAutoinstall
-            {
-              autoinstall.debug = true;
-              autoinstall.wipe = true;
-            }
-          ];
-          format = "install-iso";
-        };
+        # isoCl2 = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   modules = [
+        #     ./modules/iso/autoinstall.nix
+        #     cl2Autoinstall
+        #     {
+        #       autoinstall.debug = true;
+        #       autoinstall.wipe = true;
+        #     }
+        #   ];
+        #   format = "install-iso";
+        # };
+        # isoCl3 = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   modules = [
+        #     ./modules/iso/autoinstall.nix
+        #     cl3Autoinstall
+        #     {
+        #       autoinstall.debug = true;
+        #       autoinstall.wipe = true;
+        #     }
+        #   ];
+        #   format = "install-iso";
+        # };
+        # isoGw = nixos-generators.nixosGenerate {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   modules = [
+        #     ./modules/iso/autoinstall.nix
+        #     gwAutoinstall
+        #     {
+        #       autoinstall.debug = true;
+        #       autoinstall.wipe = true;
+        #     }
+        #   ];
+        #   format = "install-iso";
+        # };
         # sdGenericAarch64 = nixos-generators.nixosGenerate {
         #   pkgs = nixpkgs.legacyPackages.x86_64-linux.pkgsCross.aarch64-multiplatform;
         #   modules = [ "${nixpkgs.legacyPackages.aarch64-linux.path}/nixos/modules/profiles/minimal.nix" ];
@@ -694,7 +798,7 @@
             };
             services.restic = {
               enable = true;
-              repo = "s3:http://dfs1.home.arpa:8333/restic";
+              repo = "s3:http://cluster.home.arpa:3900/restic/";
             };
             services.home.enable = true;
             services.mitchty.enable = true;
@@ -723,7 +827,7 @@
       };
 
       nixosConfigurations = {
-        gw = (makeOverridable nixosSystem) {
+        gw = (makeOverridable nixosSystem) rec {
           system = "x86_64-linux";
           modules = nixOSModules ++ [
             ./hosts/gw/configuration.nix
@@ -755,8 +859,13 @@
               primaryUser = homeUser;
               primaryGroup = homeGroup;
             };
-            age.secrets = ageHomeNixosWithBackup homeUser;
+            age.secrets = ageHomeNixosWithBackup homeUser // ageS3fs;
             services.role = {
+              media = {
+                enable = true;
+                services = false;
+              };
+
               grafana.enable = true;
               highmem.enable = true;
               intel.enable = true;
@@ -783,143 +892,236 @@
             latest = latest.legacyPackages.${x86-linux};
           };
         };
-        nexus = (makeOverridable nixosSystem) {
-          system = "x86_64-linux";
-          modules = nixOSModules ++ [
-            ./hosts/nexus/configuration.nix
-          ] ++ [{
-            users = {
-              primaryUser = homeUser;
-              primaryGroup = homeGroup;
-            };
-            age.secrets = ageHomeNixosWithBackup homeUser;
-            services.role = {
-              gui.enable = true;
-              intel.enable = true;
-              mosh.enable = true;
-              node-exporter.enable = true;
-              promtail.enable = true;
-            };
-            services.shared.syncthing = {
-              enable = false;
-              user = homeUser;
-              group = homeGroup;
-            };
-            services.shared.mutagen = {
-              enable = true;
-              user = homeUser;
-              group = homeGroup;
-            };
-          }];
-          specialArgs = {
-            inherit inputs;
-            latest = latest.legacyPackages.${x86-linux};
-          };
-        };
-        cl1 = (makeOverridable nixosSystem) {
-          system = "x86_64-linux";
-          modules = nixOSModules ++ [
-            ./hosts/cl1/configuration.nix
-          ] ++ [{
-            users = {
-              primaryUser = homeUser;
-              primaryGroup = homeGroup;
-            };
-            age.secrets = ageHomeNixos homeUser;
-            services.role = {
-              cluster.enable = true;
-              intel.enable = true;
-              mosh.enable = true;
-              promtail.enable = true;
-              node-exporter = {
+        nexus = (makeOverridable nixosSystem)
+          {
+            system = "x86_64-linux";
+            modules = nixOSModules ++ [
+              ./hosts/nexus/configuration.nix
+            ] ++ [{
+              users = {
+                primaryUser = homeUser;
+                primaryGroup = homeGroup;
+              };
+              age.secrets = ageHomeNixosWithBackup homeUser // ageS3fs;
+              services.role = {
+                gui.enable = true;
+                intel.enable = true;
+                mosh.enable = true;
+                node-exporter.enable = true;
+                promtail.enable = true;
+              };
+              services.shared.syncthing = {
+                enable = false;
+                user = homeUser;
+                group = homeGroup;
+              };
+              services.shared.mutagen = {
                 enable = true;
-                exporterIface = "enp1s0";
+                user = homeUser;
+                group = homeGroup;
               };
+            }];
+            specialArgs = {
+              inherit inputs;
+              latest = latest.legacyPackages.${x86-linux};
             };
-            fileSystems = {
-              # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F
-              "/data/disk/0" = {
-                device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F";
-                fsType = "ext4";
-                options = [ "nofail" ];
-              };
-            };
-          }];
-          specialArgs = {
-            inherit inputs;
-            latest = latest.legacyPackages.${x86-linux};
           };
-        };
-        cl2 = (makeOverridable nixosSystem) {
-          system = "x86_64-linux";
-          modules = nixOSModules ++ [
-            ./hosts/cl2/configuration.nix
-          ] ++ [{
-            users = {
-              primaryUser = homeUser;
-              primaryGroup = homeGroup;
-            };
-            age.secrets = ageHomeNixos homeUser;
-            services.role = {
-              cluster.enable = true;
-              intel.enable = true;
-              mosh.enable = true;
-              promtail.enable = true;
-              node-exporter = {
-                enable = true;
-                exporterIface = "enp1s0";
+        wm2 =
+          (makeOverridable nixosSystem)
+            rec {
+              system = "x86_64-linux";
+              modules = nixOSModules ++ [
+                ./hosts/wm2/configuration.nix
+              ] ++ [{
+                users = {
+                  primaryUser = homeUser;
+                  primaryGroup = homeGroup;
+                };
+                age.secrets = ageHomeNixos homeUser;
+                services.role = {
+                  gaming.enable = true;
+                  gui.enable = true;
+                  intel.enable = true;
+                  mosh.enable = true;
+                  node-exporter.enable = true;
+                  promtail.enable = true;
+                };
+                services.shared.syncthing = {
+                  enable = false;
+                  user = homeUser;
+                  group = homeGroup;
+                };
+                services.shared.mutagen = {
+                  enable = true;
+                  user = homeUser;
+                  group = homeGroup;
+                };
+              }];
+              specialArgs = {
+                inherit inputs;
+                latest = latest.legacyPackages.${x86-linux};
               };
             };
+        cl1 = (makeOverridable nixosSystem)
+          {
+            system = "x86_64-linux";
+            modules = nixOSModules ++ [
+              ./hosts/cl1/configuration.nix
+            ] ++ [{
+              users = {
+                primaryUser = homeUser;
+                primaryGroup = homeGroup;
+              };
+              age.secrets = ageHomeNixos homeUser;
+              services.role = {
+                cluster.enable = true;
+                intel.enable = true;
+                mosh.enable = true;
+                promtail.enable = true;
+                node-exporter = {
+                  enable = true;
+                  exporterIface = "enp1s0";
+                };
+              };
+              fileSystems = {
+                # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F
+                "/data/disk/0" = {
+                  device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F";
+                  fsType = "ext4";
+                  options = [ "nofail" ];
+                };
+                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EFRX-68AX9N0_WD-WCC1T1098132
+                # "/data/disk/1" = {
+                #   device = "/dev/disk/by-id/ata-WDC_WD30EFRX-68AX9N0_WD-WCC1T1098132";
+                #   fsType = "xfs";
+                #   options = [ "nofail" ];
+                # };
+                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EFRX-68EUZN0_WD-WCC4N4CVRRUX
+                # "/data/disk/2" = {
+                #   device = "/dev/disk/by-id/ata-WDC_WD30EFRX-68EUZN0_WD-WCC4N4CVRRUX";
+                #   fsType = "xfs";
+                #   options = [ "nofail" ];
+                # };
+                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2948041
+                # "/data/disk/3" = {
+                #   device = "/dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2948041";
+                #   fsType = "xfs";
+                #   options = [ "nofail" ];
+                # };
+              };
+            }];
+            specialArgs = {
+              inherit inputs;
+              latest = latest.legacyPackages.${x86-linux};
+            };
+          };
+        cl2 = (makeOverridable nixosSystem)
+          {
+            system = "x86_64-linux";
+            modules = nixOSModules ++ [
+              ./hosts/cl2/configuration.nix
+            ] ++ [{
+              users = {
+                primaryUser = homeUser;
+                primaryGroup = homeGroup;
+              };
+              age.secrets = ageHomeNixos homeUser;
+              services.role = {
+                cluster.enable = true;
+                intel.enable = true;
+                mosh.enable = true;
+                promtail.enable = true;
+                node-exporter = {
+                  enable = true;
+                  exporterIface = "enp1s0";
+                };
+              };
 
-            fileSystems = {
-              # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF
-              "/data/disk/0" = {
-                device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF";
-                fsType = "ext4";
-                options = [ "nofail" ];
+              fileSystems = {
+                # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF
+                "/data/disk/0" = {
+                  device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF";
+                  fsType = "ext4";
+                  options = [ "nofail" ];
+                };
+                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WMAWZ0339419
+                # "/data/disk/1" = {
+                #   device = "/dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WMAWZ0339419";
+                #   fsType = "xfs";
+                #   options = [ "nofail" ];
+                # };
+                # # mkfs.xfs /dev/disk/by-id/ata-ST8000NM0055-1RM112_ZA15CRCT
+                # "/data/disk/2" = {
+                #   device = "/dev/disk/by-id/ata-ST8000NM0055-1RM112_ZA15CRCT";
+                #   fsType = "xfs";
+                #   options = [ "nofail" ];
+                # };
+                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2831437
+                # "/data/disk/3" = {
+                #   device = "/dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2831437";
+                #   fsType = "xfs";
+                #   options = [ "nofail" ];
+                # };
               };
+            }];
+            specialArgs = {
+              inherit inputs;
+              latest = latest.legacyPackages.${x86-linux};
             };
-          }];
-          specialArgs = {
-            inherit inputs;
-            latest = latest.legacyPackages.${x86-linux};
           };
-        };
-        cl3 = (makeOverridable nixosSystem) {
-          system = "x86_64-linux";
-          modules = nixOSModules ++ [
-            ./hosts/cl3/configuration.nix
-          ] ++ [{
-            users = {
-              primaryUser = homeUser;
-              primaryGroup = homeGroup;
-            };
-            age.secrets = ageHomeNixos homeUser;
-            services.role = {
-              cluster.enable = true;
-              intel.enable = true;
-              mosh.enable = true;
-              promtail.enable = true;
-              node-exporter = {
-                enable = true;
-                exporterIface = "enp1s0";
+        cl3 = (makeOverridable nixosSystem)
+          {
+            system = "x86_64-linux";
+            modules = nixOSModules ++ [
+              ./hosts/cl3/configuration.nix
+            ] ++ [{
+              users = {
+                primaryUser = homeUser;
+                primaryGroup = homeGroup;
               };
-            };
-
-            fileSystems = {
-              # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F
-              "/data/disk/0" = {
-                device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F";
-                fsType = "ext4";
-                options = [ "nofail" ];
+              age.secrets = ageHomeNixos homeUser;
+              services.role = {
+                cluster.enable = true;
+                intel.enable = true;
+                mosh.enable = true;
+                promtail.enable = true;
+                node-exporter = {
+                  enable = true;
+                  exporterIface = "enp1s0";
+                };
               };
+              fileSystems = {
+                # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F
+                "/data/disk/0" = {
+                  device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F";
+                  fsType = "ext4";
+                  options = [ "nofail" ];
+                };
+                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2936180
+                # "/data/disk/1" = {
+                #   device = "/dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2936180";
+                #   fsType = "xfs";
+                #   options = [ "nofail" ];
+                # };
+                # # mkfs.xfs /dev/disk/by-id/ata-ST8000NM0055-1RM112_ZA173E83
+                # "/data/disk/2" = {
+                #   device = "/dev/disk/by-id/ata-ST8000NM0055-1RM112_ZA173E83";
+                #   fsType = "xfs";
+                #   options = [ "nofail" ];
+                # };
+                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EFRX-68EUZN0_WD-WCC4N4XFTFFS
+                # "/data/disk/3" = {
+                #   device = "/dev/disk/by-id/ata-WDC_WD30EFRX-68EUZN0_WD-WCC4N4XFTFFS";
+                #   fsType = "xfs";
+                #   options = [ "nofail" ];
+                # };
+              };
+            }];
+            specialArgs = {
+              inherit inputs;
+              latest = latest.legacyPackages.${x86-linux};
             };
-          }];
-          specialArgs = {
-            inherit inputs;
-            latest = latest.legacyPackages.${x86-linux};
           };
-        };
         dfs1 = nixosSystem
           {
             system = "x86_64-linux";
@@ -971,6 +1173,14 @@
             hostname = "nexus.home.arpa";
             profiles.system = {
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
+            };
+          };
+          "wm2" = {
+            # hostname = "10.10.10.115";
+            hostname = "localhost";
+            #            hostname = "wm2.home.arpa";
+            profiles.system = {
+              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."wm2";
             };
           };
           "cl1" = {

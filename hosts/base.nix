@@ -2,6 +2,11 @@
   config = {
     documentation.nixos.enable = false;
 
+    # If for any reason I need to get at the derivation that led to this
+    # generation, save off the input source.
+    environment.etc."current-nixos".source = ./..;
+    # system.nixos.label = concatStringsSep "-" ((sort (x: y: x < y) cfg.tags) ++ [ "${cfg.version}.${self.sourceInfo.shortRev or "dirty"}" ]);
+
     # Lets let arm stuff run easily
     boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
@@ -26,10 +31,7 @@
       zsh.enable = true;
     };
 
-    networking = {
-      networkmanager.enable = false;
-      enableIPv6 = true;
-    };
+    networking.enableIPv6 = true;
 
     services = {
       # chrony for ntp

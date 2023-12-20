@@ -10,6 +10,7 @@ let
   mb = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINhaAD9U8kHtlMrFsy8vytWITHLe55DYy8kObDhoMqTO";
   srv = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsX6e+fhe/CxoGIbZ4auuk83H3sUK5XQhia8OWFz4pt";
   nexus = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJCQJlqfzBYIjuWAIl72Q4o264vMEKWc4b+Tc30cqgtO";
+  wm2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNzRSDjB8WJHSEepNu2GTrZIgFWprv+wMnX6xbeoD0U";
   dfs1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMIIXtwtlXD59ni6Y/+jYr2opNqvG6sTTXKbVN4OBLTA";
 
   cl1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOxV4KEVMkikEM4L9QCvd8QcMwvDK3nryBL28L0BFffZ";
@@ -18,18 +19,18 @@ let
 
   wmb = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINWlH6mfb4+v6z+uXNBDr+pPkhgTI7v3TMYl8UDNiKT1";
 
+  allnixos = [ dfs1 srv nexus wm2 gw cl1 cl2 cl3 ];
+
   # To make the following a skosh simpler/easier
   homeusers = [ mitch ];
-  homehosts = [ mb srv nexus dfs1 gw cl1 cl2 cl3 ];
+  homehosts = [ mb ] ++ allnixos;
 
   workusers = [ tishmack ];
   workhosts = [ wmb ];
 
   # TODO: Remove dfs1 from here this is a hack for now
-  git = [ mb srv nexus wmb dfs1 gw cl1 cl2 cl3 ] ++ homeusers;
+  git = homehosts ++ homeusers;
   restic = [ mb srv nexus ];
-
-  allnixos = [ dfs1 srv nexus gw cl1 cl2 cl3 ];
 
   # Some secrets should be usable everywhere
   allusers = homeusers ++ workusers;
@@ -59,4 +60,14 @@ in
 
   # Only the router needs the the hostapd stuff
   "wifi/passphrase.age".publicKeys = router ++ ageadmins;
+
+  # garage s3 bucket secrets for s3fs
+  "s3/bucket-general.age".publicKeys = allnixos ++ ageadmins;
+  "s3/bucket-src.age".publicKeys = allnixos ++ ageadmins;
+  "s3/bucket-media.age".publicKeys = allnixos ++ ageadmins;
+  "s3/bucket-config.age".publicKeys = allnixos ++ ageadmins;
+
+  # TESTING not s3fs, s3fs is terrible perf wise.
+  "s3/aws-credentials.age".publicKeys = allnixos ++ ageadmins;
+  "s3/s3ql.age".publicKeys = allnixos ++ ageadmins;
 }

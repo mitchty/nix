@@ -37,13 +37,13 @@ KVMPASS=${KVMPASS:-admin}
 # recursion
 curl() {
   printf "curl %s\n" "$*" >&2
-  ${CURL} --insecure --user $KVMUSER:$KVMPASS --silent "$@"
+  ${CURL} --insecure --user $KVMUSER:$KVMPASS --quiet "$@"
   printf "\n" >&2
 }
 
 post() {
   printf "post %s\n" "$*" >&2
-  ${CURL} -X POST --insecure --user $KVMUSER:$KVMPASS --silent "$@"
+  ${CURL} -X POST --insecure --user $KVMUSER:$KVMPASS --progress-bar "$@"
   printf "\n" >&2
 }
 

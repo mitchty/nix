@@ -32,7 +32,7 @@
     # Lets things download in parallel
     extraOptions = ''
       fallback = true
-      binary-caches-parallel-connections = 100
+      binary-caches-parallel-connections = 10
       auto-optimise-store = false
       experimental-features = nix-command flakes
     '';

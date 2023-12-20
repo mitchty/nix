@@ -1,15 +1,27 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
-# Description: Make the dumb af bw cli possible to use on macos at least, future
-# me can replace/augment pbcopy with whatever else copies text off stdin to the
-# "clipboard" of choice.
+# Description: Make the dumbest af bw cli possible to use on macos/x11 least.
 _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 set "${SETOPTS:--eu}"
 
 BWGET="${BWGET:-username password}"
+
+uname_s=$(uname -s)
+if [ "${uname_s}" = "Linux" ]; then
+  copytogui() {
+    xsel -p
+  }
+elif [ "${uname_s}" = "Darwin" ]; then
+  copytogui() {
+    pbcopy
+  }
+else
+  printf "uname -s %s is not Linux or Darwin, no clue how to copy to or from gooey\n" "${uname_s}" >&2
+  exit 1
+fi
 
 bw_items() {
   bw list items --search "$*"
@@ -31,7 +43,7 @@ get() {
 copy() {
   thing="${1}"
   shift
-  get "${thing}" "$@" | pbcopy
+  get "${thing}" "$@" | copytogui
   wait_and_junk_to_clipboard "${thing}"
 }
 
@@ -41,7 +53,7 @@ wait_and_junk_to_clipboard() {
   # off, this isn't a problem I'm not even using the read data...
   #shellcheck disable=SC2162
   read
-  echo "the sound of silence" | pbcopy
+  echo "the sound of silence" | copytogui
 }
 
 matches=$(bw_items "$@")

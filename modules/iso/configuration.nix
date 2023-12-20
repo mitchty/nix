@@ -16,13 +16,19 @@ in
     supportedFilesystems = [
       "zfs"
       "xfs"
+      "ext4"
     ];
     loader = {
-      grub = {
-        efiSupport = true;
-        efiInstallAsRemovable = true;
-        device = "nodev";
+      efi = {
+        canTouchEfiVariables = true;
+        efiSysMountPoint = "/efiboot/efi0";
       };
+      systemd-boot = {
+        enable = true;
+        configurationLimit = 10;
+        memtest86.enable = true;
+      };
+      generationsDir.copyKernels = true;
     };
     kernel.sysctl = {
       # We want sysrq functions to work if there is an issue
@@ -58,7 +64,7 @@ in
     '';
   };
 
-  system.stateVersion = "22.05";
+  system.stateVersion = "23.11";
 
-  # Generated stuff goes here...
+  # Generated stuff goes under here...
 }

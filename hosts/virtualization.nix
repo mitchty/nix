@@ -7,7 +7,10 @@
   # Use/setup libvirtd/docker note libvirtd requires polkit to work in 22.11
   security.polkit.enable = true;
   virtualisation.libvirtd.enable = true;
-  virtualisation.docker.enable = true;
+  virtualisation.docker = {
+    enable = true;
+    storageDriver = "overlay2";
+  };
 
   # Loopback device/kernel module config for obs
   boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];

@@ -10,6 +10,7 @@ set "${SETOPTS:--eu}"
 
 DEPLOYOPTS="${DEPLOYOPTS:-}"
 LOCALCHECK="${LOCALCHECK:-}"
+LOCAL="${LOCAL:-false}"
 
 #shellcheck source=../static/src/lib.sh
 . ~/src/pub/github.com/mitchty/nix/static/src/lib.sh
@@ -26,7 +27,12 @@ check() {
 }
 
 _deployrs() {
-  ugde && ssh -t "${nixossys}" "zsh --login -i -c 'gi mitchty/nix && nix run github:serokell/deploy-rs -- -s ${1} -- ${DEPLOYOPTS}'"
+  if ${LOCAL}; then
+    #shellcheck disable=SC2086
+    gi mitchty/nix && nix run github:serokell/deploy-rs -- -s ${1} -- ${DEPLOYOPTS}
+  else
+    ugde && ssh -t "${nixossys}" "zsh --login -i -c 'gi mitchty/nix && nix run github:serokell/deploy-rs -- -s ${1} -- ${DEPLOYOPTS}'"
+  fi
 }
 
 deployrs() {

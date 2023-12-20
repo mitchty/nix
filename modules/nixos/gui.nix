@@ -64,11 +64,5 @@ in
     services.xserver.enable = true;
     services.xserver.displayManager.sddm.enable = true;
     services.xserver.desktopManager.plasma5.enable = true;
-
-    # TODO: review this setup, would like to have login for local but not xrdp
-    #  services.xserver.displayManager.autoLogin = {
-    #    enable = true;
-    #    user = "mitch";
-    #  };
   };
 }

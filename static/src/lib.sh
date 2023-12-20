@@ -622,9 +622,7 @@ bw_items() {
 # easier way to use caffeinate -sid...
 nosleep() {
   #shellcheck disable=SC2119
-  if onmac; then
-    caffeinate -sid "$@"
-  fi
+  onmac caffeinate -sid "$@"
 }
 
 # TODO: pick a name, this is the lazy refusal to make a name option
@@ -639,7 +637,7 @@ wtf() {
   prefix=""
 
   #shellcheck disable=SC2119
-  if onmac; then
+  if [ "Darwin" = "$(uname -s)" ]; then
     prefix="caffeinate -sid"
   fi
 
@@ -660,7 +658,7 @@ wtf() {
 
   # abuse notify/say so I can hear if something went sideways on macos.
   #shellcheck disable=SC2119
-  if onmac; then
+  if [ "Darwin" = "$(uname -s)" ]; then
     if [ "${rc}" -gt 0 ]; then
       notify failed "${action}" &
       say "${action}" "failed" &

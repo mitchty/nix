@@ -19,8 +19,8 @@ for x in "$@"; do
   lnsrc="img/${x}@${runtime}.${_base}"
   lndst="img/${x}.${_base}"
   #shellcheck disable=SC2086
-  install -m444 "$(find -L result -type f -name '*.'${_base})" "${lnsrc}"
-  ln -f "${lnsrc}" "${lndst}"
+  install -m444 "$(find -L result -type f -name '*.'${_base})" "${lndst}"
+  ln -f "${lndst}" "${lnsrc}"
 done
 
 # Make sure we don't have duplicate iso files, or if we do make them hardlinks
