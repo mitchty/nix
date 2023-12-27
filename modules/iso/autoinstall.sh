@@ -22,6 +22,7 @@ disks="${disks?}"
 wipe="${wipe?}"
 zero="${zero?}"
 flavor="${flavor?}"
+typ="${typ?}"
 debug="${debug?}"
 bootsize="${bootsize?}"
 swapsize="${swapsize?}"
@@ -52,6 +53,7 @@ if [ 1 = "${debug}" ]; then
     wipe=${wipe}
     zero=${zero}
     flavor=${flavor}
+    typ=${typ}
     debug=${debug}
     bootsize=${bootsize}
     swapsize=${swapsize}
@@ -229,6 +231,60 @@ setup_zfs() {
     idx=$((idx + 1))
   done
 
+  case "${typ}" in
+    auto)
+      # Logic here is simple, if one disk its just a zpool or straight up straight fs setup nbd
+      #
+      # Iff its zfs and 2 devices its a mirror
+      # Iff its zfs and 3 devices raid5/raidz
+      # Iff its zfs and 3+ devices raid6/raidz2
+      case "${idx}" in
+        0)
+          printf "fatal: zero devices defined to install to\n" >&2
+          exit 1
+          ;;
+        1)
+          typ=single
+          ;;
+        2)
+          typ=mirror
+          ;;
+        3)
+          typ=raid5
+          ;;
+        *)
+          typ=raid6
+          ;;
+      esac
+      ;;
+    mirror)
+      mmin=2
+      if [ "${idx}" -lt ${mmin} ]; then
+        printf "fatal: %s requires at least %d devices\n" "${typ
+}" "${mmin}" >&2
+        exit 1
+      fi
+      ;;
+    raid5)
+      rmin=3
+      if [ "${idx}" -lt ${rmin} ]; then
+        printf "fatal: %s requires at least %d devices\n" "${typ}" "${rmin}" >&2
+        exit 1
+      fi
+      ;;
+    raid6)
+      rmin=4
+      if [ "${idx}" -lt ${rmin} ]; then
+        printf "fatal: %s requires at least %d devices\n" "${typ}" "${rmin}" >&2
+        exit 1
+      fi
+      ;;
+    *)
+      printf "wtf\n" >&2
+      exit 1
+      ;;
+  esac
+
   # metadata 1.0 at the end so we don't conflict with lvm stuff
   # iff we only have 1 device, fake the $count to 2 and add a missing device
   rcount=$count
@@ -250,6 +306,8 @@ setup_zfs() {
   # it does eventually assemble? Just sometimes as /dev/md127 not what I said of
   # /dev/md0, but only in the autoinstall setup. After reboot its md0 as
   # expected.
+  #
+  # Note for the swap md device EVERYTHING is a mirror, always, full stop.
   #shellcheck disable=SC2086
   if ! mdadm --create /dev/${md} --run --level=1 --raid-devices=$rcount --metadata=1.0 --name=SWAPMD --homehost=${host} ${swapmd}; then
     # We'll give ^^^ a max of 30 seconds to work/fight with udev.
@@ -278,12 +336,20 @@ setup_zfs() {
   # If count > 2 raidz
   # count == 2 mirror
   # else n/a
-  strategy=""
-  if [ "${count}" -gt 2 ]; then
-    strategy="raidz"
-  elif [ "${count}" -eq 2 ]; then
-    strategy="mirror"
-  fi
+  case ${typ} in
+  mirror)
+      strategy=${typ}
+      ;;
+  raid5)
+      strategy="raidz"
+      ;;
+  raid6)
+      strategy="raidz2"
+      ;;
+  *)
+      # guess we just yeet whatever together as one giant thing then....
+      strategy=""
+  esac
 
   zpool create -f \
     -o ashift=12 \
@@ -327,7 +393,7 @@ setup_zfs() {
 
 # * here in case things are ran manually
 case "${flavor}" in
-  single | zfs | lvm)
+  single | zfs)
     setup_${flavor}
     ;;
   *)

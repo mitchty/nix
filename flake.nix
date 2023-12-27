@@ -11,6 +11,8 @@
     nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
     # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
+    nur.url = "github:nix-community/NUR";
+
     darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
@@ -54,11 +56,7 @@
 
     # terraform-old.url = "github:NixOS/nixpkgs/8c909dd2613323a939c90efddd089c88c0536fbf";
 
-    # the nixpkgs it ships doesn't compile bash on darwin from what I can find.
-    nixinit = {
-      url = "github:nix-community/nix-init";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # nixinit.url = "github:nix-community/nix-init";
   };
 
   outputs =
@@ -77,8 +75,9 @@
     , dnsblacklist
     , flake-utils
     , nixpkgs-pacemaker
+    , nur
       # , terraform-old
-    , nixinit
+      # , nixinit
     , ...
     }:
     let
@@ -97,6 +96,7 @@
       nixpkgsOverlays = [
         emacs-overlay.overlay
         rust.overlays.default
+        nur.overlay
         (
           # force in the ocf-resource-agents/pacemaker I patched into nixpkgs-pacemaker
           # ignore system as for now all it runs on is x86_64-linux so
@@ -263,6 +263,7 @@
           users = import ./modules/users.nix;
         } ++ [
         home-manager.nixosModules.home-manager
+        nur.nixosModules.nur
         ./modules/nixos
         agenix.nixosModules.age
         "${inputs.nixpkgs-pacemaker}/nixos/modules/${pacemakerPath}"
@@ -906,6 +907,7 @@
                 services.role = {
                   gaming.enable = true;
                   gui.enable = true;
+                  qemu.enable = true;
                   intel.enable = true;
                   mosh.enable = true;
                   node-exporter.enable = true;

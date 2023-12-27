@@ -194,33 +194,24 @@ in
         default = false;
         description = "zero out devices prior to install (time consuming)";
       };
-      # Needs a lot more testing somehow, vm's?
       flavor = mkOption {
-        type = types.enum [ "single" "zfs" "lvm" ];
+        type = types.enum [ "single" "zfs" ]; # lvm again? meh
         default = "zfs";
         description = "Specify the disk layout type, single = no zfs mirroring or lvm mirroring";
       };
+      typ = mkOption {
+        type = types.enum [ "auto" "mirror" "raid5" "raid6" ];
+        default = "auto";
+        description = ''
+          Specify the type of layout to disks, auto tries to do the sanest thing for the flavor in use.
+
+          mirror will just mirror across all devices, <2 devices is fatal
+          raidz will setup a raid 5 setup with 1 disk redundancy <2 devices is fatal
+          raidz2 does the same but raid 6 with 2 disk redundancy <3 devices is fatal
+        '';
+      };
     };
   };
-  # config.systemd.services.wiffy = {
-  #   description = "setup wifi for autoinstall";
-  #   wantedBy = [ "multi-user.target" ];
-  #   after = [ "network.target" "polkit.service" ];
-  #   path = with pkgs; [
-  #     "/run/current-system/sw/"
-  #     "/usr/bin/"
-  #     "${systemd}/bin/"
-  #   ];
-  #   serviceConfig = {
-  #     ExecStart = ''
-  #       ${pkgs.networkmanager}/bin/nmcli device wifi connect 00:C0:CA:B3:F6:14 password zomgletmeinkthx
-  #     '';
-  #     #        ${pkgs.networkmanager}/bin/nmcli device wifi connect newhotness password zomgletmeinkthx bssid 00:C0:CA:B3:F6:14;
-  #     Type = "oneshot";
-  #     Restart = "on-failure";
-  #     RestartSec = 10;
-  #   };
-  # };
   config.systemd.services.autoinstall = {
     description = "NixOS Autoinstall";
     wantedBy = [ "multi-user.target" ];
@@ -243,6 +234,7 @@ in
       swapsize = "${config.autoinstall.swapSize}";
       ossize = "${config.autoinstall.osSize}";
       flavor = "${config.autoinstall.flavor}";
+      typ = "${config.autoinstall.typ}";
       hostid = "${config.autoinstall.hostId}";
       host = "${config.autoinstall.hostName}";
       configuration = ./configuration.nix;

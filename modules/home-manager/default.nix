@@ -249,6 +249,9 @@ in
       source = ../../static/src/lib.sh;
       recursive = true;
     };
+    ".ssh/config" = {
+      source = ../../static/home/sshconfig;
+    };
     # Setup the default mutagen ignore list/config
     ".mutagen.yml".source = ../../static/home/mutagen.yaml;
   } // lib.optionalAttrs role.gui.enable
@@ -331,6 +334,35 @@ in
     enableZshIntegration = true;
     nix-direnv = {
       enable = true;
+    };
+  };
+
+  # Mostly yeeted from here https://gitlab.com/usmcamp0811/dotfiles/-/blob/fb584a888680ff909319efdcbf33d863d0c00eaa/modules/home/apps/firefox/default.nix
+  programs.firefox = {
+    enable = true;
+    profiles = {
+      default = {
+        id = 0;
+        name = "default";
+        isDefault = true;
+        extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+          auto-tab-discard
+          bitwarden
+          cookies-txt
+          greasemonkey
+          i-dont-care-about-cookies
+          sidebery
+          ublacklist
+          ublock-origin
+        ] ++ lib.optionals pkgs.hostPlatform.isLinux [ plasma-integration ];
+        settings = {
+          "browser.startup.page" = 3;
+          "dom.w3c.touch_events.enabled" = true;
+          "dom.w3c_touch_events.legacy_apis.enabled" = true;
+          "apz.allow_zooming" = true;
+          "apz.allow_double_tap_zooming" = true;
+        };
+      };
     };
   };
 }

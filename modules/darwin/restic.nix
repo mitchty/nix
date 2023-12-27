@@ -74,7 +74,6 @@ in
         example = "s3:http://1.2.3.4:5678/example";
         description = ''
           The string representing the repo to backup to.
-          Path to backup, defaults to ~/$HOME
         '';
       };
 
@@ -138,7 +137,7 @@ in
 
         ${darwinbits}
 
-        restic backup --verbose --one-file-system --repo ${cfg.repo} --exclude-file=$EXCLUDES --tag auto $HOME | ts
+        ${cfg.package}/bin/${name} backup --verbose --one-file-system --repo ${cfg.repo} --exclude-file=$EXCLUDES --tag auto $HOME | ts
 
         date
         printf 'fin\n' >&2

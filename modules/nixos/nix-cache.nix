@@ -86,7 +86,7 @@ in
           { addr = cfg.ip; port = 443; }
         ];
         extraConfig = ''
-          resolver 10.10.10.1 ipv6=off valid=10s;
+          resolver 10.10.10.1 valid=10s;
           set $upstream_endpoint https://cache.nixos.org;
         '';
 
