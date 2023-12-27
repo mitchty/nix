@@ -150,7 +150,7 @@ FUTURE MITCH DO NOT ADD *text-mode* or magit will get the minimap too probably a
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package minimap
-  :if (memq window-system '(mac ns))
+  :if (display-graphic-p)
   :ensure
   :defer
   :diminish minimap-mode
@@ -230,7 +230,7 @@ This breaks in :hook for some reason I can't be assed to figure out.
 Command should be meta on cocoa emacs like the old carbon/macports version.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(when (and on-osx (window-system))
+(when (and on-osx (display-graphic-pm))
   (custom-set-variables
    '(mac-command-key-is-meta t)
    '(mac-option-key-is-meta nil)
@@ -244,7 +244,7 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
 *** x copy/paste
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(when (and on-linux (window-system))
+(when (and on-linux (display-graphic-p))
   (progn
     (setq interprogram-paste-function 'x-get-selection)
     (setq select-enable-clipboard t)
@@ -260,8 +260,7 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
 
 *** fonts setup
 
-TODO: Migrate this into the top use-package setup
-Set the default frame list values, then iff in a window system set the fonts in reverse order of preference
+TODO: Should migrate this frame setup to the emacs use-package definition.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (setq default-frame-alist
@@ -277,25 +276,37 @@ Set the default frame list values, then iff in a window system set the fonts in 
                '(menu-bar-lines . 0))))
 #+END_SRC
 
-List of fonts in order of preference. Set preferred font list when we're in a gui emacs session. Note order of the list is in reverse so we set the least desired fonts and end with the more desired if available
+Setup the font presets, by default troll with comic code sans cause its funny and not a bad font honestly.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(with-no-warnings
-  (mapcar (lambda (element)
-            (when (and window-system (find-font (font-spec :name element))
-                       (progn (set-frame-font element)
-                              (set-face-attribute 'default nil :height 180))
-                       )))
-          '(
-            "Monaco"
-            "Menlo"
-            "Source Code Pro"
-            "Pragmata Pro" ;; Seems to register differently on osx than X
-            "PragmataPro"
-            "Comic Code"
-            "ComicCode"
-            )
-          ))
+(use-package fontaine
+  :ensure
+  :if (display-graphic-p)
+  :custom
+  (fontaine-presets
+      '((regular
+         :default-height 200)
+        (source-gihugic
+         :inherit souce-medium
+         :default-height 250)
+        (source-medium
+         :default-family "Source Code Pro"
+         :default-weight semilight
+         :default-height 150
+         :variable-pitch-family "Sans"
+         :bold-weight extrabold)
+        (comic-gihugic
+         :inherit comic-medium
+         :default-height 250)
+        (comic-medium
+         :default-family "Comic Code"
+         :variable-pitch-family "Sans"
+         :default-height 150)
+        (t
+         :default-family "Monospace"
+         )))
+  :config
+  (fontaine-set-preset 'comic-gihugic))
 #+END_SRC
 
 *** tty
@@ -303,7 +314,7 @@ List of fonts in order of preference. Set preferred font list when we're in a gu
    Enable mouse mode for the console and use the mousewheel if possible.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(unless window-system
+(unless (display-graphic-p)
   (require 'mouse)
   (xterm-mouse-mode t)
   (global-set-key [mouse-4] '(lambda ()
@@ -382,7 +393,7 @@ Turns out that someone wrote this exact thing already. Yay get to drop my own cr
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package exec-path-from-shell
-  :if (memq window-system '(mac ns))
+  :if (display-graphic-p)
   :ensure
   :config
   (exec-path-from-shell-initialize)
@@ -779,7 +790,7 @@ https://github.com/integral-dw/org-superstar-mode
   (org-ellipsis "↴")
   :hook (org-mode . org-bullets-mode)
   :config
-  (when window-system
+  (when (display-graphic-p)
     (let* ((variable-tuple (cond ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
                                  ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
                                  ((x-list-fonts "Verdana")         '(:font "Verdana"))
