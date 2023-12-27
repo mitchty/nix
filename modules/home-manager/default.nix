@@ -36,6 +36,38 @@ let
       inputs.nixpkgs-darwin.legacyPackages
     else
       inputs.latest.legacyPackages;
+
+  # Note these are encrypted on disk in git as they are paid so don't look at
+  # this to work for you unless you buy them too, pay the font designers to do
+  # their thing.
+  comic-code = pkgs.stdenv.mkDerivation rec {
+    pname = "comiccode";
+    version = "0.0.0";
+    nativeBuildInputs = [ pkgs.unzip ];
+    src = ../../secrets/crypt/comic-code.zip;
+    sourceRoot = ".";
+    buildPhase = ''
+      find -name \*.otf
+    '';
+    installPhase = ''
+      install -dm755 $out/share/fonts/opentype/ComicCode
+      find -name \*.otf -exec mv {} $out/share/fonts/opentype/ComicCode \;
+    '';
+  };
+  pragmata-pro = pkgs.stdenv.mkDerivation rec {
+    pname = "pragmatapro";
+    version = "0.0.0";
+    nativeBuildInputs = [ pkgs.unzip ];
+    src = ../../secrets/crypt/pragmata-pro.zip;
+    sourceRoot = ".";
+    buildPhase = ''
+      find -name \*.ttf
+    '';
+    installPhase = ''
+      install -dm755 $out/share/fonts/truetype/PragmataPro
+      find -name \*.ttf -exec mv {} $out/share/fonts/truetype/PragmataPro \;
+    '';
+  };
 in
 {
   imports = [
@@ -59,8 +91,9 @@ in
   # aka have something to control: is this a box for streaming? if so add
   # obs-studio etc.. something akin to roles in ansible.
   home.packages = with nixpkgs.${pkgs.system}; [
+    (pkgs.hiPrio clang)
+    (pkgs.hiPrio go) # Ensure this is the go to use in case of collision
     act
-    gcc11
     aspell
     aspellDicts.de
     aspellDicts.en
@@ -70,7 +103,7 @@ in
     aspellDicts.pt_PT
     bind
     bitwarden-cli
-    (pkgs.hiPrio clang)
+    ccls
     clang-tools
     coreutils
     curl
@@ -82,7 +115,7 @@ in
     entr
     file
     fio
-    (pkgs.hiPrio go) # Ensure this is the go to use in case of collision
+    gcc11
     gist
     git-absorb
     git-extras
@@ -93,23 +126,24 @@ in
     git-vendor
     gitFull
     gnumake
+    gnupg1
+    gopls
     graphviz
     gron
-    gnupg1
     htop
     hyperfine
     iftop
     inputs.agenix.packages.${pkgs.system}.agenix
+    inputs.deploy-rs.packages.${pkgs.system}.deploy-rs
     inputs.mitchty.packages.${pkgs.system}.altshfmt
     inputs.mitchty.packages.${pkgs.system}.hatools
     inputs.mitchty.packages.${pkgs.system}.hwatch
     inputs.mitchty.packages.${pkgs.system}.no-more-secrets
     inputs.mitchty.packages.${pkgs.system}.transcrypt
+    # inputs.nixinit.packages.${pkgs.system}.default
     inputs.nixpkgs.legacyPackages.${pkgs.system}.diffoscopeMinimal
     inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
     inputs.rust.packages.${pkgs.system}.rust
-    inputs.nixinit.packages.${pkgs.system}.default
-    inputs.deploy-rs.packages.${pkgs.system}.deploy-rs
     ipcalc
     ipinfo
     ispell
@@ -121,6 +155,7 @@ in
     mapcidr
     mercurial
     minio-client
+    monolith
     moreutils
     nix-prefetch-github
     nix-prefetch-scripts
@@ -132,15 +167,17 @@ in
     pbzip2
     pigz
     procps
+    pup
     pv
-    # For emacs python-mode, not sure if Full is needed or if Minimal would work
-    # and don't care much.
-    python3Full
+    pyright
+    python3Full # For emacs python-mode
     rage
     rclone
     restic
     ripgrep
+    rnix-lsp
     rq
+    rust-analyzer
     rust-analyzer
     s3cmd
     shellcheck
@@ -154,12 +191,16 @@ in
     vim
     wget
     xz
+    yaml-language-server
     yt-dlp
+    # General gui stuff
+  ] ++ lib.optionals role.gui.enable [
+    comic-code
+    pragmata-pro
     # Non gui linux stuff
   ] ++ lib.optionals pkgs.hostPlatform.isLinux [
     docker
     docker-compose
-    firefox
     lshw
     podman
     podman-compose
@@ -170,6 +211,8 @@ in
     xorg.xauth
     # Gui linux stuff
   ] ++ lib.optionals (role.gui.enable && pkgs.hostPlatform.isLinux) [
+    freetube
+    kdialog
     xsel
   ] ++ lib.optionals (pkgs.hostPlatform.isLinux) [
     # macos specific stuff
@@ -177,22 +220,19 @@ in
     pngpaste
     #   inputs.nixpkgs-darwin.legacyPackages.${pkgs.system}.podman
   ] ++ [
+    bwcli
     cidr
     diskhog
     gecos
     ifinfo
     whoson
-
-    bwcli
     # testing nursery...
   ] ++ [
-    ccls
-    gopls
-    pyright
-    rnix-lsp
-    rust-analyzer
-    yaml-language-server
+
   ];
+
+  # Let home-manager setup fonts on macos/linux the same way.
+  fonts.fontconfig.enable = true;
 
   programs.emacs = lib.mkIf role.gui.enable {
     enable = true;
@@ -211,7 +251,7 @@ in
     };
     # Setup the default mutagen ignore list/config
     ".mutagen.yml".source = ../../static/home/mutagen.yaml;
-  } // (lib.mkIf role.gui.enable
+  } // lib.optionalAttrs role.gui.enable
     {
       ".emacs.d/early-init.el" = {
         source = ../../static/emacs/early-init.el;
@@ -221,13 +261,13 @@ in
         source = ../../static/emacs/init.org;
         recursive = true;
       };
-    }) # role.gui home.files
-  // (lib.mkIf pkgs.hostPlatform.isDarwin {
+    } # role.gui home.files
+  // lib.optionalAttrs pkgs.hostPlatform.isDarwin {
     "Library/Scripts/force-paste.scpt" = {
       source = ../../static/src/force-paste.scpt;
       recursive = true;
     };
-  }); # darwin home.files
+  }; # darwin home.files
 
   # Add to home managers dag to make sure the activation fails if emacs can't
   # parse the init files and nuke any temp dirs we don't need/want to stick

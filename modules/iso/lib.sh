@@ -22,7 +22,7 @@ wipe_lvm() {
 
   printf "Wiping all lvm+md setup\n" >&2
   # Nuke lv's first
-  for lv in /dev/mapper/*-*; do
+  for lv in $(echo /dev/mapper/*-*); do
     printf "removing lv %s\n" "%{lv}" >&2
     wipefs --all --force "${lv}" || :
     lvremove -f "${lv}" || :

@@ -160,6 +160,12 @@ rec {
     windows = [ initial rebuildall journal ];
   });
 
+  home.file.".config/tmuxp/wm2.yml".text = (lib.generators.toYAML { } {
+    start_directory = "~/";
+    session_name = "wm2";
+    windows = [ initial rebuildall journal ];
+  });
+
   home.file.".config/tmuxp/srv.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "srv";

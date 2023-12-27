@@ -15,7 +15,7 @@ set "${SETOPTS:--eu}"
 
 if [ "true" = "${CHECK:-true}" ]; then
   if ! nix flake check --show-trace; then
-    exit $?
+    exit 1 # $? is 0 here somehow? whatever
   fi
 fi
 
@@ -32,49 +32,42 @@ hungtest=0
 until [ 0 -lt ${ok} ]; do
   # If darwin-rebuild is done on macos, deploy-rs on linux is done nothing
   # more to do the test didn't hang for some reason
-    case "$(uname -s)" in
+  case "$(uname -s)" in
     Darwin)
       if ! pgrep -lif darwin-rebuild > /dev/null 2>&1; then
-        ((ok=ok+1))
+        ok=$((ok = ok + 1))
+        break
       fi
       ;;
     Linux)
       if ! pgrep -lif deploy > /dev/null 2>&1; then
-        ((ok=ok+1))
+        ok=$((ok = ok + 1))
+        break
       fi
-    ;;
+      ;;
 
     *)
-	printf "fatal: how did you get here?\n" >&2
-        exit 1
-    ;;
-    esac
+      printf "fatal: how did you get here?\n" >&2
+      exit 1
+      ;;
+  esac
 
-  if pgrep -U $(id -u) -lifa emacs | awk '/seq-tests.el/ && !/true/ {print $1; exit 1}' > /dev/null 2>&1; then
-    ((hungtest=hungtest+1))
-    sleep 60
-  fi
-
-  if [ ${hungtest} -ge 3 ]; then
-    victim="$(grep -vxF -f =(pgrep -U $(id -u)) =(pgrep -lifa emacs) | grep 'seq-tests.el' | grep -Ev '(true)')"
-    pid="$(echo ${victim} | awk '{print $1}')"
-
+  # Whatever I'm not quoting id -u you can't have spaces in userids...
+  #shellcheck disable=SC2046
+  hungtest=$(pgrep -lifa emacs | awk '/seq-tests[.]el$/ {print $1; exit}')
+  if [ "" != "${hungtest}" ]; then
     # I let this run for a long time and it eventually exited, but that was
     # like hours, ain't nobody got time for that and killing the test seems
     # fine.
-    if [ "${pid}" = "" ]; then
-      hungtest=0
-    else
-      printf "\n\nnote: will kill likely hung test pid %s\n" "${victim}" >&2
-      sudo kill -TERM ${pid} || : # We don't want to accidentally exit from this
-    fi
+    printf "\n\nnote: will kill likely hung test pid %s\nsudo kill -TERM %s\n" "${hungtest}" "${hungtest}" >&2
+    sudo kill -TERM "${hungtest}" || : # We don't want to accidentally exit from this
   fi
-  sleep 3
+  sleep 2
 done
 
 wait $!
 rc=$?
 
-printf "\nfin\n"
+printf "fin\n" >&2
 
 exit $rc

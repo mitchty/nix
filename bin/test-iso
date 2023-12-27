@@ -1,6 +1,6 @@
 #!/usr/bin/env nix-shell
 #-*-mode: Shell-script; coding: utf-8;-*-
-#!nix-shell -i bash -p bash qemu jq OVMF
+#!nix-shell -i bash -p bash
 # SPDX-License-Identifier: BlueOak-1.0.0
 # Description: Want to test out the autoinstall iso setup.
 _base=$(basename "$0")
@@ -8,8 +8,15 @@ _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 
 set -xeu
-efibios=$(nix derivation show -r nixpkgs#OVMF | jq -r '. | with_entries( select(.key|contains("-OVMF-20"))) | .[].outputs.fd.path')
-qemuargs="-bios ${efibios}/FV/OVMF.fd -enable-kvm -smp 4 -nographic -m 8096 -boot d -net user,hostfwd=tcp::10022-:22 -net nic"
+
+# Note: nix-shell for now whilst I work out kinks manually.
+
+# Note this is just a custom wrapper script that auto uses the OVMF firmware. I
+# need to validate/test using efi vars to do more automation but for now this is
+# fine.
+QEMU=${QEMU:-qemu-system-x86_64-uefi}
+
+qemuargs="-enable-kvm -smp 4 -nographic -m 8096 -boot d"
 
 get_iso() {
   readlink -f $(find -L ${_dir}/.. -name custom.iso -type f | head -n1)
@@ -21,42 +28,62 @@ get_iso() {
 # I need to come up with some way to get this into nix flake checks that makes
 # sense.
 
-# typ=isoTest
-# nix build ${NIXOPTS-} ".#isoWm2"
-# tmpdir="/tmp/${typ}"
-# trap "rm -fr ${tmpdir}" EXIT TERM INT QUIT
+test_simple() {
+  # Single simple one disk straight up fs setup.
+  typ=isoSimpleTest
+  nix build ${NIXOPTS-} ".#${typ}"
+  iso=$(get_iso)
+  tmpdir=$(mktemp -d XXXXXXXX -t)
+  trap "rm -fr $tmpdir" EXIT TERM INT QUIT
 
-# disk0="/tmp/vdisk0"
-# qemu-img create -f qcow2 ${disk0} 40G
+  disk0="${tmpdir}/vdisk0"
+  qemu-img create -f qcow2 ${disk0} 40G
 
-# qemu-system-x86_64 -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -net user,hostfwd=tcp::10022-:22 -net nic
+  sshport=$((($(echo ${typ} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
 
-# exit
+  qemu-system-x86_64-uefi ${qemuargs} -cdrom ${iso} -hda ${disk0} -net user,hostfwd=tcp::${sshport}-:22 -net nic
+  # qemu-system-x86_64-uefi -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -net user,hostfwd=tcp::10022-:22 -net nic
+}
 
-# Single simple one disk straight up fs setup.
-typ=isoSimpleTest
-nix build ${NIXOPTS-} ".#${typ}"
-iso=$(get_iso)
-tmpdir="/tmp/${typ}"
-trap "rm -fr ${tmpdir}" EXIT TERM INT QUIT
+test_iso() {
+  typ=isoTest
+  nix build ${NIXOPTS-} ".#isoWm2"
+  tmpdir=$(mktemp -d XXXXXXXX -t)
+  trap "rm -fr $tmpdir" EXIT TERM INT QUIT
 
-disk0="/tmp/vdisk0"
-qemu-img create -f qcow2 ${disk0} 40G
+  disk0="${tmpdir}/vdisk0"
+  qemu-img create -f qcow2 ${disk0} 40G
 
-qemu-system-x86_64 ${qemuargs} -cdrom ${iso} -hda ${disk0}
-# qemu-system-x86_64 -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -net user,hostfwd=tcp::10022-:22 -net nic
+  sshport=$((($(echo ${typ} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
 
-typ=isoZfsTest
-nix build ${NIXOPTS-} ".#${typ}"
-iso=$(get_iso)
-tmpdir="/tmp/${typ}"
-trap "rm -fr ${tmpdir}" EXIT TERM INT QUIT
+  qemu-system-x86_64-uefi -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -net user,hostfwd=tcp::${sshport}-:22 -net nic
+}
 
-disk0="/tmp/vdisk0"
-qemu-img create -f qcow2 ${disk0} 40G
-disk1="/tmp/vdisk1"
-qemu-img create -f qcow2 ${disk1} 40G
+test_zfs() {
+  typ=isoZfsTest
+  nix build ${NIXOPTS-} ".#${typ}"
+  iso=$(get_iso)
+  tmpdir=$(mktemp -d XXXXXXXX -t)
+  trap "rm -fr $tmpdir" EXIT TERM INT QUIT
 
-qemu-system-x86_64 ${qemuargs} -cdrom ${iso} -hda ${disk0} -hdb ${disk1}
-#qemu-system-x86_64 -bios ${efibios}/FV/OVMF.fd -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
-#qemu-system-x86_64 -enable-kvm -smp 4 -nographic -m 8096 -boot d -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
+  disk0="${tmpdir}/vdisk0"
+  qemu-img create -f qcow2 ${disk0} 40G
+  disk1="${tmpdir}/vdisk1"
+  qemu-img create -f qcow2 ${disk1} 40G
+
+  sshport=$((($(echo ${typ} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
+
+  qemu-system-x86_64-uefi ${qemuargs} -cdrom ${iso} -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::${sshport}-:22 -net nic
+  #qemu-system-x86_64-uefi -bios ${efibios}/FV/OVMF.fd -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
+  #qemu-system-x86_64-uefi -enable-kvm -smp 4 -nographic -m 8096 -boot d -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
+}
+
+tests="zfs"
+
+if [ $# -gt 0 ]; then
+  tests="$@"
+fi
+
+for t in ${tests}; do
+  test_${t}
+done

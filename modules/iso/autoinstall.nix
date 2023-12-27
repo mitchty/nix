@@ -46,7 +46,14 @@ in
 
     services.lvm.boot.thin.enable = true;
 
-    boot.kernelParams = [ "boot.shell_on_fail" "console=ttyS0,115200" "console=tty0" "iomem=relaxed" "intel-spi.writeable=1" "delayacct" "copytoram=1" ];
+    boot.kernelParams = [
+      "boot.shell_on_fail"
+      "console=ttyS0,115200n8"
+      "copytoram=1"
+      "delayacct"
+      "intel-spi.writeable=1"
+      "iomem=relaxed"
+    ];
     boot.loader.grub.extraConfig = "
       serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1
       terminal_input serial
@@ -127,6 +134,7 @@ in
       lvm2
       lvm2.bin
       mdadm
+      nixpkgs-fmt
       parted
       pciutils
       powertop

@@ -17,8 +17,11 @@ in
   # imports = [ mylib.nixFiles ./. ];
   imports = [
     ./cluster.nix
+    ./media.nix
     ./grafana.nix
     ./gui.nix
+    ./qemu.nix
+    ./gaming.nix
     ./highmem.nix
     ./intel.nix
     ./loki.nix

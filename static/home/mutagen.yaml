@@ -2,6 +2,7 @@ sync:
   defaults:
     ignore:
       paths:
+        - ".stversions"
         - ".zfs"
         - ".direnv"
         - ".#*"

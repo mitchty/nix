@@ -246,10 +246,12 @@ setup_zfs() {
 
   md=md0
 
-  # EVEN WITH ^^^ I am getting part2 Device or resource busy still aaaaaaa, but it does eventually assemble?
-  # Just sometimes as /dev/md127 not what I said of /dev/md0
+  # EVEN WITH ^^^ I am getting part2 Device or resource busy still aaaaaaa, but
+  # it does eventually assemble? Just sometimes as /dev/md127 not what I said of
+  # /dev/md0, but only in the autoinstall setup. After reboot its md0 as
+  # expected.
   #shellcheck disable=SC2086
-  if ! mdadm --create /dev/${md} --run --level=1 --raid-devices=$rcount --metadata=1.0 --name=SWAPMD ${swapmd}; then
+  if ! mdadm --create /dev/${md} --run --level=1 --raid-devices=$rcount --metadata=1.0 --name=SWAPMD --homehost=${host} ${swapmd}; then
     # We'll give ^^^ a max of 30 seconds to work/fight with udev.
     lim=30
     until [ ${lim} -eq 0 ]; do
@@ -263,10 +265,6 @@ setup_zfs() {
     done
   fi
   udevadm control --start-exec-queue
-
-  # Sync of raid array(s) can happen after reboot/boot, lets not have
-  # it take iops away from the install
-  # echo 0 > /proc/sys/dev/raid/speed_limit_max
 
   # Get our swap going and use it so the installer picks it up, not very useful
   # during install though.
@@ -291,7 +289,7 @@ setup_zfs() {
     -o ashift=12 \
     -O acltype=posixacl \
     -O atime=off \
-    -O compression=lz4 \
+    -O compression=zstd \
     -O dnodesize=auto \
     -O mountpoint=none \
     -O xattr=sa \
@@ -307,7 +305,7 @@ setup_zfs() {
   zfs create -o mountpoint=legacy zroot/os/var
 
   # This can cover other "user" data like maybe vm's or whatever for now /home really
-  zfs create -o mountpoint=legacy -o compression=zstd zroot/user/home
+  zfs create -o mountpoint=legacy zroot/user/home
 
   mount -t zfs zroot/os/root /mnt
 
@@ -337,6 +335,8 @@ case "${flavor}" in
     ;;
 esac
 
+# TODO: nixos-generate-config --show-hardware-config --no-filesystems
+# and populate configuration.nix myself with fs data.
 nixos-generate-config --root /mnt
 
 # Generate the hostid by default off machine-id otherwise set it to what was provided.
@@ -355,6 +355,10 @@ nixoscfg=/mnt/etc/nixos/configuration.nix
 install -D $nixoscfg $nixoscfg.generated
 install -D "${configuration}" $nixoscfg
 
+# Ensure we're dumping out to the serial console in default kernel params not
+# aligned cause nix-fmt can do that for us later.
+sed -i '/kernelParams/a "console=ttyS0,115200n8"' ${nixoscfg}
+
 # First up insert the hostname and hostid we generated
 sed -i '$i  networking.hostName = "'"${host}"'";' $nixoscfg
 sed -i '$i  networking.hostId = "'"${hostid}"'";' $nixoscfg
@@ -368,15 +372,12 @@ sed -i '$i  networking.hostId = "'"${hostid}"'";' $nixoscfg
 # The kernel/initrd is in the efi partition(s) and can just import the zpool
 # directly no need for efi+/bootN+pool partitions.
 sed -i "\$i  boot.loader.systemd-boot.extraInstallCommands = ''" $nixoscfg
-idx=0
-for disk in $disks; do
-  sed -i '$i  mount -t vfat -o iocharset=iso8859-1 /dev/disk/by-partlabel/ESP'"${idx}"' /efiboot/efi'"${idx}" $nixoscfg
-  idx=$((idx + 1))
-done
+
 idx=0
 for disk in $disks; do
   if [ "${idx}" -gt 0 ]; then
-    sed -i '$i  cp -r /efiboot/efi0/* /efiboot/efi'"${idx}" $nixoscfg
+    # sed -i '$i  echo syncing /efiboot/efi0/ ->  /efiboot/efi'"${idx}" $nixoscfg
+    sed -i '$i  \$\{pkgs.rsync\}/bin/rsync -Ha --delete /efiboot/efi0/ /efiboot/efi'"${idx}" $nixoscfg
   fi
   idx=$((idx + 1))
 done
@@ -385,8 +386,26 @@ sed -i "\$i                                     '';" $nixoscfg
 if [ "zfs" = "${flavor}" ]; then
   sed -i '$i  boot.swraid.enable = true;' $nixoscfg
   sed -i "\$i boot.swraid.mdadmConf = ''\n'';" $nixoscfg
-  mdadm --detail --scan --verbose > /tmp/mdadm.conf
-  sed -i '/mdadmConf/r/tmp/mdadm.conf' $nixoscfg
+
+  mdadmconf=/mnt/etc/nixos/mdadm.conf
+  printf "PROGRAM \$\{pkgs.coreutils\}/bin/true\n" > ${mdadmconf}
+
+  mdadm --detail --scan --verbose >> ${mdadmconf}
+
+  # Remove the uuid entry I only want md to use the named version of things
+  sed -i 's/UUID.*//g' ${mdadmconf}
+
+  # As well as stable device names, using partlabels instead of say /dev/sdN or
+  # /dev/nvmeblah which depend on drivers behaving sanely which they don't.
+  for device in $(grep devices=/dev ${mdadmconf} | awk -F= '{print $2}' | tr ',' ' '); do
+    stable=$(find -L /dev -xdev -samefile ${device} -o -path '/dev/fd/*' -prune | awk '/by-partlabel/')
+    sed -i "s|${device}|${stable}|g" ${mdadmconf}
+  done
+
+  # mds=$(find -L /dev -xdev -samefile /dev/${md} -o -path '/dev/fd/*' -prune)
+  #  mdlabel=$(echo ${mds} | awk '/md-name/ {print $0}')
+
+  sed -i "/mdadmConf/r${mdadmconf}" $nixoscfg
   sed -i '$i  boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;' $nixoscfg
   sed -i '$i  boot.initrd.kernelModules = [ "zfs" ];' $nixoscfg
   sed -i '$i  boot.initrd.postDeviceCommands = "zpool import -lf zpool";' $nixoscfg
@@ -401,9 +420,13 @@ done
 
 # pause
 
+for f in configuration.nix hardware-configuration.nix; do
+  nixpkgs-fmt /mnt/etc/nixos/${f}
+done
+
 nixos-install --no-root-password
 
-pause
+# pause
 
 if [ "zfs" = $flavor ]; then
   for mnt in $(awk '/\/mnt\// {print $1}' /proc/mounts); do

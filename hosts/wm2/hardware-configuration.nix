@@ -52,8 +52,9 @@
 
   swapDevices =
     [{
-      device = "/dev/disk/by-label/SWAPMD";
-      #      randomEncryption = true;
+      device = "/dev/md/SWAPMD";
+      #      device = "/dev/disk/by-label/SWAPMD";
+      randomEncryption = true;
     }];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking

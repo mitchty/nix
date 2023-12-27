@@ -17,11 +17,6 @@ in
       "google-chrome"
     ];
 
-    # gooey stuff for qemu
-    nixpkgs.config.packageOverrides = pkgs: {
-      qemu = pkgs.qemu.override { gtkSupport = true; };
-    };
-
     environment.systemPackages = [
       pkgs.element-desktop
       pkgs.google-chrome

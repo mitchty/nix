@@ -1,4 +1,4 @@
-{ config, ... }: {
+{ config, pkgs, ... }: {
   imports =
     [
       ./..
@@ -10,6 +10,7 @@
       ../virtualization.nix
       ../desktop.nix
       ../userscompat.nix
+      ../laptop.nix
     ];
 
   config = {
@@ -67,12 +68,13 @@
     boot.swraid.mdadmConf = ''
       ARRAY /dev/md/SWAPMD level=raid1 num-devices=2 metadata=1.0 name=autoinstall:SWAPMD UUID=1f7f9662:a3c9d763:0474afbf:b827718d
          devices=/dev/nvme0n1p2,/dev/nvme1n1p2
+      PROGRAM ${pkgs.coreutils}/bin/true
     '';
     boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
     boot.initrd.kernelModules = [ "zfs" ];
     boot.initrd.postDeviceCommands = "zpool import -lf zpool";
     boot.zfs.devNodes = "/dev/disk/by-partlabel";
-    #    networking.interfaces.enp103s0f4u1c2.useDHCP = true;
+    networking.interfaces.enp103s0f4u1c2.useDHCP = true;
     #    networking.interfaces.wlp2s0.useDHCP = true;
     services.openssh.extraConfig = ''
       UseDNS no
