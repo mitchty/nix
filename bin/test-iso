@@ -78,7 +78,7 @@ test_zfs() {
   #qemu-system-x86_64-uefi -enable-kvm -smp 4 -nographic -m 8096 -boot d -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
 }
 
-tests="zfs"
+tests="simple zfs"
 
 if [ $# -gt 0 ]; then
   tests="$@"
