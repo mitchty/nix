@@ -1,0 +1,57 @@
+// Macos really but all this stuff shouldn't ever be tried to be synced
+(?d).DS_Store
+(?d).localized
+(?d)._*
+(?d).Icon*
+(?d).fseventsd
+(?d).Spotlight-V100
+(?d).DocumentRevisions-V100
+(?d).TemporaryItems
+(?d).Trashes
+(?d).Trash-1000
+(?d).iCloud
+
+// More linux related equivalents
+(?d).directory
+(?d).Trash-*
+
+// Crap from windows
+(?d)desktop.ini
+(?d)ehthumbs.db
+(?d)Thumbs.db
+(?d)$RECYCLE.BIN
+(?d)System Volume Information
+
+// temp crap
+*.temporary
+*.tmp
+*._mp
+*.old
+*.syd
+*.dir
+*.gid
+*.chk
+*.dmp
+*.nch
+.*.swp
+*~
+
+// vim specific turds
+*.*.sw[a-p]
+
+// .git git stuff we don't want to sync
+(?d).git/COMMIT_EDITMSG
+(?d)tmp_pack_.*
+
+// attic stuff is where I stick bits to eventually die
+domain/attic
+
+// rust
+(?d)target/release
+(?d)target/debug
+
+// nix result symlink, its specific to the host anyway
+(?d)result
+
+// Packer cache is huge and no need to sync it
+(?d)packer_cache
