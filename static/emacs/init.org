@@ -230,7 +230,7 @@ This breaks in :hook for some reason I can't be assed to figure out.
 Command should be meta on cocoa emacs like the old carbon/macports version.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(when (and on-osx (display-graphic-pm))
+(when (and on-osx (display-graphic-p))
   (custom-set-variables
    '(mac-command-key-is-meta t)
    '(mac-option-key-is-meta nil)
@@ -488,10 +488,9 @@ crap I found on github.
                                                  'help-echo state
                                                  'face `(:foreground ,(cdr state))))
                                 )))
-        ;; Only append in the battery thingy on macos, don't have nixos/linux
-        ;; laptops... yet?
-        (if (memq window-system '(mac ns)) mode-line-front-space)
-        (if (memq window-system '(mac ns)) 'battery-mode-line-string)
+        ;; Only append in the battery thingy on gooey capable runtimes.
+        (if (display-graphic-p) mode-line-front-space)
+        (if (display-graphic-p) 'battery-mode-line-string)
 
 ))
         ;; TODO: Port this over too at some point in a boring meeting or
