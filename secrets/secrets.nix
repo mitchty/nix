@@ -28,15 +28,14 @@ let
   workusers = [ tishmack ];
   workhosts = [ wmb ];
 
-  # TODO: Remove dfs1 from here this is a hack for now
-  git = homehosts ++ homeusers;
+  git = homehosts ++ homeusers ++ workhosts;
   restic = [ mb srv nexus ];
 
   # Some secrets should be usable everywhere
   allusers = homeusers ++ workusers;
   allhosts = homehosts ++ workhosts;
 
-  # Just routers
+  # Just router(s)
   router = [ gw ];
 
   # Mostly for the canary secret for testing
