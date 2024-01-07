@@ -79,7 +79,6 @@ in
     ./git.nix
     ./tmux.nix
     ./btop.nix
-    ./syncthing.nix
   ];
 
   systemd.user = lib.mkIf pkgs.hostPlatform.isLinux { startServices = "sd-switch"; };
@@ -339,7 +338,45 @@ in
 
   # Mostly yeeted from here https://gitlab.com/usmcamp0811/dotfiles/-/blob/fb584a888680ff909319efdcbf33d863d0c00eaa/modules/home/apps/firefox/default.nix
   programs.firefox = {
-    enable = true;
+    enable = pkgs.hostPlatform.isLinux && (role.gui.enable or false);
+    policies = {
+      CaptivePortal = true;
+      DisableFirefoxAccounts = true;
+      DisableFirefoxStudies = true;
+      DisableFormHistory = true;
+      DisablePocket = true;
+      DisableTelemetry = true;
+      DNSOverHTTPS = { Enabled = false; };
+      EncryptedMediaExtensions = { Enabled = false; };
+      FirefoxHome = {
+        SponsoredTopSites = false;
+        Pocket = false;
+        SponsoredPocket = false;
+      };
+      HardwareAcceleration = true;
+      Homepage = { StartPage = "none"; };
+      NetworkPrediction = false;
+      NewTabPage = false;
+      NoDefaultBookmarks = false;
+      OfferToSaveLogins = false;
+      OfferToSaveLoginsDefault = false;
+      OverrideFirstRunPage = "";
+      OverridePostUpdatePage = "";
+      PasswordManagerEnabled = false;
+      Permissions = {
+        Location = { BlockNewRequests = true; };
+        Notifications = { BlockNewRequests = true; };
+      };
+      #          PopupBlocking = { Default = false; };
+      PromptForDownloadLocation = true;
+      SanitizeOnShutdown = true;
+      SearchSuggestEnabled = false;
+      ShowHomeButton = true;
+      UserMessaging = {
+        WhatsNew = false;
+        SkipOnboarding = true;
+      };
+    };
     profiles = {
       default = {
         id = 0;
@@ -356,11 +393,20 @@ in
           ublock-origin
         ] ++ lib.optionals pkgs.hostPlatform.isLinux [ plasma-integration ];
         settings = {
+          "apz.allow_double_tap_zooming" = false;
+          "apz.allow_zooming" = true;
+          "apz.gtk.touchpad_pinch.enabled" = true;
+          "browser.aboutConfig.showWarning" = false;
           "browser.startup.page" = 3;
+          "browser.tabs.loadInBackground" = false;
+          "browser.tabs.warnOnClose" = false;
+          "browser.urlbar.shortcuts.bookmarks" = false;
+          "browser.urlbar.shortcuts.history" = false;
+          "browser.urlbar.shortcuts.tabs" = false;
+          "browser.urlbar.update2" = false;
           "dom.w3c.touch_events.enabled" = true;
           "dom.w3c_touch_events.legacy_apis.enabled" = true;
-          "apz.allow_zooming" = true;
-          "apz.allow_double_tap_zooming" = true;
+          "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
         };
       };
     };

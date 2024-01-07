@@ -2,12 +2,14 @@
   description = "mitchty nixos flake setup";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    #nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
     latest.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     mitchty.url = "github:mitchty/nixos";
     # mitchty.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixos";
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.05-darwin";
+    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.11-darwin";
+    #nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.05-darwin";
     nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
     # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
@@ -29,7 +31,8 @@
     };
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-23.05";
+      url = "github:nix-community/home-manager/release-23.11";
+      #url = "github:nix-community/home-manager/release-23.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -529,30 +532,7 @@
       ageHomeNixosWithBackup = user: ageHomeNixos user // ageRestic user;
     in
     {
-      diskImages = {
-        rpi4 = nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
-          modules = [
-            # "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64-new-kernel.nix"
-            # ./machines/ether/image.nix
-            # ./machines/ether/hardware.nix
-            # ./machines/ether/configuration.nix
-          ];
-        };
-      };
       packages.x86_64-linux = {
-        # vmSimple = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     simpleAutoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "vm-nogui";
-        # };
         isoSimple = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [
@@ -586,18 +566,6 @@
           ];
           format = "install-iso";
         };
-        # isoSrv = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     srvAutoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
         isoWm2 = nixos-generators.nixosGenerate {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [
@@ -624,110 +592,6 @@
           ];
           format = "install-iso";
         };
-        # isoCl2 = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     cl2Autoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoCl3 = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     cl3Autoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoGw = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     gwAutoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # sdGenericAarch64 = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux.pkgsCross.aarch64-multiplatform;
-        #   modules = [ "${nixpkgs.legacyPackages.aarch64-linux.path}/nixos/modules/profiles/minimal.nix" ];
-        #   format = "sd-aarch64";
-        # };
-        # isoGeneric = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   format = "install-iso";
-        # };
-        # isoDfs1 = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     dfs1Autoinstall
-        #     {
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoZeroDfs1 = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     dfs1Autoinstall
-        #     {
-        #       autoinstall.wipe = true;
-        #       autoinstall.zero = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoZeroRouter = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     routerAutoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #       autoinstall.zero = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoNexus = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     nexusAutoinstall
-        #     {
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoZeroNexus = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     nexusAutoinstall
-        #     {
-        #       autoinstall.wipe = true;
-        #       autoinstall.zero = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
       };
 
       darwinConfigurations = rec {
@@ -769,7 +633,6 @@
             services.home.enable = true;
             services.mitchty.enable = true;
             services.shared.mutagen.enable = true;
-            services.shared.syncthing.enable = false;
           }];
         };
         wmb = darwinSystem {
@@ -842,11 +705,6 @@
               prometheus.enable = true;
               promtail.enable = true;
             };
-            services.shared.syncthing = {
-              enable = false;
-              user = homeUser;
-              group = homeGroup;
-            };
             services.shared.mutagen = {
               enable = true;
               user = homeUser;
@@ -875,11 +733,6 @@
                 mosh.enable = true;
                 node-exporter.enable = true;
                 promtail.enable = true;
-              };
-              services.shared.syncthing = {
-                enable = false;
-                user = homeUser;
-                group = homeGroup;
               };
               services.shared.mutagen = {
                 enable = true;
@@ -912,11 +765,6 @@
                   mosh.enable = true;
                   node-exporter.enable = true;
                   promtail.enable = true;
-                };
-                services.shared.syncthing = {
-                  enable = false;
-                  user = homeUser;
-                  group = homeGroup;
                 };
                 services.shared.mutagen = {
                   enable = true;

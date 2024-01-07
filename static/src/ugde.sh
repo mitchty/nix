@@ -1,7 +1,11 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
-# Description: Until Git Diff Equal, cause syncthing is slow af at syncing single text files less than 4k... so we wait, and wait and wait
+# Description: Until Git Diff Equal, ensures that if i run deploy-rs on
+# srv.home.arpa the local git diff == remote and the files are in sync.
+#
+# OG rationale was syncthing was constantly messing up or not syncing, mutagens
+# much less terribad.
 _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir

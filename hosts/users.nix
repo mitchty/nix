@@ -8,7 +8,7 @@ in
   config.users = {
     users = {
       root = {
-        passwordFile = config.age.secrets."passwd/root".path;
+        hashedPasswordFile = config.age.secrets."passwd/root".path;
       };
       mitch = {
         isNormalUser = true;
@@ -16,7 +16,7 @@ in
         home = "/home/mitch";
         createHome = true;
         shell = pkgs.zsh;
-        passwordFile = config.age.secrets."passwd/mitch".path;
+        hashedPasswordFile = config.age.secrets."passwd/mitch".path;
         group = "users";
         extraGroups = [
           "audio"
