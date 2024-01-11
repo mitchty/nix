@@ -68,6 +68,62 @@ let
       find -name \*.ttf -exec mv {} $out/share/fonts/truetype/PragmataPro \;
     '';
   };
+
+  # TODO: put all this emacs stuff into an overlay
+  #
+  # Top level so we can share this with init.el/packages.emacs and let its
+  # build phase emacs batch mode make sure this all works.
+  emacs-overlay-prime = pkgs.emacsWithPackagesFromUsePackage
+    {
+      config = ../../static/emacs/init.org;
+      package = inputs.nixpkgs-darwin-old.legacyPackages.${pkgs.system}.emacs29;
+    };
+  emacs-overlay = pkgs.emacsWithPackagesFromUsePackage
+    {
+      config = "${init-el}/init.el";
+      package = inputs.nixpkgs-darwin-old.legacyPackages.${pkgs.system}.emacs29;
+      defaultInitFile = true;
+    };
+
+  # https://github.com/nix-community/emacs-overlay/issues/373
+  #
+  # So have emacs tangle the .el file for us so we can use that to pass into the
+  # overlay function.
+  #
+  # While I'm at it, lets also use the build phase here to ensure that the
+  # entire derivation works or if I forgot a ) somewhere... again...
+  init-el = pkgs.stdenv.mkDerivation
+    rec {
+      pname = "initel";
+      version = "0.0.0";
+      buildInputs = [
+        emacs-overlay-prime
+      ];
+      src = ../../static/emacs;
+
+      # abuse this derivation to munge org->el so we can use that for default init file
+      # and then also use that to batch load it.
+      buildPhase = ''
+        emacs -Q --batch --eval "
+            (progn
+              (require 'ob-tangle)
+              (dolist (file command-line-args-left)
+                (with-current-buffer (find-file-noselect file)
+                  (org-babel-tangle))))
+          " init.org
+        echo emacs batch load to make sure init.el is parseable >&2
+        (export HOME=$TMPDIR; emacs -nw --batch --debug-init --load init.el)
+      '';
+
+      installPhase = ''
+        install -dm755 $out
+        install -m644 init.org $out/init.org
+        install -m644 init.el $out/init.el
+      '';
+    };
+
+  # TODO: maybe yeet this into the gui role itself?
+  gooey = (pkgs.hostPlatform.isDarwin || (role.gui.enable or false));
 in
 {
   imports = [
@@ -225,17 +281,14 @@ in
     gecos
     ifinfo
     whoson
-    # testing nursery...
-  ] ++ [
-
   ];
 
   # Let home-manager setup fonts on macos/linux the same way.
   fonts.fontconfig.enable = true;
 
-  programs.emacs = lib.mkIf role.gui.enable {
-    enable = true;
-    package = pkgs.emacsWithConfig;
+  programs.emacs = {
+    enable = gooey;
+    package = emacs-overlay;
   };
 
   home.file = {
@@ -253,14 +306,10 @@ in
     };
     # Setup the default mutagen ignore list/config
     ".mutagen.yml".source = ../../static/home/mutagen.yaml;
-  } // lib.optionalAttrs role.gui.enable
+  } // lib.optionalAttrs gooey
     {
       ".emacs.d/early-init.el" = {
         source = ../../static/emacs/early-init.el;
-        recursive = true;
-      };
-      ".emacs.d/init.org" = {
-        source = ../../static/emacs/init.org;
         recursive = true;
       };
     } # role.gui home.files
@@ -275,18 +324,9 @@ in
   # parse the init files and nuke any temp dirs we don't need/want to stick
   # around if present. Most of these are just caches though init.el(c) need to
   # get yeeted into the nix store somehow.
-  home.activation.freshEmacs = lib.mkIf role.gui.enable (lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  home.activation.freshEmacs = lib.mkIf gooey (lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     printf "modules/home-manager/default.nix: clean ~/.emacs.d\n" >&2
-    $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.emacs.d/init.el ~/.emacs.d/init.elc ~/.emacs.d/custom.el ~/.emacs.d/elpa ~/.emacs.d/eln-cache ~/.cache/org-persist
-  '');
-
-  # TODO: how the hell do I move this into a flake check instead?
-  # Note this has to happen after linkGeneration in the dag, otherwise the new
-  # setups not in place to be used by emacs yet and things might have diverged
-  # package wise.
-  home.activation.testEmacs = lib.mkIf role.gui.enable (lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    printf "modules/home-manager/default.nix: test emacs\n" >&2
-    $DRY_RUN_CMD ${pkgs.emacsWithConfig}/bin/emacs --debug-init --batch --user $USER
+    $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.emacs.d/init.elc ~/.emacs.d/custom.el ~/.emacs.d/elpa ~/.emacs.d/eln-cache ~/.cache/org-persist
   '');
 
   # Ensure that certain defaults are set, note need to restart SystemUIServer
@@ -337,78 +377,85 @@ in
   };
 
   # Mostly yeeted from here https://gitlab.com/usmcamp0811/dotfiles/-/blob/fb584a888680ff909319efdcbf33d863d0c00eaa/modules/home/apps/firefox/default.nix
-  programs.firefox = {
-    enable = pkgs.hostPlatform.isLinux && (role.gui.enable or false);
-    policies = {
-      CaptivePortal = true;
-      DisableFirefoxAccounts = true;
-      DisableFirefoxStudies = true;
-      DisableFormHistory = true;
-      DisablePocket = true;
-      DisableTelemetry = true;
-      DNSOverHTTPS = { Enabled = false; };
-      EncryptedMediaExtensions = { Enabled = false; };
-      FirefoxHome = {
-        SponsoredTopSites = false;
-        Pocket = false;
-        SponsoredPocket = false;
-      };
-      HardwareAcceleration = true;
-      Homepage = { StartPage = "none"; };
-      NetworkPrediction = false;
-      NewTabPage = false;
-      NoDefaultBookmarks = false;
-      OfferToSaveLogins = false;
-      OfferToSaveLoginsDefault = false;
-      OverrideFirstRunPage = "";
-      OverridePostUpdatePage = "";
-      PasswordManagerEnabled = false;
-      Permissions = {
-        Location = { BlockNewRequests = true; };
-        Notifications = { BlockNewRequests = true; };
-      };
-      #          PopupBlocking = { Default = false; };
-      PromptForDownloadLocation = true;
-      SanitizeOnShutdown = true;
-      SearchSuggestEnabled = false;
-      ShowHomeButton = true;
-      UserMessaging = {
-        WhatsNew = false;
-        SkipOnboarding = true;
-      };
-    };
-    profiles = {
-      default = {
-        id = 0;
-        name = "default";
-        isDefault = true;
-        extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-          auto-tab-discard
-          bitwarden
-          cookies-txt
-          greasemonkey
-          i-dont-care-about-cookies
-          sidebery
-          ublacklist
-          ublock-origin
-        ] ++ lib.optionals pkgs.hostPlatform.isLinux [ plasma-integration ];
-        settings = {
-          "apz.allow_double_tap_zooming" = false;
-          "apz.allow_zooming" = true;
-          "apz.gtk.touchpad_pinch.enabled" = true;
-          "browser.aboutConfig.showWarning" = false;
-          "browser.startup.page" = 3;
-          "browser.tabs.loadInBackground" = false;
-          "browser.tabs.warnOnClose" = false;
-          "browser.urlbar.shortcuts.bookmarks" = false;
-          "browser.urlbar.shortcuts.history" = false;
-          "browser.urlbar.shortcuts.tabs" = false;
-          "browser.urlbar.update2" = false;
-          "dom.w3c.touch_events.enabled" = true;
-          "dom.w3c_touch_events.legacy_apis.enabled" = true;
-          "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+  #
+  # TODO: get this working on macos, this only works on linux
+  #
+  # ALso problematic is this firefox module is 23.11 only, need to debug the hokey segfault in emacs with 23.11 setups with treesitter.
+  programs.firefox = mkIf (role.gui.enable or false) (mkMerge [
+    (optionalAttrs pkgs.hostPlatform.isDarwin (mkIf (pkgs.hostPlatform.isDarwin) { }))
+    (optionalAttrs pkgs.hostPlatform.isLinux (mkIf (pkgs.hostPlatform.isLinux) {
+      enable = true;
+      policies = {
+        CaptivePortal = true;
+        DisableFirefoxAccounts = true;
+        DisableFirefoxStudies = true;
+        DisableFormHistory = true;
+        DisablePocket = true;
+        DisableTelemetry = true;
+        DNSOverHTTPS = { Enabled = false; };
+        EncryptedMediaExtensions = { Enabled = false; };
+        FirefoxHome = {
+          SponsoredTopSites = false;
+          Pocket = false;
+          SponsoredPocket = false;
+        };
+        HardwareAcceleration = true;
+        Homepage = { StartPage = "none"; };
+        NetworkPrediction = false;
+        NewTabPage = false;
+        NoDefaultBookmarks = false;
+        OfferToSaveLogins = false;
+        OfferToSaveLoginsDefault = false;
+        OverrideFirstRunPage = "";
+        OverridePostUpdatePage = "";
+        PasswordManagerEnabled = false;
+        Permissions = {
+          Location = { BlockNewRequests = true; };
+          Notifications = { BlockNewRequests = true; };
+        };
+        #          PopupBlocking = { Default = false; };
+        PromptForDownloadLocation = true;
+        SanitizeOnShutdown = true;
+        SearchSuggestEnabled = false;
+        ShowHomeButton = true;
+        UserMessaging = {
+          WhatsNew = false;
+          SkipOnboarding = true;
         };
       };
-    };
-  };
+      profiles = {
+        default = {
+          id = 0;
+          name = "default";
+          isDefault = true;
+          extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+            auto-tab-discard
+            bitwarden
+            cookies-txt
+            greasemonkey
+            i-dont-care-about-cookies
+            sidebery
+            ublacklist
+            ublock-origin
+          ] ++ lib.optionals pkgs.hostPlatform.isLinux [ plasma-integration ];
+          settings = {
+            "apz.allow_double_tap_zooming" = false;
+            "apz.allow_zooming" = true;
+            "apz.gtk.touchpad_pinch.enabled" = true;
+            "browser.aboutConfig.showWarning" = false;
+            "browser.startup.page" = 3;
+            "browser.tabs.loadInBackground" = false;
+            "browser.tabs.warnOnClose" = false;
+            "browser.urlbar.shortcuts.bookmarks" = false;
+            "browser.urlbar.shortcuts.history" = false;
+            "browser.urlbar.shortcuts.tabs" = false;
+            "browser.urlbar.update2" = false;
+            "dom.w3c.touch_events.enabled" = true;
+            "dom.w3c_touch_events.legacy_apis.enabled" = true;
+            "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+          };
+        };
+      };
+    }))
+  ]);
 }

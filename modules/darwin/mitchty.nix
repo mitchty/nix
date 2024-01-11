@@ -232,10 +232,6 @@ in
 
       $DRY_RUN_CMD /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings
       $DRY_RUN_CMD /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
-
-      # Really need to figure out where this junks coming from
-      printf "modules/darwin/mitchty.nix: cleanup Stats diskimages\n" >&2
-      $DRY_RUN_CMD rm -f ~/Downloads/Stats*.dmg
     '';
   };
 }

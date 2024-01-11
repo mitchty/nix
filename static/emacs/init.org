@@ -306,7 +306,11 @@ Setup the font presets, by default troll with comic code sans cause its funny an
          :default-family "Monospace"
          )))
   :config
-  (fontaine-set-preset 'comic-gihugic))
+  ;; for macos not soooo gihugic, xorg fonts are tiny that or i'm gettging old
+  ;; af, probably both.
+  (if (memq window-system '(mac ns))
+    (fontaine-set-preset 'comic-medium)
+    (fontaine-set-preset 'comic-gihugic)))
 #+END_SRC
 
 *** tty
@@ -1120,8 +1124,8 @@ Instead of text might as well get a decent mode hook going here.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package nixos-options
-  :defer
-  :ensure)
+  :ensure
+  :defer)
 (use-package company-nixos-options
   :after company
   :ensure)
@@ -1136,7 +1140,7 @@ Instead of text might as well get a decent mode hook going here.
 *** docker-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package dockerfile-mode :ensure)
+(use-package dockerfile-mode :ensure :defer)
 #+END_SRC
 
 *** TODO cscope or rtags or nuke                         :testing:validation:
@@ -1146,6 +1150,7 @@ Switch to rtags, or maybe even nuke entirely?
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package xcscope
   :ensure
+  :defer
   :config (cscope-setup))
 #+END_SRC
 
@@ -1164,6 +1169,7 @@ TODO: need to make this not auto format on _spec.sh buffers.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package apheleia
   :ensure
+  :defer
   :hook (prog-mode . apheleia-mode)
   :config
   (dolist (formatter '((shfmt-custom . ("altshfmt" "-ci" "-i" "2" "-bn" "-sr"))

@@ -3,21 +3,24 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
-    #nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
+    nixpkgs-old.url = "github:NixOS/nixpkgs/nixos-23.05";
     latest.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     mitchty.url = "github:mitchty/nixos";
     # mitchty.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixos";
+    # mitchty.url = "path:/Users/tishmack/src/pub/github.com/mitchty/nixos";
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.11-darwin";
-    #nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.05-darwin";
+    nixpkgs-darwin-old.url = "github:NixOS/nixpkgs/nixpkgs-23.05-darwin";
     nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
     # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
     nur.url = "github:nix-community/NUR";
 
+    # Until I can debug the dyld segfault with 23.11 pin darwin to 23.05 as a
+    # very hacky way to have things work.
     darwin = {
       url = "github:LnL7/nix-darwin";
-      inputs.nixpkgs.follows = "nixpkgs-darwin";
+      inputs.nixpkgs.follows = "nixpkgs-darwin-old";
     };
 
     emacs-overlay = {
@@ -32,8 +35,12 @@
 
     home-manager = {
       url = "github:nix-community/home-manager/release-23.11";
-      #url = "github:nix-community/home-manager/release-23.05";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    home-manager-old = {
+      url = "github:nix-community/home-manager/release-23.05";
+      inputs.nixpkgs.follows = "nixpkgs-old";
     };
 
     nixos-generators = {
@@ -45,7 +52,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     agenix = {
-      url = "github:ryantm/agenix";
+      url = "github:ryantm/agenix/daf42cb35b2dc614d1551e37f96406e4c4a2d3e4";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     rust = {
@@ -69,6 +76,7 @@
     , mitchty
     , darwin
     , home-manager
+    , home-manager-old
     , nixos-generators
     , deploy-rs
     , emacs-overlay
@@ -100,6 +108,7 @@
         emacs-overlay.overlay
         rust.overlays.default
         nur.overlay
+        # TODO: this stuff should all get put into a flake overlay in this repo stop being lazy
         (
           # force in the ocf-resource-agents/pacemaker I patched into nixpkgs-pacemaker
           # ignore system as for now all it runs on is x86_64-linux so
@@ -109,68 +118,60 @@
             ocf-resource-agents = nixpkgs-pacemaker.legacyPackages.x86_64-linux.ocf-resource-agents;
           }
         )
-        (final: prev: {
-          emacs29 = prev.emacs-git.overrideAttrs (old: {
-            name = "emacs29";
-            version = emacs-upstream.shortRev;
-            src = emacs-upstream;
-          });
-          # TODO: figure out a way to import based on this...
-          # sys = pkgs.lib.last (pkgs.lib.splitString "-" pkgs.system);
-          emacsWithConfig = (prev.emacsWithPackagesFromUsePackage {
-            config = ./static/emacs/init.org;
-            package = final.emacs29.overrideAttrs (super: {
-              # buildInputs = super.buildInputs ++
-              #   nixpkgs.lib.attrsets.attrVals [
-              #     "Cocoa"
-              #     "WebKit"
-              #   ]
-              #     nixpkgs-darwin.legacyPackages.x86_64-darwin.apple_sdk.frameworks;
-              preConfigure = ''
-                sed -i -e 's/headerpad_extra=1000/headerpad_extra=2000/' configure.ac
-                autoreconf
-              '';
-              configureFlags = super.configureFlags ++ [
-                # "--with-native-comp"
-                # "--with-xwidgets"
-                "--with-natural-title-bar"
-              ];
-              patches = [
-                # (prev.fetchpatch {
-                #   name = "mac-gui-loop-block-lifetime";
-                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0001-mac-gui-loop-block-lifetime.patch";
-                #   sha256 = "sha256-HqcRxXfZB9LDemkC7ThNfHuSHc5H5B2MQ102ZyifVYM=";
-                # })
-                # (prev.fetchpatch {
-                #   name = "mac-gui-loop-block-autorelease";
-                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0002-mac-gui-loop-block-autorelease.patch";
-                #   sha256 = "sha256-CBELVTAWwgaXrnkTzMsYH9R18qBnFBFHMOaVeC/F+I8=";
-                # })
-                (prev.fetchpatch {
-                  name = "gc-block-align-patch";
-                  url = "https://github.com/tyler-dodge/emacs/commit/36d2a8d5a4f741ae99540e139fff2621bbacfbaa.patch";
-                  sha256 = "sha256-/hJa8LIqaAutny6RX/x6a+VNpNET86So9xE8zdh27p8=";
-                })
-                # (prev.fetchpatch {
-                #   name = "buffer-process-output-on-thread-patch";
-                #   url = "https://github.com/emacs-mirror/emacs/commit/b386047f311af495963ad6a25ddda128acc1d461.patch";
-                #   sha256 = "sha256-dRkiowEtu/oOLh29/b7VSXGKsV5qE0PxMWrox5/LRoM=";
-                # })
-                # (prev.fetchpatch {
-                #   name = "immediate-output-notification-patch";
-                #   url = "https://github.com/emacs-mirror/emacs/commit/3f49c824f23b2fa4ce5512f80abdb0888a73c4a1.patch";
-                #   sha256 = "sha256-ShQsS9ixc15cyrPGYDLxbbsgySK4JUuCSqk6+XE0U4Q=";
-                # })
-                ./patches/emacs-use-correct-window-role.patch
-              ];
-            });
-            # Force these two even though they're outside of the org config.
-            extraEmacsPackages = epkgs: [
-              epkgs.use-package
-              epkgs.org
-            ];
-          });
-        })
+        #        (final: prev: {
+        #          emacs29 = prev.emacs-git.overrideAttrs
+        #            (old: {
+        #              name = "emacs29";
+        #              version = emacs-upstream.shortRev;
+        #              src = emacs-upstream;
+        #            });
+        #            emacs29-patched = final.emacs29.overrideAttrs
+        #            (super: {
+        #              # buildInputs = super.buildInputs ++
+        #              #   nixpkgs.lib.attrsets.attrVals [
+        #              #     "Cocoa"
+        #              #     "WebKit"
+        #              #   ]
+        #              #     nixpkgs-darwin.legacyPackages.x86_64-darwin.apple_sdk.frameworks;
+        #              preConfigure = ''
+        #                sed -i -e 's/headerpad_extra=1000/headerpad_extra=2000/' configure.ac
+        #                autoreconf
+        #              '';
+        #              configureFlags = super.configureFlags ++ [
+        #                # "--with-native-comp"
+        #                # "--with-xwidgets"
+        #                "--with-natural-title-bar"
+        #              ];
+        #              patches = [
+        #                # (prev.fetchpatch {
+        #                #   name = "mac-gui-loop-block-lifetime";
+        #                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0001-mac-gui-loop-block-lifetime.patch";
+        #                #   sha256 = "sha256-HqcRxXfZB9LDemkC7ThNfHuSHc5H5B2MQ102ZyifVYM=";
+        #                # })
+        #                # (prev.fetchpatch {
+        #                #   name = "mac-gui-loop-block-autorelease";
+        #                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0002-mac-gui-loop-block-autorelease.patch";
+        #                #   sha256 = "sha256-CBELVTAWwgaXrnkTzMsYH9R18qBnFBFHMOaVeC/F+I8=";
+        #                # })
+        #                (prev.fetchpatch {
+        #                  name = "gc-block-align-patch";
+        #                  url = "https://github.com/tyler-dodge/emacs/commit/36d2a8d5a4f741ae99540e139fff2621bbacfbaa.patch";
+        #                  sha256 = "sha256-/hJa8LIqaAutny6RX/x6a+VNpNET86So9xE8zdh27p8=";
+        #                })
+        #                # (prev.fetchpatch {
+        #                #   name = "buffer-process-output-on-thread-patch";
+        #                #   url = "https://github.com/emacs-mirror/emacs/commit/b386047f311af495963ad6a25ddda128acc1d461.patch";
+        #                #   sha256 = "sha256-dRkiowEtu/oOLh29/b7VSXGKsV5qE0PxMWrox5/LRoM=";
+        #                # })
+        #                # (prev.fetchpatch {
+        #                #   name = "immediate-output-notification-patch";
+        #                #   url = "https://github.com/emacs-mirror/emacs/commit/3f49c824f23b2fa4ce5512f80abdb0888a73c4a1.patch";
+        #                #   sha256 = "sha256-ShQsS9ixc15cyrPGYDLxbbsgySK4JUuCSqk6+XE0U4Q=";
+        #                # })
+        #                ./patches/emacs-use-correct-window-role.patch
+        #              ];
+        #            });
+        #        })
         # No longer neeeded here for future me to use to copypasta new patches
         # in if needed.
         # (self: super:
@@ -231,8 +232,9 @@
         {
           users = import ./modules/users.nix;
         } ++ [
-        home-manager.darwinModules.home-manager
+        home-manager-old.darwinModules.home-manager
         ./modules/darwin
+        ./modules/role
         agenix.darwinModules.age
         (
           { config, pkgs, ... }:
@@ -247,7 +249,7 @@
             home-manager.extraSpecialArgs = {
               inherit inputs nixpkgs;
               age = config.age;
-              role = config.services.role;
+              role = config.role;
             };
             nix.registry.my.flake = self;
 
@@ -258,7 +260,6 @@
         )
       ];
 
-
       pacemakerPath = "services/cluster/pacemaker/default.nix";
 
       nixOSModules = attrValues
@@ -268,6 +269,7 @@
         home-manager.nixosModules.home-manager
         nur.nixosModules.nur
         ./modules/nixos
+        ./modules/role
         agenix.nixosModules.age
         "${inputs.nixpkgs-pacemaker}/nixos/modules/${pacemakerPath}"
         (
@@ -291,12 +293,11 @@
             users.users.${primaryUser}.home = homeDir "x86_64-linux" primaryUser;
             home-manager.useGlobalPkgs = true;
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
-            home-manager.extraSpecialArgs =
-              {
-                inherit inputs nixpkgs;
-                age = config.age;
-                role = config.services.role;
-              };
+            home-manager.extraSpecialArgs = {
+              inherit inputs nixpkgs;
+              age = config.age;
+              role = config.role;
+            };
             nix.registry.my.flake = self;
           }
         )
@@ -649,6 +650,7 @@
             networking.knownNetworkServices = [
               "Wi-Fi"
             ];
+            role.gui.enable = true;
             services.work.enable = true;
             services.mitchty.enable = true;
           }];
