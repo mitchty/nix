@@ -19,10 +19,11 @@ in
     };
 
     environment = {
-      systemPackages = with pkgs;  [
-        qemu
-        qemux64efiwrapper
-      ];
+      systemPackages = (lib.attrVals [
+        "qemu"
+        "qemux64efiwrapper"
+      ]
+        pkgs);
     };
   };
 }

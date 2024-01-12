@@ -38,7 +38,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [ cfg.package ];
+    environment.systemPackages = [ cfg.package ];
     launchd.user.agents.${fulllabel} = {
       script = ''
         #!/bin/bash

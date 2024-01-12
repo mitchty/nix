@@ -357,11 +357,11 @@ in
   programs.gh = {
     enable = true;
     package = nixpkgs.${pkgs.system}.gh;
-    extensions = with nixpkgs.${pkgs.system}; [
-      gh-dash
-      gh-cal
-      inputs.mitchty.packages.${pkgs.system}.gh-actions-status
-    ];
+    extensions = (lib.attrVals [
+      "gh-dash"
+      "gh-cal"
+    ]
+      nixpkgs.${pkgs.system}) ++ [ inputs.mitchty.packages.${pkgs.system}.gh-actions-status ];
   };
   programs.fzf.enable = true;
   programs.go.enable = true;
@@ -428,16 +428,17 @@ in
           id = 0;
           name = "default";
           isDefault = true;
-          extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-            auto-tab-discard
-            bitwarden
-            cookies-txt
-            greasemonkey
-            i-dont-care-about-cookies
-            sidebery
-            ublacklist
-            ublock-origin
-          ] ++ lib.optionals pkgs.hostPlatform.isLinux [ plasma-integration ];
+          extensions = (lib.attrVals [
+            "auto-tab-discard"
+            "bitwarden"
+            "cookies-txt"
+            "greasemonkey"
+            "i-dont-care-about-cookies"
+            "sidebery"
+            "ublacklist"
+            "ublock-origin"
+          ]
+            pkgs.nur.repos.rycee.firefox-addons) ++ lib.optionals pkgs.hostPlatform.isLinux (lib.attrVals [ "plasma-integration" ]);
           settings = {
             "apz.allow_double_tap_zooming" = false;
             "apz.allow_zooming" = true;

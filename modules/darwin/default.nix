@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, lib, ... }: {
   imports = [
     ./bootstrap.nix
     ../../hosts/nix-basic.nix
@@ -12,13 +12,14 @@
 
   config = {
     # Minimal setup of what we want installed outside of home-manager
-    environment.systemPackages = with pkgs; [
-      git
-      jq
-      mosh
-      tmux
-      vim
-    ];
+    environment.systemPackages = (lib.attrVals [
+      "git"
+      "jq"
+      "mosh"
+      "tmux"
+      "vim"
+    ]
+      pkgs);
 
     # Sets up /etc/pam/sudo to use touchid for sudo
     security.pam.enableSudoTouchIdAuth = true;

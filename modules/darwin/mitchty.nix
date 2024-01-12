@@ -45,8 +45,8 @@ in
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-      # TODO: Gotta make my nixos flake an overlay, future me problem.
+    environment.systemPackages = [
+      pkgs.multitail
       inputs.mitchty.packages.${pkgs.system}.clocker
       inputs.mitchty.packages.${pkgs.system}.ferdium
       inputs.mitchty.packages.${pkgs.system}.freetube
@@ -65,7 +65,6 @@ in
       gohome
       nopb
       notify
-      multitail
       reopen
       ugde
     ];

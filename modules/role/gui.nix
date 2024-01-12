@@ -19,26 +19,27 @@ in
         "google-chrome"
       ];
 
-      environment.systemPackages = [
-        pkgs.element-desktop
-        pkgs.google-chrome
-        pkgs.intel-media-driver
-        pkgs.kmix
-        pkgs.libv4l
-        pkgs.libvirt
-        pkgs.networkmanager
-        pkgs.networkmanager-openconnect
-        pkgs.networkmanagerapplet
-        pkgs.pavucontrol
-        pkgs.pipewire
-        pkgs.plasma-desktop
-        pkgs.plasma-integration
-        pkgs.plasma-pa
-        pkgs.rtkit
-        pkgs.sddm
-        pkgs.xorg.xauth
-        pkgs.yakuake
-      ];
+      environment.systemPackages = (lib.attrVals [
+        "element-desktop"
+        "google-chrome"
+        "intel-media-driver"
+        "kmix"
+        "libv4l"
+        "libvirt"
+        "networkmanager"
+        "networkmanager-openconnect"
+        "networkmanagerapplet"
+        "pavucontrol"
+        "pipewire"
+        "plasma-desktop"
+        "plasma-integration"
+        "plasma-pa"
+        "rtkit"
+        "sddm"
+        "xorg.xauth"
+        "yakuake"
+      ]
+        pkgs);
 
       # Capslock is control, I'm not a heathen.
       services.xserver.xkbOptions = "ctrl:swapcaps";
@@ -50,10 +51,11 @@ in
       hardware.opengl = {
         driSupport = true;
         driSupport32Bit = true;
-        extraPackages = with pkgs; [
-          vaapiIntel
-          intel-media-driver
-        ];
+        extraPackages = (lib.attrVals [
+          "vaapiIntel"
+          "intel-media-driver"
+        ]
+          pkgs);
       };
       environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
 

@@ -29,7 +29,7 @@ in
   config = mkIf cfg.enable {
     programs.nix-index.enable = true;
 
-    environment.systemPackages = with pkgs; [ nix-index ];
+    environment.systemPackages = (lib.attrVals [ "nix-index" ] pkgs);
     launchd.user.agents.nix-index = {
       script = ''
         #!${pkgs.bash}

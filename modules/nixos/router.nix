@@ -281,11 +281,12 @@ in
       enable = true;
     };
     systemd.services.dnsmasq = {
-      path = with pkgs; [
-        dnsmasq
-        bash
-        curl
-      ];
+      path = (lib.attrVals [
+        "dnsmasq"
+        "bash"
+        "curl"
+      ]
+        pkgs);
     };
 
     services.radvd = {
