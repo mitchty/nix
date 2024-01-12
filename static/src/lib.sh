@@ -476,7 +476,7 @@ _sut_sed_inplace() {
 # So abuse eval/param expansion to make a portable-er/ish wrapper
 sed_inplace() {
   #shellspec disable=SC2119
-  ${SED} "$(_sut_sed_inplace)" "$@"
+  ${SED?} "$(_sut_sed_inplace)" "$@"
 }
 
 # To make other runtime stuff simpler, note if command -v fails we just "assume"
@@ -484,9 +484,9 @@ sed_inplace() {
 # using this in systemd minimal startup environments not sure the best option,
 # until they're used its not a problem and at that point things will fail on
 # exec() of ssh anyway so not a huge loss with an rc 127 at that point.
-SED="${SED:-$(command -v sed > /dev/null 2>&1 || echo sed)}"
-SSH="${SSH:-$(command -v ssh > /dev/null 2>&1 || echo ssh)}"
-SCP="${SCP:-$(command -v scp > /dev/null 2>&1 || echo scp)}"
+SED="${SED:-$(command -v sed || echo sed)}"
+SSH="${SSH:-$(command -v ssh || echo ssh)}"
+SCP="${SCP:-$(command -v scp || echo scp)}"
 SSHOPTS="${SSHOPTS--o LogLevel=quiet}"
 
 # Going to start (ab)using the V to control verbose ish output not in logging
@@ -502,9 +502,9 @@ _s() {
 
   # I'm abusing assignment here
   #shellcheck disable=SC2155,SC2046
-  local fullcmd="${SSH}"
+  local fullcmd="${SSH?}"
   if [ "${cmd}" = "scp" ]; then
-    fullcmd="${SCP}"
+    fullcmd="${SCP?}"
   fi
   #shellcheck disable=SC2155,SC2046
   local host=$(_s_host "$@")
