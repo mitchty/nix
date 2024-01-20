@@ -15,11 +15,18 @@ set -xeu
 # need to validate/test using efi vars to do more automation but for now this is
 # fine.
 QEMU=${QEMU:-qemu-system-x86_64-uefi}
+QEMUIMG=${QEMUIMG:-qemu-img}
 
 qemuargs="-enable-kvm -smp 4 -nographic -m 8096 -boot d"
 
+# So as not to conflict port wise pick a stable off input string ssh port
+ssh_port() {
+  input=${1?ssh_port requires a string to use as input}
+  echo $((($(echo ${input} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
+}
+
 get_iso() {
-  readlink -f $(find -L ${_dir}/.. -name custom.iso -type f | head -n1)
+  readlink -f $(find -L ${_dir}/../result -name "*.iso" -type f | head -n1)
 }
 
 # Test out single, zfs, and lvm autoinstalls, the end result is these vm's
@@ -37,12 +44,12 @@ test_simple() {
   trap "rm -fr $tmpdir" EXIT TERM INT QUIT
 
   disk0="${tmpdir}/vdisk0"
-  qemu-img create -f qcow2 ${disk0} 40G
+  ${QEMUIMG} create -f qcow2 ${disk0} 40G
 
-  sshport=$((($(echo ${typ} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
+  sshport="$(ssh_port ${typ})"
 
-  qemu-system-x86_64-uefi ${qemuargs} -cdrom ${iso} -hda ${disk0} -net user,hostfwd=tcp::${sshport}-:22 -net nic
-  # qemu-system-x86_64-uefi -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -net user,hostfwd=tcp::10022-:22 -net nic
+  ${QEMU} ${qemuargs} -cdrom ${iso} -hda ${disk0} -net user,hostfwd=tcp::${sshport}-:22 -net nic
+  # ${QEMU} -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -net user,hostfwd=tcp::10022-:22 -net nic
 }
 
 test_iso() {
@@ -52,11 +59,11 @@ test_iso() {
   trap "rm -fr $tmpdir" EXIT TERM INT QUIT
 
   disk0="${tmpdir}/vdisk0"
-  qemu-img create -f qcow2 ${disk0} 40G
+  ${QEMUIMG} create -f qcow2 ${disk0} 40G
 
-  sshport=$((($(echo ${typ} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
+  sshport="$(ssh_port ${typ})"
 
-  qemu-system-x86_64-uefi -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -net user,hostfwd=tcp::${sshport}-:22 -net nic
+  ${QEMU} -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/../result -name "*.iso" | head -n1) -hda ${disk0} -net user,hostfwd=tcp::${sshport}-:22 -net nic
 }
 
 test_zfs() {
@@ -67,15 +74,15 @@ test_zfs() {
   trap "rm -fr $tmpdir" EXIT TERM INT QUIT
 
   disk0="${tmpdir}/vdisk0"
-  qemu-img create -f qcow2 ${disk0} 40G
+  ${QEMUIMG} create -f qcow2 ${disk0} 40G
   disk1="${tmpdir}/vdisk1"
-  qemu-img create -f qcow2 ${disk1} 40G
+  ${QEMUIMG} create -f qcow2 ${disk1} 40G
 
-  sshport=$((($(echo ${typ} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
+  sshport="$(ssh_port ${typ})"
 
-  qemu-system-x86_64-uefi ${qemuargs} -cdrom ${iso} -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::${sshport}-:22 -net nic
-  #qemu-system-x86_64-uefi -bios ${efibios}/FV/OVMF.fd -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
-  #qemu-system-x86_64-uefi -enable-kvm -smp 4 -nographic -m 8096 -boot d -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
+  ${QEMU} ${qemuargs} -cdrom ${iso} -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::${sshport}-:22 -net nic
+  # ${QEMU} -bios ${efibios}/FV/OVMF.fd -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
+  # ${QEMU} -enable-kvm -smp 4 -nographic -m 8096 -boot d -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
 }
 
 tests="zfs"

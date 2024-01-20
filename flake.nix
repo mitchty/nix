@@ -2,36 +2,11 @@
   description = "mitchty nixos flake setup";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
-    latest.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    mitchty.url = "github:mitchty/nixos";
-    # mitchty.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixos";
-    flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.05-darwin";
-    nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
-    # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
 
-    nur.url = "github:nix-community/NUR";
-
-    darwin = {
-      url = "github:LnL7/nix-darwin";
-      inputs.nixpkgs.follows = "nixpkgs-darwin";
-    };
-
-    emacs-overlay = {
-      url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    emacs-upstream = {
-      url = "github:emacs-mirror/emacs/emacs-29";
-      flake = false;
-    };
-
-    home-manager = {
-      url = "github:nix-community/home-manager/release-23.05";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # Not overriding inputs.nixpkgs due to
+    # https://github.com/nix-community/disko/blob/master/flake.nix#L4
+    disko.url = "github:nix-community/disko";
 
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
@@ -45,1168 +20,275 @@
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    rust = {
-      url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    dnsblacklist = {
-      url = "github:notracking/hosts-blocklists";
-      flake = false;
-    };
-
-    # terraform-old.url = "github:NixOS/nixpkgs/8c909dd2613323a939c90efddd089c88c0536fbf";
-
-    # nixinit.url = "github:nix-community/nix-init";
   };
 
   outputs =
     inputs@{ self
     , nixpkgs
-    , latest
-    , mitchty
-    , darwin
-    , home-manager
     , nixos-generators
     , deploy-rs
-    , emacs-overlay
-    , emacs-upstream
-    , rust
     , agenix
-    , dnsblacklist
-    , flake-utils
-    , nixpkgs-pacemaker
-    , nur
-      # , terraform-old
-      # , nixinit
+    , disko
     , ...
     }:
     let
-      inherit (darwin.lib) darwinSystem;
-      inherit (nixpkgs.lib) attrValues makeOverridable nixosSystem;
+      # Current ssh ed25519 pub key to use when sshing into the autoinstaller
+      # setup if I need to for god knows why, probably debugging shenanigans.
+      pubKey = (builtins.readFile ./secrets/crypt/id_ed25519.pub);
 
-      x86-linux = "x86_64-linux";
+      inherit (nixpkgs.lib) attrValues makeOverridable nixosSystem mkForce mkDefault;
 
-      homeDir = system: user: with nixpkgs.legacyPackages.${system}.stdenv;
-        if isDarwin then
-          "/Users/${user}"
-        else if isLinux then
-          "/home/${user}"
-        else "";
+      system = "x86_64_linux";
+      pkgs = import nixpkgs {
+        inherit system;
+      };
 
-      nixpkgsOverlays = [
-        emacs-overlay.overlay
-        rust.overlays.default
-        nur.overlay
-        (
-          # force in the ocf-resource-agents/pacemaker I patched into nixpkgs-pacemaker
-          # ignore system as for now all it runs on is x86_64-linux so
-          # whatever
-          final: prev: rec {
-            pacemaker = nixpkgs-pacemaker.legacyPackages.x86_64-linux.pacemaker;
-            ocf-resource-agents = nixpkgs-pacemaker.legacyPackages.x86_64-linux.ocf-resource-agents;
-          }
-        )
-        (final: prev: {
-          emacs29 = prev.emacs-git.overrideAttrs (old: {
-            name = "emacs29";
-            version = emacs-upstream.shortRev;
-            src = emacs-upstream;
-          });
-          # TODO: figure out a way to import based on this...
-          # sys = pkgs.lib.last (pkgs.lib.splitString "-" pkgs.system);
-          emacsWithConfig = (prev.emacsWithPackagesFromUsePackage {
-            config = ./static/emacs/init.org;
-            package = final.emacs29.overrideAttrs (super: {
-              # buildInputs = super.buildInputs ++
-              #   nixpkgs.lib.attrsets.attrVals [
-              #     "Cocoa"
-              #     "WebKit"
-              #   ]
-              #     nixpkgs-darwin.legacyPackages.x86_64-darwin.apple_sdk.frameworks;
-              preConfigure = ''
-                sed -i -e 's/headerpad_extra=1000/headerpad_extra=2000/' configure.ac
-                autoreconf
-              '';
-              configureFlags = super.configureFlags ++ [
-                # "--with-native-comp"
-                # "--with-xwidgets"
-                "--with-natural-title-bar"
-              ];
-              patches = [
-                # (prev.fetchpatch {
-                #   name = "mac-gui-loop-block-lifetime";
-                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0001-mac-gui-loop-block-lifetime.patch";
-                #   sha256 = "sha256-HqcRxXfZB9LDemkC7ThNfHuSHc5H5B2MQ102ZyifVYM=";
-                # })
-                # (prev.fetchpatch {
-                #   name = "mac-gui-loop-block-autorelease";
-                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0002-mac-gui-loop-block-autorelease.patch";
-                #   sha256 = "sha256-CBELVTAWwgaXrnkTzMsYH9R18qBnFBFHMOaVeC/F+I8=";
-                # })
-                (prev.fetchpatch {
-                  name = "gc-block-align-patch";
-                  url = "https://github.com/tyler-dodge/emacs/commit/36d2a8d5a4f741ae99540e139fff2621bbacfbaa.patch";
-                  sha256 = "sha256-/hJa8LIqaAutny6RX/x6a+VNpNET86So9xE8zdh27p8=";
-                })
-                # (prev.fetchpatch {
-                #   name = "buffer-process-output-on-thread-patch";
-                #   url = "https://github.com/emacs-mirror/emacs/commit/b386047f311af495963ad6a25ddda128acc1d461.patch";
-                #   sha256 = "sha256-dRkiowEtu/oOLh29/b7VSXGKsV5qE0PxMWrox5/LRoM=";
-                # })
-                # (prev.fetchpatch {
-                #   name = "immediate-output-notification-patch";
-                #   url = "https://github.com/emacs-mirror/emacs/commit/3f49c824f23b2fa4ce5512f80abdb0888a73c4a1.patch";
-                #   sha256 = "sha256-ShQsS9ixc15cyrPGYDLxbbsgySK4JUuCSqk6+XE0U4Q=";
-                # })
-                ./patches/emacs-use-correct-window-role.patch
-              ];
-            });
-            # Force these two even though they're outside of the org config.
-            extraEmacsPackages = epkgs: [
-              epkgs.use-package
-              epkgs.org
+      # For the future...
+      supportedSystems = [
+        "x86_64-linux"
+      ];
+
+      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+
+      # Setup an auto installing iso image using disko
+      mkAutoDiskoIso = pkgs: nixos-generators.nixosGenerate {
+        inherit pkgs;
+        format = "install-iso";
+        # We always include nixos disko modules for install isos
+        modules = [
+          disko.nixosModules.default
+        ];
+      };
+
+      mkAutoInstaller = nixosConfiguration:
+        let
+          pkgs = nixosConfiguration.pkgs;
+          nixosSystem = import "${pkgs.path}/nixos/lib/eval-config.nix";
+        in
+        (nixosSystem {
+          system = pkgs.system;
+          modules =
+            [
+              ({ pkgs, ... }: {
+                # Let 'nixos-version --json' know about the Git revision
+                # of this flake.
+                system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
+
+                # Don't flush to the backing store, reduces possible writes to
+                # the device backing the iso if any. More for stuff like the pi/sd cards et al
+                environment.etc."systemd/pstore.conf".text = ''
+                  [PStore]
+                  Unlink=no
+                '';
+
+                # Network configuration.
+                networking = {
+                  # Don't log failed connections to the console
+                  firewall.logRefusedConnections = mkDefault false;
+                  # Since I normally only build one thing at a time give it the
+                  # same dhcp hostname so dns can pick it up.
+                  hostName = "autoinstall";
+
+                  firewall.allowedTCPPorts = [ 22 ];
+                };
+
+                nix = {
+                  settings = {
+                    substituters = [
+                      # "http://cache.cluster.home.arpa"
+                      "https://cache.nixos.org"
+                      "https://nix-community.cachix.org"
+                    ];
+                    trusted-public-keys = [
+                      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+                      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+                    ];
+                  };
+
+                  # Lets things download in parallel
+                  extraOptions = ''
+                    binary-caches-parallel-connections = 100
+                    experimental-features = nix-command flakes
+                  '';
+                };
+                isoImage.forceTextMode = true;
+                isoImage.squashfsCompression = "zstd -Xcompression-level 9";
+
+                boot.supportedFilesystems = [ "xfs" "zfs" "ext4" ];
+
+                # No docs on the install iso
+                documentation.enable = false;
+                documentation.nixos.enable = false;
+
+                services.getty.autologinUser = pkgs.lib.mkForce "root";
+                environment = {
+                  variables = {
+                    # Since we have no swap, have the heap be a bit less extreme
+                    # and gc sooner if we end up on a system with less ram e.g.
+                    # arm rpi
+                    GC_INITIAL_HEAP_SIZE = "1M";
+                  };
+                  systemPackages = with pkgs; [
+                    btop
+                    busybox
+                    coreutils
+                    curl
+                    dmidecode
+                    dropwatch
+                    flashrom
+                    iotop
+                    jq
+                    linux-firmware
+                    linuxPackages.cpupower
+                    linuxPackages.perf
+                    lvm2
+                    lvm2.bin
+                    mdadm
+                    nixpkgs-fmt
+                    parted
+                    pciutils
+                    powertop
+                    stdenv
+                    strace
+                    tcpdump
+                    thin-provisioning-tools
+                    utillinux
+                    vim
+                  ];
+                  # (pkgs.writeShellScriptBin "diskoScript" ''
+                  #   ${nixosConfiguration.config.system.build.diskoScript}
+                  #   nixos-install --no-root-password --option substituters "" --no-channel-copy --system ${nixosConfiguration.config.system.build.toplevel}
+                  #   reboot
+                  # '')
+                };
+
+                # Effectively "run" this on the install iso's first tty only
+                programs.bash.interactiveShellInit = ''
+                  if [ "$(tty)" = "/dev/tty1" ]; then
+                    echo autoinstall would run here if it existed yet | tee /dev/console
+                    shutdown now
+                  fi
+                '';
+                # I want my magic sysrq triggers to work for this stuff if for
+                # some reason I need to middle finger things
+                boot.kernel.sysctl = {
+                  "kernel.sysrq" = 1;
+                };
+
+                # For installation shenanigans make sure /dev/console dumps to
+                # the first serial console and that we copy off kernel stuff to
+                # ram "just in case" as well flash related settings to make sure
+                # we reduce any writes to removable media that may be present.
+                boot.kernelParams = [
+                  "boot.shell_on_fail"
+                  "console=ttyS0,115200n8"
+                  "copytoram=1"
+                  "delayacct"
+                  "intel-spi.writeable=1"
+                  "iomem=relaxed"
+                ];
+
+                users = {
+                  users.nixos.isNormalUser = true;
+                  extraUsers = {
+                    root.openssh.authorizedKeys.keys = [ pubKey ];
+                    nixos.openssh.authorizedKeys.keys = [ pubKey ];
+                  };
+                };
+
+                # Let me ssh in by default
+                services.openssh = {
+                  enable = true;
+                  settings = {
+                    PermitRootLogin = "yes";
+                  };
+                };
+              })
+            ] ++ [
+              "${pkgs.path}/nixos/modules/installer/cd-dvd/installation-cd-base.nix"
             ];
-          });
-        })
-        # No longer neeeded here for future me to use to copypasta new patches
-        # in if needed.
-        # (self: super:
-        #   rec {
-        #     polkit = super.polkit.overrideAttrs (old: rec {
-        #       patches = (old.patches or [ ]) ++ [ ./patches/CVE-2021-4034.patch ];
-        #     });
-        #   })
-      ];
-      # TODO: later
-      # singleton (
-      #   # Sub in x86 version of packages that don't build on Apple Silicon yet
-      #   final: prev: (optionalAttrs (prev.stdenv.system == "aarch64-darwin") {
-      #     inherit (final.pkgs-x86)
-      #       idris2
-      #       nix-index
-      #       niv;
-      #   })
-      # );
-      # Default roles is empty intentionally
-      # defaultRoles = [ ];
+        }).config.system.build.isoImage;
 
-      # mkNixOSSystem = { hostname, system, roles, users }: nixosSystem {
-      #   system = "x86_64-linux";
-      #   modules = nixOSModules ++ [
-      #     ./hosts/nexus/configuration.nix
-      #   ] ++ [{
-      #     users.primaryUser = "mitch";
-      #   }];
-      # };
-
-      nixpkgsConfig = extras: {
-        overlays = nixpkgsOverlays ++ extras;
-        # config.permittedInsecurePackages = [ "garage-0.7.3" ];
-        config.permittedInsecurePackages = [ "python3.10-django-3.1.14" ];
-        config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
-          "unrar"
-          "google-chrome"
-          "plexmediaserver"
-          "steam"
-          "steam-original"
-          "steam-run"
-        ];
-      };
-
-      homeManagerStateVersion = "21.11";
-      homeManagerCommonConfig = {
-        imports = attrValues
-          {
-            # TODO: for the future...
-          } ++ [
-          { home.stateVersion = homeManagerStateVersion; }
-          ./modules/home-manager
-        ];
-      };
-
-      nixDarwinModules = attrValues
-        {
-          users = import ./modules/users.nix;
-        } ++ [
-        home-manager.darwinModules.home-manager
-        ./modules/darwin
-        agenix.darwinModules.age
-        (
-          { config, pkgs, ... }:
-          let
-            inherit (config.users) primaryUser;
-          in
-          {
-            nixpkgs = nixpkgsConfig [ ];
-            users.users.${primaryUser}.home = homeDir "x86_64-darwin" primaryUser;
-            home-manager.useGlobalPkgs = true;
-            home-manager.users.${primaryUser} = homeManagerCommonConfig;
-            home-manager.extraSpecialArgs = {
-              inherit inputs nixpkgs;
-              age = config.age;
-              role = config.services.role;
-            };
-            nix.registry.my.flake = self;
-
-            services.nix-index = {
-              enable = true;
-            };
-          }
-        )
-      ];
-
-
-      pacemakerPath = "services/cluster/pacemaker/default.nix";
-
-      nixOSModules = attrValues
-        {
-          users = import ./modules/users.nix;
-        } ++ [
-        home-manager.nixosModules.home-manager
-        nur.nixosModules.nur
-        ./modules/nixos
-        agenix.nixosModules.age
-        "${inputs.nixpkgs-pacemaker}/nixos/modules/${pacemakerPath}"
-        (
-          { config, ... }:
-          let
-            inherit (config.users) primaryUser;
-          in
-          {
-            # From: https://github.com/NixOS/nixpkgs/blob/c653577537d9b16ffd04e3e2f3bc702cacc1a343/nixos/doc/manual/development/replace-modules.section.md
-            #
-            # TODO: Remove most of me once
-            # https://github.com/NixOS/nixpkgs/pull/208298/files merged Disable the built.
-            #
-            # in pacemaker module in lieu of my fixed version until the basic version is
-            # merged.
-            #
-            # Will also be testing out some other module updates to make it less of a PITA to use.
-            disabledModules = [ pacemakerPath ];
-
-            nixpkgs = nixpkgsConfig [ ];
-            users.users.${primaryUser}.home = homeDir "x86_64-linux" primaryUser;
-            home-manager.useGlobalPkgs = true;
-            home-manager.users.${primaryUser} = homeManagerCommonConfig;
-            home-manager.extraSpecialArgs =
-              {
-                inherit inputs nixpkgs;
-                age = config.age;
-                role = config.services.role;
-              };
-            nix.registry.my.flake = self;
-          }
-        )
-      ];
-
-      # Autoinstall vars
-      defBootSize = "512MiB";
-      defSwapSize = "16GiB";
-      smallSwapSize = "512MiB";
-
-      # vm autoinstall test runners
-      simpleAutoinstall = {
-        autoinstall = {
-          flavor = "single";
-          hostName = "simple";
-          rootDevices = [
-            "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001"
-          ];
-          bootSize = defBootSize;
-          swapSize = smallSwapSize;
-          osSize = "20GiB";
-        };
-      };
-
-      # Two disk test
-      zfsAutoinstall = {
-        autoinstall = {
-          flavor = "zfs";
-          hostName = "zfs";
-          rootDevices = [
-            "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001"
-            "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00002"
-          ];
-          bootSize = defBootSize;
-          swapSize = smallSwapSize;
-          osSize = "20GiB";
-        };
-      };
-
-      # DL350 Gen9 server, for now zfs as bcachefs is marked broken in 22.05
-      srvAutoinstall = {
-        autoinstall = {
-          flavor = "zfs";
-          hostName = "srv";
-          rootDevices = [
-            "/dev/disk/by-id/wwn-0x5000cca02f0ae6a4"
-            "/dev/disk/by-id/wwn-0x5000cca02f0bad08"
-            "/dev/disk/by-id/wwn-0x5000cca02f0bbb04"
-          ];
-          swapSize = defSwapSize;
-          osSize = "538GiB";
-        };
-      };
-
-      cluOsSize = "768GiB";
-
-      wm2Autoinstall = {
-        autoinstall = {
-          flavor = "zfs";
-          hostName = "wm2";
-          rootDevices = [
-            "/dev/disk/by-id/nvme-CWESR02TBTLCZ-27J-2_511231016041001198"
-            "/dev/disk/by-id/nvme-Sabrent_Rocket_Q4_48821081708402"
-          ];
-          swapSize = defSwapSize;
-          osSize = "1840GiB";
-        };
-      };
-
-      # Start of a Terramaster tm4-423 cluster
-      cl1Autoinstall = {
-        autoinstall = {
-          flavor = "zfs";
-          hostName = "cl1";
-          rootDevices = [
-            "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T918828M"
-            "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T920857X"
-          ];
-          swapSize = defSwapSize;
-          osSize = cluOsSize;
-        };
-      };
-
-      # Second node
-      cl2Autoinstall = {
-        autoinstall = {
-          flavor = "zfs";
-          hostName = "cl2";
-          rootDevices = [
-            "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T814942M"
-            "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T801235B"
-          ];
-          swapSize = defSwapSize;
-          osSize = cluOsSize;
-        };
-      };
-
-      # Third node
-      cl3Autoinstall = {
-        autoinstall = {
-          flavor = "zfs";
-          hostName = "cl3";
-          rootDevices = [
-            "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T918913H"
-            "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T924424L"
-          ];
-          swapSize = defSwapSize;
-          osSize = cluOsSize;
-        };
-      };
-
-      # Current nas box, needs a rebuild once dfs2/3 are working
-      dfs1Autoinstall = {
-        autoinstall.flavor = "zfs";
-        autoinstall.hostName = "dfs1";
-        autoinstall.dedicatedBoot = "/dev/disk/by-id/ata-Hoodisk_SSD_J7TTC7A11230120";
-        autoinstall.rootDevices = [
-          "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA00895L"
-          "/dev/disk/by-id/ata-Samsung_Portable_SSD_T5_S4B0NR0RA01770E"
-        ];
-      };
-
-      # NixOS router, I'm sick of naming things cute names
-      gwAutoinstall = {
-        autoinstall = {
-          osSize = "108GiB";
-          flavor = "single";
-          hostName = "gw";
-          rootDevices = [
-            "/dev/disk/by-id/ata-KINGSTON_SA400M8120G_50026B7684B2F04E"
-          ];
-        };
-      };
-
-      # NixOS nexus system, does most of the heavy lifting, needs a
-      # rebuild/restore too once the "final" dfs backup stuffs working
-      nexusAutoinstall = {
-        autoinstall.flavor = "zfs";
-        autoinstall.hostName = "nexus";
-        autoinstall.rootDevices = [
-          "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300325L"
-          "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300329W"
-        ];
-      };
-
-      canarySecret = user: {
-        canary = {
-          file = ./secrets/canary.age;
-          owner = user;
-        };
-      };
-
-      gitSecret = user: {
-        "git/netrc" = {
-          file = ./secrets/git/netrc.age;
-          owner = user;
-        };
-      };
-
-      ghcliPubSecret = user: {
-        "git/gh-cli-pub" = {
-          file = ./secrets/git/gh-cli-pub.age;
-          owner = user;
-        };
-      };
-
-      resticSecret = user: {
-        "restic/env.sh" = {
-          file = ./secrets/restic/env.sh.age;
-          owner = user;
-        };
-      };
-
-      passwdSecrets = {
-        "passwd/root" = {
-          file = ./secrets/passwd/root.age;
-        };
-        "passwd/mitch" = {
-          file = ./secrets/passwd/mitch.age;
-        };
-      };
-
-      wifiSecrets = user: {
-        "wifi/passphrase" = {
-          file = ./secrets/wifi/passphrase.age;
-          owner = user;
-        };
-      };
-
-      s3fsGeneral = user: {
-        "s3/bucket-general" = {
-          file = ./secrets/s3/bucket-general.age;
-          owner = user;
-        };
-      };
-
-      s3fsSrc = user: {
-        "s3/bucket-src" = {
-          file = ./secrets/s3/bucket-src.age;
-          owner = user;
-        };
-      };
-
-      s3fsMedia = user: {
-        "s3/bucket-media" = {
-          file = ./secrets/s3/bucket-media.age;
-          owner = user;
-        };
-      };
-
-      s3fsConfig = user: {
-        "s3/bucket-config" = {
-          file = ./secrets/s3/bucket-config.age;
-          owner = user;
-        };
-      };
-
-      # Make age.secrets = a bit simpler with some defined variables
-      homeUser = "mitch";
-      homeGroup = "users";
-
-      workUser = "tishmack";
-      rootUser = "root";
-
-      ageDefault = user: canarySecret user;
-      ageGit = user: gitSecret user // ghcliPubSecret user;
-      ageRestic = user: resticSecret user;
-      ageS3fs = s3fsGeneral rootUser // s3fsSrc rootUser // s3fsMedia rootUser // s3fsConfig rootUser;
-
-      ageHome = user: ageDefault user // ageGit user;
-      ageHomeWithBackup = user: ageHome user // ageRestic user;
-      ageHomeNixos = user: ageHome user // passwdSecrets;
-      ageHomeNixosWithBackup = user: ageHomeNixos user // ageRestic user;
     in
     {
-      diskImages = {
-        rpi4 = nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
-          modules = [
-            # "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64-new-kernel.nix"
-            # ./machines/ether/image.nix
-            # ./machines/ether/hardware.nix
-            # ./machines/ether/configuration.nix
-          ];
-        };
-      };
-      packages.x86_64-linux = {
-        # vmSimple = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     simpleAutoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "vm-nogui";
-        # };
-        isoSimple = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            ./modules/iso/autoinstall.nix
-            simpleAutoinstall
-            {
-              autoinstall.debug = true;
-            }
-          ];
-          format = "install-iso";
-        };
-        isoSimpleTest = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            ./modules/iso/autoinstall.nix
-            simpleAutoinstall
-            {
-              autoinstall.debug = true;
-            }
-          ];
-          format = "install-iso";
-        };
-        isoZfsTest = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            ./modules/iso/autoinstall.nix
-            zfsAutoinstall
-            {
-              autoinstall.debug = true;
-            }
-          ];
-          format = "install-iso";
-        };
-        # isoSrv = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     srvAutoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        isoWm2 = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            ./modules/iso/autoinstall.nix
-            wm2Autoinstall
-            {
-              autoinstall = {
-                wipe = true;
-                debug = true;
-              };
-            }
-          ];
-          format = "install-iso";
-        };
-        isoCl1 = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            ./modules/iso/autoinstall.nix
-            cl1Autoinstall
-            {
-              autoinstall.debug = true;
-              autoinstall.wipe = true;
-            }
-          ];
-          format = "install-iso";
-        };
-        # isoCl2 = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     cl2Autoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoCl3 = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     cl3Autoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoGw = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     gwAutoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # sdGenericAarch64 = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux.pkgsCross.aarch64-multiplatform;
-        #   modules = [ "${nixpkgs.legacyPackages.aarch64-linux.path}/nixos/modules/profiles/minimal.nix" ];
-        #   format = "sd-aarch64";
-        # };
-        # isoGeneric = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   format = "install-iso";
-        # };
-        # isoDfs1 = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     dfs1Autoinstall
-        #     {
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoZeroDfs1 = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     dfs1Autoinstall
-        #     {
-        #       autoinstall.wipe = true;
-        #       autoinstall.zero = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoZeroRouter = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     routerAutoinstall
-        #     {
-        #       autoinstall.debug = true;
-        #       autoinstall.wipe = true;
-        #       autoinstall.zero = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoNexus = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     nexusAutoinstall
-        #     {
-        #       autoinstall.wipe = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-        # isoZeroNexus = nixos-generators.nixosGenerate {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   modules = [
-        #     ./modules/iso/autoinstall.nix
-        #     nexusAutoinstall
-        #     {
-        #       autoinstall.wipe = true;
-        #       autoinstall.zero = true;
-        #     }
-        #   ];
-        #   format = "install-iso";
-        # };
-      };
-
-      darwinConfigurations = rec {
-        # Bootstrap configs for later...
-        bootstrap-intel = makeOverridable darwinSystem {
-          system = "x86_64-darwin";
-          modules = [ ./darwin/bootstrap.nix { nixpkgs = nixpkgsConfig; } ];
-        };
-        # arm stuff for later?
-        bootstrap-arm = bootstrap-intel.override { system = "aarch64-darwin"; };
-        mb = darwinSystem {
-          specialArgs = {
-            inherit inputs;
-          };
-          system = "x86_64-darwin";
-          modules = nixDarwinModules ++ [{
-            users = {
-              primaryUser = homeUser;
-              primaryGroup = "staff";
-            };
-            age.secrets = ageHomeWithBackup homeUser;
-            # Since I use this host for working on all this crap, need a get out
-            # of jail free card on dns, but nice for it to search home.arpa by
-            # default too so I can be lazy.
-            networking = {
-              computerName = "mb";
-              hostName = "mb";
-              dns = [ "10.10.10.1" "1.1.1.1" ];
-              search = [ "home.arpa" ];
-              knownNetworkServices = [
-                "Wi-Fi"
-                "USB 10/100/1000 LAN"
-              ];
-            };
-            services.restic = {
-              enable = true;
-              repo = "s3:http://cluster.home.arpa:3900/restic/";
-            };
-            services.home.enable = true;
-            services.mitchty.enable = true;
-            services.shared.mutagen.enable = true;
-            services.shared.syncthing.enable = false;
-          }];
-        };
-        wmb = darwinSystem {
-          inherit inputs;
-          system = "x86_64-darwin";
-          modules = nixDarwinModules ++ [{
-            users = {
-              primaryUser = workUser;
-              primaryGroup = "staff";
-            };
-            age.secrets = ageHome workUser;
-            networking.computerName = "wmb";
-            networking.hostName = "wmb";
-            networking.knownNetworkServices = [
-              "Wi-Fi"
-            ];
-            services.work.enable = true;
-            services.mitchty.enable = true;
-          }];
-        };
-      };
-
-      nixosConfigurations = {
-        gw = (makeOverridable nixosSystem) rec {
-          system = "x86_64-linux";
-          modules = nixOSModules ++ [
-            ./hosts/gw/configuration.nix
-          ] ++ [{
-            users = {
-              primaryUser = homeUser;
-              primaryGroup = homeGroup;
-            };
-            age.secrets = ageHomeNixos homeUser // wifiSecrets rootUser;
-            services.role = {
-              intel.enable = true;
-              mosh.enable = true;
-              node-exporter.enable = true;
-              promtail.enable = true;
-              router.enable = true;
-            };
-          }];
-          specialArgs = {
-            inherit inputs;
-            latest = latest.legacyPackages.${x86-linux};
-          };
-        };
-        srv = (makeOverridable nixosSystem) {
-          system = "x86_64-linux";
-          modules = nixOSModules ++ [
-            ./hosts/srv/configuration.nix
-          ] ++ [{
-            users = {
-              primaryUser = homeUser;
-              primaryGroup = homeGroup;
-            };
-            age.secrets = ageHomeNixosWithBackup homeUser // ageS3fs;
-            services.role = {
-              media = {
-                enable = true;
-                services = false;
-              };
-
-              grafana.enable = true;
-              highmem.enable = true;
-              intel.enable = true;
-              loki.enable = true;
-              mosh.enable = true;
-              node-exporter.enable = true;
-              nixcache.enable = true;
-              prometheus.enable = true;
-              promtail.enable = true;
-            };
-            services.shared.syncthing = {
-              enable = false;
-              user = homeUser;
-              group = homeGroup;
-            };
-            services.shared.mutagen = {
-              enable = true;
-              user = homeUser;
-              group = homeGroup;
-            };
-          }];
-          specialArgs = {
-            inherit inputs;
-            latest = latest.legacyPackages.${x86-linux};
-          };
-        };
-        nexus = (makeOverridable nixosSystem)
-          {
-            system = "x86_64-linux";
-            modules = nixOSModules ++ [
-              ./hosts/nexus/configuration.nix
-            ] ++ [{
-              users = {
-                primaryUser = homeUser;
-                primaryGroup = homeGroup;
-              };
-              age.secrets = ageHomeNixosWithBackup homeUser // ageS3fs;
-              services.role = {
-                gui.enable = true;
-                intel.enable = true;
-                mosh.enable = true;
-                node-exporter.enable = true;
-                promtail.enable = true;
-              };
-              services.shared.syncthing = {
-                enable = false;
-                user = homeUser;
-                group = homeGroup;
-              };
-              services.shared.mutagen = {
-                enable = true;
-                user = homeUser;
-                group = homeGroup;
-              };
-            }];
-            specialArgs = {
-              inherit inputs;
-              latest = latest.legacyPackages.${x86-linux};
-            };
-          };
-        wm2 =
-          (makeOverridable nixosSystem)
-            rec {
-              system = "x86_64-linux";
-              modules = nixOSModules ++ [
-                ./hosts/wm2/configuration.nix
-              ] ++ [{
-                users = {
-                  primaryUser = homeUser;
-                  primaryGroup = homeGroup;
-                };
-                age.secrets = ageHomeNixos homeUser;
-                services.role = {
-                  gaming.enable = true;
-                  gui.enable = true;
-                  qemu.enable = true;
-                  intel.enable = true;
-                  mosh.enable = true;
-                  node-exporter.enable = true;
-                  promtail.enable = true;
-                };
-                services.shared.syncthing = {
-                  enable = false;
-                  user = homeUser;
-                  group = homeGroup;
-                };
-                services.shared.mutagen = {
-                  enable = true;
-                  user = homeUser;
-                  group = homeGroup;
-                };
-              }];
+      packages = forAllSystems
+        (system:
+          let
+            pkgs = nixpkgs.legacyPackages.${system};
+          in
+          rec {
+            vmZfsMirrorSystem = (makeOverridable nixosSystem) rec {
+              inherit system;
+              modules = [ ];
               specialArgs = {
                 inherit inputs;
-                latest = latest.legacyPackages.${x86-linux};
               };
             };
-        cl1 = (makeOverridable nixosSystem)
+            vmZfsMirror = mkAutoDiskoIso pkgs;
+            # 2 disk auto mirror setup in disko setup for qemu vm
+            # testing/validation (re)uses nixosConfiguration ^^^ for disko
+            # install. Note all disko setup is opinionated in that its setup to
+            # only use labels or partlabels that lets us create what would be in
+            # hardware-configuration.nix ourselves which seems to only include
+            # uuid device by default and I want to make that mostly transparent.
+            #
+            # For now only validating efi bootable stuff out of laziness and
+            # need as I can use systemctl reboot --firmware-setup to make it
+            # easy to pick disparate devices to test booting off of to manually
+            # validate (for now) until at least I can better figure out how to
+            # set efi vars to change devices once I figure that out.
+            isoZfsTest = mkAutoInstaller vmZfsMirrorSystem;
+            default = isoZfsTest;
+          });
+      checks = forAllSystems
+        (system:
+          let
+            pkgs = nixpkgs.legacyPackages.${system};
+          in
           {
-            system = "x86_64-linux";
-            modules = nixOSModules ++ [
-              ./hosts/cl1/configuration.nix
-            ] ++ [{
-              users = {
-                primaryUser = homeUser;
-                primaryGroup = homeGroup;
-              };
-              age.secrets = ageHomeNixos homeUser;
-              services.role = {
-                cluster.enable = true;
-                intel.enable = true;
-                mosh.enable = true;
-                promtail.enable = true;
-                node-exporter = {
-                  enable = true;
-                  exporterIface = "enp1s0";
+            # Ensure all our formatting is kosher in nix lande for now.
+            formatting =
+              pkgs.writeShellApplication
+                {
+                  name = "formatting";
+                  runtimeInputs = with pkgs; [
+                    nixpkgs-fmt
+                    deadnix
+                  ];
+                  text = ''
+                    nixpkgs-fmt --check "$@"
+                    #            deadnix --edit "$@"
+                  '';
                 };
+            shell = pkgs.writeShellApplication
+              {
+                name = "shellchecks";
+                runtimeInputs = with pkgs; [
+                  shellcheck
+                  shellspec
+                  ksh
+                  oksh
+                  zsh
+                  bash
+                  findutils
+                  # abusing python3 for pty support cause shellspec needs it for
+                  # some output or another to run in nix given nix runs top most
+                  # pid without a pty. We could do this any way we can get a pty
+                  # so that shellspec can run but this is fine.
+                  python3
+                ];
+                text = ''
+                  shellcheck --severity warning --shell sh "$(find ${./.} -type f -name '*.sh')" --external-sources
+                  for shell in ${pkgs.ksh}/bin/ksh ${pkgs.oksh}/bin/ksh ${pkgs.zsh}/bin/zsh ${pkgs.bash}/bin/bash; do
+                                        ${pkgs.python3}/bin/python3 -c 'import pty; pty.spawn("${pkgs.shellspec}/bin/shellspec -c ${./.} --shell '$shell' -x")'
+                                      done
+                '';
+                # deploy-rs =
+                #   builtins.mapAttrs
+                #     (deployLib: deployLib.deployChecks self.deploy)
+                #     deploy-rs.lib;
               };
-              fileSystems = {
-                # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F
-                "/data/disk/0" = {
-                  device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG3R54F";
-                  fsType = "ext4";
-                  options = [ "nofail" ];
-                };
-                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EFRX-68AX9N0_WD-WCC1T1098132
-                # "/data/disk/1" = {
-                #   device = "/dev/disk/by-id/ata-WDC_WD30EFRX-68AX9N0_WD-WCC1T1098132";
-                #   fsType = "xfs";
-                #   options = [ "nofail" ];
-                # };
-                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EFRX-68EUZN0_WD-WCC4N4CVRRUX
-                # "/data/disk/2" = {
-                #   device = "/dev/disk/by-id/ata-WDC_WD30EFRX-68EUZN0_WD-WCC4N4CVRRUX";
-                #   fsType = "xfs";
-                #   options = [ "nofail" ];
-                # };
-                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2948041
-                # "/data/disk/3" = {
-                #   device = "/dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2948041";
-                #   fsType = "xfs";
-                #   options = [ "nofail" ];
-                # };
-              };
-            }];
-            specialArgs = {
-              inherit inputs;
-              latest = latest.legacyPackages.${x86-linux};
-            };
-          };
-        cl2 = (makeOverridable nixosSystem)
-          {
-            system = "x86_64-linux";
-            modules = nixOSModules ++ [
-              ./hosts/cl2/configuration.nix
-            ] ++ [{
-              users = {
-                primaryUser = homeUser;
-                primaryGroup = homeGroup;
-              };
-              age.secrets = ageHomeNixos homeUser;
-              services.role = {
-                cluster.enable = true;
-                intel.enable = true;
-                mosh.enable = true;
-                promtail.enable = true;
-                node-exporter = {
-                  enable = true;
-                  exporterIface = "enp1s0";
-                };
-              };
-
-              fileSystems = {
-                # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF
-                "/data/disk/0" = {
-                  device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG929NF";
-                  fsType = "ext4";
-                  options = [ "nofail" ];
-                };
-                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WMAWZ0339419
-                # "/data/disk/1" = {
-                #   device = "/dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WMAWZ0339419";
-                #   fsType = "xfs";
-                #   options = [ "nofail" ];
-                # };
-                # # mkfs.xfs /dev/disk/by-id/ata-ST8000NM0055-1RM112_ZA15CRCT
-                # "/data/disk/2" = {
-                #   device = "/dev/disk/by-id/ata-ST8000NM0055-1RM112_ZA15CRCT";
-                #   fsType = "xfs";
-                #   options = [ "nofail" ];
-                # };
-                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2831437
-                # "/data/disk/3" = {
-                #   device = "/dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2831437";
-                #   fsType = "xfs";
-                #   options = [ "nofail" ];
-                # };
-              };
-            }];
-            specialArgs = {
-              inherit inputs;
-              latest = latest.legacyPackages.${x86-linux};
-            };
-          };
-        cl3 = (makeOverridable nixosSystem)
-          {
-            system = "x86_64-linux";
-            modules = nixOSModules ++ [
-              ./hosts/cl3/configuration.nix
-            ] ++ [{
-              users = {
-                primaryUser = homeUser;
-                primaryGroup = homeGroup;
-              };
-              age.secrets = ageHomeNixos homeUser;
-              services.role = {
-                cluster.enable = true;
-                intel.enable = true;
-                mosh.enable = true;
-                promtail.enable = true;
-                node-exporter = {
-                  enable = true;
-                  exporterIface = "enp1s0";
-                };
-              };
-              fileSystems = {
-                # mkfs.ext4 -j /dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F
-                "/data/disk/0" = {
-                  device = "/dev/disk/by-id/ata-WDC_WUH722020ALE6L4_2LG8P50F";
-                  fsType = "ext4";
-                  options = [ "nofail" ];
-                };
-                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2936180
-                # "/data/disk/1" = {
-                #   device = "/dev/disk/by-id/ata-WDC_WD30EZRX-00MMMB0_WD-WCAWZ2936180";
-                #   fsType = "xfs";
-                #   options = [ "nofail" ];
-                # };
-                # # mkfs.xfs /dev/disk/by-id/ata-ST8000NM0055-1RM112_ZA173E83
-                # "/data/disk/2" = {
-                #   device = "/dev/disk/by-id/ata-ST8000NM0055-1RM112_ZA173E83";
-                #   fsType = "xfs";
-                #   options = [ "nofail" ];
-                # };
-                # # mkfs.xfs /dev/disk/by-id/ata-WDC_WD30EFRX-68EUZN0_WD-WCC4N4XFTFFS
-                # "/data/disk/3" = {
-                #   device = "/dev/disk/by-id/ata-WDC_WD30EFRX-68EUZN0_WD-WCC4N4XFTFFS";
-                #   fsType = "xfs";
-                #   options = [ "nofail" ];
-                # };
-              };
-            }];
-            specialArgs = {
-              inherit inputs;
-              latest = latest.legacyPackages.${x86-linux};
-            };
-          };
-        dfs1 = nixosSystem
-          {
-            system = "x86_64-linux";
-            modules = nixOSModules ++ [
-              ./hosts/dfs1/configuration.nix
-            ] ++ [{
-              users = {
-                primaryUser = homeUser;
-                primaryGroup = homeGroup;
-              };
-              age.secrets = ageHomeNixos homeUser;
-              services.role = {
-                intel.enable = true;
-                lowmem.enable = true;
-                mosh.enable = true;
-                node-exporter.enable = true;
-                promtail.enable = true;
-              };
-            }];
-            specialArgs = {
-              inherit inputs;
-              latest = latest.legacyPackages.${x86-linux};
-            };
-          };
-      };
-
-      # Deploy-rs targets/setup
-      deploy = {
-        sshUser = "root";
-        user = "root";
-        autoRollback = false;
-        magicRollback = false;
-
-        nodes = {
-          "gw" = {
-            hostname = "gw.home.arpa";
-            profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."gw";
-            };
-          };
-          "srv" = {
-            hostname = "srv.home.arpa";
-            # hostname = "10.10.10.117";
-            profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."srv";
-            };
-          };
-          "nexus" = {
-            hostname = "nexus.home.arpa";
-            profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
-            };
-          };
-          "wm2" = {
-            # hostname = "10.10.10.115";
-            hostname = "localhost";
-            #            hostname = "wm2.home.arpa";
-            profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."wm2";
-            };
-          };
-          "cl1" = {
-            hostname = "cl1.home.arpa";
-            profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."cl1";
-            };
-          };
-          "cl2" = {
-            hostname = "cl2.home.arpa";
-            profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."cl2";
-            };
-          };
-          "cl3" = {
-            hostname = "cl3.home.arpa";
-            profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."cl3";
-            };
-          };
-          "dfs1" = {
-            hostname = "dfs1.home.arpa";
-            profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
-            };
-          };
-          # "mb" = {
-          #   hostname = "mb.local";
-          #   profiles.system = {
-          #     path = deploy-rs.lib.x86_64-darwin.activate. self.darwinConfigurations."mb";
-          #   };
-          # };
-        };
-      };
-
-      checks.deploy-rs = builtins.mapAttrs
-        (deployLib: deployLib.deployChecks self.deploy)
-        deploy-rs.lib;
-    } // flake-utils.lib.eachDefaultSystem
-      (system:
-      let pkgs = import nixpkgs { inherit system; };
-      in
-      rec {
-        checks = {
-          nixpkgs-fmt = pkgs.runCommand "check-nix-format" { } ''
-            ${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt --check ${./.}
-            install -dm755 $out
-          '';
-          shellcheck = pkgs.runCommand "check-shellcheck" { } ''
-            ${pkgs.shellcheck}/bin/shellcheck --severity warning --shell sh $(find ${./.} -type f -name "*.sh") --external-sources
-            install -dm755 $out
-          '';
-          shellspec = pkgs.runCommand "check-shellspec" { } ''
-            for shell in ${pkgs.ksh}/bin/ksh ${pkgs.oksh}/bin/ksh ${pkgs.zsh}/bin/zsh ${pkgs.bash}/bin/bash; do
-              ${pkgs.python3}/bin/python3 -c 'import pty; pty.spawn("${pkgs.shellspec}/bin/shellspec -c ${./.} --shell \$shell -x")'
-            done
-            install -dm755 $out
-          '';
-        };
-      }
-      );
+          }
+        );
+    };
 }
