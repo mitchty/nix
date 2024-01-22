@@ -301,6 +301,7 @@ in
       source = ../../static/src/lib.sh;
       recursive = true;
     };
+    # TODO: programs.ssh instead? Eh for now this is fine...
     ".ssh/config" = {
       source = ../../static/home/sshconfig;
     };
@@ -428,17 +429,16 @@ in
           id = 0;
           name = "default";
           isDefault = true;
-          extensions = (lib.attrVals [
-            "auto-tab-discard"
-            "bitwarden"
-            "cookies-txt"
-            "greasemonkey"
-            "i-dont-care-about-cookies"
-            "sidebery"
-            "ublacklist"
-            "ublock-origin"
-          ]
-            pkgs.nur.repos.rycee.firefox-addons) ++ lib.optionals pkgs.hostPlatform.isLinux (lib.attrVals [ "plasma-integration" ]);
+          extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+            auto-tab-discard
+            bitwarden
+            cookies-txt
+            greasemonkey
+            i-dont-care-about-cookies
+            sidebery
+            ublacklist
+            ublock-origin
+          ] ++ lib.optionals pkgs.hostPlatform.isLinux [ pkgs.nur.repos.rycee.firefox-addons.plasma-integration ];
           settings = {
             "apz.allow_double_tap_zooming" = false;
             "apz.allow_zooming" = true;

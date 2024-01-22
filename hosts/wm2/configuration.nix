@@ -74,7 +74,7 @@
     boot.initrd.kernelModules = [ "zfs" ];
     boot.initrd.postDeviceCommands = "zpool import -lf zpool";
     boot.zfs.devNodes = "/dev/disk/by-partlabel";
-    networking.interfaces.enp103s0f4u1c2.useDHCP = true;
+    # networking.interfaces.enp103s0f4u1c2.useDHCP = true;
     #    networking.interfaces.wlp2s0.useDHCP = true;
     services.openssh.extraConfig = ''
       UseDNS no

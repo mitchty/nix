@@ -43,6 +43,11 @@
       inputs.nixpkgs.follows = "nixpkgs-old";
     };
 
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -77,6 +82,7 @@
     , darwin
     , home-manager
     , home-manager-old
+    , disko
     , nixos-generators
     , deploy-rs
     , emacs-overlay
@@ -225,6 +231,7 @@
           } ++ [
           { home.stateVersion = homeManagerStateVersion; }
           ./modules/home-manager
+          #          nur.hmModules
         ];
       };
 
@@ -658,6 +665,26 @@
       };
 
       nixosConfigurations = {
+        # Note this configuration is just to test out auto iso image creation.
+        # simple = (makeOverridable nixosSystem) rec {
+        #   system = "x86_64-linux";
+        #   modules = nixOSModules ++ [
+        #     ./hosts/simple/configuration.nix
+        #   ] ++ [{
+        #     users = {
+        #       primaryUser = homeUser;
+        #       primaryGroup = homeGroup;
+        #     };
+        #     age.secrets = ageHomeNixos homeUser;
+        #     services.role = {
+        #       mosh.enable = true;
+        #     };
+        #   }];
+        #   specialArgs = {
+        #     inherit inputs;
+        #     latest = latest.legacyPackages.${x86-linux};
+        #   };
+        # };
         gw = (makeOverridable nixosSystem) rec {
           system = "x86_64-linux";
           modules = nixOSModules ++ [
@@ -694,9 +721,10 @@
             services.role = {
               media = {
                 enable = true;
-                services = false;
+                services = true;
               };
 
+              qemu.enable = true;
               grafana.enable = true;
               highmem.enable = true;
               intel.enable = true;
@@ -729,8 +757,8 @@
                 primaryGroup = homeGroup;
               };
               age.secrets = ageHomeNixosWithBackup homeUser // ageS3fs;
+              role.gui.enable = true;
               services.role = {
-                gui.enable = true;
                 intel.enable = true;
                 mosh.enable = true;
                 node-exporter.enable = true;
@@ -759,9 +787,9 @@
                   primaryGroup = homeGroup;
                 };
                 age.secrets = ageHomeNixos homeUser;
+                role.gui.enable = true;
                 services.role = {
                   gaming.enable = true;
-                  gui.enable = true;
                   qemu.enable = true;
                   intel.enable = true;
                   mosh.enable = true;
@@ -969,10 +997,16 @@
       deploy = {
         sshUser = "root";
         user = "root";
-        autoRollback = false;
-        magicRollback = false;
+        autoRollback = true;
+        magicRollback = true;
 
         nodes = {
+          "simple" = {
+            hostname = "simple.home.arpa";
+            profiles.system = {
+              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."simple";
+            };
+          };
           "gw" = {
             hostname = "gw.home.arpa";
             profiles.system = {
@@ -1036,8 +1070,13 @@
       checks.deploy-rs = builtins.mapAttrs
         (deployLib: deployLib.deployChecks self.deploy)
         deploy-rs.lib;
+      # checks.nixpkgs-fmt = nixpkgs.runCommand "check-nix-format" { } ''
+      #   ${nixpkgs.legacyPackages.${system}.nixpkgs-fmt}/bin/nixpkgs-fmt --check ${./.}
+      #   install -dm755 $out
+      # '';
     } // flake-utils.lib.eachDefaultSystem
       (system:
+      # let pkgs = nixpkgsConfig [ ];
       let pkgs = import nixpkgs { inherit system; };
       in
       rec {
@@ -1051,6 +1090,7 @@
             install -dm755 $out
           '';
           shellspec = pkgs.runCommand "check-shellspec" { } ''
+            set -x
             for shell in ${pkgs.ksh}/bin/ksh ${pkgs.oksh}/bin/ksh ${pkgs.zsh}/bin/zsh ${pkgs.bash}/bin/bash; do
               ${pkgs.python3}/bin/python3 -c 'import pty; pty.spawn("${pkgs.shellspec}/bin/shellspec -c ${./.} --shell \$shell -x")'
             done
