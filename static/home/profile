@@ -160,6 +160,8 @@ crane() {
     sed -i '' -e "s/quick-start/${_crane_name}/g" -e "s/my-crate/${_crane_name}/g" Cargo.toml flake.nix
   fi
 
+  cargo update
+
   git add -A
   git commit -m "nix flake init -t github:ipetkov/crane"
 }

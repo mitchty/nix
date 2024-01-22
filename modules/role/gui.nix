@@ -13,32 +13,33 @@ in
 
   # darwin is ignored for now, mostly just a boolean there.
   config = mkIf cfg.enable
-    (optionalAttrs (options ? systemd.services) (mkIf (true) {
+    (optionalAttrs (options ? systemd.services) (mkIf (pkgs.hostPlatform.isLinux) {
       # Only allow certain unfree packages to install
       nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
         "google-chrome"
       ];
 
-      environment.systemPackages = with pkgs; [
-        element-desktop
-        google-chrome
-        intel-media-driver
-        kmix
-        libv4l
-        libvirt
-        networkmanager
-        networkmanager-openconnect
-        networkmanagerapplet
-        pavucontrol
-        pipewire
-        plasma-desktop
-        plasma-integration
-        plasma-pa
-        rtkit
-        sddm
-        xorg.xauth
-        yakuake
-      ];
+      environment.systemPackages = (lib.attrVals [
+        "element-desktop"
+        "google-chrome"
+        "intel-media-driver"
+        "kmix"
+        "libv4l"
+        "libvirt"
+        "networkmanager"
+        "networkmanager-openconnect"
+        "networkmanagerapplet"
+        "pavucontrol"
+        "pipewire"
+        "plasma-desktop"
+        "plasma-integration"
+        "plasma-pa"
+        "rtkit"
+        "sddm"
+        "xorg.xauth"
+        "yakuake"
+      ]
+        pkgs);
 
       # Capslock is control, I'm not a heathen.
       services.xserver.xkbOptions = "ctrl:swapcaps";
@@ -50,10 +51,11 @@ in
       hardware.opengl = {
         driSupport = true;
         driSupport32Bit = true;
-        extraPackages = with pkgs; [
-          vaapiIntel
-          intel-media-driver
-        ];
+        extraPackages = (lib.attrVals [
+          "vaapiIntel"
+          "intel-media-driver"
+        ]
+          pkgs);
       };
       environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
 

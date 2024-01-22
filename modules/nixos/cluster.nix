@@ -71,14 +71,6 @@ let
         </operations>
       </primitive>
 
-      <primitive id="samba" class="systemd" type="samba-smbd">
-        <operations>
-          <op id="stop-samba-smbd" name="stop" interval="0" timeout="10s"/>
-          <op id="start-samba-smbd" name="start" interval="0" timeout="10s"/>
-          <op id="monitor-samba-smbd" name="monitor" interval="10s" timeout="20s"/>
-        </operations>
-      </primitive>
-
       <primitive id="nginx" class="systemd" type="nginx">
         <operations>
           <op id="stop-nginx" name="stop" interval="0" timeout="10s"/>
@@ -105,9 +97,6 @@ let
 
   constraints = builtins.toFile "constraints.xml" ''
     <constraints>
-      <rsc_order id="order-samba" first="nasvip" then="samba" kind="Mandatory"/>
-      <rsc_colocation id="colocate-samba" rsc="nasvip" with-rsc="samba" score="INFINITY"/>
-
       <rsc_order id="order-nfsd" first="cluvip" then="nfsd" kind="Mandatory"/>
       <rsc_colocation id="colocate-nfsd" rsc="cluvip" with-rsc="nfsd" score="INFINITY"/>
 
@@ -148,25 +137,6 @@ let
     fi
   '';
 
-  sambaTrampoline = pkgs.writeScriptBin "samba-trampoline" ''#!${pkgs.runtimeShell}
-    set -eux
-
-    for dir in /gluster/nas /gluster/src; do
-      install -dm755 --owner=mitch --group=users $dir
-    done
-
-    priv=/var/lib/samba/private
-    install -dm755 $priv
-    install -m600 /gluster/cfg/nas/passdb.tdb $priv/passwd.tdb
-    install -m600 /gluster/cfg/nas/netlogon_creds_cli.tdb $priv/netlogon_creds_cli.tdb
-    install -m600 /gluster/cfg/nas/secrets.tdb $priv/secrets.tdb
-
-    # then sleeeeeeeeep!
-    while true; do
-      sleep 30d
-    done
-  '';
-
   cacheTrampoline = pkgs.writeScriptBin "cache-trampoline" ''#!${pkgs.runtimeShell}
     set -eux
 
@@ -195,10 +165,6 @@ let
     # { from = 49152; to = 49170; }
     { from = 49152; to = 60999; }
   ];
-
-  # for samba
-  sambaTcpPorts = [ 445 139 ];
-  sambaUdpPorts = [ 137 138 ];
 
   # nginx nix package cache
   nginxCfg = config.services.nginx;
@@ -232,7 +198,9 @@ let
 
   nfsPorts = [ 111 2049 config.services.nfs.server.statdPort config.services.nfs.server.lockdPort config.services.nfs.server.mountdPort ];
 
-  garagePorts = [ 3900 3901 3902 ];
+  garagePorts = [ 3900 3901 3902 3903 ];
+
+  iperfPorts = [ 5201 ];
 in
 {
   options.services.role.cluster = {
@@ -261,8 +229,8 @@ in
     networking = {
       firewall = {
         allowedTCPPortRanges = [ ] ++ glusterTcpPortRanges;
-        allowedTCPPorts = [ ] ++ pacemakerTcpPorts ++ glusterTcpPorts ++ sambaTcpPorts ++ nginxTcpPorts ++ nfsPorts ++ garagePorts;
-        allowedUDPPorts = [ ] ++ pacemakerUdpPorts ++ glusterUdpPorts ++ sambaUdpPorts ++ nfsPorts;
+        allowedTCPPorts = [ ] ++ pacemakerTcpPorts ++ glusterTcpPorts ++ nginxTcpPorts ++ nfsPorts ++ garagePorts ++ iperfPorts;
+        allowedUDPPorts = [ ] ++ pacemakerUdpPorts ++ glusterUdpPorts ++ nfsPorts;
       };
     };
 
@@ -347,26 +315,29 @@ in
         zfs list zroot/data || zfs create zroot/data -o compression=zstd -o mountpoint=/data
         zfs list zroot/data/gluster || zfs create zroot/data/gluster -o compression=zstd
       '';
+      # NOTE: This poststart script might be a bit too aggressive if we can't peer
       postStart = ''
-        set -eux
-        PATH=$PATH:${pkgs.glusterfs}/bin:${pkgs.gawk}/bin
+          set -eux
+          PATH=$PATH:${pkgs.glusterfs}/bin:${pkgs.gawk}/bin
 
-        . ${../../static/src/lib.sh}
+          . ${../../static/src/lib.sh}
 
-        us gluster peer status
+        #   # gluster volume set data-gluster cluster.lookup-optimize off
 
-        for node in cl1.home.arpa cl2.home.arpa cl3.home.arpa; do
-          gluster peer probe $node
-        done
+          randretry 5 30 gluster peer status
 
-        install -dm755 /data/gluster/brick
+          # for node in cl1.home.arpa cl2.home.arpa cl3.home.arpa; do
+          #   gluster peer probe $node
+          # done
 
-        if [ "cl1" = "$(uname -n)" ]; then
-          if ! gluster volume list | grep data-gluster; then
-            gluster volume create data-gluster replica 3 cl1.home.arpa:/data/gluster/brick cl2.home.arpa:/data/gluster/brick cl3.home.arpa:/data/gluster/brick
-            gluster volume start data-gluster
-          fi
-        fi
+        #   install -dm755 /data/gluster/brick
+
+        #   if [ "cl1" = "$(uname -n)" ]; then
+        #     if ! gluster volume list | grep data-gluster; then
+        #       gluster volume create data-gluster replica 3 cl1.home.arpa:/data/gluster/brick cl2.home.arpa:/data/gluster/brick cl3.home.arpa:/data/gluster/brick
+        #       gluster volume start data-gluster
+        #     fi
+        #   fi
       '';
     };
 
@@ -380,6 +351,17 @@ in
         description = "/gluster client mountpoint";
         after = [ "glusterd.service" ];
         requires = [ "glusterd.service" ];
+        type = "glusterfs";
+        # Note if we hit a timeout its likely due to misconfiguration
+        mountConfig.TimeoutSec = "10s";
+      }
+      {
+        wantedBy = [ "multi-user.target" ];
+        what = "cluster.home.arpa:/hdd";
+        where = "/srv/gluster/hdd";
+        description = "/srv/gluster/hdd client mountpoint";
+        after = [ "glusterd.service" ];
+        requires = [ "glusterd.service" "hdd-gluster.mount" ];
         type = "glusterfs";
         # Note if we hit a timeout its likely due to misconfiguration
         mountConfig.TimeoutSec = "10s";
@@ -424,102 +406,6 @@ in
       requires = [ "gluster.mount" ];
       serviceConfig.ExecStart = "${cacheTrampoline}/bin/cache-trampoline";
       reloadIfChanged = true;
-    };
-
-    systemd.services.samba-trampoline = {
-      enable = true;
-      requires = [ "gluster.mount" "pacemaker-trampoline.service" "glusterd.service" ];
-      # after = [ "glusterd.service" ];
-      serviceConfig.ExecStart = "${sambaTrampoline}/bin/samba-trampoline";
-      # reloadIfChanged = true;
-    };
-
-    services.samba = {
-      enable = true;
-      enableNmbd = false;
-      openFirewall = true;
-      enableWinbindd = false;
-      securityType = "user";
-      extraConfig = ''
-        log level = 1
-        interfaces = 10.10.10.201
-        workgroup = WORKGROUP
-        server role = standalone server
-        dns proxy = no
-        allow insecure wide links = yes
-        vfs objects = catia fruit streams_xattr
-        pam password change = yes
-        map to guest = bad user
-        usershare allow guests = yes
-        create mask = 0644
-        force create mode = 0644
-        directory mask = 0755
-        force directory mode = 0755
-        load printers = no
-        printing = bsd
-        printcap name = /dev/null
-        disable spoolss = yes
-        strict locking = no
-        aio read size = 0
-        aio write size = 0
-        vfs objects = catia fruit streams_xattr
-        # Security
-        client ipc max protocol = SMB3
-        client ipc min protocol = SMB2_10
-        client max protocol = SMB3
-        client min protocol = SMB2_10
-        server max protocol = SMB3
-        server min protocol = SMB2_10
-        # Time Machine
-        fruit:delete_empty_adfiles = yes
-        fruit:time machine = yes
-        fruit:veto_appledouble = no
-        fruit:wipe_intentionally_left_blank_rfork = yes
-        server string = nas.cluster.home.arpa
-        netbios name = nas.cluster.home.arpa
-        guest account = nobody
-        map to guest = bad user
-        logging = systemd
-      '';
-      shares = {
-        nas = {
-          path = "/gluster/nas";
-          browseable = "yes";
-          "valid users" = "mitch";
-          "read only" = "no";
-          "guest ok" = "no";
-          "create mask" = "0644";
-          "directory mask" = "0755";
-          "veto files" = "/.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/";
-          "delete veto files" = "yes";
-          "wide links" = "yes";
-        };
-        src = {
-          path = "/gluster/src";
-          browseable = "yes";
-          "follow symlinks" = "no";
-          "valid users" = "mitch";
-          "read only" = "no";
-          "guest ok" = "no";
-          "create mask" = "0644";
-          "directory mask" = "0755";
-          "veto files" = "/.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/result/";
-          "delete veto files" = "yes";
-          "wide links" = "yes";
-        };
-      };
-    };
-
-    # Ok so this is jank af but we have to 'enable' the samba module, so that
-    # the systemd service is defined and not masked and is able to run. BUT if we
-    # set enable = mkForce false at the systemd level that gets the service
-    # masked and can't be started by pacemaker. Which is annoying af. However,
-    # if we force wantedBy to be empty, systemd won't start the service. Which
-    # means pacemaker can then be the arbiter of starting it. Yeah this whole
-    # setup is hokey/janky but for a minimal "ha" setup its *fine*.
-    systemd.services.samba-smbd = {
-      wantedBy = lib.mkForce [ ];
-      requires = [ "samba-trampoline.service" ];
     };
 
     systemd.tmpfiles.rules = [
@@ -613,21 +499,23 @@ in
       #
       # TBD: How often should mergerfs rebalance data? Figure this out when/if I
       # start using this in earnest.
-      "/data/disks" = {
-        depends = [ "/data/disk/0" ];
-        device = "/data/disk/0"; # When adding new disks add :/data/disk/N:/data/disk/N+1 etc....
-        fsType = "fuse.mergerfs";
-        options = [
-          "defaults"
-          "allow_other"
-          "use_ino"
-          "cache.files=partial"
-          "dropcacheonclose=true"
-          "category.create=epmfs"
-          "nofail"
-          "uid=2000,gid=2000"
-        ];
-      };
+      # "/data/disks" = {
+      #   depends = [ "/data/disk/0" "/data/disk/1" "/data/disk/2" "/data/disk/3" ];
+      #   device = "/data/disk/0:/data/disk/1:/data/disk/2:/data/disk/3";
+      #   fsType = "fuse.mergerfs";
+      #   options = [
+      #     "defaults"
+      #     "allow_other"
+      #     "use_ino"
+      #     "cache.files=partial"
+      #     "dropcacheonclose=true"
+      #     "category.create=lus"
+      #     "nofail"
+      #     "uid=2000,gid=2000"
+      #     "minfreespace=100G"
+      #     # "moveonenospc=true"
+      #   ];
+      # };
     };
 
     users = {
@@ -644,29 +532,29 @@ in
     };
 
     systemd.services.garage = {
-      requires = [ "data-disks.mount" ];
+      requires = [ "data-disk-0.mount" ];
       serviceConfig = {
         User = "garage";
         Group = "garage";
         DynamicUser = lib.mkForce false;
       };
-      environment = {
-        RUST_LOG = "debug";
-      };
+      # environment = {
+      #   RUST_LOG = "info";
+      # };
     };
 
     services.garage = {
       enable = true;
-      logLevel = "debug";
+      # logLevel = "debug";
       package = pkgs.garage_0_8;
       settings = {
         bootstrap_peers = [
-          "3dff9b2df766dffe91c99fffc3854459d09e4a5eb7906ce6c3e39a073eda590d@10.254.128.1:3901"
-          "8372374eb8550066b34ce937e4494bcf160506079b398e28cf8ac4d1595c2a75@10.254.128.2:3901"
-          "5c76107bde3deab22948550b70497a04de5d44ec6fc430971c3a2733876aa651@10.254.128.3:3901"
+          "3dff9b2df766dffe91c99fffc3854459d09e4a5eb7906ce6c3e39a073eda590d@192.168.254.1:3901"
+          "8372374eb8550066b34ce937e4494bcf160506079b398e28cf8ac4d1595c2a75@192.168.254.2:3901"
+          "5c76107bde3deab22948550b70497a04de5d44ec6fc430971c3a2733876aa651@192.168.254.3:3901"
         ];
-        rpc_bind_addr = "0.0.0.0:3901";
-        rpc_public_addr = "${(builtins.head config.networking.interfaces.vlan100.ipv4.addresses).address}:3901";
+        rpc_bind_addr = "[::]:3901";
+        rpc_public_addr = "${(builtins.head config.networking.interfaces.enp2s0.ipv4.addresses).address}:3901";
         # Migrate the actual thing to an age secret file once this all works
         rpc_secret = "97cf75317d13d32a558e3cecd639c62ac0d132f6775dfe45b5729f675098efff";
         # Ends up on zfs which is on nvme storage so metadata updates is fastish
@@ -675,14 +563,17 @@ in
         # This is the mergerfs fs above that merges /data/disk/N ->
         # /data/disks so I can expand capacity without recreating a node
         # Removals gonna be a bitch but eh if something fails its an event anyway.
-        data_dir = "/data/disks";
+        # Garage 0.9 lets us specify multiple so lets drop the mergerfs fuse fs
+        # in between, by the time I get new drives I can use that instead.
+        data_dir = "/data/disk/0";
         replication_mode = 2;
         db_engine = "lmdb";
         block_size = 1048576;
-        compression_level = -99;
+        # compression_level = 1;
         s3_api = {
           s3_region = "garage";
           api_bind_addr = "0.0.0.0:3900";
+          # api_bind_addr = "127.0.0.1:3900";
           root_domain = "cluster.home.arpa";
         };
         s3_web = {
@@ -691,7 +582,7 @@ in
           index = "index.html";
         };
         admin = {
-          api_bind_addr = "127.0.0.1:3903";
+          api_bind_addr = "0.0.0.0:3903";
         };
       };
     };

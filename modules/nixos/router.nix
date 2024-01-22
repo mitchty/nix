@@ -61,7 +61,7 @@ let
 
   extrahosts = (pkgs.writeText "dns-hosts" ''
     10.10.10.1 gw.home.arpa gw
-    10.10.10.3 nexus.home.arpa nexus
+    10.10.10.3 nexus.home.arpa nexus media
     10.10.10.4 dfs1.home.arpa dfs1
     10.10.10.5 srv.home.arpa srv
     10.10.10.6 cl1.home.arpa cl1
@@ -82,6 +82,7 @@ let
     10.10.10.129 grafana.home.arpa grafana
     10.10.10.130 prometheus.home.arpa prometheus
     10.10.10.131 nixcache.home.arpa nixcache
+    10.10.10.132 media.home.arpa media
 
     # ha cluster ip address(es)
     10.10.10.200 cluster.home.arpa cluster
@@ -154,29 +155,38 @@ in
     };
 
     # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/networking/hostapd.nix
-    services.hostapd = {
-      logLevel = 1;
-      enable = true;
-      interface = cfg.wlanIface;
-      # 5 ghz = a, 2.5 = g
-      hwMode = "g";
-      channel = 10;
-      countryCode = "US";
-      ssid = "newhotness";
-      wpa = false;
-      extraConfig = ''
-        auth_algs=1
-        ieee80211d=1
-        ieee80211n=1
-        ignore_broadcast_ssid=0
-        rsn_pairwise=GCMP CCMP
-        wmm_enabled=1
-        wpa_key_mgmt=WPA-PSK
-        wpa_pairwise=GCMP CCMP
-        wpa=2
-        wpa_psk_file=${config.age.secrets."wifi/passphrase".path}
-      '';
-    };
+    # services.hostapd = {
+    #   enable = true;
+    #   interface = cfg.wlanIface;
+    #   # 5 ghz = a, 2.5 = g
+    #   # hwMode = "g";
+
+    #   ssid = "newhotness";
+    #   radios = {
+    #     "wlp0s21f0u2" = {
+    #       countryCode = "US";
+    #       channel = 10;
+    #       band = "2g";
+    #       # networks."newhotness" = {
+    #       #   ssid = "newhotness";
+    #       #   logLevel = 1;
+    #       #   mode = "wpa2-sha256";
+    #       #   authentication.wpaPskFile = config.age.secrets."wifi/passphrase".path;
+    #       # };
+    #       settings = {
+    #         auth_algs = 1;
+    #         ieee80211d = 1;
+    #         ieee80211n = 1;
+    #         ignore_broadcast_ssid = 0;
+    #         rsn_pairwise = "GCMP CCMP";
+    #         wmm_enabled = 1;
+    #         wpa_key_mgmt = "WPA-PSK";
+    #         wpa_pairwise = "GCMP CCMP";
+    #         wpa = 2;
+    #       };
+    #     };
+    #   };
+    # };
 
     networking = {
       # Only using dhcp for the wan interface
@@ -344,6 +354,8 @@ in
         # dhcp-range=tag:${cfg.lanIface},::1,constructor:${cfg.lanIface}, ra-names, 12h
         dhcp-range=tag:${cfg.wanIface},::1,constructor:${cfg.wanIface}, ra-names, 12h
 
+        min-cache-ttl=36000
+
         # IPv6 Route Advertisements
         enable-ra
 
@@ -380,9 +392,9 @@ in
         dhcp-host=e4:5f:01:92:cc:1f,pikvm,10.10.10.10
 
         # ether
-        dhcp-host=a0:ce:c8:ce:43:48,mb,10.10.10.20
+        # dhcp-host=a0:ce:c8:ce:43:48,mb,10.10.10.20
         # wifi
-        # dhcp-host=f0:18:98:0d:0e:64,mb,10.10.10.20
+        dhcp-host=f0:18:98:0d:0e:64,mb,10.10.10.20
 
         dhcp-host=3e:34:2b:0d:97:bc,iphone,10.10.10.30
         dhcp-host=c2:84:0f:47:5e:60,ipad,10.10.10.31

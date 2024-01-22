@@ -92,6 +92,8 @@ in
 
       systemd.tmpfiles.rules = [
         "d ${cfg.prefix} 0755 media media"
+        # Lets not keep s3fs cached crap around tooo long these files aren't that small.
+        "d /tmp/s3 - - - 1d"
       ];
 
       systemd.services.radarr = mkIf cfg.services rec{
@@ -120,150 +122,201 @@ in
       };
 
       fileSystems = {
-        "/s3/general" = {
-          device = "${pkgs.s3fs}/bin/s3fs#general-s3fs:/";
+        "/sshfs/media" = {
+          device = "${pkgs.sshfs}/bin/sshfs#root@dfs1.home.arpa:/tank/media/";
           fsType = "fuse";
-          noCheck = true;
           options = [
             "_netdev"
-            # "curldbg"
-            "passwd_file=${config.age.secrets."s3/bucket-general".path}"
+            "users"
+            "idmap=user"
+            "IdentityFile=/root/.ssh/id_ed25519"
             "allow_other"
-            "mp_umask=022"
-            "max_dirty_data=102400"
-            "uid=1000"
-            "gid=100"
-            "url=http://cluster.home.arpa:3900"
-            # "bucket=general-s3fs"
-            "use_path_request_style"
-          ];
-        };
-        "/s3/config" = {
-          device = "${pkgs.s3fs}/bin/s3fs#config-s3fs:/";
-          fsType = "fuse";
-          noCheck = true;
-          options = [
-            "_netdev"
-            # "curldbg"
-            "passwd_file=${config.age.secrets."s3/bucket-config".path}"
-            "allow_other"
-            "url=http://cluster.home.arpa:3900"
-            # "bucket=general-s3fs"
-            "use_path_request_style"
+            "default_permissions"
+            "uid=3000"
+            "gid=3000"
+            "exec"
+            "reconnect"
+            "ServerAliveInterval=15"
+            "ServerAliveCountMax=3"
           ];
         };
         "/s3/media" = {
-          device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/";
-          fsType = "fuse";
-          noCheck = true;
-          options = [
-            "_netdev"
-            "curldbg"
-            "passwd_file=${config.age.secrets."s3/bucket-media".path}"
-            "allow_other"
-            "mp_umask=022"
-            "max_dirty_data=102400"
-            "uid=3000"
-            "gid=3000"
-            "url=http://cluster.home.arpa:3900"
-            # "bucket=general-s3fs"
-            "use_path_request_style"
-          ];
-        };
-        "/s3/movies" = {
-          device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/movies";
-          fsType = "fuse";
-          noCheck = true;
-          options = [
-            "_netdev"
-            "curldbg"
-            "passwd_file=${config.age.secrets."s3/bucket-media".path}"
-            "allow_other"
-            "mp_umask=022"
-            "uid=3000"
-            "gid=3000"
-            "url=http://cluster.home.arpa:3900"
-            # "bucket=general-s3fs"
-            "use_path_request_style"
-          ];
+          device = "/sshfs/media";
+          fsType = "none";
+          options = [ "bind" "nofail" ];
         };
         "/s3/radarr" = {
-          device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/movies";
-          fsType = "fuse";
-          noCheck = true;
-          options = [
-            "_netdev"
-            "curldbg"
-            "passwd_file=${config.age.secrets."s3/bucket-media".path}"
-            "allow_other"
-            "mp_umask=022"
-            "max_dirty_data=102400"
-            "uid=3000"
-            "gid=3000"
-            "url=http://cluster.home.arpa:3900"
-            # "bucket=general-s3fs"
-            "use_path_request_style"
-          ];
+          device = "/sshfs/media/movies";
+          fsType = "none";
+          options = [ "bind" "nofail" ];
         };
-        "/s3/tv" = {
-          device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/tv";
-          fsType = "fuse";
-          noCheck = true;
-          options = [
-            "_netdev"
-            "curldbg"
-            "passwd_file=${config.age.secrets."s3/bucket-media".path}"
-            "allow_other"
-            "mp_umask=022"
-            "uid=3000"
-            "gid=3000"
-            "url=http://cluster.home.arpa:3900"
-            # "bucket=general-s3fs"
-            "use_path_request_style"
-          ];
+        "/s3/movies" = {
+          device = "/sshfs/media/movies";
+          fsType = "none";
+          options = [ "bind" "nofail" ];
         };
         "/s3/sonarr" = {
-          device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/tv";
-          fsType = "fuse";
-          noCheck = true;
-          options = [
-            "_netdev"
-            "curldbg"
-            "passwd_file=${config.age.secrets."s3/bucket-media".path}"
-            "allow_other"
-            "mp_umask=022"
-            "max_dirty_data=102400"
-            "uid=3000"
-            "gid=3000"
-            "url=http://cluster.home.arpa:3900"
-            # "bucket=general-s3fs"
-            "use_path_request_style"
-          ];
+          device = "/sshfs/media/tv";
+          fsType = "none";
+          options = [ "bind" "nofail" ];
         };
-        "/s3/s3fs" = {
-          device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/tv";
-          fsType = "fuse";
-          noCheck = true;
-          options = [
-            "_netdev"
-            "curldbg"
-            "use_cache=/tmp/s3/s3fs"
-            "passwd_file=${config.age.secrets."s3/bucket-media".path}"
-            "allow_other"
-            "mp_umask=022"
-            "uid=3000"
-            "gid=3000"
-            "url=http://cluster.home.arpa:3900"
-            "use_path_request_style"
-            "list_object_max_keys=10000"
-            "parallel_count=5"
-            "multipart_size=1024"
-            "multipart_copy_size=1024"
-            "max_dirty_data=1024"
-            # "update_parent_dir_stat"
-            # "streamupload" # needs 1.92 23.05 has 1.91 sigh
-          ];
+        "/s3/tv" = {
+          device = "/sshfs/media/tv";
+          fsType = "none";
+          options = [ "bind" "nofail" ];
         };
+        # "/s3/general" = {
+        #   device = "${pkgs.s3fs}/bin/s3fs#general-s3fs:/";
+        #   fsType = "fuse";
+        #   noCheck = true;
+        #   options = [
+        #     "_netdev"
+        #     # "curldbg"
+        #     "passwd_file=${config.age.secrets."s3/bucket-general".path}"
+        #     "allow_other"
+        #     "mp_umask=022"
+        #     "max_dirty_data=102400"
+        #     "uid=1000"
+        #     "gid=100"
+        #     "url=http://cluster.home.arpa:3900"
+        #     # "bucket=general-s3fs"
+        #     "use_path_request_style"
+        #   ];
+        # };
+        # "/s3/config" = {
+        #   device = "${pkgs.s3fs}/bin/s3fs#config-s3fs:/";
+        #   fsType = "fuse";
+        #   noCheck = true;
+        #   options = [
+        #     "_netdev"
+        #     # "curldbg"
+        #     "passwd_file=${config.age.secrets."s3/bucket-config".path}"
+        #     "allow_other"
+        #     "url=http://cluster.home.arpa:3900"
+        #     # "bucket=general-s3fs"
+        #     "use_path_request_style"
+        #   ];
+        # };
+        #        "/s3/media" = {
+        #          device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/";
+        #          fsType = "fuse";
+        #          noCheck = true;
+        #          options = [
+        #            "_netdev"
+        #            "curldbg"
+        #            "passwd_file=${config.age.secrets."s3/bucket-media".path}"
+        #            "allow_other"
+        #            "mp_umask=022"
+        #            "max_dirty_data=102400"
+        #            "uid=3000"
+        #            "gid=3000"
+        #            "url=http://cluster.home.arpa:3900"
+        #            # "bucket=general-s3fs"
+        #            "use_path_request_style"
+        #          ];
+        #        };
+        # "/s3/movies" = {
+        #   device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/movies";
+        #   fsType = "fuse";
+        #   noCheck = true;
+        #   options = [
+        #     "_netdev"
+        #     "curldbg"
+        #     "passwd_file=${config.age.secrets."s3/bucket-media".path}"
+        #     "allow_other"
+        #     "mp_umask=022"
+        #     "uid=3000"
+        #     "gid=3000"
+        #     "url=http://cluster.home.arpa:3900"
+        #     # "bucket=general-s3fs"
+        #     "use_path_request_style"
+        #   ];
+        # };
+        # "/s3/tv" = {
+        #   device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/tv";
+        #   fsType = "fuse";
+        #   noCheck = true;
+        #   options = [
+        #     "_netdev"
+        #     "curldbg"
+        #     "passwd_file=${config.age.secrets."s3/bucket-media".path}"
+        #     "allow_other"
+        #     "mp_umask=022"
+        #     "uid=3000"
+        #     "gid=3000"
+        #     "url=http://cluster.home.arpa:3900"
+        #     # "bucket=general-s3fs"
+        #     "use_path_request_style"
+        #   ];
+        # };
+        # "/s3/sonarr" = {
+        #   device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/tv";
+        #   fsType = "fuse";
+        #   noCheck = true;
+        #   options = [
+        #     "_netdev"
+        #     "curldbg"
+        #     "passwd_file=${config.age.secrets."s3/bucket-media".path}"
+        #     "allow_other"
+        #     "mp_umask=022"
+        #     "uid=3000"
+        #     "gid=3000"
+        #     "url=http://cluster.home.arpa:3900"
+        #     "use_path_request_style"
+        #     "max_dirty_data=102400"
+        #     "parallel_count=5"
+        #     "nomultipart" # TODO: Since I am seeing http 400's after the second part is uploaded, fuck multipart uploads on garage I guess?
+        #     #            "use_cache=/tmp/s3"
+        #   ];
+        # };
+        # "/s3/radarr" = {
+        #   device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/movies";
+        #   fsType = "fuse";
+        #   noCheck = true;
+        #   options = [
+        #     "_netdev"
+        #     "curldbg"
+        #     "passwd_file=${config.age.secrets."s3/bucket-media".path}"
+        #     "allow_other"
+        #     "mp_umask=022"
+        #     "uid=3000"
+        #     "gid=3000"
+        #     "url=http://cluster.home.arpa:3900"
+        #     "use_path_request_style"
+        #     "max_dirty_data=102400"
+        #     "parallel_count=5"
+        #     "nomultipart" # TODO: Since I am seeing http 400's after the second part is uploaded, fuck multipart uploads on garage I guess?
+        #     #            "use_cache=/tmp/s3"
+        #   ];
+        #        };
+        # "/s3/s3fs" = {
+        #   device = "${pkgs.s3fs}/bin/s3fs#media-s3fs:/";
+        #   fsType = " fuse ";
+        #   noCheck = true;
+        #   options = [
+        #     "
+        #     endpoint=garage"
+        #     "passwd_file=${config.age.secrets."s3/bucket-media".path}"
+        #     "_netdev"
+        #     "curldbg"
+        #     "dbglevel=debug"
+        #     "sigv4"
+        #     "allow_other"
+        #     "mp_umask=022"
+        #     "uid=3000"
+        #     "gid=3000"
+        #     "url=http://cluster.home.arpa:3900"
+        #     "use_path_request_style"
+        #     "list_object_max_keys=10000"
+        #     "parallel_count=2"
+        #     "nomultipart"
+        #     # "multipart_size=10240"
+        #     # "multipart_copy_size=10240"
+        #     "use_cache=/tmp/s3"
+        #     # "update_parent_dir_stat"
+        #     # "streamupload" # needs 1.92 23.05 has 1.91 sigh
+        #   ];
+        # };
         # "/s3/rclone" = {
         #   device = "${pkgs.rclone}/bin/rclone#config-s3fs:/";
         #   fsType = "fuse";

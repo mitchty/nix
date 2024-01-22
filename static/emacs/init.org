@@ -286,22 +286,27 @@ Setup the font presets, by default troll with comic code sans cause its funny an
   (fontaine-presets
       '((regular
          :default-height 200)
-        (source-gihugic
-         :inherit souce-medium
-         :default-height 250)
-        (source-medium
-         :default-family "Source Code Pro"
-         :default-weight semilight
-         :default-height 150
-         :variable-pitch-family "Sans"
-         :bold-weight extrabold)
         (comic-gihugic
-         :inherit comic-medium
+         :inherit comic-base
          :default-height 250)
         (comic-medium
+         :inherit comic-base
          :default-family "Comic Code"
-         :variable-pitch-family "Sans"
          :default-height 150)
+        (comic-base
+         :default-family "Comic Code"
+         :default-weight semilight
+         :bold-weight extrabold)
+        (source-gihugic
+         :inherit souce-base
+         :default-height 250)
+        (source-gihugic
+         :inherit souce-base
+         :default-height 150)
+        (source-base
+         :default-family "Source Code Pro"
+         :default-weight semilight
+         :bold-weight extrabold)
         (t
          :default-family "Monospace"
          )))
@@ -840,7 +845,7 @@ Flycheck for on the fly checking of code.
   :ensure
   :custom
   (flycheck-indication-mode 'left-fringe)
-  (flycheck-highlighting-mode 'symbols)
+  (flycheck-highlighting-mode 'columns)
   (flycheck-highlighting-style 'level-face)
   :hook (prog-mode . flycheck-mode))
 #+END_SRC

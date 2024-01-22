@@ -69,26 +69,39 @@ let
     ];
   };
 
+  refactor = {
+    window_name = "nixrefactor";
+    layout = "even-vertical";
+    panes = [
+      {
+        shell_command = [
+          "gi mitchty/nix refactor"
+        ];
+        sleep_before = sleepDefault;
+      }
+    ];
+  };
+
   rswip = {
     window_name = "rswip";
     layout = "even-vertical";
     panes = [
       {
         shell_command = [
-          "ssh -t srv.home.arpa \"zsh --login -i -c 'cd ~/src/pub/wip/ria/grep-lite && nrsci'\""
+          "ssh -t srv.home.arpa \"zsh --login -i -c 'cd ~/src/localhost/wip/ria/grep-lite && nrsci'\""
         ];
         sleep_before = sleepDefault;
       }
       {
         shell_command = [
-          "cd ~/src/pub/wip/ria/grep-lite && nrsci"
+          "cd ~/src/localhost/wip/ria/grep-lite && nrsci"
         ];
         sleep_before = sleepDefault;
       }
       {
         focus = true;
         shell_command = [
-          "~/src/pub/wip/ria/grep-lite"
+          "~/src/localhost/wip/ria/grep-lite"
         ];
         sleep_before = sleepDefault;
       }
@@ -163,7 +176,7 @@ rec {
   home.file.".config/tmuxp/wm2.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "wm2";
-    windows = [ initial rebuildall journal ];
+    windows = [ initial rebuildall journal refactor ];
   });
 
   home.file.".config/tmuxp/srv.yml".text = (lib.generators.toYAML { } {

@@ -60,6 +60,7 @@ in
       listenAddress = cfg.cname;
       # https://prometheus.io/docs/prometheus/latest/storage/#operational-aspects
       extraFlags = [
+        "--log.level=debug"
         "--web.enable-admin-api"
         "--storage.tsdb.wal-compression"
         "--storage.tsdb.retention.time=${toString (365 * 3)}d" # 3 years of data?
@@ -137,6 +138,36 @@ in
               ];
               labels = {
                 alias = "mb.home.arpa";
+              };
+            }
+          ];
+        }
+        {
+          job_name = "garage";
+          scrape_interval = cfg.interval;
+          static_configs = [
+            {
+              targets = [
+                "cl1.home.arpa:3903"
+              ];
+              labels = {
+                alias = "cl1.home.arpa";
+              };
+            }
+            {
+              targets = [
+                "cl2.home.arpa:3903"
+              ];
+              labels = {
+                alias = "cl2.home.arpa";
+              };
+            }
+            {
+              targets = [
+                "cl3.home.arpa:3903"
+              ];
+              labels = {
+                alias = "cl3.home.arpa";
               };
             }
           ];

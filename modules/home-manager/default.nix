@@ -242,6 +242,7 @@ in
     sipcalc
     sshpass
     tldr
+    #    transcrypt
     unzip
     vim
     wget
@@ -429,16 +430,17 @@ in
           id = 0;
           name = "default";
           isDefault = true;
-          extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-            auto-tab-discard
-            bitwarden
-            cookies-txt
-            greasemonkey
-            i-dont-care-about-cookies
-            sidebery
-            ublacklist
-            ublock-origin
-          ] ++ lib.optionals pkgs.hostPlatform.isLinux [ pkgs.nur.repos.rycee.firefox-addons.plasma-integration ];
+          extensions = (lib.attrVals [
+            "auto-tab-discard"
+            "bitwarden"
+            "cookies-txt"
+            "greasemonkey"
+            "i-dont-care-about-cookies"
+            "sidebery"
+            "ublacklist"
+            "ublock-origin"
+          ]
+            pkgs.nur.repos.rycee.firefox-addons) ++ lib.optionals pkgs.hostPlatform.isLinux (lib.attrVals [ "plasma-integration" ]);
           settings = {
             "apz.allow_double_tap_zooming" = false;
             "apz.allow_zooming" = true;

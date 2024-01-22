@@ -10,6 +10,24 @@ Describe 'lib.sh'
   # Note shellspec runs from the git checkout dir
   Include static/src/lib.sh
 
+  minimal_env() {
+    export PATH=""
+    export HOME=""
+  }
+
+  get_ssh() {
+    echo "${SSH}"
+  }
+
+  Describe 'ensure top level imports work without PATH or HOME set in environments '
+    Before 'minimal_env'
+
+    It "SSH = ssh"
+      When call get_ssh
+      The output should eq "ssh"
+    End
+  End
+
   # need to reset these before each test that abuses them
   sed_inplace_before() {
     _sed_inplace_once_memo=false

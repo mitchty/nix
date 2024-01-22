@@ -757,8 +757,8 @@
                 primaryGroup = homeGroup;
               };
               age.secrets = ageHomeNixosWithBackup homeUser // ageS3fs;
-              role.gui.enable = true;
               services.role = {
+                gui.enable = true;
                 intel.enable = true;
                 mosh.enable = true;
                 node-exporter.enable = true;
@@ -787,9 +787,9 @@
                   primaryGroup = homeGroup;
                 };
                 age.secrets = ageHomeNixos homeUser;
-                role.gui.enable = true;
                 services.role = {
                   gaming.enable = true;
+                  gui.enable = true;
                   qemu.enable = true;
                   intel.enable = true;
                   mosh.enable = true;
