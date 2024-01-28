@@ -69,58 +69,6 @@ let
     '';
   };
 
-  # TODO: put all this emacs stuff into an overlay
-  #
-  # Top level so we can share this with init.el/packages.emacs and let its
-  # build phase emacs batch mode make sure this all works.
-  emacs-overlay-prime = pkgs.emacsWithPackagesFromUsePackage
-    {
-      config = ../../static/emacs/init.org;
-      package = inputs.nixpkgs-darwin-old.legacyPackages.${pkgs.system}.emacs29;
-    };
-  emacs-overlay = pkgs.emacsWithPackagesFromUsePackage
-    {
-      config = "${init-el}/init.el";
-      package = inputs.nixpkgs-darwin-old.legacyPackages.${pkgs.system}.emacs29;
-      defaultInitFile = true;
-    };
-
-  # https://github.com/nix-community/emacs-overlay/issues/373
-  #
-  # So have emacs tangle the .el file for us so we can use that to pass into the
-  # overlay function.
-  #
-  # While I'm at it, lets also use the build phase here to ensure that the
-  # entire derivation works or if I forgot a ) somewhere... again...
-  init-el = pkgs.stdenv.mkDerivation
-    rec {
-      pname = "initel";
-      version = "0.0.0";
-      buildInputs = [
-        emacs-overlay-prime
-      ];
-      src = ../../static/emacs;
-
-      # abuse this derivation to munge org->el so we can use that for default init file
-      # and then also use that to batch load it.
-      buildPhase = ''
-        emacs -Q --batch --eval "
-            (progn
-              (require 'ob-tangle)
-              (dolist (file command-line-args-left)
-                (with-current-buffer (find-file-noselect file)
-                  (org-babel-tangle))))
-          " init.org
-        echo emacs batch load to make sure init.el is parseable >&2
-        (export HOME=$TMPDIR; emacs -nw --batch --debug-init --load init.el)
-      '';
-
-      installPhase = ''
-        install -dm755 $out
-        install -m644 init.org $out/init.org
-        install -m644 init.el $out/init.el
-      '';
-    };
 
   # TODO: maybe yeet this into the gui role itself?
   gooey = (pkgs.hostPlatform.isDarwin || (role.gui.enable or false));
@@ -289,7 +237,7 @@ in
 
   programs.emacs = {
     enable = gooey;
-    package = emacs-overlay;
+    package = pkgs.emacsMt;
   };
 
   home.file = {
@@ -308,13 +256,10 @@ in
     };
     # Setup the default mutagen ignore list/config
     ".mutagen.yml".source = ../../static/home/mutagen.yaml;
-  } // lib.optionalAttrs gooey
-    {
-      ".emacs.d/early-init.el" = {
-        source = ../../static/emacs/early-init.el;
-        recursive = true;
-      };
-    } # role.gui home.files
+    # } // lib.optionalAttrs gooey
+    #   {
+    # This is where gui only files would go if I had anymore at this point.
+  } # role.gui home.files
   // lib.optionalAttrs pkgs.hostPlatform.isDarwin {
     "Library/Scripts/force-paste.scpt" = {
       source = ../../static/src/force-paste.scpt;

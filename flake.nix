@@ -28,11 +28,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    emacs-upstream = {
-      url = "github:emacs-mirror/emacs/emacs-29";
-      flake = false;
-    };
-
     home-manager = {
       url = "github:nix-community/home-manager/release-23.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -86,7 +81,6 @@
     , nixos-generators
     , deploy-rs
     , emacs-overlay
-    , emacs-upstream
     , rust
     , agenix
     , dnsblacklist
@@ -114,6 +108,8 @@
         emacs-overlay.overlay
         rust.overlays.default
         nur.overlay
+        # All my emacs overlay shenanigans in an overlay like they always shoulda been
+        (import ./overlays/emacs.nix)
         # TODO: this stuff should all get put into a flake overlay in this repo stop being lazy
         (
           # force in the ocf-resource-agents/pacemaker I patched into nixpkgs-pacemaker
@@ -124,60 +120,6 @@
             ocf-resource-agents = nixpkgs-pacemaker.legacyPackages.x86_64-linux.ocf-resource-agents;
           }
         )
-        #        (final: prev: {
-        #          emacs29 = prev.emacs-git.overrideAttrs
-        #            (old: {
-        #              name = "emacs29";
-        #              version = emacs-upstream.shortRev;
-        #              src = emacs-upstream;
-        #            });
-        #            emacs29-patched = final.emacs29.overrideAttrs
-        #            (super: {
-        #              # buildInputs = super.buildInputs ++
-        #              #   nixpkgs.lib.attrsets.attrVals [
-        #              #     "Cocoa"
-        #              #     "WebKit"
-        #              #   ]
-        #              #     nixpkgs-darwin.legacyPackages.x86_64-darwin.apple_sdk.frameworks;
-        #              preConfigure = ''
-        #                sed -i -e 's/headerpad_extra=1000/headerpad_extra=2000/' configure.ac
-        #                autoreconf
-        #              '';
-        #              configureFlags = super.configureFlags ++ [
-        #                # "--with-native-comp"
-        #                # "--with-xwidgets"
-        #                "--with-natural-title-bar"
-        #              ];
-        #              patches = [
-        #                # (prev.fetchpatch {
-        #                #   name = "mac-gui-loop-block-lifetime";
-        #                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0001-mac-gui-loop-block-lifetime.patch";
-        #                #   sha256 = "sha256-HqcRxXfZB9LDemkC7ThNfHuSHc5H5B2MQ102ZyifVYM=";
-        #                # })
-        #                # (prev.fetchpatch {
-        #                #   name = "mac-gui-loop-block-autorelease";
-        #                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0002-mac-gui-loop-block-autorelease.patch";
-        #                #   sha256 = "sha256-CBELVTAWwgaXrnkTzMsYH9R18qBnFBFHMOaVeC/F+I8=";
-        #                # })
-        #                (prev.fetchpatch {
-        #                  name = "gc-block-align-patch";
-        #                  url = "https://github.com/tyler-dodge/emacs/commit/36d2a8d5a4f741ae99540e139fff2621bbacfbaa.patch";
-        #                  sha256 = "sha256-/hJa8LIqaAutny6RX/x6a+VNpNET86So9xE8zdh27p8=";
-        #                })
-        #                # (prev.fetchpatch {
-        #                #   name = "buffer-process-output-on-thread-patch";
-        #                #   url = "https://github.com/emacs-mirror/emacs/commit/b386047f311af495963ad6a25ddda128acc1d461.patch";
-        #                #   sha256 = "sha256-dRkiowEtu/oOLh29/b7VSXGKsV5qE0PxMWrox5/LRoM=";
-        #                # })
-        #                # (prev.fetchpatch {
-        #                #   name = "immediate-output-notification-patch";
-        #                #   url = "https://github.com/emacs-mirror/emacs/commit/3f49c824f23b2fa4ce5512f80abdb0888a73c4a1.patch";
-        #                #   sha256 = "sha256-ShQsS9ixc15cyrPGYDLxbbsgySK4JUuCSqk6+XE0U4Q=";
-        #                # })
-        #                ./patches/emacs-use-correct-window-role.patch
-        #              ];
-        #            });
-        #        })
         # No longer neeeded here for future me to use to copypasta new patches
         # in if needed.
         # (self: super:
@@ -757,8 +699,8 @@
                 primaryGroup = homeGroup;
               };
               age.secrets = ageHomeNixosWithBackup homeUser // ageS3fs;
+              role.gui.enable = true;
               services.role = {
-                gui.enable = true;
                 intel.enable = true;
                 mosh.enable = true;
                 node-exporter.enable = true;
@@ -787,9 +729,9 @@
                   primaryGroup = homeGroup;
                 };
                 age.secrets = ageHomeNixos homeUser;
+                role.gui.enable = true;
                 services.role = {
                   gaming.enable = true;
-                  gui.enable = true;
                   qemu.enable = true;
                   intel.enable = true;
                   mosh.enable = true;
@@ -1027,9 +969,15 @@
             };
           };
           "wm2" = {
-            # hostname = "10.10.10.115";
-            hostname = "localhost";
+            hostname = "10.10.10.115";
+            #            hostname = "localhost";
             #            hostname = "wm2.home.arpa";
+            profiles.system = {
+              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."wm2";
+            };
+          };
+          "local-wm2" = {
+            hostname = "localhost";
             profiles.system = {
               path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."wm2";
             };
