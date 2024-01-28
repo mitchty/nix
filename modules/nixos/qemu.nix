@@ -5,7 +5,7 @@ with lib;
 let
   cfg = config.services.role.qemu;
   qemux64efiwrapper =
-    pkgs.writeShellScriptBin "qemu-system-x86_64-uefi" '' qemu-system-x86_64 -bios ${ pkgs.OVMF.fd}/FV/OVMF.fd "$@"
+    pkgs.writeShellScriptBin "qemu-system-x86_64-uefi" '' qemu-system-x86_64 -bios ${pkgs.OVMF.fd}/FV/OVMF.fd "$@"
 '';
 in
 {
@@ -19,11 +19,10 @@ in
     };
 
     environment = {
-      systemPackages = (lib.attrVals [
-        "qemu"
-        "qemux64efiwrapper"
-      ]
-        pkgs);
+      systemPackages = [
+        pkgs.qemu
+        qemux64efiwrapper
+      ];
     };
   };
 }
