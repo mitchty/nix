@@ -256,11 +256,7 @@ in
     };
     # Setup the default mutagen ignore list/config
     ".mutagen.yml".source = ../../static/home/mutagen.yaml;
-    # } // lib.optionalAttrs gooey
-    #   {
-    # This is where gui only files would go if I had anymore at this point.
-  } # role.gui home.files
-  // lib.optionalAttrs pkgs.hostPlatform.isDarwin {
+  } // lib.optionalAttrs pkgs.hostPlatform.isDarwin {
     "Library/Scripts/force-paste.scpt" = {
       source = ../../static/src/force-paste.scpt;
       recursive = true;

@@ -20,7 +20,7 @@
     # very hacky way to have things work.
     darwin = {
       url = "github:LnL7/nix-darwin";
-      inputs.nixpkgs.follows = "nixpkgs-darwin-old";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
     emacs-overlay = {
@@ -181,7 +181,7 @@
         {
           users = import ./modules/users.nix;
         } ++ [
-        home-manager-old.darwinModules.home-manager
+        home-manager.darwinModules.home-manager
         ./modules/darwin
         ./modules/role
         agenix.darwinModules.age
