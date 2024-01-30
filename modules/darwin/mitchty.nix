@@ -212,10 +212,11 @@ in
         -c "Add :AppleSymbolicHotKeys:184:value:parameters: integer 1179648" \
         -c "Add :AppleSymbolicHotKeys:184:type string standard"
 
+      # TODO: off for now
       # Disables command+space shortcut
       $DRY_RUN_CMD /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist \
         -c "Delete :AppleSymbolicHotKeys:64" \
-        -c "Add :AppleSymbolicHotKeys:64:enabled bool false" \
+        -c "Add :AppleSymbolicHotKeys:64:enabled bool true" \
         -c "Add :AppleSymbolicHotKeys:64:value:parameters array" \
         -c "Add :AppleSymbolicHotKeys:64:value:parameters: integer 32" \
         -c "Add :AppleSymbolicHotKeys:64:value:parameters: integer 49" \
