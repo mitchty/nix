@@ -6,9 +6,7 @@ self: super: rec {
   # So this overlay defines a set of derivations that do:
   # - "compiles/tangles" the org mode file to .el directly
   # - uses ^^^^ to ensure the patched emacs I have can run in case I eff up missing a ) somewhere. Not that that eeeever happens
-  # - TODO: tests out that tree-sitter et al work with the config by batch loading the .org file itself, not nixpkgs 23.11 seems to have me seg faulting for some reason
-  #
-  # The latter TODO is the "real" reason for this overlay if I'm honest
+  # - tests out that tree-sitter/modes/etc et al work with the entire config by batch loading the tangled .el file itself with itself to prove out everything with modes works overall in case for some reason tree sitter loading a dylib segfaults for god knows why (never figured out what was causing it just managed to get this all to work again somehow so since this all works with a test I'm OK with that)
   #
 
   # Shared config overrideattr'd in with other derivations not really useful on
@@ -85,32 +83,22 @@ self: super: rec {
         ];
       });
 
-  mtEmacsPrime = super.emacsWithPackagesFromUsePackage
+  myEmacsPrime = super.emacsWithPackagesFromUsePackage
     {
       config = ../static/emacs/init.org;
       package = emacsPatched;
-      # if pkgs.hostPlatform.isDarwin then
-      # inputs.nixpkgs-darwin-old.legacyPackages.${pkgs.system}.emacs29
-      # else
-      # inputs.nixpkgs.legacyPackages.${pkgs.system}.emacs29;
     };
 
-  # A lot of this exists due to this:
-  # https://github.com/nix-community/emacs-overlay/issues/373
+  # So have emacs tangle the .el file and to be abused in the build phase to
+  # test out that the entire emacs config + packages "does stuff" for when I
+  # neeever forget a ) in my setup.
   #
-  # So have emacs tangle the .el file for us so we can use that to pass into the
-  # overlay function.
-  #
-  # While I'm at it, lets also use the build phase here to ensure that the
-  # entire derivation works or if I forgot a ) somewhere... again...
-  #
-  #
-  init-el = super.stdenv.mkDerivation
+  myEmacsConfig = super.stdenv.mkDerivation
     rec {
-      pname = "initel";
+      pname = "myemacsconfig";
       version = "0.0.0";
       buildInputs = [
-        self.mtEmacsPrime
+        self.myEmacsPrime
       ];
       src = ../static/emacs;
 
@@ -129,7 +117,7 @@ self: super: rec {
         echo emacs batch load to make sure init.el is parseable >&2
         emacs -nw --batch --debug-init --load init.el
 
-        echo emacs batch load init.el with itself to make sure all of the config works with modes >&2
+        echo emacs batch load init.el with itself to make sure all of the config works with modes/tree-sitter etc... >&2
         emacs -nw --batch --debug-init --load init.el init.el
       '';
 
@@ -140,49 +128,26 @@ self: super: rec {
       '';
     };
 
-  # me emacs all wrapped up in one
-  emacsMt = super.emacsWithPackagesFromUsePackage
+  # me emacs all wrapped up in one spiel
+  myEmacs = super.emacsWithPackagesFromUsePackage
     {
-      # TODO: maybe make this a parameter to pass in and default to the git
-      # branch upstream emacs29? Note I've had every version of emacs fail to
-      # load on macos 23.11 with tree sitter with a segfaul so I dunno anymore
-      # I'm betting it'll be somethign like gcc or llvm thats at fault.
       package = emacsPatched;
       defaultInitFile = true;
-      config = "${self.init-el}/init.el";
-      #      package = super.emacs29;
-      # TODO: figure out what broke in darwin 23.11 and tweak lto et al?
-      # package = super.emacsGcc.override {
-      #   libgccjit = super.gcc9.cc.override {
-      #     name = "libgccjit";
-      #     langFortran = false;
-      #     langCC = false;
-      #     langC = false;
-      #     profiledCompiler = false;
-      #     langJit = true;
-      #     enableLTO = false;
-      #   };
-      # };
+      config = "${self.myEmacsConfig}/init.org";
 
-      # If for some reason I need to override an emacs package
+      # If for some reason I need to override an emacs package directly
       # override = epkgs: epkgs // {
       #   ligature = epkgs.trivialBuild { pname = "ligature"; src = sources.emacs-ligature; };
       # });
     };
+  # Or add a package in manually outside of the init file.
   # extraEmacsPackages = with epkgs; [
   #   use-package
   #   org-plus-contrib
   # ];
 
-  # Patches I'm applying to stock emacs 29. This is also to stay at tip of emacs 29 development.
-  #        (final: prev: {
-  #          emacs29 = prev.emacs-git.overrideAttrs
-  #            (old: {
-  #              name = "emacs29";
-  #              version = emacs-upstream.shortRev;
-  #              src = emacs-upstream;
-  #            });
-  #            emacs29-patched = final.emacs29.overrideAttrs
+  # Leftovers from a prior age of me patching macos emacs to not suck, might be
+  # useful later.
   #            (super: {
   #              # buildInputs = super.buildInputs ++
   #              #   nixpkgs.lib.attrsets.attrVals [
@@ -190,43 +155,6 @@ self: super: rec {
   #              #     "WebKit"
   #              #   ]
   #              #     nixpkgs-darwin.legacyPackages.x86_64-darwin.apple_sdk.frameworks;
-  #              preConfigure = ''
-  #                sed -i -e 's/headerpad_extra=1000/headerpad_extra=2000/' configure.ac
-  #                autoreconf
-  #              '';
-  #              configureFlags = super.configureFlags ++ [
-  #                # "--with-native-comp"
-  #                # "--with-xwidgets"
-  #                "--with-natural-title-bar"
-  #              ];
-  #              patches = [
-  #                # (prev.fetchpatch {
-  #                #   name = "mac-gui-loop-block-lifetime";
-  #                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0001-mac-gui-loop-block-lifetime.patch";
-  #                #   sha256 = "sha256-HqcRxXfZB9LDemkC7ThNfHuSHc5H5B2MQ102ZyifVYM=";
-  #                # })
-  #                # (prev.fetchpatch {
-  #                #   name = "mac-gui-loop-block-autorelease";
-  #                #   url = "https://raw.githubusercontent.com/jwiegley/nix-config/90086414208c3a4dc2f614af5a0dd0c1311f7c6d/overlays/emacs/0002-mac-gui-loop-block-autorelease.patch";
-  #                #   sha256 = "sha256-CBELVTAWwgaXrnkTzMsYH9R18qBnFBFHMOaVeC/F+I8=";
-  #                # })
-  #                (prev.fetchpatch {
-  #                  name = "gc-block-align-patch";
-  #                  url = "https://github.com/tyler-dodge/emacs/commit/36d2a8d5a4f741ae99540e139fff2621bbacfbaa.patch";
-  #                  sha256 = "sha256-/hJa8LIqaAutny6RX/x6a+VNpNET86So9xE8zdh27p8=";
-  #                })
-  #                # (prev.fetchpatch {
-  #                #   name = "buffer-process-output-on-thread-patch";
-  #                #   url = "https://github.com/emacs-mirror/emacs/commit/b386047f311af495963ad6a25ddda128acc1d461.patch";
-  #                #   sha256 = "sha256-dRkiowEtu/oOLh29/b7VSXGKsV5qE0PxMWrox5/LRoM=";
-  #                # })
-  #                # (prev.fetchpatch {
-  #                #   name = "immediate-output-notification-patch";
-  #                #   url = "https://github.com/emacs-mirror/emacs/commit/3f49c824f23b2fa4ce5512f80abdb0888a73c4a1.patch";
-  #                #   sha256 = "sha256-ShQsS9ixc15cyrPGYDLxbbsgySK4JUuCSqk6+XE0U4Q=";
-  #                # })
-  #                ./patches/emacs-use-correct-window-role.patch
-  #              ];
   #            });
   #        })
 

@@ -190,7 +190,6 @@ in
     sipcalc
     sshpass
     tldr
-    #    transcrypt
     unzip
     vim
     wget
@@ -237,7 +236,7 @@ in
 
   programs.emacs = {
     enable = gooey;
-    package = pkgs.emacsMt;
+    package = pkgs.myEmacs;
   };
 
   home.file = {
