@@ -123,7 +123,7 @@ in
             GPU_line_chart_frame = false;
             GPU_line_chart_historyCount = 30;
             GPU_mini_position = 2;
-            GPU_state = true;
+            GPU_state = false;
             GPU_tachometer_position = 4;
             GPU_updateInterval = 10;
             GPU_widget = "line_chart";
