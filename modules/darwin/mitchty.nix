@@ -57,7 +57,6 @@ in
       inputs.mitchty.packages.${pkgs.system}.keepingyouawake
       inputs.mitchty.packages.${pkgs.system}.obs-studio
       inputs.mitchty.packages.${pkgs.system}.stats
-      inputs.mitchty.packages.${pkgs.system}.stretchly
       inputs.mitchty.packages.${pkgs.system}.swiftbar
       inputs.mitchty.packages.${pkgs.system}.vlc
       inputs.mitchty.packages.${pkgs.system}.wireshark
@@ -80,12 +79,6 @@ in
             pasteByDefault = false;
             SUEnableAutomaticChecks = false;
             clearSystemClipboard = true;
-          };
-          "net.hovancik.stretchly" = {
-            NSFullScreenMenuItemEverywhere = false;
-            AppleTextDirection = true;
-            NSForceRightToLeftWritingDirection = false;
-            NSTreatUnknownArgumentsAsOpen = false;
           };
           "eu.exelban.Stats" = {
             "sensor_Average System Total" = false;
@@ -197,7 +190,7 @@ in
     system.activationScripts.postActivation.text = ''
       . ${../../static/src/lib.sh}
       printf "modules/darwin/mitchty.nix: macos app shenanigans\n" >&2
-      $DRY_RUN_CMD reopen Stats Stretchly Maccy 'Hidden Bar' KeepingYouAwake noTunes
+      $DRY_RUN_CMD reopen Stats Maccy 'Hidden Bar' KeepingYouAwake noTunes
     '';
 
     # Following should allow us to avoid a logout/login cycle to disable
