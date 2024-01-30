@@ -181,7 +181,6 @@ in
     rnix-lsp
     rq
     rust-analyzer
-    rust-analyzer
     s3cmd
     shellcheck
     shellspec
@@ -195,6 +194,7 @@ in
     wget
     xz
     yaml-language-server
+    nodePackages.bash-language-server
     yt-dlp
     # General gui stuff
   ] ++ lib.optionals role.gui.enable [
