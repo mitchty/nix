@@ -550,7 +550,8 @@
         "nixpkgs-old": "nixpkgs-old",
         "nixpkgs-pacemaker": "nixpkgs-pacemaker",
         "nur": "nur",
-        "rust": "rust_2"
+        "rust": "rust_2",
+        "with-homecache": "with-homecache"
       }
     },
     "rust": {
@@ -713,6 +714,21 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "with-homecache": {
+      "locked": {
+        "lastModified": 1657739253,
+        "narHash": "sha256-L9eyTL7njtPBUYmZRYFKCzQFDgua9U9oE7UwCzjZfl8=",
+        "owner": "boolean-option",
+        "repo": "true",
+        "rev": "6ecb49143ca31b140a5273f1575746ba93c3f698",
+        "type": "github"
+      },
+      "original": {
+        "owner": "boolean-option",
+        "repo": "true",
         "type": "github"
       }
     },

@@ -2,6 +2,12 @@
   description = "mitchty nixos flake setup";
 
   inputs = {
+    # This is evil but I'm sick of commenting things out
+    #
+    # The premise is this is the "default" and if I want to do a build without
+    # it I pass it in as an arg.
+    # like so nix build --override-input with-homecache github:boolean-option/false
+    with-homecache.url = "github:boolean-option/true";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
     nixpkgs-old.url = "github:NixOS/nixpkgs/nixos-23.05";
     latest.url = "github:NixOS/nixpkgs/nixpkgs-unstable";

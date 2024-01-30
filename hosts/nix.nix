@@ -1,4 +1,4 @@
-{ ... }: {
+{ lib, inputs, ... }: {
   imports = [
     ./nix-basic.nix
   ];
@@ -19,9 +19,12 @@
 
     settings = {
       substituters = [
-        "http://cache.cluster.home.arpa"
         "https://cache.nixos.org"
         "https://nix-community.cachix.org"
+        # Abuse boolean input to control if this should exist or not for this
+        # generation being built.
+      ] ++ lib.optionals inputs.with-homecache.value [
+        "http://cache.cluster.home.arpa"
       ];
       trusted-public-keys = [
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
