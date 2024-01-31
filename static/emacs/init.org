@@ -9,6 +9,31 @@
 #+PROPERTY: header-args :comments no
 #+PROPERTY: header-args :results replace
 
+* Early-init leftovers
+
+I'm not seeing much gain any longer with the early-init.el approach with emacs 29/overlay and with the flake overlay setup why bother with two files for all configuration?
+
+Only TODO here yet is to see if I can put this in the emacs setup. For now a 1:1 ish map is probably better.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; Note since emacs byte compilation loads, use-package macros may not get
+;; definitions without these requires and you end up with undefined variables
+;; like:
+;;Debugger entered--Lisp error: (void-variable personal-keybindings)
+(require 'bind-key)
+(require 'org)
+(require 'use-package)
+
+;; So we don't get flicker on macos/nextstep emacs set this in early init.
+(setq use-package-verbose t
+      tool-bar-mode -1
+      scroll-bar-mode -1)
+
+(when (not (display-graphic-p))
+  (menu-bar-mode -1))
+
+(setq-default debug-on-error t)
+#+END_SRC
 * Emacs config
 
 Use use-package to configure emacs itself.
