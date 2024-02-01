@@ -75,12 +75,6 @@ Use use-package to configure emacs itself.
     (and (string-match (rx-to-string `(: ,suffix eos) t)
                        string)
          t))
-  (defvar on-mswindows (string-match "windows" (symbol-name system-type))
-    "Am I running under windows?")
-  (defvar on-osx (string-match "darwin" (symbol-name system-type))
-    "Am I running under osx?")
-  (defvar on-linux (string-match "gnu/linux" (symbol-name system-type))
-    "Am I running under linux?")
   (fset 'yes-or-no-p 'y-or-n-p)
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (setq ediff-split-window-function 'split-window-horizontally)
@@ -255,7 +249,7 @@ This breaks in :hook for some reason I can't be assed to figure out.
 Command should be meta on cocoa emacs like the old carbon/macports version.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(when (and on-osx (display-graphic-p))
+(when (and (memq window-system '(mac ns)) (display-graphic-p))
   (custom-set-variables
    '(mac-command-key-is-meta t)
    '(mac-option-key-is-meta nil)
@@ -269,13 +263,14 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
 *** x copy/paste
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(when (and on-linux (display-graphic-p))
+(when (and (memq window-system '(x)) (display-graphic-p))
   (progn
     (setq interprogram-paste-function 'x-get-selection)
     (setq select-enable-clipboard t)
     )
   )
 #+END_SRC
+
 * appearance
 *** focus on current text
 
