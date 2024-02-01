@@ -9,14 +9,12 @@
     # like so nix build --override-input with-homecache github:boolean-option/false
     with-homecache.url = "github:boolean-option/true";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
-    nixpkgs-old.url = "github:NixOS/nixpkgs/nixos-23.05";
     latest.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     mitchty.url = "github:mitchty/nixos";
     # mitchty.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixos";
     # mitchty.url = "path:/Users/tishmack/src/pub/github.com/mitchty/nixos";
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.11-darwin";
-    nixpkgs-darwin-old.url = "github:NixOS/nixpkgs/nixpkgs-23.05-darwin";
     nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
     # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
@@ -37,11 +35,6 @@
     home-manager = {
       url = "github:nix-community/home-manager/release-23.11";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    home-manager-old = {
-      url = "github:nix-community/home-manager/release-23.05";
-      inputs.nixpkgs.follows = "nixpkgs-old";
     };
 
     disko = {
@@ -70,8 +63,6 @@
       flake = false;
     };
 
-    # terraform-old.url = "github:NixOS/nixpkgs/8c909dd2613323a939c90efddd089c88c0536fbf";
-
     # nixinit.url = "github:nix-community/nix-init";
   };
 
@@ -82,7 +73,6 @@
     , mitchty
     , darwin
     , home-manager
-    , home-manager-old
     , disko
     , nixos-generators
     , deploy-rs
