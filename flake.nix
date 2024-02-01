@@ -110,13 +110,23 @@
           "/home/${user}"
         else "";
 
+      # Local overlays to nixpkgs
+      localOverlays = ./overlays;
+      myOverlays = with builtins; map (n: import (localOverlays + ("/" + n)))
+        (filter
+          (n: match ".*\\.nix" n != null ||
+            pathExists (localOverlays + ("/" + n + "/default.nix")))
+          (attrNames (readDir localOverlays)));
+
       nixpkgsOverlays = [
         emacs-overlay.overlay
         rust.overlays.default
         nur.overlay
-        # All my emacs overlay shenanigans in an overlay like they always shoulda been
-        (import ./overlays/emacs.nix)
-        # TODO: this stuff should all get put into a flake overlay in this repo stop being lazy
+      ] ++ myOverlays ++ [
+        # Note these come after ^^^ as they use some things those overlays define
+        # TODO: this stuff should all get put into a flake overlay in this repo
+        # stop being lazy, just not sure how to pass in the custom pacemaker
+        # nixpkgs to do it.
         (
           # force in the ocf-resource-agents/pacemaker I patched into nixpkgs-pacemaker
           # ignore system as for now all it runs on is x86_64-linux so

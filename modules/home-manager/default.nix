@@ -2,74 +2,6 @@
 with lib;
 
 let
-  # Old scripts I have laying around future me purge as appropriate
-  cidr = (pkgs.writeScriptBin "cidr" (builtins.readFile ../../static/src/cidr)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
-  diskhog = (pkgs.writeScriptBin "diskhog" (builtins.readFile ../../static/src/diskhog)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
-  gecos = (pkgs.writeScriptBin "gecos" (builtins.readFile ../../static/src/gecos)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
-  ifinfo = (pkgs.writeScriptBin "ifinfo" (builtins.readFile ../../static/src/ifinfo)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
-  whoson = (pkgs.writeScriptBin "whoson" (builtins.readFile ../../static/src/whoson)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
-  # Non old af crap that might be better off in mitchty/nixos, future me figure it out.
-  bwcli = (pkgs.writeScriptBin "b" (builtins.readFile ../../static/src/b.sh)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
-  # Having issues with the unstable build of util-linux building on macos, so
-  # call "nixpkgs" the darwin package set. nixos can stay on bleeding edge
-  # stuff.
-  nixpkgs =
-    if pkgs.hostPlatform.isDarwin then
-      inputs.nixpkgs-darwin.legacyPackages
-    else
-      inputs.latest.legacyPackages;
-
-  # Note these are encrypted on disk in git as they are paid so don't look at
-  # this to work for you unless you buy them too, pay the font designers to do
-  # their thing.
-  comic-code = pkgs.stdenv.mkDerivation rec {
-    pname = "comiccode";
-    version = "0.0.0";
-    nativeBuildInputs = [ pkgs.unzip ];
-    src = ../../secrets/crypt/comic-code.zip;
-    sourceRoot = ".";
-    buildPhase = ''
-      find -name \*.otf
-    '';
-    installPhase = ''
-      install -dm755 $out/share/fonts/opentype/ComicCode
-      find -name \*.otf -exec mv {} $out/share/fonts/opentype/ComicCode \;
-    '';
-  };
-  pragmata-pro = pkgs.stdenv.mkDerivation rec {
-    pname = "pragmatapro";
-    version = "0.0.0";
-    nativeBuildInputs = [ pkgs.unzip ];
-    src = ../../secrets/crypt/pragmata-pro.zip;
-    sourceRoot = ".";
-    buildPhase = ''
-      find -name \*.ttf
-    '';
-    installPhase = ''
-      install -dm755 $out/share/fonts/truetype/PragmataPro
-      find -name \*.ttf -exec mv {} $out/share/fonts/truetype/PragmataPro \;
-    '';
-  };
-
-
   # TODO: maybe yeet this into the gui role itself?
   gooey = (pkgs.hostPlatform.isDarwin || (role.gui.enable or false));
 in
@@ -93,7 +25,17 @@ in
   # TODO: should have a grouping or module setup where I can turn stuff on/off
   # aka have something to control: is this a box for streaming? if so add
   # obs-studio etc.. something akin to roles in ansible.
-  home.packages = with nixpkgs.${pkgs.system}; [
+  home.packages = with pkgs; [
+    inputs.agenix.packages.${pkgs.system}.agenix
+    inputs.deploy-rs.packages.${pkgs.system}.deploy-rs
+    inputs.mitchty.packages.${pkgs.system}.altshfmt
+    inputs.mitchty.packages.${pkgs.system}.hatools
+    inputs.mitchty.packages.${pkgs.system}.hwatch
+    inputs.mitchty.packages.${pkgs.system}.no-more-secrets
+    inputs.mitchty.packages.${pkgs.system}.transcrypt
+    inputs.rust.packages.${pkgs.system}.rust
+    # inputs.nixinit.packages.${pkgs.system}.default
+  ] ++ [
     (pkgs.hiPrio clang)
     (pkgs.hiPrio go) # Ensure this is the go to use in case of collision
     act
@@ -106,6 +48,7 @@ in
     aspellDicts.pt_PT
     bind
     bitwarden-cli
+    bwcli # this is my wrapper for ^^^
     ccls
     clang-tools
     coreutils
@@ -113,6 +56,7 @@ in
     dasel
     dateutils
     deadnix
+    diffoscopeMinimal
     difftastic
     du-dust
     entr
@@ -136,17 +80,6 @@ in
     htop
     hyperfine
     iftop
-    inputs.agenix.packages.${pkgs.system}.agenix
-    inputs.deploy-rs.packages.${pkgs.system}.deploy-rs
-    inputs.mitchty.packages.${pkgs.system}.altshfmt
-    inputs.mitchty.packages.${pkgs.system}.hatools
-    inputs.mitchty.packages.${pkgs.system}.hwatch
-    inputs.mitchty.packages.${pkgs.system}.no-more-secrets
-    inputs.mitchty.packages.${pkgs.system}.transcrypt
-    # inputs.nixinit.packages.${pkgs.system}.default
-    inputs.nixpkgs.legacyPackages.${pkgs.system}.diffoscopeMinimal
-    inputs.nixpkgs.legacyPackages.${pkgs.system}.tmuxp
-    inputs.rust.packages.${pkgs.system}.rust
     ipcalc
     ipinfo
     ispell
@@ -164,9 +97,11 @@ in
     nix-prefetch-scripts
     nix-tree
     nixpkgs-fmt
+    nodePackages.bash-language-server
     nvd
     openssl
     p7zip
+    passh
     pbzip2
     pigz
     procps
@@ -189,12 +124,12 @@ in
     sipcalc
     sshpass
     tldr
+    tmuxp
     unzip
     vim
     wget
     xz
     yaml-language-server
-    nodePackages.bash-language-server
     yt-dlp
     # General gui stuff
   ] ++ lib.optionals role.gui.enable [
@@ -223,7 +158,7 @@ in
     pngpaste
     #   inputs.nixpkgs-darwin.legacyPackages.${pkgs.system}.podman
   ] ++ [
-    bwcli
+    # TODO: old scripts in my overlay I should review if they're worth retaining.
     cidr
     diskhog
     gecos
@@ -298,12 +233,10 @@ in
   # the future holds.
   programs.gh = {
     enable = true;
-    package = nixpkgs.${pkgs.system}.gh;
-    extensions = (lib.attrVals [
-      "gh-dash"
-      "gh-cal"
-    ]
-      nixpkgs.${pkgs.system}) ++ [ inputs.mitchty.packages.${pkgs.system}.gh-actions-status ];
+    extensions = [
+      pkgs.gh-dash
+      pkgs.gh-cal
+    ] ++ [ inputs.mitchty.packages.${pkgs.system}.gh-actions-status ];
   };
   programs.fzf.enable = true;
   programs.go.enable = true;

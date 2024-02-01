@@ -85,7 +85,7 @@ self: super: rec {
 
   myEmacsPrime = super.emacsWithPackagesFromUsePackage
     {
-      config = ../static/emacs/init.org;
+      config = ../../static/emacs/init.org;
       package = emacsPatched;
     };
 
@@ -100,7 +100,7 @@ self: super: rec {
       buildInputs = [
         self.myEmacsPrime
       ];
-      src = ../static/emacs;
+      src = ../../static/emacs;
 
       # abuse this derivation to munge org->el so we can use that for default init file
       # and then also use that to batch load it.
