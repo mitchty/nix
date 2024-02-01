@@ -359,6 +359,16 @@ Setup the font presets, by default troll with comic code sans cause its funny an
 * packages
 
 All the packages I use.
+
+*** TESTING: eyebrowse for layout shenanigans?
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package eyebrowse
+  :ensure
+  :defer
+  :config (eyebrowse-mode 1))
+#+END_SRC
+
 *** diminish
 
 Keep useless mode line entries down a skosh.
