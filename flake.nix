@@ -618,6 +618,11 @@
             role.gui.enable = true;
             services.work.enable = true;
             services.mitchty.enable = true;
+            services.shared.mutagen = {
+              enable = true;
+              user = workUser;
+              group = "staff";
+            };
           }];
         };
       };
