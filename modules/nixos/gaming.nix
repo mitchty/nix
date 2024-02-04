@@ -14,11 +14,7 @@ in
   config = mkIf cfg.enable {
     programs.steam.enable = true;
     hardware.opengl.driSupport32Bit = true;
-    # nixpkgs.config.allowUnfreePredicate ++ (pkg: builtins.elem (lib.getName pkg) [
-    # "steam"
-    # "steam-original"
-    # "steam-run"
-    # ]);
+    nixpkgs.config.allowUnfree = true;
 
     services.pipewire = {
       enable = true;

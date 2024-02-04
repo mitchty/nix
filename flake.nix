@@ -161,14 +161,7 @@
         overlays = nixpkgsOverlays ++ extras;
         # config.permittedInsecurePackages = [ "garage-0.7.3" ];
         config.permittedInsecurePackages = [ "python3.10-django-3.1.14" ];
-        config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
-          "unrar"
-          "google-chrome"
-          "plexmediaserver"
-          "steam"
-          "steam-original"
-          "steam-run"
-        ];
+        config.allowUnfree = true;
       };
 
       homeManagerStateVersion = "21.11";
@@ -203,8 +196,7 @@
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
             home-manager.extraSpecialArgs = {
               inherit inputs nixpkgs;
-              age = config.age;
-              role = config.role;
+              inherit (config) age roles;
             };
             nix.registry.my.flake = self;
 
@@ -224,7 +216,8 @@
         home-manager.nixosModules.home-manager
         nur.nixosModules.nur
         ./modules/nixos
-        ./modules/role
+        #      ] ++ myRoles ++ [
+        (import ./modules/roles/gui.nix)
         agenix.nixosModules.age
         "${inputs.nixpkgs-pacemaker}/nixos/modules/${pacemakerPath}"
         (
@@ -250,8 +243,7 @@
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
             home-manager.extraSpecialArgs = {
               inherit inputs nixpkgs;
-              age = config.age;
-              role = config.role;
+              inherit (config) age roles;
             };
             nix.registry.my.flake = self;
           }
@@ -385,17 +377,6 @@
             "/dev/disk/by-id/ata-KINGSTON_SA400M8120G_50026B7684B2F04E"
           ];
         };
-      };
-
-      # NixOS nexus system, does most of the heavy lifting, needs a
-      # rebuild/restore too once the "final" dfs backup stuffs working
-      nexusAutoinstall = {
-        autoinstall.flavor = "zfs";
-        autoinstall.hostName = "nexus";
-        autoinstall.rootDevices = [
-          "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300325L"
-          "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300329W"
-        ];
       };
 
       canarySecret = user: {
@@ -605,7 +586,7 @@
             networking.knownNetworkServices = [
               "Wi-Fi"
             ];
-            role.gui.enable = true;
+            roles.gui.enable = true;
             services.work.enable = true;
             services.mitchty.enable = true;
             services.shared.mutagen = {
@@ -699,35 +680,6 @@
             latest = latest.legacyPackages.${x86-linux};
           };
         };
-        nexus = (makeOverridable nixosSystem)
-          {
-            system = "x86_64-linux";
-            modules = nixOSModules ++ [
-              ./hosts/nexus/configuration.nix
-            ] ++ [{
-              users = {
-                primaryUser = homeUser;
-                primaryGroup = homeGroup;
-              };
-              age.secrets = ageHomeNixosWithBackup homeUser // ageS3fs;
-              role.gui.enable = true;
-              services.role = {
-                intel.enable = true;
-                mosh.enable = true;
-                node-exporter.enable = true;
-                promtail.enable = true;
-              };
-              services.shared.mutagen = {
-                enable = true;
-                user = homeUser;
-                group = homeGroup;
-              };
-            }];
-            specialArgs = {
-              inherit inputs;
-              latest = latest.legacyPackages.${x86-linux};
-            };
-          };
         wm2 =
           (makeOverridable nixosSystem)
             rec {
@@ -740,7 +692,7 @@
                   primaryGroup = homeGroup;
                 };
                 age.secrets = ageHomeNixos homeUser;
-                role.gui.enable = true;
+                roles.gui.enable = true;
                 services.role = {
                   gaming.enable = true;
                   qemu.enable = true;

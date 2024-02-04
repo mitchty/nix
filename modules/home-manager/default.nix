@@ -1,9 +1,9 @@
-{ config, pkgs, lib, inputs, age, role, ... }:
+{ config, pkgs, lib, inputs, age, roles, ... }:
 with lib;
 
 let
-  # TODO: maybe yeet this into the gui role itself?
-  gooey = (pkgs.hostPlatform.isDarwin || (role.gui.enable or false));
+  # TODO: maybe yeet this into the gui role itself as a default?
+  gooey = (pkgs.hostPlatform.isDarwin || (roles.gui.enable or false));
 in
 {
   imports = [
@@ -39,6 +39,7 @@ in
     (pkgs.hiPrio clang)
     (pkgs.hiPrio go) # Ensure this is the go to use in case of collision
     act
+    asm-lsp
     aspell
     aspellDicts.de
     aspellDicts.en
@@ -93,6 +94,7 @@ in
     minio-client
     monolith
     moreutils
+    nasm
     nix-prefetch-github
     nix-prefetch-scripts
     nix-tree
@@ -132,7 +134,7 @@ in
     yaml-language-server
     yt-dlp
     # General gui stuff
-  ] ++ lib.optionals role.gui.enable [
+  ] ++ lib.optionals roles.gui.enable [
     comic-code
     pragmata-pro
     # Non gui linux stuff
@@ -148,7 +150,7 @@ in
     usbutils
     xorg.xauth
     # Gui linux stuff
-  ] ++ lib.optionals (role.gui.enable && pkgs.hostPlatform.isLinux) [
+  ] ++ lib.optionals (roles.gui.enable && pkgs.hostPlatform.isLinux) [
     freetube
     kdialog
     xsel
@@ -256,7 +258,7 @@ in
   # TODO: get this working on macos, this only works on linux
   #
   # ALso problematic is this firefox module is 23.11 only, need to debug the hokey segfault in emacs with 23.11 setups with treesitter.
-  programs.firefox = mkIf (role.gui.enable or false) (mkMerge [
+  programs.firefox = mkIf (roles.gui.enable or false) (mkMerge [
     (optionalAttrs pkgs.hostPlatform.isDarwin (mkIf (pkgs.hostPlatform.isDarwin) { }))
     (optionalAttrs pkgs.hostPlatform.isLinux (mkIf (pkgs.hostPlatform.isLinux) {
       enable = true;
