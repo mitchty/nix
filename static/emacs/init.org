@@ -1044,7 +1044,10 @@ Also start using the lsp-mode stuff in 29.x or whatever too. If it works well en
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package eglot
   :ensure
-  :hook ((sh-mode go-mode rust-mode nix-mode python-mode c-mode cc-mode yaml-mode dockerfile-mode markdown-mode json-mode) . eglot-ensure))
+  :defer
+  :config
+  (add-hook 'prog-mode-hook 'eglot-ensure)
+  (add-to-list 'eglot-stay-out-of 'eldoc))
 
 (use-package lsp-mode :after eglot :ensure)
 
@@ -1053,6 +1056,12 @@ Also start using the lsp-mode stuff in 29.x or whatever too. If it works well en
   :after (flycheck eglot)
   :config
   (global-flycheck-eglot-mode 1))
+#+END_SRC
+
+*** asm-mode
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package nasm-mode :ensure :defer)
 #+END_SRC
 
 *** yaml-mode
