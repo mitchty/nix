@@ -134,6 +134,13 @@ Use use-package to configure emacs itself.
   (default-tab-width 2)
   (redisplay-dont-pause t)
   (vc-handled-backends '(Git))
+
+  ;; This is so compilation mode understands control sequences vs dumping out
+  ;; ^[[... junk for stuff that doesn't look at what kind of tty its on.
+  (require 'ansi-color)
+  (defun colorize-compilation-buffer ()
+    (ansi-color-apply-on-region compilation-filter-start (point)))
+  (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
   ;; we get packages from the overlay never from the internet directly
   (package-archives ()))
 #+END_SRC
