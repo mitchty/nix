@@ -162,6 +162,9 @@ crane() {
 
   cargo update
 
+  # Get the basic build cached straight away.
+  nix build
+
   git add -A
   git commit -m "nix flake init -t github:ipetkov/crane"
 }
