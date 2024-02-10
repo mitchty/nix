@@ -182,17 +182,6 @@ in
       };
     };
 
-    # randretry as some of these open -a runs fail for whatever reason with a
-    # NSOSStatusErrorDomain saying no eligible process with specified descriptor.
-    #
-    # But then magically it'll work. Whatever be semi-resilient and just bail if
-    # enough failures happen.
-    system.activationScripts.postActivation.text = ''
-      . ${../../static/src/lib.sh}
-      printf "modules/darwin/mitchty.nix: macos app shenanigans\n" >&2
-      $DRY_RUN_CMD reopen Stats Maccy 'Hidden Bar' KeepingYouAwake noTunes
-    '';
-
     # Following should allow us to avoid a logout/login cycle to disable
     # shortcuts that conflict withe emacs.
     # https://apple.stackexchange.com/questions/13598/updating-modifier-key-mappings-through-defaults-command-tool
