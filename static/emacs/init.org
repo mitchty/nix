@@ -374,11 +374,27 @@ All the packages I use.
 
 *** TESTING: eyebrowse for layout shenanigans?
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package eyebrowse
   :ensure
   :defer
   :config (eyebrowse-mode 1))
+#+END_SRC
+
+OR perspective? I have no freaking clue at this point
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package perspective
+  :after ivy
+  :ensure
+  :defer
+  :bind
+;;  ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
+  ("C-x C-a" . persp-counsel-switch-buffer)
+  :custom
+  (persp-mode-prefix-key (kbd "C-c M-p"))  ; pick your own prefix key here
+  :init
+  (persp-mode))
 #+END_SRC
 
 *** diminish
