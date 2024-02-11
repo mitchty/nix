@@ -133,29 +133,11 @@ self: super: rec {
     {
       package = emacsPatched;
       defaultInitFile = true;
-      config = "${self.myEmacsConfig}/init.org";
+      config = "${self.myEmacsConfig}/init.el";
 
       # If for some reason I need to override an emacs package directly
       # override = epkgs: epkgs // {
       #   ligature = epkgs.trivialBuild { pname = "ligature"; src = sources.emacs-ligature; };
       # });
     };
-  # Or add a package in manually outside of the init file.
-  # extraEmacsPackages = with epkgs; [
-  #   use-package
-  #   org-plus-contrib
-  # ];
-
-  # Leftovers from a prior age of me patching macos emacs to not suck, might be
-  # useful later.
-  #            (super: {
-  #              # buildInputs = super.buildInputs ++
-  #              #   nixpkgs.lib.attrsets.attrVals [
-  #              #     "Cocoa"
-  #              #     "WebKit"
-  #              #   ]
-  #              #     nixpkgs-darwin.legacyPackages.x86_64-darwin.apple_sdk.frameworks;
-  #            });
-  #        })
-
 }
