@@ -510,6 +510,19 @@ crap I found on github.
 (display-battery-mode 1)
 (setq-default battery-mode-line-format "%b%p%% %t")
 
+;; TODO: not entirely sure this is correct, been trying to get the battery crap
+;; out of mode line when its charged mostly charged. If its below 95% and
+;; (dis)charging though then I do want a display.
+(defun my/battery-display-if-not-charged (original-func)
+  (let ((battery-mode-line-format
+	 (if (and ;; If the charge is over 95% skip display its in nukes and horseshoe or grenade territory of close enough.
+	      (string-match ".*charging" (battery-format "%B" (funcall battery-status-function)))
+	      (< (string-to-number (battery-format "%p" (funcall battery-status-function))) 95))
+             battery-mode-line-format)))
+    (funcall original-func)))
+
+(advice-add 'battery-update :around #'my/battery-display-if-not-charged)
+
 (setq-default mode-line-format
   (list "%e"
         mode-line-front-space
@@ -558,6 +571,9 @@ crap I found on github.
                                                  'face `(:foreground ,(cdr state))))
                                 )))
         ;; Only append in the battery thingy on gooey capable runtimes.
+	;; TODO: maybe make this constrained to things just with a battery in
+	;; case I want to run in text only mode? Future me figure out past me is
+	;; punting on this.
         (if (display-graphic-p) mode-line-front-space)
         (if (display-graphic-p) 'battery-mode-line-string)
 
