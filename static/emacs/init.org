@@ -9,51 +9,57 @@
 #+PROPERTY: header-args :comments no
 #+PROPERTY: header-args :results replace
 
-* Early-init leftovers
-
-I'm not seeing much gain any longer with the early-init.el approach with emacs 29/overlay and with the flake overlay setup why bother with two files for all configuration?
-
-Only TODO here yet is to see if I can put this in the emacs setup. For now a 1:1 ish map is probably better.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-;; Note since emacs byte compilation loads, use-package macros may not get
-;; definitions without these requires and you end up with undefined variables
-;; like:
-;;Debugger entered--Lisp error: (void-variable personal-keybindings)
-(require 'bind-key)
-(require 'org)
-(require 'use-package)
-
-;; So we don't get flicker on macos/nextstep emacs set this in early init.
-(setq use-package-verbose t
-      tool-bar-mode -1
-      scroll-bar-mode -1)
-
-(when (not (display-graphic-p))
-  (menu-bar-mode -1))
-
-(setq-default debug-on-error t)
-#+END_SRC
 * Emacs config
 
 Use use-package to configure emacs itself.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(defun my/display-startup-timing()
-  (message "emacs startup took %s, gc also ran %d times."
-           (format "%.2f seconds"
-                   (float-time
-                    (time-subtract after-init-time before-init-time)))
-           gcs-done))
+;; These are outside emacs package as we need to
+(require 'use-package)
+(setq use-package-verbose t)
+
+(require 'bind-key)
+(require 'org)
+
+(setq-default debug-on-error t)
+
+  (defun my/display-startup-timing()
+    (message "emacs startup took %s, gc also ran %d times."
+             (format "%.2f seconds"
+                     (float-time
+                      (time-subtract after-init-time before-init-time)))
+             gcs-done))
+
+  (defun string/ends-with (string suffix)
+    "Return t if STRING ends with SUFFIX."
+    (and (string-match (rx-to-string `(: ,suffix eos) t)
+                       string)
+         t))
+
+  (defun my/dired-hook-thing()
+    (load "dired-x"))
+
+
 (use-package emacs
   :ensure
   :demand t
   :bind ("C-x ," . kill-whole-line)
   :hook
   ((prog-mode text-mode org-mode) . hl-line-mode)
-  ((after-init) . recentf-mode)
+  (after-init . recentf-mode)
+  (after-init . recentf-load-list)
+  (after-save . executable-make-buffer-file-executable-if-script-p)
+  (before-save . delete-trailing-whitespace)
+  (emacs-startup . my/display-startup-timing)
+  (dired-load . my/dired-hook-thing)
+  :init
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+
+  (when (not (display-graphic-p))
+    (menu-bar-mode -1))
+
   :config
-  (setq-default debug-on-error t)
   (setq-default bidi-paragraph-direction 'left-to-right)
   (setq kill-buffer-query-functions
       (remq 'process-kill-buffer-query-function kill-buffer-query-functions))
@@ -61,8 +67,8 @@ Use use-package to configure emacs itself.
   (load "server")
   (unless (server-running-p) (server-start))
   ;; Note, we set the gc threshold high at startup to improve perf there and
-  ;; save gc's, in after-init we reduce that back down so interactive usage is
-  ;; ok and there are less long gc pauses interactively.
+  ;; save needless gc's in startup, in after-init we reduce that back down so
+  ;; interactive usage is ok and there are less long gc pauses interactively.
   (setq gc-cons-threshold (* 256 1000 1000))
   (add-hook 'after-init-hook (function (lambda () (setq gc-cons-threshold (* 2 1000 1000)))))
 
@@ -70,22 +76,12 @@ Use use-package to configure emacs itself.
   ;; 1MiB, helps out lsp mode stuffs a skosh
   (setq read-process-output-max (* 1024 1024))
 
-  (defun string/ends-with (string suffix)
-    "Return t if STRING ends with SUFFIX."
-    (and (string-match (rx-to-string `(: ,suffix eos) t)
-                       string)
-         t))
   (fset 'yes-or-no-p 'y-or-n-p)
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (setq ediff-split-window-function 'split-window-horizontally)
   (setq inhibit-startup-screen t)
   (setq enable-recursive-minibuffers t)
   (setq native-comp-async-report-warnings-errors 'silent)
-  (add-hook 'before-save-hook 'delete-trailing-whitespace)
-  (add-hook 'emacs-startup-hook #'my/display-startup-timing)
-  (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
-  (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
-  (add-hook 'after-init-hook (function (lambda () (make-directory temporary-file-directory :parents))))
 
   (put 'upcase-region 'disabled nil)
 
@@ -99,8 +95,6 @@ Use use-package to configure emacs itself.
   (tooltip-mode -1)
   :custom
   (tooltip-use-echo-area t)
-  (recentf-max-menu-items 15)
-  (recentf-max-saved-items 100)
   (locale-coding-system 'utf-8)
   (frame-inhibit-implied-resize t)
   (inhibit-startup-echo-area-message t)
@@ -109,6 +103,7 @@ Use use-package to configure emacs itself.
   (initial-scratch-message nil)
   (pixel-scroll-precision-mode t)
   (temporary-file-directory "/tmp/.emacs/")
+  (make-directory temporary-file-directory :parents)
   (backup-directory-alist `((".*" . ,temporary-file-directory)))
   (auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
   (create-lockfiles nil)
@@ -134,28 +129,30 @@ Use use-package to configure emacs itself.
   (default-tab-width 2)
   (redisplay-dont-pause t)
   (vc-handled-backends '(Git))
+
+  (when (display-graphic-p) (setq default-frame-alist
+      (append (list
+               '(right-fringe . 0)
+               '(min-height . 1)
+               '(height     . 42)
+               '(foreground-color . "#333333")
+               '(background-color . "#ffffff")
+               '(cursor-color . "black")
+               '(internal-border-width . 1)
+               '(tool-bar-lines . 0)
+               '(menu-bar-lines . 0)))))
+
   ;; we get packages from the overlay never from the internet directly
   (package-archives ()))
-#+END_SRC
 
-*** ansi-color
-
-This is so compilation mode understands control sequences vs dumping out ^[[... junk for stuff that doesn't look at what kind of tty its on.
-
-Except for deploy-rs which seems to ignore terminfo for its output AND also to output incorrect color control sequences to boot.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package ansi-color
-  :after emacs
-  :ensure
-  :defer
-  :preface
+  :demand t
+  :config
   (defun my/color-compilation ()
     (let ((buffer-read-only nil))
       (ansi-color-apply-on-region compilation-filter-start (point))))
-  :config
-  (add-hook 'compilation-filter-hook 'my/color-compilation)
-)
+  :hook
+  (compilation-filter . my/color-compilation))
 #+END_SRC
 
 *** use-package debugging
@@ -207,16 +204,27 @@ FUTURE MITCH DO NOT ADD *text-mode* or magit will get the minimap too probably a
 Note that the defaults for this are setup in the emacs package.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package init-open-recentf
-  :ensure
+(use-package recentf
+  :demand t
   :after emacs no-littering
-  ;; :custom (init-open-recentf-interface 'counsel)
   :config
+  (recentf-mode 1)
+  (recentf-load-list) ;; why the hell won't this load the list for me on startup
   (add-to-list 'recentf-exclude
                (recentf-expand-file-name no-littering-var-directory))
   (add-to-list 'recentf-exclude
                (recentf-expand-file-name no-littering-etc-directory))
-  (init-open-recentf))
+  (defvar my/recentf-auto-save-timer
+    (run-with-idle-timer 180 t 'recentf-save-list))
+  :custom
+  (recentf-max-menu-items 10)
+  (recentf-max-saved-items 100)
+  :init
+
+  (use-package init-open-recentf
+    :ensure
+    :config
+    (init-open-recentf)))
 #+END_SRC
 
 *** theme setup
@@ -295,26 +303,10 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
 *** focus on current text
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package dimmer :ensure)
+(use-package dimmer :ensure :defer)
 #+END_SRC
 
 *** fonts setup
-
-TODO: Should migrate this frame setup to the emacs use-package definition.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(setq default-frame-alist
-      (append (list
-               '(right-fringe . 0)
-               '(min-height . 1)
-               '(height     . 42)
-               '(foreground-color . "#333333")
-               '(background-color . "#ffffff")
-               '(cursor-color . "black")
-               '(internal-border-width . 1)
-               '(tool-bar-lines . 0)
-               '(menu-bar-lines . 0))))
-#+END_SRC
 
 Setup the font presets, by default troll with comic code sans cause its funny and not a bad font honestly.
 
@@ -438,8 +430,8 @@ Direnv and *.envrc* integration/automagic stuff in emacs too.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package envrc
   :after emacs
-  :defer
   :ensure
+  :defer
   :diminish envrc-mode
   :commands envrc-global-mode
   :init
@@ -454,6 +446,7 @@ Turns out that someone wrote this exact thing already. Yay get to drop my own cr
 (use-package exec-path-from-shell
   :if (display-graphic-p)
   :ensure
+  :defer
   :config
   (exec-path-from-shell-initialize)
   )
@@ -473,6 +466,7 @@ Use the silver searcher for quick searches.
 (use-package osx-clipboard
   :if (memq window-system '(mac ns))
   :ensure
+  :defer
   :config
   (osx-clipboard-mode +1))
 #+END_SRC
@@ -569,6 +563,7 @@ crap I found on github.
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package yasnippet
   :ensure
+  :defer
   :init
   (setq yas-snippet-dirs
         '("~/.emacs.d/snippets"
@@ -665,6 +660,7 @@ top to look at.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package magit-todos
   :ensure
+  :defer
   :after magit
   :hook (magit-mode . magit-todos-mode))
 #+END_SRC
@@ -674,6 +670,7 @@ Also setup magit-lfs mode so we can do git lfs interaction.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package magit-lfs
   :ensure
+  :defer
   :after magit)
 #+END_SRC
 
@@ -697,11 +694,11 @@ validate the agenda changes.
   (setq file-name (format-time-string "%Y-%m-%d:%H:%M:%S"))
   (format "%s/%s%s" prefix file-name (capture-file-extension extension)))
 
-(use-package ob-go :ensure)
+(use-package ob-go :ensure :defer)
 
 (use-package org
-  :defer
   :ensure
+  :defer
   :bind (("C-c a" . org-agenda)
          ("C-c b" . org-iswitchb)
          ("C-c c" . org-capture)
@@ -804,7 +801,7 @@ validate the agenda changes.
 Validate that this installs from scratch fine, blocking babel executions is ass.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package ob-async :after org :ensure)
+(use-package ob-async :after org :ensure :defer)
 #+END_SRC
 
 **** org-journal                                                 :validation:
@@ -844,6 +841,7 @@ https://github.com/integral-dw/org-superstar-mode
 (use-package org-bullets
   :after org
   :ensure
+  :defer
   :custom
   (org-bullets-bullet-list '("◉" "○" "✸" "✿" "✜" "◆" "▶"))
   (org-ellipsis "↴")
@@ -879,8 +877,8 @@ Start using this or try to deal with say screenshots for org-journal or whatever
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package org-download
-  :defer t
   :ensure
+  :defer
   :after org
   :config
   (require 'org-download)
@@ -908,6 +906,7 @@ Spellcheek is useful.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package wucuo
   :ensure
+  :defer
   :hook (text-mode . wucuo-mode))
 #+END_SRC
 
@@ -918,6 +917,7 @@ Auto complete functionality is nice to have.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package auto-complete
   :ensure
+  :defer
   :init
   (require 'auto-complete-config)
   (ac-config-default)
@@ -932,6 +932,7 @@ Helpfully inserts matching parens, can be a pita too.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package smartparens
   :ensure
+  :defer
   :hook (prog-mode . smartparens-mode))
 #+END_SRC
 
@@ -942,6 +943,7 @@ Makes matching parens easier.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package rainbow-delimiters
   :ensure
+  :defer
   :hook (prog-mode . rainbow-delimiters-mode))
 #+END_SRC
 
@@ -966,6 +968,7 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
 (use-package super-save
   :diminish
   :ensure
+  :defer
   :config
   (super-save-mode +1)
   (setq super-save-auto-save-when-idle t)
@@ -991,6 +994,7 @@ This mode is neat-o cuase it can highlight/block highlight indentation n stuff.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package highlight-indent-guides
   :ensure
+  :defer
   :custom
   (highlight-indent-guides-method 'fill)
   (highlight-indent-guides-suppress-auto-error t) ;; This spits out an error when I test and confuses the crap out of me when I see it but its due to starting emacs on macos as a daemon, so... ignore it whatever.
@@ -1003,6 +1007,7 @@ This mode is neat-o cuase it can highlight/block highlight indentation n stuff.
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package git-gutter
   :ensure
+  :defer
   :config
   (global-git-gutter-mode t)
   )
@@ -1013,6 +1018,7 @@ This mode is neat-o cuase it can highlight/block highlight indentation n stuff.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package clang-format
   :ensure
+  :defer
   :bind (([C-M-tab] . clang-format-region))
   )
 #+END_SRC
@@ -1030,8 +1036,7 @@ Since 29.1ish or whatever has it now lets just use it for all the things new hot
 (use-package tree-sitter-langs
   :after tree-sitter
   :ensure
-  :hook
-  (tree-sitter-after-on . tree-sitter-hl-mode)
+  :hook (tree-sitter-after-on . tree-sitter-hl-mode)
   :config
   (require 'tree-sitter-langs))
 (use-package tsc :ensure :after tree-sitter-langs)
@@ -1049,10 +1054,11 @@ Also start using the lsp-mode stuff in 29.x or whatever too. If it works well en
   (add-hook 'prog-mode-hook 'eglot-ensure)
   (add-to-list 'eglot-stay-out-of 'eldoc))
 
-(use-package lsp-mode :after eglot :ensure)
+(use-package lsp-mode :after eglot :ensure :defer)
 
 (use-package flycheck-eglot
   :ensure
+  :defer
   :after (flycheck eglot)
   :config
   (global-flycheck-eglot-mode 1))
@@ -1071,6 +1077,7 @@ For.. yaml
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package yaml-mode
   :ensure
+  :defer
   :hook (yaml-mode . whitespace-mode)
   )
 #+END_SRC
@@ -1082,6 +1089,7 @@ Make markdown pretty(er/ish)
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package markdown-mode
   :ensure
+  :defer
   :hook (markdown-mode . whitespace-mode)
   )
 #+END_SRC
@@ -1091,7 +1099,7 @@ Make markdown pretty(er/ish)
 So I write gooder. Me fail English? Thats unpossible.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package writegood-mode :ensure)
+(use-package writegood-mode :ensure :defer)
 #+END_SRC
 
 *** rust-mode
@@ -1099,11 +1107,13 @@ So I write gooder. Me fail English? Thats unpossible.
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package rust-mode
   :ensure
+  :defer
   :commands rust-mode)
 
 (use-package rustic
   :after eglot
   :ensure
+  :defer
   :custom
   (rustic-rustfmt-config-alist '((edition . "2021")))
 ;;  (rustic-format-on-save t)
@@ -1115,15 +1125,15 @@ So I write gooder. Me fail English? Thats unpossible.
 *** terraform-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package terraform-mode :ensure)
+(use-package terraform-mode :ensure :defer)
 #+END_SRC
 
 *** idris-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package idris-mode
-  :defer
   :ensure
+  :defer
   :config
   (add-to-list 'completion-ignored-extensions ".ibc")
   )
@@ -1133,8 +1143,8 @@ So I write gooder. Me fail English? Thats unpossible.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package go-mode
-  :defer
   :ensure
+  :defer
   :config
   (setq flycheck-go-vet-executable "env CC=gcc go vet"))
 #+END_SRC
@@ -1193,7 +1203,8 @@ Instead of text might as well get a decent mode hook going here.
   :defer)
 (use-package company-nixos-options
   :after company
-  :ensure)
+  :ensure
+  :defer)
 #+END_SRC
 
 **** nix-mode
@@ -1477,7 +1488,8 @@ url: https://github.com/raghavgautam/osx-lib
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package osx-lib
   :if (memq window-system '(mac ns))
-  :ensure)
+  :ensure
+  :defer)
 #+END_SRC
 
 Iffy.... Does some jank ass wack stuff in fullscreen mode on cocoa emacs in macos. Need to find a way to clamp the max rows it can display or something.
@@ -1502,20 +1514,11 @@ Ref:
 (use-package fancy-dabbrev
   :diminish fancy-dabbrev-mode
   :ensure
+  :defer
   :bind (("TAB" . fancy-dabbrev-mode))
   :config
   (setq fancy-dabbrev-preview-delay 0.3)
   (setq fancy-dabbrev-expansion-on-preview-only t)
   (setq fancy-dabbrev-indent-command 'tab-to-tab-stop)
   (setq fancy-dabbrev-no-expansion-for '(multiple-cursors-mode magit-mode org-mode)))
-#+END_SRC
-
-ref: https://github.com/Malabarba/emacs-google-this
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package google-this
-  :defer
-  :ensure
-  :config
-  (google-this-mode 1))
 #+END_SRC
