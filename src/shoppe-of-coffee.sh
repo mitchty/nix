@@ -10,6 +10,6 @@ set "${SETOPTS:--eu}"
 # Just a quick hack to let me specify multiple files to the hack script.
 for f in "$@"; do
   if [ -e "${f}" ]; then
-    "${HOME}/src/pub/github.com/mitchty/nix/src/vpn-hack.sh" < "${f}"
+    "${_dir}/../src/vpn-hack.sh" < "${f}"
   fi
 done
