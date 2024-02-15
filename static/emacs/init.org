@@ -317,17 +317,16 @@ Setup the font presets, by default troll with comic code sans cause its funny an
   :custom
   (fontaine-presets
       '((regular
-         :default-height 200)
+         :default-height 100)
         (comic-gihugic
          :inherit comic-base
          :default-height 250)
         (comic-medium
          :inherit comic-base
-         :default-family "Comic Code"
          :default-height 150)
         (comic-base
+         :inherit regular
          :default-family "Comic Code"
-         :default-weight semilight
          :bold-weight extrabold)
         (source-gihugic
          :inherit souce-base
@@ -336,8 +335,8 @@ Setup the font presets, by default troll with comic code sans cause its funny an
          :inherit souce-base
          :default-height 150)
         (source-base
+         :inherit regular
          :default-family "Source Code Pro"
-         :default-weight semilight
          :bold-weight extrabold)
         (t
          :default-family "Monospace"
