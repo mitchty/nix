@@ -207,7 +207,7 @@ h() {
     #shellcheck disable=SC2086
     GH_TOKEN="$(cat ${PUBTOKEN})" gh "$@"
   else
-    printf "warn: didn't find public token file %s\n" "${PUBTOKEN}" >&2
+    printf "warn: didn't find public token file %s nothing done\n" "${PUBTOKEN}" >&2
   fi
 }
 
