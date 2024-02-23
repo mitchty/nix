@@ -1,7 +1,6 @@
 let
   # User keys
   mitch = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV";
-  tishmack = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIqzTMAWTY4CBzGztPUO7I56fIQP0224rVR6xeQRX6ZI";
 
   ageadmins = [ mitch ];
 
@@ -17,23 +16,18 @@ let
   cl2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO9/+zDNc2RTZNn25SN0z/iKBc6RrT+uleTUaJT+nPIh";
   cl3 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFjWCCiZOEVe0MWZgpJSMQKrXdA26x8MuaTM7gI6qLYN";
 
-  wmb = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINWlH6mfb4+v6z+uXNBDr+pPkhgTI7v3TMYl8UDNiKT1";
-
   allnixos = [ dfs1 srv nexus wm2 gw cl1 cl2 cl3 ];
 
   # To make the following a skosh simpler/easier
   homeusers = [ mitch ];
   homehosts = [ mb ] ++ allnixos;
 
-  workusers = [ tishmack ];
-  workhosts = [ wmb ];
-
-  git = homehosts ++ homeusers ++ workhosts;
+  git = homehosts ++ homeusers;
   restic = [ mb srv nexus ];
 
   # Some secrets should be usable everywhere
-  allusers = homeusers ++ workusers;
-  allhosts = homehosts ++ workhosts;
+  allusers = homeusers;
+  allhosts = homehosts;
 
   # Just router(s)
   router = [ gw ];

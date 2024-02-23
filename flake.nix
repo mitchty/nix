@@ -572,30 +572,6 @@
             services.shared.mutagen.enable = true;
           }];
         };
-        wmb = darwinSystem {
-          inherit inputs;
-          system = "x86_64-darwin";
-          modules = nixDarwinModules ++ [{
-            users = {
-              primaryUser = workUser;
-              primaryGroup = "staff";
-            };
-            age.secrets = ageHome workUser;
-            networking.computerName = "wmb";
-            networking.hostName = "wmb";
-            networking.knownNetworkServices = [
-              "Wi-Fi"
-            ];
-            roles.gui.enable = true;
-            services.work.enable = true;
-            services.mitchty.enable = true;
-            services.shared.mutagen = {
-              enable = true;
-              user = workUser;
-              group = "staff";
-            };
-          }];
-        };
       };
 
       nixosConfigurations = {
