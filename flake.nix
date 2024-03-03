@@ -423,34 +423,6 @@
         };
       };
 
-      s3fsGeneral = user: {
-        "s3/bucket-general" = {
-          file = ./secrets/s3/bucket-general.age;
-          owner = user;
-        };
-      };
-
-      s3fsSrc = user: {
-        "s3/bucket-src" = {
-          file = ./secrets/s3/bucket-src.age;
-          owner = user;
-        };
-      };
-
-      s3fsMedia = user: {
-        "s3/bucket-media" = {
-          file = ./secrets/s3/bucket-media.age;
-          owner = user;
-        };
-      };
-
-      s3fsConfig = user: {
-        "s3/bucket-config" = {
-          file = ./secrets/s3/bucket-config.age;
-          owner = user;
-        };
-      };
-
       # Make age.secrets = a bit simpler with some defined variables
       homeUser = "mitch";
       homeGroup = "users";
@@ -461,7 +433,6 @@
       ageDefault = user: canarySecret user;
       ageGit = user: gitSecret user // ghcliPubSecret user;
       ageRestic = user: resticSecret user;
-      ageS3fs = s3fsGeneral rootUser // s3fsSrc rootUser // s3fsMedia rootUser // s3fsConfig rootUser;
 
       ageHome = user: ageDefault user // ageGit user;
       ageHomeWithBackup = user: ageHome user // ageRestic user;
@@ -627,7 +598,7 @@
               primaryUser = homeUser;
               primaryGroup = homeGroup;
             };
-            age.secrets = ageHomeNixosWithBackup homeUser // ageS3fs;
+            age.secrets = ageHomeNixosWithBackup homeUser;
             services.role = {
               media = {
                 enable = true;

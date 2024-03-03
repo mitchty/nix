@@ -53,14 +53,4 @@ in
 
   # Only the router needs the the hostapd stuff
   "wifi/passphrase.age".publicKeys = router ++ ageadmins;
-
-  # garage s3 bucket secrets for s3fs
-  "s3/bucket-general.age".publicKeys = allnixos ++ ageadmins;
-  "s3/bucket-src.age".publicKeys = allnixos ++ ageadmins;
-  "s3/bucket-media.age".publicKeys = allnixos ++ ageadmins;
-  "s3/bucket-config.age".publicKeys = allnixos ++ ageadmins;
-
-  # TESTING not s3fs, s3fs is terrible perf wise.
-  "s3/aws-credentials.age".publicKeys = allnixos ++ ageadmins;
-  "s3/s3ql.age".publicKeys = allnixos ++ ageadmins;
 }
