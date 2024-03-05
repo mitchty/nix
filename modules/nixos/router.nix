@@ -6,60 +6,10 @@ let
   cfg = config.services.role.router;
 
   #
-  ip4 = rec {
-    ip = a: b: c: d: prefixLength: {
-      inherit a b c d prefixLength;
-      address = "${toString a}.${toString b}.${toString c}.${toString d}";
-    };
-
-    toCIDR = addr: "${addr.address}/${toString addr.prefixLength}";
-    toNetworkAddress = addr: with addr; { inherit address prefixLength; };
-    toNumber = addr: with addr; a * 16777216 + b * 65536 + c * 256 + d;
-    fromNumber = addr: prefixLength:
-      let
-        aBlock = a * 16777216;
-        bBlock = b * 65536;
-        cBlock = c * 256;
-        a = addr / 16777216;
-        b = (addr - aBlock) / 65536;
-        c = (addr - aBlock - bBlock) / 256;
-        d = addr - aBlock - bBlock - cBlock;
-      in
-      ip a b c d prefixLength;
-
-    fromString = with lib; str:
-      let
-        splits1 = splitString "." str;
-        splits2 = flatten (map (x: splitString "/" x) splits1);
-
-        e = i: toInt (builtins.elemAt splits2 i);
-      in
-      ip (e 0) (e 1) (e 2) (e 3) (e 4);
-
-    fromIPString = str: prefixLength:
-      fromString "${str}/${toString prefixLength}";
-
-    network = addr:
-      let
-        pfl = addr.prefixLength;
-        pow = n: i:
-          if i == 1 then
-            n
-          else
-            if i == 0 then
-              1
-            else
-              n * pow n (i - 1);
-
-        shiftAmount = pow 2 (32 - pfl);
-      in
-      fromNumber ((toNumber addr) / shiftAmount * shiftAmount) pfl;
-  };
 
   # Static ip junk
-  loki = "10.10.10.128";
 
-  extrahosts = (pkgs.writeText "dns-hosts" ''
+  extrahosts = pkgs.writeText "dns-hosts" ''
     10.10.10.1 gw.home.arpa gw
     10.10.10.3 nexus.home.arpa nexus
     10.10.10.4 dfs1.home.arpa dfs1
@@ -90,7 +40,7 @@ let
 
     # For testing dns works or not
     10.10.10.254 canary.home.arpa canary
-  '');
+  '';
   upstreamdns = [
     "1.1.1.1"
     "8.8.8.8"
@@ -99,12 +49,6 @@ let
   # https://www.arubanetworks.com/techdocs/VIA/4x/Content/VIA%20Config/Before_you_Begin.htm
   #
   # Bit of a hack I think due to this issue https://github.com/NixOS/nixpkgs/issues/69265
-  workvpnadd = ''
-    ${pkgs.iptables}/bin/iptables --insert INPUT --protocol ESP --jump ACCEPT
-  '';
-  workvpnrm = ''
-    ${pkgs.iptables}/bin/iptables --delete INPUT --protocol ESP --jump ACCEPT
-  '';
 in
 {
   options.services.role.router = {
@@ -389,7 +333,7 @@ in
         dhcp-host=88:66:5a:56:92:d6,wmb,10.10.10.99
 
         dhcp-host=e8:48:b8:1d:b7:f1,wifi,10.10.10.127
-      '' + optionalString (cfg.blacklist) ''
+      '' + optionalString cfg.blacklist ''
 
         # Also setup the dns blacklist if enabled
         conf-file=${inputs.dnsblacklist}/dnsmasq/dnsmasq.blacklist.txt

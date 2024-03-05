@@ -5,9 +5,6 @@ let
   sleepDefault = 3;
 
   # TODO: Learn how to unit test this stuff
-  base = {
-    start_directory = "~/";
-  };
 
   initial = {
     window_name = "sh";
@@ -142,45 +139,45 @@ rec {
   };
 
   # Setup some tmuxp configs
-  home.file.".config/tmuxp/etc.yml".text = (lib.generators.toYAML { } {
+  home.file.".config/tmuxp/etc.yml".text = lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "etc";
     windows = [ initial btop ];
-  });
+  };
 
-  home.file.".config/tmuxp/wip.yml".text = (lib.generators.toYAML { } {
+  home.file.".config/tmuxp/wip.yml".text = lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "wip";
     windows = [ wip nix nixos rswip ];
-  });
+  };
 
-  home.file.".config/tmuxp/mb.yml".text = (lib.generators.toYAML { } {
+  home.file.".config/tmuxp/mb.yml".text = lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "mb";
     windows = [ initial rebuildall journal ];
-  });
+  };
 
-  home.file.".config/tmuxp/wm2.yml".text = (lib.generators.toYAML { } {
+  home.file.".config/tmuxp/wm2.yml".text = lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "wm2";
     windows = [ initial rebuildall journal ];
-  });
+  };
 
-  home.file.".config/tmuxp/srv.yml".text = (lib.generators.toYAML { } {
+  home.file.".config/tmuxp/srv.yml".text = lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "srv";
     windows = [ initial btop ];
-  });
+  };
 
-  home.file.".config/tmuxp/nexus.yml".text = (lib.generators.toYAML { } {
+  home.file.".config/tmuxp/nexus.yml".text = lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "nexus";
     windows = [ initial btop ];
-  });
+  };
 
-  home.file.".config/tmuxp/wmb.yml".text = (lib.generators.toYAML { } {
+  home.file.".config/tmuxp/wmb.yml".text = lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "wmb";
     windows = [ initial rebuildlocal journal wip ];
-  });
+  };
 }

@@ -1,4 +1,4 @@
-{ config, lib, inputs, self, ... }:
+{ lib, inputs, ... }:
 let
   inherit (lib) mapAttrs' nameValuePair mapAttrsToList;
 

@@ -214,7 +214,7 @@ in
     freetube
     kdialog
     xsel
-  ] ++ lib.optionals (pkgs.hostPlatform.isLinux) [
+  ] ++ lib.optionals pkgs.hostPlatform.isLinux [
     # macos specific stuff
   ] ++ lib.optionals pkgs.hostPlatform.isDarwin [
     pngpaste
@@ -227,8 +227,6 @@ in
     ifinfo
     whoson
     # testing nursery...
-  ] ++ [
-
   ];
 
   # Let home-manager setup fonts on macos/linux the same way.

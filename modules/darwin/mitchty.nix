@@ -4,7 +4,6 @@ with lib;
 
 let
   cfg = config.services.mitchty;
-  fake = lib.fakeSha256;
 
   # Scripts I wrote that are macos only.
   close = (pkgs.writeScriptBin "close" (builtins.readFile ../../static/src/close)).overrideAttrs (old: {

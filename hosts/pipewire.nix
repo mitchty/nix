@@ -1,4 +1,4 @@
-{ ... }: {
+_: {
   sound.enable = true;
 
   # TODO: lets try pipewire, this needs review with OBS...

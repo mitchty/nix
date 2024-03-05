@@ -1,4 +1,4 @@
-{ config, lib, pkgs, inputs, ... }:
+{ config, lib, pkgs, ... }:
 
 with lib;
 
@@ -260,9 +260,9 @@ in
   config = mkIf cfg.enable rec {
     networking = {
       firewall = {
-        allowedTCPPortRanges = [ ] ++ glusterTcpPortRanges;
-        allowedTCPPorts = [ ] ++ pacemakerTcpPorts ++ glusterTcpPorts ++ sambaTcpPorts ++ nginxTcpPorts ++ nfsPorts ++ garagePorts;
-        allowedUDPPorts = [ ] ++ pacemakerUdpPorts ++ glusterUdpPorts ++ sambaUdpPorts ++ nfsPorts;
+        allowedTCPPortRanges = glusterTcpPortRanges;
+        allowedTCPPorts = pacemakerTcpPorts ++ glusterTcpPorts ++ sambaTcpPorts ++ nginxTcpPorts ++ nfsPorts ++ garagePorts;
+        allowedUDPPorts = pacemakerUdpPorts ++ glusterUdpPorts ++ sambaUdpPorts ++ nfsPorts;
       };
     };
 

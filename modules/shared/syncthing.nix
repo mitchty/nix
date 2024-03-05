@@ -46,7 +46,7 @@ in
   };
 
   config = mkIf cfg.enable (mkMerge [
-    (optionalAttrs (options ? launchd.user.agents) (mkIf (pkgs.hostPlatform.isDarwin) {
+    (optionalAttrs (options ? launchd.user.agents) (mkIf pkgs.hostPlatform.isDarwin {
       launchd.user.agents.syncthing = {
         script = ''
           #!/bin/bash
@@ -76,7 +76,7 @@ in
         };
       };
     }))
-    (optionalAttrs (options ? systemd.services) (mkIf (pkgs.hostPlatform.isLinux) {
+    (optionalAttrs (options ? systemd.services) (mkIf pkgs.hostPlatform.isLinux {
       # https://docs.syncthing.net/users/firewall.html
       networking.firewall.allowedTCPPorts = [ 22000 ];
       networking.firewall.allowedUDPPortRanges = [

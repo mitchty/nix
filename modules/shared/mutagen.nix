@@ -46,7 +46,7 @@ in
   };
 
   config = mkIf cfg.enable (mkMerge [
-    (optionalAttrs (options ? launchd.user.agents) (mkIf (pkgs.hostPlatform.isDarwin) {
+    (optionalAttrs (options ? launchd.user.agents) (mkIf pkgs.hostPlatform.isDarwin {
       environment.systemPackages = [ cfg.package ];
       launchd.user.agents.${name} = {
         path = [ config.environment.systemPath ];
@@ -76,7 +76,7 @@ in
         };
       };
     }))
-    (optionalAttrs (options ? systemd.services) (mkIf (pkgs.hostPlatform.isLinux) {
+    (optionalAttrs (options ? systemd.services) (mkIf pkgs.hostPlatform.isLinux {
       environment.systemPackages = [ cfg.package ];
 
       systemd.services.${name} = {

@@ -6,7 +6,7 @@ let
       export NIX_PATH="${nixpkgs-path}:$NIX_PATH"
     fi
   '';
-  work = (builtins.readFile ../../static/home/profile-work);
+  work = builtins.readFile ../../static/home/profile-work;
 in
 {
   # Options ref:

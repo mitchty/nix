@@ -1,11 +1,11 @@
-{ config, lib, pkgs, inputs, ... }:
+{ config, lib, ... }:
 
 with lib;
 
 let
   cfg = config.services.role.node-exporter;
 
-  hasFileSystemType = fsType: { } != filterAttrs (n: v: v.fsType == fsType) config.fileSystems;
+  hasFileSystemType = fsType: { } != filterAttrs (_n: v: v.fsType == fsType) config.fileSystems;
 in
 {
   options.services.role.node-exporter = {

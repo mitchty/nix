@@ -4,7 +4,6 @@ with lib;
 
 let
   cfg = config.services.work;
-  fake = lib.fakeSha256;
 
   snyk = pkgs.stdenv.mkDerivation rec {
     name = "snyk-${version}";
