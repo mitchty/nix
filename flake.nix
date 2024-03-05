@@ -32,10 +32,6 @@
     , ...
     }:
     let
-      # Current ssh ed25519 pub key to use when sshing into the autoinstaller
-      # setup if I need to for god knows why, probably debugging shenanigans.
-      pubKey = (builtins.readFile ./secrets/crypt/id_ed25519.pub);
-
       inherit (nixpkgs.lib) attrValues makeOverridable nixosSystem mkForce mkDefault;
 
       system = "x86_64_linux";
@@ -60,155 +56,9 @@
         ];
       };
 
-      mkAutoInstaller = nixosConfiguration:
-        let
-          pkgs = nixosConfiguration.pkgs;
-          nixosSystem = import "${pkgs.path}/nixos/lib/eval-config.nix";
-        in
-        (nixosSystem {
-          system = pkgs.system;
-          modules =
-            [
-              ({ pkgs, ... }: {
-                # Let 'nixos-version --json' know about the Git revision
-                # of this flake.
-                system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
+      mylib = import ./lib/default.nix;
 
-                # Don't flush to the backing store, reduces possible writes to
-                # the device backing the iso if any. More for stuff like the pi/sd cards et al
-                environment.etc."systemd/pstore.conf".text = ''
-                  [PStore]
-                  Unlink=no
-                '';
-
-                # Network configuration.
-                networking = {
-                  # Don't log failed connections to the console
-                  firewall.logRefusedConnections = mkDefault false;
-                  # Since I normally only build one thing at a time give it the
-                  # same dhcp hostname so dns can pick it up.
-                  hostName = "autoinstall";
-
-                  firewall.allowedTCPPorts = [ 22 ];
-                };
-
-                nix = {
-                  settings = {
-                    substituters = [
-                      # "http://cache.cluster.home.arpa"
-                      "https://cache.nixos.org"
-                      "https://nix-community.cachix.org"
-                    ];
-                    trusted-public-keys = [
-                      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-                      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-                    ];
-                  };
-
-                  # Lets things download in parallel
-                  extraOptions = ''
-                    binary-caches-parallel-connections = 100
-                    experimental-features = nix-command flakes
-                  '';
-                };
-                isoImage.forceTextMode = true;
-                isoImage.squashfsCompression = "zstd -Xcompression-level 9";
-
-                boot.supportedFilesystems = [ "xfs" "zfs" "ext4" ];
-
-                # No docs on the install iso
-                documentation.enable = false;
-                documentation.nixos.enable = false;
-
-                services.getty.autologinUser = pkgs.lib.mkForce "root";
-                environment = {
-                  variables = {
-                    # Since we have no swap, have the heap be a bit less extreme
-                    # and gc sooner if we end up on a system with less ram e.g.
-                    # arm rpi
-                    GC_INITIAL_HEAP_SIZE = "1M";
-                  };
-                  systemPackages = with pkgs; [
-                    btop
-                    busybox
-                    coreutils
-                    curl
-                    dmidecode
-                    dropwatch
-                    flashrom
-                    iotop
-                    jq
-                    linux-firmware
-                    linuxPackages.cpupower
-                    linuxPackages.perf
-                    lvm2
-                    lvm2.bin
-                    mdadm
-                    nixpkgs-fmt
-                    parted
-                    pciutils
-                    powertop
-                    stdenv
-                    strace
-                    tcpdump
-                    thin-provisioning-tools
-                    utillinux
-                    vim
-                  ];
-                  # (pkgs.writeShellScriptBin "diskoScript" ''
-                  #   ${nixosConfiguration.config.system.build.diskoScript}
-                  #   nixos-install --no-root-password --option substituters "" --no-channel-copy --system ${nixosConfiguration.config.system.build.toplevel}
-                  #   reboot
-                  # '')
-                };
-
-                # Effectively "run" this on the install iso's first tty only
-                programs.bash.interactiveShellInit = ''
-                  if [ "$(tty)" = "/dev/tty1" ]; then
-                    echo autoinstall would run here if it existed yet | tee /dev/console
-                    shutdown now
-                  fi
-                '';
-                # I want my magic sysrq triggers to work for this stuff if for
-                # some reason I need to middle finger things
-                boot.kernel.sysctl = {
-                  "kernel.sysrq" = 1;
-                };
-
-                # For installation shenanigans make sure /dev/console dumps to
-                # the first serial console and that we copy off kernel stuff to
-                # ram "just in case" as well flash related settings to make sure
-                # we reduce any writes to removable media that may be present.
-                boot.kernelParams = [
-                  "boot.shell_on_fail"
-                  "console=ttyS0,115200n8"
-                  "copytoram=1"
-                  "delayacct"
-                  "intel-spi.writeable=1"
-                  "iomem=relaxed"
-                ];
-
-                users = {
-                  users.nixos.isNormalUser = true;
-                  extraUsers = {
-                    root.openssh.authorizedKeys.keys = [ pubKey ];
-                    nixos.openssh.authorizedKeys.keys = [ pubKey ];
-                  };
-                };
-
-                # Let me ssh in by default
-                services.openssh = {
-                  enable = true;
-                  settings = {
-                    PermitRootLogin = "yes";
-                  };
-                };
-              })
-            ] ++ [
-              "${pkgs.path}/nixos/modules/installer/cd-dvd/installation-cd-base.nix"
-            ];
-        }).config.system.build.isoImage;
-
+      inherit (mylib) mkAutoInstaller;
     in
     {
       packages = forAllSystems
@@ -255,6 +105,8 @@
                     nixpkgs-fmt
                     deadnix
                   ];
+                  # TODO: enable deadnix, for now it just wants to remove stuff
+                  # I am working on that I might enable again later
                   text = ''
                     nixpkgs-fmt --check "$@"
                     #            deadnix --edit "$@"
