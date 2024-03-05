@@ -45,11 +45,12 @@
         inputs.treefmt-nix.flakeModule
         inputs.flake-root.flakeModule
         #        inputs.nixos-generators.nixosModules.all-formats
+        ./flake/treefmt.nix
       ];
 
       # inherit (import ./lib/default.nix) mkAutoInstaller;
 
-      perSystem = { config, self', pkgs, lib, system, ... }: {
+      perSystem = { config, self', pkgs, system, ... }: {
         _module.args.pkgs = import inputs.nixpkgs {
           inherit system;
           # overlays = [
@@ -57,61 +58,9 @@
           # ];
         };
 
-        formatter = config.treefmt.build.wrapper;
         packages.default = self'.packages.activate;
 
-        treefmt.config = {
-          projectRootFile = "flake.nix";
-          programs = {
-            #            rustfmt.enable = true;
-            nixpkgs-fmt.enable = true;
-            deadnix.enable = true;
-            shellcheck.enable = true;
-            shfmt.enable = true;
-            statix.enable = true;
-          };
-
-          settings.formatter =
-            let
-              sh-includes = [ "*.sh" "direnvrc" ];
-              spec-excludes = [ "spec/*_spec.sh" ];
-              crypt-excludes = [ "restic-env.sh" ];
-            in
-            {
-              # TODO: Remove when this: https://github.com/numtide/treefmt/issues/241
-              # is fixed via: https://github.com/nerdypepper/statix/issues/69
-              statix = {
-                command = lib.mkForce "sh";
-                options = [
-                  "-euc"
-                  "for file in \"$@\"; do ${lib.getExe pkgs.statix} fix \"$file\"; done"
-                ];
-              };
-              shellcheck = {
-                options = [
-                  "--external-sources"
-                  "--severity"
-                  "warning"
-                  "--shell"
-                  "sh"
-                ];
-                includes = sh-includes;
-                excludes = crypt-excludes;
-              };
-
-              shfmt = {
-                options = [
-                  "-ci"
-                  "-i"
-                  "2"
-                  "-bn"
-                  "-sr"
-                ];
-                includes = sh-includes;
-                excludes = spec-excludes ++ crypt-excludes;
-              };
-            };
-        };
+        formatter = config.treefmt.build.wrapper;
 
         devShells.default = pkgs.mkShell {
           name = "my-flake"; # TODO: name this something better....
