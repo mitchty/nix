@@ -122,12 +122,6 @@ in
           skaffold
           yq-go
         ] ++ [
-          (pkgs.wrapHelm pkgs.kubernetes-helm {
-            plugins = [
-              inputs.mitchty.packages.${pkgs.system}.helm-unittest
-            ];
-          })
-        ] ++ [
           coreutils
           mkdocs
           terragrunt_0324
