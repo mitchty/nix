@@ -108,6 +108,14 @@
             pathExists (localOverlays + ("/" + n + "/default.nix")))
           (attrNames (readDir localOverlays)));
 
+      # Local role setup for combined nixos/darwin stuff
+      localRoles = ./modules/roles;
+      myRoles = with builtins; map (n: import (myRoles + ("/" + n)))
+        (filter
+          (n: match ".*\\.nix" n != null ||
+            pathExists (myRoles + ("/" + n + "/default.nix")))
+          (attrNames (readDir myRoles)));
+
       nixpkgsOverlays = [
         emacs-overlay.overlay
         rust.overlays.default
@@ -182,7 +190,8 @@
         } ++ [
         home-manager.darwinModules.home-manager
         ./modules/darwin
-        ./modules/role
+        ./modules/roles/gui.nix
+        #      ] ++ myRoles ++ [
         agenix.darwinModules.age
         (
           { config, pkgs, ... }:
@@ -534,6 +543,10 @@
                 "USB 10/100/1000 LAN"
               ];
             };
+            roles.gui = {
+              enable = true;
+              isDarwin = true;
+            };
             services.restic = {
               enable = true;
               repo = "s3:http://cluster.home.arpa:3900/restic/";
@@ -639,7 +652,10 @@
                   primaryGroup = homeGroup;
                 };
                 age.secrets = ageHomeNixos homeUser;
-                roles.gui.enable = true;
+                roles.gui = {
+                  enable = true;
+                  isLinux = true;
+                };
                 services.role = {
                   gaming.enable = true;
                   qemu.enable = true;

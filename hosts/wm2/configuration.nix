@@ -10,7 +10,6 @@
       ../virtualization.nix
       ../desktop.nix
       ../userscompat.nix
-      ../laptop.nix
     ];
 
   config = {
