@@ -83,16 +83,43 @@ self: super: rec {
         ];
       });
 
+  # Only used to validate the overlay
   myEmacsPrime = super.emacsWithPackagesFromUsePackage
     {
       config = ../../static/emacs/init.org;
       package = emacsPatched;
     };
 
-  # So have emacs tangle the .el file and to be abused in the build phase to
-  # test out that the entire emacs config + packages "does stuff" for when I
-  # neeever forget a ) in my setup.
-  #
+  # Convert org to .el so init.el can stay in the nix store.
+  myInitEl = super.stdenv.mkDerivation
+    rec {
+      pname = "myinitel";
+      version = "0.0.0";
+      buildInputs = [
+        self.myEmacsPrime
+      ];
+      src = ../../static/emacs;
+
+      # abuse this derivation to munge org->el so we can use that for default init file
+      # and then also use that to batch load it.
+      buildPhase = ''
+        emacs -Q --batch --eval "
+            (progn
+              (require 'ob-tangle)
+              (dolist (file command-line-args-left)
+                (with-current-buffer (find-file-noselect file)
+                  (org-babel-tangle))))
+          " init.org
+      '';
+
+      installPhase = ''
+        install -dm755 $out
+        install -m644 init.org $out/init.org
+        install -m644 init.el $out/init.el
+      '';
+    };
+
+  # Use the generated init.el to test out the configuration.
   myEmacsConfig = super.stdenv.mkDerivation
     rec {
       pname = "myemacsconfig";
@@ -105,26 +132,17 @@ self: super: rec {
       # abuse this derivation to munge org->el so we can use that for default init file
       # and then also use that to batch load it.
       buildPhase = ''
-        set -e
-        emacs -Q --batch --eval "
-            (progn
-              (require 'ob-tangle)
-              (dolist (file command-line-args-left)
-                (with-current-buffer (find-file-noselect file)
-                  (org-babel-tangle))))
-          " init.org
         export HOME=$TMPDIR
         echo emacs batch load to make sure init.el is parseable >&2
-        emacs -nw --batch --debug-init --load init.el
+        emacs -nw --batch --debug-init --load ${self.myInitEl}/init.el
 
         echo emacs batch load init.el with itself to make sure all of the config works with modes/tree-sitter etc... >&2
-        emacs -nw --batch --debug-init --load init.el init.el
+        emacs -nw --batch --debug-init --load ${self.myInitEl}/init.el ${self.myInitEl}/init.el
       '';
 
       installPhase = ''
         install -dm755 $out
-        install -m644 init.org $out/init.org
-        install -m644 init.el $out/init.el
+        install -m644 ${self.myInitEl}/init.el $out/init.el
       '';
     };
 
