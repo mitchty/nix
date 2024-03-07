@@ -59,9 +59,10 @@
     networking.hostName = "wm2";
     networking.hostId = "32643aa7";
     boot.loader.systemd-boot.extraInstallCommands = ''
-      mount -t vfat -o iocharset=iso8859-1 /dev/disk/by-partlabel/ESP0 /efiboot/efi0
-      mount -t vfat -o iocharset=iso8859-1 /dev/disk/by-partlabel/ESP1 /efiboot/efi1
-      cp -r /efiboot/efi0/* /efiboot/efi1
+      set -e
+      ${pkgs.util-linux}/bin/mountpoint -q /efiboot/efi0 || ${pkgs.util-linux}/bin/mount -t vfat -o iocharset=iso8859-1 /dev/disk/by-partlabel/ESP0 /efiboot/efi0
+      ${pkgs.util-linux}/bin/mountpoint -q /efiboot/efi1 || ${pkgs.util-linux}/bin/mount -t vfat -o iocharset=iso8859-1 /dev/disk/by-partlabel/ESP1 /efiboot/efi1
+      ${pkgs.rsync}/bin/rsync -Havz --exclude .lost+found --delete --delete-before /efiboot/efi0/ /efiboot/efi1
     '';
     boot.swraid.enable = true;
     boot.swraid.mdadmConf = ''
