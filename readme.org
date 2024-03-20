@@ -1,3 +1,9 @@
+Note if you are using anything here as a reference be aware I'm refactoring/rebuilding all of this gihugic hack using flake-parts etc...
+
+Consider the primary branch as legacy and old and busted. Not all the new hotness is ready yet though while I rebuild this setup from the ground up to be a lot less sus based on my past few years of learning nix and flakes and finding out how I did things was.... less than optimal or plain up just "wrong". Live and learn.
+
+You've been warned!
+
 * My home network nix flake setup
 
   So my goal with all this is to get as much into a NixOS layout for home. Now that Flakes are "kinda/sorta" out it seems the best time to convert everything over to flakes.
