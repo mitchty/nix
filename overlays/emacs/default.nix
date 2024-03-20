@@ -120,24 +120,22 @@ self: super: rec {
     };
 
   # Use the generated init.el to test out the configuration.
-  myEmacsConfig = super.stdenv.mkDerivation
+  myTestedEmacsConfig = super.stdenv.mkDerivation
     rec {
-      pname = "myemacsconfig";
+      pname = "mytestedemacsconfig";
       version = "0.0.0";
       buildInputs = [
         self.myEmacsPrime
       ];
       src = ../../static/emacs;
 
-      # abuse this derivation to munge org->el so we can use that for default init file
-      # and then also use that to batch load it.
+      # For emacs 28.?+ --init-directory simplifies this a skosh to my prior
+      # --load hacks.
+      # https://stackoverflow.com/questions/71146526/how-to-start-emacs-with-specific-user-init-file-and-user-emacs-directory
       buildPhase = ''
         export HOME=$TMPDIR
         echo emacs batch load to make sure init.el is parseable >&2
-        emacs -nw --batch --debug-init --load ${self.myInitEl}/init.el
-
-        echo emacs batch load init.el with itself to make sure all of the config works with modes/tree-sitter etc... >&2
-        emacs -nw --batch --debug-init --load ${self.myInitEl}/init.el ${self.myInitEl}/init.el
+        emacs -nw --batch --debug-init --init-directory ${self.myInitEl}
       '';
 
       installPhase = ''
@@ -151,7 +149,7 @@ self: super: rec {
     {
       package = emacsPatched;
       defaultInitFile = true;
-      config = "${self.myEmacsConfig}/init.el";
+      config = "${self.myTestedEmacsConfig}/init.el";
 
       # If for some reason I need to override an emacs package directly
       # override = epkgs: epkgs // {
