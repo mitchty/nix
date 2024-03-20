@@ -18,6 +18,8 @@
     nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
     # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
+    nil.url = "github:oxalica/nil";
+
     nur.url = "github:nix-community/NUR";
 
     # Until I can debug the dyld segfault with 23.11 pin darwin to 23.05 as a
@@ -83,6 +85,7 @@
     , flake-utils
     , nixpkgs-pacemaker
     , nur
+    , nil
       # , terraform-old
       # , nixinit
     , ...
@@ -120,6 +123,7 @@
         emacs-overlay.overlay
         rust.overlays.default
         nur.overlay
+        nil.overlays.default
       ] ++ myOverlays ++ [
         # Note these come after ^^^ as they use some things those overlays define
         # TODO: this stuff should all get put into a flake overlay in this repo

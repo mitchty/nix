@@ -1082,6 +1082,7 @@ Also start using the lsp-mode stuff in 29.x or whatever too. If it works well en
   :ensure
   :defer
   :config
+  (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
   (add-hook 'prog-mode-hook 'eglot-ensure)
   (add-to-list 'eglot-stay-out-of 'eldoc))
 
