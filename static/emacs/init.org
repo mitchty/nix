@@ -21,24 +21,26 @@ Use use-package to configure emacs itself.
 (require 'bind-key)
 (require 'org)
 
+(setq temporary-file-directory "~/.emacs.d/tmp/")
+(make-directory temporary-file-directory :parents)
+
 (setq-default debug-on-error t)
 
-  (defun my/display-startup-timing()
-    (message "emacs startup took %s, gc also ran %d times."
-             (format "%.2f seconds"
-                     (float-time
-                      (time-subtract after-init-time before-init-time)))
-             gcs-done))
+(defun my/display-startup-timing()
+  (message "emacs startup took %s, gc also ran %d times."
+           (format "%.2f seconds"
+                   (float-time
+                    (time-subtract after-init-time before-init-time)))
+           gcs-done))
 
-  (defun string/ends-with (string suffix)
-    "Return t if STRING ends with SUFFIX."
-    (and (string-match (rx-to-string `(: ,suffix eos) t)
-                       string)
-         t))
+(defun string/ends-with (string suffix)
+  "Return t if STRING ends with SUFFIX."
+  (and (string-match (rx-to-string `(: ,suffix eos) t)
+                     string)
+       t))
 
-  (defun my/dired-hook-thing()
-    (load "dired-x"))
-
+(defun my/dired-hook-thing()
+  (load "dired-x"))
 
 (use-package emacs
   :ensure
@@ -102,8 +104,6 @@ Use use-package to configure emacs itself.
   (inhibit-startup-screen t)
   (initial-scratch-message nil)
   (pixel-scroll-precision-mode t)
-  (temporary-file-directory "/tmp/.emacs/")
-  (make-directory temporary-file-directory :parents)
   (backup-directory-alist `((".*" . ,temporary-file-directory)))
   (auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
   (create-lockfiles nil)
@@ -388,10 +388,11 @@ OR perspective? I have no freaking clue at this point
   :ensure
   :defer
   :bind
-;;  ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
   ("C-x C-a" . persp-counsel-switch-buffer)
   :custom
-  (persp-mode-prefix-key (kbd "C-c M-p"))  ; pick your own prefix key here
+  ;; C-c M-p no bueno for xorg/plasma sigh ffs testing shared config is ass
+  ;; across macos/linux
+  (persp-mode-prefix-key (kbd "C-c M-p"))
   :init
   (persp-mode))
 #+END_SRC
