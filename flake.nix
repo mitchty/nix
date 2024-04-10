@@ -1,5 +1,5 @@
 {
-  description = "mitchty nixos flake setup";
+  description = "mitchty flake setup";
 
   inputs = {
     # This is evil but I'm sick of commenting things out
@@ -22,8 +22,6 @@
 
     nur.url = "github:nix-community/NUR";
 
-    # Until I can debug the dyld segfault with 23.11 pin darwin to 23.05 as a
-    # very hacky way to have things work.
     darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
@@ -43,6 +41,8 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
 
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
@@ -70,33 +70,15 @@
 
   outputs =
     inputs@{ self
-    , nixpkgs
-    , latest
-    , mitchty
-    , darwin
-    , home-manager
-    , disko
-    , nixos-generators
-    , deploy-rs
-    , emacs-overlay
-    , rust
-    , agenix
-    , dnsblacklist
-    , flake-utils
-    , nixpkgs-pacemaker
-    , nur
-    , nil
-      # , terraform-old
-      # , nixinit
     , ...
     }:
     let
-      inherit (darwin.lib) darwinSystem;
-      inherit (nixpkgs.lib) attrValues makeOverridable nixosSystem;
+      inherit (inputs.darwin.lib) darwinSystem;
+      inherit (inputs.nixpkgs.lib) attrValues makeOverridable nixosSystem;
 
       x86-linux = "x86_64-linux";
 
-      homeDir = system: user: with nixpkgs.legacyPackages.${system}.stdenv;
+      homeDir = system: user: with inputs.nixpkgs.legacyPackages.${system}.stdenv;
         if isDarwin then
           "/Users/${user}"
         else if isLinux then
@@ -120,10 +102,10 @@
           (attrNames (readDir myRoles)));
 
       nixpkgsOverlays = [
-        emacs-overlay.overlay
-        rust.overlays.default
-        nur.overlay
-        nil.overlays.default
+        inputs.emacs-overlay.overlay
+        inputs.rust.overlays.default
+        inputs.nur.overlay
+        inputs.nil.overlays.default
       ] ++ myOverlays ++ [
         # Note these come after ^^^ as they use some things those overlays define
         # TODO: this stuff should all get put into a flake overlay in this repo
@@ -134,8 +116,8 @@
           # ignore system as for now all it runs on is x86_64-linux so
           # whatever
           final: prev: rec {
-            pacemaker = nixpkgs-pacemaker.legacyPackages.x86_64-linux.pacemaker;
-            ocf-resource-agents = nixpkgs-pacemaker.legacyPackages.x86_64-linux.ocf-resource-agents;
+            pacemaker = inputs.nixpkgs-pacemaker.legacyPackages.x86_64-linux.pacemaker;
+            ocf-resource-agents = inputs.nixpkgs-pacemaker.legacyPackages.x86_64-linux.ocf-resource-agents;
           }
         )
         # No longer neeeded here for future me to use to copypasta new patches
@@ -192,11 +174,11 @@
         {
           users = import ./modules/users.nix;
         } ++ [
-        home-manager.darwinModules.home-manager
+        inputs.home-manager.darwinModules.home-manager
         ./modules/darwin
         ./modules/roles/gui.nix
         #      ] ++ myRoles ++ [
-        agenix.darwinModules.age
+        inputs.agenix.darwinModules.age
         (
           { config, pkgs, ... }:
           let
@@ -208,7 +190,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
             home-manager.extraSpecialArgs = {
-              inherit inputs nixpkgs;
+              inherit inputs;
               inherit (config) age roles;
             };
             nix.registry.my.flake = self;
@@ -226,12 +208,12 @@
         {
           users = import ./modules/users.nix;
         } ++ [
-        home-manager.nixosModules.home-manager
-        nur.nixosModules.nur
+        inputs.home-manager.nixosModules.home-manager
+        inputs.nur.nixosModules.nur
         ./modules/nixos
         #      ] ++ myRoles ++ [
         (import ./modules/roles/gui.nix)
-        agenix.nixosModules.age
+        inputs.agenix.nixosModules.age
         "${inputs.nixpkgs-pacemaker}/nixos/modules/${pacemakerPath}"
         (
           { config, ... }:
@@ -255,7 +237,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
             home-manager.extraSpecialArgs = {
-              inherit inputs nixpkgs;
+              inherit inputs;
               inherit (config) age roles;
             };
             nix.registry.my.flake = self;
@@ -454,8 +436,8 @@
     in
     {
       packages.x86_64-linux = {
-        isoSimple = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        isoSimple = inputs.nixos-generators.nixosGenerate {
+          pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
           modules = [
             ./modules/iso/autoinstall.nix
             simpleAutoinstall
@@ -465,8 +447,8 @@
           ];
           format = "install-iso";
         };
-        isoSimpleTest = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        isoSimpleTest = inputs.nixos-generators.nixosGenerate {
+          pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
           modules = [
             ./modules/iso/autoinstall.nix
             simpleAutoinstall
@@ -476,8 +458,8 @@
           ];
           format = "install-iso";
         };
-        isoZfsTest = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        isoZfsTest = inputs.nixos-generators.nixosGenerate {
+          pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
           modules = [
             ./modules/iso/autoinstall.nix
             zfsAutoinstall
@@ -487,8 +469,8 @@
           ];
           format = "install-iso";
         };
-        isoWm2 = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        isoWm2 = inputs.nixos-generators.nixosGenerate {
+          pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
           modules = [
             ./modules/iso/autoinstall.nix
             wm2Autoinstall
@@ -501,8 +483,8 @@
           ];
           format = "install-iso";
         };
-        isoCl1 = nixos-generators.nixosGenerate {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        isoCl1 = inputs.nixos-generators.nixosGenerate {
+          pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
           modules = [
             ./modules/iso/autoinstall.nix
             cl1Autoinstall
@@ -603,7 +585,7 @@
           }];
           specialArgs = {
             inherit inputs;
-            latest = latest.legacyPackages.${x86-linux};
+            latest = inputs.latest.legacyPackages.${x86-linux};
           };
         };
         srv = (makeOverridable nixosSystem) {
@@ -641,7 +623,7 @@
           }];
           specialArgs = {
             inherit inputs;
-            latest = latest.legacyPackages.${x86-linux};
+            latest = inputs.latest.legacyPackages.${x86-linux};
           };
         };
         wm2 =
@@ -650,12 +632,18 @@
               system = "x86_64-linux";
               modules = nixOSModules ++ [
                 ./hosts/wm2/configuration.nix
+                inputs.nixos-hardware.nixosModules.common-cpu-amd
+                # inputs.nixos-hardware.nixosModules.common-gpu-amd
+                inputs.nixos-hardware.nixosModules.common-pc-laptop
+                inputs.nixos-hardware.nixosModules.common-pc-laptop-ssd
+                inputs.nixos-hardware.nixosModules.gpd-win-max-2-2023
               ] ++ [{
                 users = {
                   primaryUser = homeUser;
                   primaryGroup = homeGroup;
                 };
                 age.secrets = ageHomeNixos homeUser;
+
                 roles.gui = {
                   enable = true;
                   isLinux = true;
@@ -676,7 +664,7 @@
               }];
               specialArgs = {
                 inherit inputs;
-                latest = latest.legacyPackages.${x86-linux};
+                latest = inputs.latest.legacyPackages.${x86-linux};
               };
             };
         cl1 = (makeOverridable nixosSystem)
@@ -729,7 +717,7 @@
             }];
             specialArgs = {
               inherit inputs;
-              latest = latest.legacyPackages.${x86-linux};
+              latest = inputs.latest.legacyPackages.${x86-linux};
             };
           };
         cl2 = (makeOverridable nixosSystem)
@@ -783,7 +771,7 @@
             }];
             specialArgs = {
               inherit inputs;
-              latest = latest.legacyPackages.${x86-linux};
+              latest = inputs.latest.legacyPackages.${x86-linux};
             };
           };
         cl3 = (makeOverridable nixosSystem)
@@ -836,7 +824,7 @@
             }];
             specialArgs = {
               inherit inputs;
-              latest = latest.legacyPackages.${x86-linux};
+              latest = inputs.latest.legacyPackages.${x86-linux};
             };
           };
         dfs1 = nixosSystem
@@ -860,7 +848,7 @@
             }];
             specialArgs = {
               inherit inputs;
-              latest = latest.legacyPackages.${x86-linux};
+              latest = inputs.latest.legacyPackages.${x86-linux};
             };
           };
       };
@@ -876,26 +864,32 @@
           "simple" = {
             hostname = "simple.home.arpa";
             profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."simple";
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."simple";
             };
           };
           "gw" = {
             hostname = "gw.home.arpa";
             profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."gw";
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."gw";
             };
           };
           "srv" = {
             hostname = "srv.home.arpa";
             # hostname = "10.10.10.117";
             profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."srv";
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."srv";
+            };
+          };
+          "local-srv" = {
+            hostname = "127.0.0.1";
+            profiles.system = {
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."srv";
             };
           };
           "nexus" = {
             hostname = "nexus.home.arpa";
             profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."nexus";
             };
           };
           "wm2" = {
@@ -903,59 +897,61 @@
             #            hostname = "localhost";
             #            hostname = "wm2.home.arpa";
             profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."wm2";
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."wm2";
             };
           };
           "local-wm2" = {
             hostname = "localhost";
             profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."wm2";
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."wm2";
             };
           };
           "cl1" = {
             hostname = "cl1.home.arpa";
             profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."cl1";
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."cl1";
             };
           };
           "cl2" = {
             hostname = "cl2.home.arpa";
             profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."cl2";
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."cl2";
             };
           };
           "cl3" = {
             hostname = "cl3.home.arpa";
             profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."cl3";
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."cl3";
             };
           };
           "dfs1" = {
             hostname = "dfs1.home.arpa";
             profiles.system = {
-              path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
             };
           };
-          # "mb" = {
-          #   hostname = "mb.local";
-          #   profiles.system = {
-          #     path = deploy-rs.lib.x86_64-darwin.activate. self.darwinConfigurations."mb";
-          #   };
-          # };
+          "local-mb" = {
+            hostname = "localhost";
+            profiles.system = {
+              sshUser = "mitch";
+              sudo = "sudo -S -u";
+              path = inputs.deploy-rs.lib.x86_64-darwin.activate.darwin self.darwinConfigurations."mb";
+            };
+          };
         };
       };
 
       checks.deploy-rs = builtins.mapAttrs
         (deployLib: deployLib.deployChecks self.deploy)
-        deploy-rs.lib;
+        inputs.deploy-rs.lib;
       # checks.nixpkgs-fmt = nixpkgs.runCommand "check-nix-format" { } ''
       #   ${nixpkgs.legacyPackages.${system}.nixpkgs-fmt}/bin/nixpkgs-fmt --check ${./.}
       #   install -dm755 $out
       # '';
-    } // flake-utils.lib.eachDefaultSystem
+    } // inputs.flake-utils.lib.eachDefaultSystem
       (system:
       # let pkgs = nixpkgsConfig [ ];
-      let pkgs = import nixpkgs { inherit system; };
+      let pkgs = import inputs.nixpkgs { inherit system; };
       in
       rec {
         checks = {
