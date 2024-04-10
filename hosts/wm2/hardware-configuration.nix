@@ -40,13 +40,13 @@
 
   fileSystems."/efiboot/efi0" =
     {
-      device = "/dev/disk/by-uuid/AA22-C404";
+      device = "/dev/disk/by-partlabel/ESP0";
       fsType = "vfat";
     };
 
   fileSystems."/efiboot/efi1" =
     {
-      device = "/dev/disk/by-uuid/AA22-F2B0";
+      device = "/dev/disk/by-partlabel/ESP1";
       fsType = "vfat";
     };
 

@@ -301,8 +301,8 @@
           flavor = "zfs";
           hostName = "wm2";
           rootDevices = [
-            "/dev/disk/by-id/nvme-CWESR02TBTLCZ-27J-2_511231016041001198"
             "/dev/disk/by-id/nvme-Sabrent_Rocket_Q4_48821081708402"
+            "/dev/disk/by-id/nvme-CWESR02TBTLCZ-27J-2_511231016041001198"
           ];
           swapSize = defSwapSize;
           osSize = "1840GiB";
