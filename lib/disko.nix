@@ -12,7 +12,8 @@
     disk = {
       disk1 = {
         type = "disk";
-        inherit device;
+        device = "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001";
+        #        inherit device;
         content = {
           type = "table";
           format = "gpt";
@@ -97,4 +98,3 @@
     };
   };
 }
-

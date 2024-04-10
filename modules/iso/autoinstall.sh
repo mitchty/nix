@@ -260,8 +260,7 @@ setup_zfs() {
     mirror)
       mmin=2
       if [ "${idx}" -lt ${mmin} ]; then
-        printf "fatal: %s requires at least %d devices\n" "${typ
-}" "${mmin}" >&2
+        printf "fatal: %s requires at least %d devices\n" "${typ}" "${mmin}" >&2
         exit 1
       fi
       ;;
@@ -337,18 +336,19 @@ setup_zfs() {
   # count == 2 mirror
   # else n/a
   case ${typ} in
-  mirror)
+    mirror)
       strategy=${typ}
       ;;
-  raid5)
+    raid5)
       strategy="raidz"
       ;;
-  raid6)
+    raid6)
       strategy="raidz2"
       ;;
-  *)
+    *)
       # guess we just yeet whatever together as one giant thing then....
       strategy=""
+      ;;
   esac
 
   zpool create -f \

@@ -1,3 +1,4 @@
 # Until sops or age works, use git transcrypt to store encrypted files in secrets/crypt
 #pattern  filter=crypt diff=crypt
 secrets/crypt/*  filter=crypt diff=crypt merge=crypt
+step/*  filter=crypt diff=crypt merge=crypt

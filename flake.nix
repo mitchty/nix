@@ -1,27 +1,19 @@
 {
-  description = "mitchty nixos flake setup";
+  description = "mitchty nix flake monorepo o doom";
 
   inputs = {
     # Principle inputs (updated by `nix run .#update`)
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    nixos-flake.url = "github:srid/nixos-flake";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    flake-root.url = "github:srid/flake-root";
     nix-darwin = {
       url = "github:lnl7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
     home-manager = {
       url = "github:nix-community/home-manager/release-23.11";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    nixos-flake.url = "github:srid/nixos-flake";
-    # Not overriding inputs.nixpkgs due to
-    # https://github.com/nix-community/disko/blob/master/flake.nix#L4
-    disko.url = "github:nix-community/disko";
-
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     deploy-rs = {
@@ -32,47 +24,138 @@
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    treefmt-nix.url = "github:numtide/treefmt-nix";
-    flake-root.url = "github:srid/flake-root";
+    # Below here are the things that aren't updated as often.
+    # Not overriding inputs.nixpkgs due to
+    # https://github.com/nix-community/disko/blob/master/flake.nix#L4
+    disko.url = "github:nix-community/disko";
+
+    # nixos-generators = {
+    #   url = "github:nix-community/nixos-generators";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
+
+    nixt = {
+      url = "github:nix-community/nixt";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Overlays
+    rust = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    emacs = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ self, ... }:
+    let
+      flakeParts = ./flake;
+      myParts = with builtins; map (n: import (flakeParts + ("/" + n)))
+        (filter
+          (n: match ".*\\.nix" n != null ||
+            pathExists (flakeParts + ("/" + n + "/default.nix")))
+          (attrNames (readDir flakeParts)));
+    in
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       # systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
-      systems = [ "x86_64-linux" "x86_64-darwin" ];
+      systems = [
+        "x86_64-linux"
+        #        "x86_64-darwin"
+      ];
       imports = [
         inputs.nixos-flake.flakeModule
         inputs.treefmt-nix.flakeModule
         inputs.flake-root.flakeModule
         #        inputs.nixos-generators.nixosModules.all-formats
-        ./flake/treefmt.nix
-      ];
+      ] ++ myParts;
 
       # inherit (import ./lib/default.nix) mkAutoInstaller;
 
       perSystem = { config, self', pkgs, system, ... }: {
         _module.args.pkgs = import inputs.nixpkgs {
+          imports = [
+            inputs.disko.nixosModules.disko
+          ];
           inherit system;
-          # overlays = [
-          #   inputs.rust-overlay.overlays.default
-          # ];
+          overlays = [
+            self.overlays.defaults
+            #            self.overlays.development
+            self.overlays.inputs
+            self.overlays.emacs
+            self.overlays.personal
+          ];
         };
 
-        packages.default = self'.packages.activate;
+        #   mkIf (builtins.elem system nixpkgs.lib.systems.doubles.linux system) {
+        #   packages.rescueImage = (rescueConfig system).config.system.build.isoImage;
+        # }
+
+        packages = {
+          default = self'.packages.activate;
+          # simplevm = autoinstallLib.mkAutoInstallIso self'.nixosConfigurations.simplevm;
+          #    install-iso = nixos-generators.nixosGenerate {
+          #   system = "x86_64-linux";
+          #   inherit pkgs;
+          #   modules = [
+          #     defaultModule
+          #   ];
+          #   format = "install-iso";
+          # };
+          #   lib.mkIf (builtins.elem system pkgs.lib.systems.doubles.linux) {          simplevmiso = flake.nixosConfigurations.config.system.build.isoImage;
+          # };
+        };
 
         formatter = config.treefmt.build.wrapper;
 
         devShells.default = pkgs.mkShell {
-          name = "my-flake"; # TODO: name this something better....
+          name = "my-flake-devenv"; # TODO: name this something better....
+
+          nativeBuildInputs = [
+            config.treefmt.build.wrapper
+          ];
+
           inputsFrom = [
             #            self'.devShells.rust
             config.treefmt.build.devShell
             config.treefmt.build.programs
-            config.treefmt.build.wrapper
           ];
+
+          # TODO: how can I keep devshell packages in sync with whats in
+          # treefmt-nix?
           packages = with pkgs; [
             nixci
           ];
+          # ] ++ [ config.treefmt.build.programs ];
+          #            nixt
+          # (lib.optionalAttrs (system == "x86_64-linux")
+          #   {
+          # (nixos-generators.nixosGenerate
+          #   {
+          #     pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          #     modules = [
+          #       ./modules/iso/autoinstall.nix
+          #       {
+          #         autoinstall = {
+          #           flavor = "single";
+          #           hostName = "simple";
+          #           rootDevices = [
+          #             "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001"
+          #           ];
+          #           bootSize = "512MiB";
+          #           swapSize = "16GiB";
+          #           osSize = "20GiB";
+          #           debug = true;
+          #         };
+          #       }
+          #     ];
+          #     format = "install-iso";
+          #   };)
+          # })
+          # ];
           # shellHook = ''
           #   printf "devshell loaded for all your dev needs" >&2
           # '';
@@ -104,15 +187,12 @@
         in
         {
 
-          # withSystem "x86_64-linux" ({ config, ... }:
-          # config.packages.hello
-          # )
           # Configurations for Linux (NixOS) machines
           nixosConfigurations = {
-            # TODO: Change hostname from "example1" to something else.
-            example1 = self.nixos-flake.lib.mkLinuxSystem {
+            simplevm = self.nixos-flake.lib.mkLinuxSystem {
               nixpkgs.hostPlatform = "x86_64-linux";
               imports = [
+                inputs.disko.nixosModules.disko
                 self.nixosModules.common # See below for "nixosModules"!
                 self.nixosModules.linux
                 inputs.disko.nixosModules.default
@@ -140,6 +220,36 @@
                 }
               ];
             };
+            # simplevm = self.nixos-flake.lib.mkLinuxSystem {
+            #   nixpkgs.hostPlatform = "x86_64-linux";
+            #   imports = [
+            #     self.nixosModules.common # See below for "nixosModules"!
+            #     self.nixosModules.linux
+            #     inputs.disko.nixosModules.default
+
+            #     # Your machine's configuration.nix goes here
+            #     (_: {
+            #       # TODO: Put your /etc/nixos/hardware-configuration.nix here
+            #       boot.loader.grub.device = "nodev";
+            #       fileSystems."/" = {
+            #         device = "/dev/disk/by-label/nixos";
+            #         fsType = "btrfs";
+            #       };
+            #       system.stateVersion = currState;
+            #     })
+            #     # Your home-manager configuration
+            #     self.nixosModules.home-manager
+            #     {
+            #       home-manager.users.${myUserName} = {
+            #         imports = [
+            #           self.homeModules.common # See below for "homeModules"!
+            #           self.homeModules.linux
+            #         ];
+            #         home.stateVersion = currState;
+            #       };
+            #     }
+            #   ];
+            # };
           };
 
           # Configurations for macOS machines
@@ -177,6 +287,11 @@
             common = { pkgs, ... }: {
               environment.systemPackages = with pkgs; [
                 hello
+                # (pkgs.writeShellScriptBin "diskoScript" ''
+                #   ${flake.nixosConfiguration.config.system.build.diskoScript}
+                #   echo nixos-install --no-root-password --option substituters "" --no-channel-copy --system ${nixosConfiguration.config.system.build.toplevel}
+                #   echo reboot
+                # '')
               ];
             };
             # NixOS specific configuration

@@ -16,17 +16,56 @@ set -xeu
 # fine.
 QEMU=${QEMU:-qemu-system-x86_64-uefi}
 QEMUIMG=${QEMUIMG:-qemu-img}
+NIXOPTS=${NIXOPTS:---show-trace}
 
 qemuargs="-enable-kvm -smp 4 -nographic -m 8096 -boot d"
 
 # So as not to conflict port wise pick a stable off input string ssh port
 ssh_port() {
   input=${1?ssh_port requires a string to use as input}
-  echo $((($(echo ${input} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
+  port=$((($(echo ${input} | sha1sum | tr -d '[0a-z \-]' | head -c 15)) % 100 * 100 + 10022))
+  #  stableport=$((($(echo ${input} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
+  echo ${port}
 }
 
 get_iso() {
   readlink -f $(find -L ${_dir}/../result -name "*.iso" -type f | head -n1)
+}
+
+test_rescue() {
+  # Single simple one disk straight up fs setup.
+  typ=rescue
+  fulltype="${typ}Iso"
+  nix build ${NIXOPTS-} ".#${fulltype}"
+  iso=$(get_iso)
+  tmpdir=$(mktemp -d XXXXXXXX -t)
+  trap "rm -fr $tmpdir" EXIT TERM INT QUIT
+
+  disk0="${tmpdir}/vdisk0"
+  ${QEMUIMG} create -f qcow2 ${disk0} 40G
+
+  sshport="$(ssh_port ${fulltype})"
+
+  ${QEMU} ${qemuargs} -cdrom ${iso} -hda ${disk0} -net user,hostfwd=tcp::${sshport}-:22 -net nic
+  # ${QEMU} -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -net user,hostfwd=tcp::10022-:22 -net nic
+}
+
+test_simplevm() {
+  # Single simple one disk straight up fs setup.
+  typ=rescue
+  fulltype="${typ}Iso"
+  nix build ${NIXOPTS-} ".#${fulltype}"
+  iso=$(get_iso)
+  tmpdir=$(mktemp -d XXXXXXXX -t)
+  trap "rm -fr $tmpdir" EXIT TERM INT QUIT
+
+  disk0="${tmpdir}/vdisk0"
+  ${QEMUIMG} create -f qcow2 ${disk0} 40G
+
+  sshport="$(ssh_port ${fulltype})"
+
+  ${QEMU} ${qemuargs} -cdrom ${iso} -hda ${disk0} -net user,hostfwd=tcp::${sshport}-:22 -net nic
+  # ${QEMU} -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -net user,hostfwd=tcp::10022-:22 -net nic
 }
 
 # Test out single, zfs, and lvm autoinstalls, the end result is these vm's
@@ -37,8 +76,8 @@ get_iso() {
 
 test_simple() {
   # Single simple one disk straight up fs setup.
-  typ=isoSimpleTest
-  nix build ${NIXOPTS-} ".#${typ}"
+  typ=simplevm
+  nix build ${NIXOPTS-} ".#${typ}Iso"
   iso=$(get_iso)
   tmpdir=$(mktemp -d XXXXXXXX -t)
   trap "rm -fr $tmpdir" EXIT TERM INT QUIT
@@ -85,12 +124,15 @@ test_zfs() {
   # ${QEMU} -enable-kvm -smp 4 -nographic -m 8096 -boot d -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
 }
 
-tests="zfs"
+validtests="rescue simple"
+tests=${validtests}
 
 if [ $# -gt 0 ]; then
   tests="$@"
 fi
 
 for t in ${tests}; do
-  test_${t}
+  if echo ${validtests} | grep -q -- $t; then
+    test_${t}
+  fi
 done

@@ -75,7 +75,7 @@ in
     # Autologin to the nixos install user on getty
     services.getty.autologinUser = mkForce "root";
 
-    # Let me ssh in by default
+    # Let me ssh in by default and to root for ez debugging
     services.openssh = {
       enable = true;
       settings = {
@@ -83,7 +83,7 @@ in
       };
     };
 
-    # Don't flush to the backing store
+    # Don't flush to the backing store for things that shouldn't be written to often.
     environment.etc."systemd/pstore.conf".text = ''
       [PStore]
       Unlink=no
@@ -110,7 +110,7 @@ in
 
     environment = {
       variables = {
-        # Since we have no swap, have the heap be a bit less extreme
+        # Since we have no swap, have the heap be a bit less extreme so nix commands don't use obscene amounts of ram
         GC_INITIAL_HEAP_SIZE = "1M";
       };
     };

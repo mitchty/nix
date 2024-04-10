@@ -1,0 +1,21 @@
+# I'm not using composeManyExtensions here as that causes only the pipe
+# directory to end up in the final derivation. "defaults" is simply the packages
+# I'm defining in the flake itself. Since they're no different than a nixpkgs
+# derivation I'm just manually (for now) defining each one and running
+# callPackage on the file(s) so that any tooling expecting that can work off a
+# boring normal nix package derivation.
+{
+  flake.overlays.defaults = final: prev:
+    prev.lib.composeManyExtensions
+      (
+        prev.lib.pipe ./. [
+          builtins.readDir
+          builtins.attrNames
+
+          (builtins.filter (n: n != "default.nix"))
+          (map (f: import ./${f}))
+        ]
+      )
+      final
+      prev;
+}

@@ -3,7 +3,19 @@
     inputs.treefmt-nix.flakeModule
   ];
 
+  #  perSystem = { pkgs, ... }: {
   perSystem = { pkgs, ... }: {
+    # _module.args.pkgs = inputs'.nixpkgs.legacyPackages.extend inputs.self.overlays.defaults;
+    # _module.args.pkgs = import inputs.nixpkgs {
+    #   inherit system;
+    #   overlays = [
+    #     self'.overlays.defaults
+    #     self'.overlays.development
+    #     self'.overlays.emacs
+    #     self'.overlays.personal
+    #   ];
+    # };
+
     treefmt = {
       # Used to find the project root
       projectRootFile = "flake.lock";
@@ -33,6 +45,7 @@
               "for file in \"$@\"; do ${lib.getExe pkgs.statix} fix \"$file\"; done"
             ];
           };
+
           shellcheck = {
             options = [
               "--external-sources"
@@ -44,6 +57,32 @@
             includes = sh-includes;
             excludes = crypt-excludes;
           };
+
+          # shellspec = {
+          #   command = "python";
+          #       shell = pkgs.writeShellApplication
+          #         {
+          #           name = "shellchecks";
+          #           runtimeInputs = with pkgs; [
+          #             shellcheck
+          #             shellspec
+          #             ksh
+          #             oksh
+          #             zsh
+          #             bash
+          #             findutils
+          #             # abusing python3 for pty support cause shellspec needs it for
+          #             # some output or another to run in nix given nix runs top most
+          #             # pid without a pty. We could do this any way we can get a pty
+          #             # so that shellspec can run but this is fine.
+          #             python3
+          #           ];
+          #           text = ''
+          #             shellcheck --severity warning --shell sh "$(find ${./.} -type f -name '*.sh')" --external-sources
+          #             for shell in ${pkgs.ksh}/bin/ksh ${pkgs.oksh}/bin/ksh ${pkgs.zsh}/bin/zsh ${pkgs.bash}/bin/bash; do
+          #                                   ${pkgs.python3}/bin/python3 -c 'import pty; pty.spawn("${pkgs.shellspec}/bin/shellspec -c ${./.} --shell '$shell' -x")'
+          #                                 done
+          # };
 
           shfmt = {
             options = [

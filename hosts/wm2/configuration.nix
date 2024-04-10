@@ -48,7 +48,7 @@
         };
         systemd-boot = {
           enable = true;
-          configurationLimit = 10;
+          configurationLimit = 30;
           memtest86.enable = true;
         };
         generationsDir.copyKernels = true;

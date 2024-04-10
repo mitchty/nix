@@ -71,6 +71,7 @@ And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Ak
    - [[file:patches/][patches]] Any patch files that may be needed for things like CVE's that might not yet be upstream yet in nixpkgs or anywhere else.
    - [[file:secrets/][secrets]] Any secret related data for age and/or git-transcrypt. Basically "private junk hiding in plain sight".
    - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use.
+   - [[file:spec/][spec]]  Step ca files, note this is all encrypted at rest so not of much use to anyone else but me.
 
 * Todo's
 ** Macos
