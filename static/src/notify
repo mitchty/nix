@@ -7,13 +7,14 @@ _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 set "${SETOPTS:--eu}"
 
-msg=${1:-"no message"}; shift
+msg=${1:-"no message"}
+shift
 title=
 
 if [ $# -gt 0 ]; then
   title="with title \"$*\""
 fi
 
-osascript <<END
+osascript << END
 display notification "${msg}" ${title}
 END
