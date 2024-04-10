@@ -180,12 +180,6 @@ nci() {
   find . \( -name "*.lock" -o -name "*.nix" \) -type f | entr -d sh -c "time nix build && time nix flake check; printf '%s %s\n' \"\`date\`\" \$(git diff | sha256sum | awk '{print \$1}')"
 }
 
-nixgc() {
-  nix-collect-garbage --delete-older-than 31d
-  nix-store --gc
-  nix-store --optimise
-}
-
 # Wrapped entr to handle when the directory gets updated and it exits and just
 # restart using the last files input, also handle if/when you control-c (rc >
 # 128 basically assuming a non crap non posix compliant exec() shell should be
