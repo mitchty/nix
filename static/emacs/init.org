@@ -45,6 +45,11 @@ Use use-package to configure emacs itself.
   ;; auto-insert related has to be outside emacs too for god knows why or cares I didn't debug it much
   (defvar auto-insert-copyright (user-full-name))
   (defvar auto-insert-alist '(()))
+  (tool-bar-mode 0)
+  (scroll-bar-mode 0)
+
+  (unless (display-graphic-p)
+    (menu-bar-mode t))
 
 (use-package emacs
   :ensure
@@ -59,13 +64,6 @@ Use use-package to configure emacs itself.
   (emacs-startup . my/display-startup-timing)
   (dired-load . my/dired-hook-thing)
   (find-file 'auto-insert)
-  :init
-  (tool-bar-mode 0)
-  (scroll-bar-mode 0)
-
-  (unless (display-graphic-p)
-    (menu-bar-mode t))
-
   :config
 (setq-local indent-tabs-mode nil)
 (setq-local lisp-indent-function nil)
