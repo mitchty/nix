@@ -1,4 +1,11 @@
-{ config, pkgs, lib, inputs, age, roles, ... }:
+{ config
+, pkgs
+, lib
+, inputs
+, age
+, roles
+, ...
+}:
 with lib;
 
 let
@@ -95,11 +102,13 @@ in
     monolith
     moreutils
     nasm
+    nil
     nix-prefetch-github
     nix-prefetch-scripts
     nix-tree
     nixpkgs-fmt
     nodePackages.bash-language-server
+    nom
     nvd
     openssl
     p7zip
@@ -115,7 +124,6 @@ in
     rclone
     restic
     ripgrep
-    rnix-lsp
     rq
     rust-analyzer
     s3cmd
@@ -133,6 +141,7 @@ in
     xz
     yaml-language-server
     yt-dlp
+    zstd
     # General gui stuff
   ] ++ lib.optionals roles.gui.enable [
     comic-code
@@ -151,10 +160,12 @@ in
     xorg.xauth
     # Gui linux stuff
   ] ++ lib.optionals (roles.gui.enable && pkgs.hostPlatform.isLinux) [
+    noto-fonts
     freetube
     kdialog
     xsel
   ] ++ lib.optionals (pkgs.hostPlatform.isLinux) [
+    efibootmgr
     # macos specific stuff
   ] ++ lib.optionals pkgs.hostPlatform.isDarwin [
     pngpaste
