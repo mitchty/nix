@@ -42,15 +42,19 @@ Use use-package to configure emacs itself.
 (defun my/dired-hook-thing()
   (load "dired-x"))
 
-  ;; auto-insert related has to be outside emacs too for god knows why or cares I didn't debug it much
-  (defvar auto-insert-copyright (user-full-name))
-  (defvar auto-insert-alist '(()))
-  (tool-bar-mode 0)
-  (scroll-bar-mode 0)
+;; auto-insert related has to be outside emacs too for god knows why or cares I didn't debug it much
+(defvar auto-insert-copyright (user-full-name))
+(defvar auto-insert-alist '(()))
+(tool-bar-mode 0)
+(scroll-bar-mode 0)
 
-  (unless (display-graphic-p)
-    (menu-bar-mode t))
+(unless (display-graphic-p)
+  (menu-bar-mode t))
+#+END_SRC
 
+The use-package emacs declaration for general configuration. Everything except ^^^ that I can't seem to make work in use-package is up there.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package emacs
   :ensure
   :demand t
