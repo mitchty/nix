@@ -11,6 +11,10 @@ with lib;
 let
   # TODO: maybe yeet this into the gui role itself as a default?
   gooey = (pkgs.hostPlatform.isDarwin || (roles.gui.enable or false));
+
+  notify = (pkgs.writeScriptBin "notify" (builtins.readFile ../../static/src/notify)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
 in
 {
   imports = [
@@ -33,6 +37,8 @@ in
   # aka have something to control: is this a box for streaming? if so add
   # obs-studio etc.. something akin to roles in ansible.
   home.packages = with pkgs; [
+    notify
+  ] ++ [
     inputs.agenix.packages.${pkgs.system}.agenix
     inputs.deploy-rs.packages.${pkgs.system}.deploy-rs
     inputs.mitchty.packages.${pkgs.system}.altshfmt

@@ -15,10 +15,6 @@ let
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
 
-  notify = (pkgs.writeScriptBin "notify" (builtins.readFile ../../static/src/notify)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
   gohome = (pkgs.writeScriptBin "gohome" (builtins.readFile ../../static/src/gohome)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
