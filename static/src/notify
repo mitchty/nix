@@ -1,20 +1,34 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
-# Description: Dumb wrapper around osascript to make macos notifications easy to create.
+# Description: Dumb wrapper around making notifications on macos via
+# osascript and kdialog for linux (for now at least)
 _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 set "${SETOPTS:--eu}"
 
+iam=$(uname -s)
 msg=${1:-"no message"}
 shift
-title=
 
-if [ $# -gt 0 ]; then
-  title="with title \"$*\""
-fi
+case "${iam}" in
+  Linux)
+    kdialog --title "$@" --passivepopup "${msg}" 15
+    ;;
+  Darwin)
+    title=
 
-osascript << END
+    if [ $# -gt 0 ]; then
+      title="with title \"$*\""
+    fi
+
+    osascript << END
 display notification "${msg}" ${title}
 END
+    ;;
+  *)
+    printf "fatal: unknown os type %s\n" "${iam}"
+    exit 1
+    ;;
+esac
