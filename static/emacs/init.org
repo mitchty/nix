@@ -308,7 +308,7 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
 
 *** fonts setup
 
-Setup the font presets, by default troll with comic code sans cause its funny and not a bad font honestly.
+Setup the presets, by default troll with comic code sans cause its funny and not a bad font honestly. Plus people have a weird hatred for comic sans like fonts which just means its the best font like that saying goes: there are only two types of programming languages those nobody uses and those everyone complains about.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package fontaine
@@ -321,6 +321,9 @@ Setup the font presets, by default troll with comic code sans cause its funny an
         (comic-gihugic
          :inherit comic-base
          :default-height 250)
+        (comic-chonky
+         :inherit comic-base
+         :default-height 200)
         (comic-medium
          :inherit comic-base
          :default-height 150)
@@ -329,10 +332,13 @@ Setup the font presets, by default troll with comic code sans cause its funny an
          :default-family "Comic Code"
          :bold-weight extrabold)
         (source-gihugic
-         :inherit souce-base
+         :inherit source-base
          :default-height 250)
-        (source-gihugic
-         :inherit souce-base
+        (source-chonky
+         :inherit source-base
+         :default-height 200)
+        (source-medium
+         :inherit source-base
          :default-height 150)
         (source-base
          :inherit regular
@@ -342,11 +348,11 @@ Setup the font presets, by default troll with comic code sans cause its funny an
          :default-family "Monospace"
          )))
   :config
-  ;; for macos not soooo gihugic, xorg fonts are tiny that or i'm gettging old
-  ;; af, probably both.
+  ;; For macos not soooo gihugic, xorg fonts are tiny that or I'm
+  ;; getting old.  af, probably both.
   (if (memq window-system '(mac ns))
     (fontaine-set-preset 'comic-medium)
-    (fontaine-set-preset 'comic-gihugic)))
+    (fontaine-set-preset 'comic-chonky)))
 #+END_SRC
 
 *** tty
