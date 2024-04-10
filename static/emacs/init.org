@@ -42,6 +42,10 @@ Use use-package to configure emacs itself.
 (defun my/dired-hook-thing()
   (load "dired-x"))
 
+  ;; auto-insert related has to be outside emacs too for god knows why or cares I didn't debug it much
+  (defvar auto-insert-copyright (user-full-name))
+  (defvar auto-insert-alist '(()))
+
 (use-package emacs
   :ensure
   :demand t
@@ -54,20 +58,29 @@ Use use-package to configure emacs itself.
   (before-save . delete-trailing-whitespace)
   (emacs-startup . my/display-startup-timing)
   (dired-load . my/dired-hook-thing)
+  (find-file 'auto-insert)
   :init
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
+  (tool-bar-mode 0)
+  (scroll-bar-mode 0)
 
-  (when (not (display-graphic-p))
-    (menu-bar-mode -1))
+  (unless (display-graphic-p)
+    (menu-bar-mode t))
 
   :config
+(setq-local indent-tabs-mode nil)
+(setq-local lisp-indent-function nil)
+(setq-local lisp-indent-offset 2)
+
+  ;; text layout
   (setq-default bidi-paragraph-direction 'left-to-right)
   (setq kill-buffer-query-functions
       (remq 'process-kill-buffer-query-function kill-buffer-query-functions))
   (show-paren-mode)
+
+  ;; debug shenanigans by default
   (load "server")
   (unless (server-running-p) (server-start))
+
   ;; Note, we set the gc threshold high at startup to improve perf there and
   ;; save needless gc's in startup, in after-init we reduce that back down so
   ;; interactive usage is ok and there are less long gc pauses interactively.
@@ -78,6 +91,7 @@ Use use-package to configure emacs itself.
   ;; 1MiB, helps out lsp mode stuffs a skosh
   (setq read-process-output-max (* 1024 1024))
 
+  ;; ediff related, the yes or no is here cause ediff whines all the damn time and I hate typing 3 thing with it. Maybe future me figures out to let it just do it to it vs ask like a 2 year old every time.
   (fset 'yes-or-no-p 'y-or-n-p)
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (setq ediff-split-window-function 'split-window-horizontally)
@@ -85,10 +99,13 @@ Use use-package to configure emacs itself.
   (setq enable-recursive-minibuffers t)
   (setq native-comp-async-report-warnings-errors 'silent)
 
+  ;; I hate upcase asking just do it
   (put 'upcase-region 'disabled nil)
 
+  ;; And same for delete-selection mode
   (delete-selection-mode 1)
 
+  ;; utf-8 by default its not the 70's anymore
   (set-language-environment "UTF-8")
   (set-terminal-coding-system 'utf-8)
   (set-keyboard-coding-system 'utf-8)
@@ -375,7 +392,7 @@ Setup the presets, by default troll with comic code sans cause its funny and not
 
 * packages
 
-All the packages I use.
+All the packages I abuse for shenanigans and whatnot.
 
 *** TESTING: eyebrowse for layout shenanigans?
 
@@ -1141,13 +1158,129 @@ So I write gooder. Me fail English? Thats unpossible.
 (use-package writegood-mode :ensure :defer)
 #+END_SRC
 
+*** c(ish?)-modes
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(setq auto-insert-alist
+      (append
+       '(
+         ((c-mode . "c")
+          nil
+          "/*\n"
+          "SPDX-License-Identifier: BlueOak-1.0.0\n"
+          "Description: " _ "\n"
+          "*/\n"
+          "#include <stdio.h>\n"
+          "#include <stdlib.h>\n\n"
+          "int main(int argc, char **argv) {\n"
+          "  return 0;\n"
+          "}\n"
+          )
+         )
+       auto-insert-alist)
+      )
+#+END_SRC
+
+*** python-mode
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package python
+  :after emacs
+  :config
+  (setq auto-insert-alist
+        (append
+         '(((python-mode . "python")
+            nil
+            "#!/usr/bin/env python\n"
+            "# -*-mode: Python; coding: utf-8;-*-\n"
+            "# SPDX-License-Identifier: BlueOak-1.0.0\n"
+            "# Description: " _ "\n\n"
+            )
+           )
+         auto-insert-alist)
+        )
+)
+#+END_SRC
+
+
+*** elisp-mode
+
+Shenanigans for/related to elisp junk.
+
+For now just autoformatter related junk.
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package elisp-autofmt
+  :after emacs
+  :commands (elisp-autofmt-mode elisp-autofmt-buffer)
+  :hook (emacs-lisp-mode . elisp-autofmt-mode)
+  :config
+  (setq elisp-autofmt-python-bin "python3")
+  (setq elisp-autofmt-style 'fixed)
+  (setq auto-insert-alist
+      (append
+       '(
+         ((emacs-lisp-mode . "elisp")
+          nil
+          ";;-*-mode: emacs-lisp; coding: utf-8;-*-\n"
+          ";; SPDX-License-Identifier: BlueOak-1.0.0\n"
+          ";; Description: " _ "\n"
+          )
+         )
+       auto-insert-alist)
+      )
+  )
+#+END_SRC
+
+*** shell-mode
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package sh-script
+  :after emacs
+  :config
+  (setq auto-insert-alist
+        (append
+         '(
+           ((sh-mode . "sh")
+            nil
+            "#!/usr/bin/env sh\n"
+            "#-*-mode: Shell-script; coding: utf-8;-*-\n"
+            "# SPDX-License-Identifier: BlueOak-1.0.0\n"
+            "# Description: " _ "\n"
+            "_base=$(basename \"$0\")\n"
+            "_dir=$(cd -P -- \"$(dirname -- \"$(command -v -- \"$0\")\")\" && pwd -P || exit 126)\n"
+            "export _base _dir\n"
+            "set \"${SETOPTS:--eu}\"\n"
+            )
+           )
+         auto-insert-alist)
+        ))
+#+END_SRC
 *** rust-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package rust-mode
+  :after emacs
   :ensure
   :defer
-  :commands rust-mode)
+  :commands rust-mode
+  :config
+ (setq auto-insert-alist
+      (append
+       '(
+         ((rust-mode . "rust")
+          nil
+          "/*\n"
+          "SPDX-License-Identifier: BlueOak-1.0.0\n"
+          "Description: " _ "\n"
+          "*/\n"
+          "fn main() {\n"
+          "println!(\"Hi\");\n"
+          "}\n"
+          )
+         )
+       auto-insert-alist)
+      ))
 
 (use-package rustic
   :after eglot
@@ -1360,115 +1493,6 @@ Common mode defaults I think are sensible.
              (setq cperl-indent-parens-as-block t)
              )
           )
-#+END_SRC
-
-*** TODO auto-insert-mode new file templates                         :broken:
-
-Review if this is worth keeping around, methinks there should be something
-better like yasnippet out there, this is all old af hacks
-
-Use auto-insert-mode to insert in templates for blank files.
-
-So first up, add auto-insert to *find-file-hook* so we insert straight away. Also
-setup the copyright bit to minimally put in name.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(add-hook 'find-file-hook 'auto-insert)
-(defvar auto-insert-copyright (user-full-name))
-#+END_SRC
-
-Create *auto-insert-alist* so all the mode lists are the same
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(defvar auto-insert-alist '(()))
-#+END_SRC
-
-***** c
-
-TODO: What use-package can I stick this in?
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(setq auto-insert-alist
-      (append
-       '(
-         ((c-mode . "c")
-          nil
-          "/*\n"
-          "SPDX-License-Identifier: BlueOak-1.0.0\n"
-          "Description: " _ "\n"
-          "*/\n"
-          "#include <stdio.h>\n"
-          "#include <stdlib.h>\n\n"
-          "int main(int argc, char **argv) {\n"
-          "  return 0;\n"
-          "}\n"
-          )
-         )
-       auto-insert-alist)
-      )
-#+END_SRC
-
-***** elisp
-
-TODO: What use-package can I stick this in?
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(setq auto-insert-alist
-      (append
-       '(
-         ((emacs-lisp-mode . "elisp")
-          nil
-          ";;-*-mode: emacs-lisp; coding: utf-8;-*-\n"
-          ";; SPDX-License-Identifier: BlueOak-1.0.0\n"
-          ";; Description: " _ "\n"
-          )
-         )
-       auto-insert-alist)
-      )
-#+END_SRC
-
-***** python
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package python
-  :config
-  (setq auto-insert-alist
-        (append
-         '(((python-mode . "python")
-            nil
-            "#!/usr/bin/env python\n"
-            "# -*-mode: Python; coding: utf-8;-*-\n"
-            "# SPDX-License-Identifier: BlueOak-1.0.0\n"
-            "# Description: " _ "\n\n"
-            )
-           )
-         auto-insert-alist)
-        )
-)
-#+END_SRC
-
-***** shell
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package sh-script
-  :config
-  (setq auto-insert-alist
-        (append
-         '(
-           ((sh-mode . "sh")
-            nil
-            "#!/usr/bin/env sh\n"
-            "#-*-mode: Shell-script; coding: utf-8;-*-\n"
-            "# SPDX-License-Identifier: BlueOak-1.0.0\n"
-            "# Description: " _ "\n"
-            "_base=$(basename \"$0\")\n"
-            "_dir=$(cd -P -- \"$(dirname -- \"$(command -v -- \"$0\")\")\" && pwd -P || exit 126)\n"
-            "export _base _dir\n"
-            "set \"${SETOPTS:--eu}\"\n"
-            )
-           )
-         auto-insert-alist)
-        ))
 #+END_SRC
 
 *** desktop-save
