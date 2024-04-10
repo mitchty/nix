@@ -123,7 +123,7 @@ in
 
       fileSystems = {
         "/sshfs/media" = {
-          device = "${pkgs.sshfs}/bin/sshfs#root@dfs1.home.arpa:/tank/media/";
+          device = "${pkgs.sshfs}/bin/sshfs#root@dfs1.home.arpa:/srv/media/";
           fsType = "fuse";
           options = [
             "_netdev"
