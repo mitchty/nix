@@ -29,7 +29,7 @@ in
     meta = {
       mainProgram = "altshfmt";
       description = "Alternative shfmt wrapper";
-      #    maintainers = with lib.maintainers; [ mitchty ];
+      maintainers = with pkgs.lib.maintainers; [ mitchty ];
       homepage = "https://github.com/shellspec/altshfmt";
     };
   };

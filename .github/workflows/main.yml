@@ -1,3 +1,4 @@
+--
 name: Update flake.lock
 on:
   schedule:
@@ -29,4 +30,4 @@ jobs:
           commit_options: '--no-verify --signoff'
           file_pattern: flake.lock
           skip_dirty_check: false
-          skip_fetch: true
+          skip_fetch: true 

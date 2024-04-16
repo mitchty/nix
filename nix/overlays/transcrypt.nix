@@ -1,3 +1,4 @@
+# The stupid warnings suck so add a patch to kill em.
 _self: super: {
   transcrypt = super.transcrypt.overrideAttrs (old: rec {
     patches = old.patches or [ ] ++ [

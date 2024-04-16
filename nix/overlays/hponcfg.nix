@@ -1,5 +1,5 @@
 _self: super: {
-  altshfmt = super.pkgs.callPackage ./pkgs/altshfmt.nix
+  hponcfg = super.pkgs.callPackage ../pkgs/hponcfg.nix
     {
       inherit (super) pkgs;
     };

@@ -93,7 +93,7 @@ test_simple() {
 
 test_iso() {
   typ=isoTest
-  nix build ${NIXOPTS-} ".#isoWm2"
+  nix build ${NIXOPTS-} ".#nixosConfigurations.iso.config.system.build.isoImage"
   tmpdir=$(mktemp -d XXXXXXXX -t)
   trap "rm -fr $tmpdir" EXIT TERM INT QUIT
 
@@ -124,7 +124,7 @@ test_zfs() {
   # ${QEMU} -enable-kvm -smp 4 -nographic -m 8096 -boot d -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
 }
 
-validtests="rescue simple"
+validtests="rescue simple iso"
 tests=${validtests}
 
 if [ $# -gt 0 ]; then
