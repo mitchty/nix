@@ -99,6 +99,7 @@ in
     ispell
     jid
     jless
+    kopia
     less
     ltex-ls
     manix
