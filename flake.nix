@@ -4,23 +4,33 @@
   inputs = {
     # This is evil but I'm sick of commenting things out
     #
-    # The premise is this is the "default" and if I want to do a build without
-    # it I pass it in as an arg.
+    # The premise is this is the "default" and if I want to do a build
+    # without it I pass it in as an arg.
     # like so nix build --override-input with-homecache github:boolean-option/false
     with-homecache.url = "github:boolean-option/true";
+
+    # this is to let me set the host used for deploy-rs to localhost
+    # instead of having 2x definitions for each.
+    with-localhost.url = "github:boolean-option/false";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
     latest.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    mitchty.url = "github:mitchty/nixos";
+
+    # Ignore whatever I used for inputs.nixpkgs to save on extraneous
+    # derivations.
+    mitchty = {
+      url = "github:mitchty/nixos";
+      #      inputs.nixpkgs.follows = "nixpkgs"; TODO hwatch fails to build with 1.74 rustc fix later
+    };
     # mitchty.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixos";
     # mitchty.url = "path:/Users/tishmack/src/pub/github.com/mitchty/nixos";
-    flake-utils.url = "github:numtide/flake-utils";
     nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.11-darwin";
     nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
     # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
-    nil.url = "github:oxalica/nil";
-
-    nur.url = "github:nix-community/NUR";
+    nil = {
+      url = "github:oxalica/nil";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     darwin = {
       url = "github:LnL7/nix-darwin";
@@ -41,8 +51,6 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    nixos-hardware.url = "github:NixOS/nixos-hardware";
 
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
@@ -65,7 +73,13 @@
       flake = false;
     };
 
+    # These have no nixpkgs inputs nothing to override
+    flake-utils.url = "github:numtide/flake-utils";
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
+    nur.url = "github:nix-community/NUR";
+
     # nixinit.url = "github:nix-community/nix-init";
+    otest.url = "github:mitchty/nix/refactor";
   };
 
   outputs =
@@ -433,6 +447,9 @@
       ageHomeWithBackup = user: ageHome user // ageRestic user;
       ageHomeNixos = user: ageHome user // passwdSecrets;
       ageHomeNixosWithBackup = user: ageHomeNixos user // ageRestic user;
+
+      # Simple wrapper function to save on some redundancy for being lay zee
+      withLocalhost = host: if inputs.with-localhost.value then "localhost" else host;
     in
     {
       packages.x86_64-linux = {
@@ -874,8 +891,7 @@
             };
           };
           "srv" = {
-            hostname = "srv.home.arpa";
-            # hostname = "10.10.10.117";
+            hostname = withLocalhost "srv.home.arpa";
             profiles.system = {
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."srv";
             };
@@ -893,15 +909,7 @@
             };
           };
           "wm2" = {
-            hostname = "10.10.10.115";
-            #            hostname = "localhost";
-            #            hostname = "wm2.home.arpa";
-            profiles.system = {
-              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."wm2";
-            };
-          };
-          "local-wm2" = {
-            hostname = "localhost";
+            hostname = withLocalhost "10.10.10.115";
             profiles.system = {
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."wm2";
             };
