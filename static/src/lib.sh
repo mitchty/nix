@@ -480,9 +480,71 @@ sed_inplace() {
 }
 
 # Command not found, just a silly wrapper around command to cover cases where
+# TODO: finish this pos or just abandon the idea entirely
 # command -v thing fails to make tests simpler.
 # cnf() {
 # }
+
+DEPLOY="${DEPLOY:-$(command -v deploy || echo deploy)}"
+DEPLOYOPTS="${DEPLOYOPTS:-}"
+
+# Simple wrapper to just make defining/using boolean flake options in
+# functions ez pz lemon squeezy
+_flake_boolean_opt() {
+  opt="${1?first arg must be flake input name}"
+  shift
+  val="${1?second arg must be the boolean value}"
+
+  printf " --override-input %s github:boolean-option/%s" "${opt}" "${val}"
+}
+
+# Deploy to localhost in deploy-rs section (off by default)
+withlocalhost() {
+  DEPLOYOPTS="${DEPLOYOPTS} $(_flake_boolean_opt with-localhost true)"
+  "$@"
+}
+
+# Deploy with local nix cache off (on by default)
+withouthomecache() {
+  DEPLOYOPTS="${DEPLOYOPTS} $(_flake_boolean_opt with-homecache false)"
+  "$@"
+}
+
+deploy() {
+  #shellcheck disable=SC2086
+  ${DEPLOY} "$@" ${DEPLOYOPTS}
+}
+
+# Abuse ^^^ to make it ez pz to do a deploy when out and about with
+# laptop.
+mobiledeploy() {
+  withlocalhost withouthomecache "$@"
+}
+
+# Simple wrapper function to do a deploy with checks and
+# --dry-activate so that nothing of substance happens if anything is
+# amiss there.
+testdeploy() {
+  host="${1?need a hostname string to test deployment on}"
+  shift
+  #shellcheck disable=SC2086
+  eval ${DEPLOY} -ds --dry-activate -- ".#${host}" -L --show-trace ${DEPLOYOPTS}
+}
+
+# like ^^^ but mostly without the dry-activate switch and -d to run checks
+hostdeploy() {
+  host="${1?need a hostname string to run a deployment}"
+  shift
+  #shellcheck disable=SC2086
+  eval ${DEPLOY} -s -- ".#${host}" -L --show-trace ${DEPLOYOPTS}
+}
+
+deploytestedhost() {
+  host="${1?need a hostname string to run a tested deployment}"
+  shift
+  #shellcheck disable=SC2086
+  testdeploy "${host}" && hostdeploy "${host}"
+}
 
 # To make other runtime stuff simpler, note if command -v fails we just "assume"
 # we can use the bare program name. That may not be valid though. But given i'm
