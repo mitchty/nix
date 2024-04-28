@@ -43,7 +43,6 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = [
       pkgs.multitail
-      inputs.mitchty.packages.${pkgs.system}.clocker
       inputs.mitchty.packages.${pkgs.system}.ferdium
       inputs.mitchty.packages.${pkgs.system}.freetube
       inputs.mitchty.packages.${pkgs.system}.hidden
@@ -59,7 +58,6 @@ in
       close
       gohome
       nopb
-      notify
       reopen
       ugde
     ];

@@ -9,22 +9,16 @@ export _base _dir
 set "${SETOPTS:--eu}"
 
 iam=$(uname -s)
-msg=${1:-"no message"}
+title=${1?need at least one arg for a title}
 shift
 
 case "${iam}" in
   Linux)
-    kdialog --title "$@" --passivepopup "${msg}" 15
+    kdialog --title "${title}" --passivepopup "$@" 15
     ;;
   Darwin)
-    title=
-
-    if [ $# -gt 0 ]; then
-      title="with title \"$*\""
-    fi
-
     osascript << END
-display notification "${msg}" ${title}
+display notification "$@" ${title}
 END
     ;;
   *)
