@@ -70,9 +70,10 @@ in
 
         libinput = {
           enable = true;
-          naturalScrolling = true;
-          accelProfile = "adaptive";
-          disableWhileTyping = true;
+          touchpad = {
+            naturalScrolling = true;
+            accelProfile = "adaptive";
+          };
         };
 
         xkbVariant = "";
