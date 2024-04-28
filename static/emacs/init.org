@@ -13,7 +13,7 @@
 
 Use use-package to configure emacs itself.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle yes
 ;; These are outside emacs package as we need to
 (require 'use-package)
 (setq use-package-verbose t)
@@ -50,7 +50,7 @@ Use use-package to configure emacs itself.
 
 (unless (display-graphic-p)
   (menu-bar-mode t))
-#+END_SRC
+#+end_src
 
 The use-package emacs declaration for general configuration. Everything except ^^^ that I can't seem to make work in use-package is up there.
 
