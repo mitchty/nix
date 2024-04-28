@@ -20,8 +20,8 @@
       keyMap = "us";
     };
 
-    # Default queueing discipline will be controlled delay
-    boot.kernel.sysctl."net.core.default_qdisc" = "fq_codel";
+    # Default queueing discipline now cake not codel anymore
+    boot.kernel.sysctl."net.core.default_qdisc" = "cake";
 
     # Some programs need SUID wrappers, can be configured further or are
     # started in user sessions.
