@@ -62,6 +62,7 @@ in
     aspellDicts.pt_PT
     bind
     bitwarden-cli
+    bonnie
     bwcli # this is my wrapper for ^^^
     ccls
     clang-tools
@@ -155,11 +156,16 @@ in
     pragmata-pro
     # Non gui linux stuff
   ] ++ lib.optionals pkgs.hostPlatform.isLinux [
+    #    hponcfg
+    bpftrace
     docker
     docker-compose
+    flamegraph
     lshw
+    linuxPackages.bcc
     podman
     podman-compose
+    sysstat
     tcpdump
     tio
     traitor
