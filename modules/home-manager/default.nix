@@ -217,6 +217,12 @@ in
     };
   }; # darwin home.files
 
+  home.activation.dirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    printf "modules/home-manager/default.nix: dirs\n" >&2
+    $DRY_RUN_CMD install -dm700 ~/.ssh
+    $DRY_RUN_CMD install -dm700 ~/.ssh/.control
+  '';
+
   # Add to home managers dag to make sure the activation fails if emacs can't
   # parse the init files and nuke any temp dirs we don't need/want to stick
   # around if present. Most of these are just caches though init.el(c) need to

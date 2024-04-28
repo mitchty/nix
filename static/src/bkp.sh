@@ -51,24 +51,18 @@ genignore() {
         fi
       }
     fi
-    # Note some of these are linux only but even on macos who cares if
-    # they're missing anyway whatever.
-    printf ".cache\n"
-    printf ".crash\n"
-    printf ".direnv\n"
-    printf ".local/share/Steam/.depotcache\n"
-    printf ".local/share/Steam/appcache\n"
-    printf ".local/share/Steam/config/htmlcache\n"
-    printf ".local/share/Steam/logs\n"
-    printf ".local/share/Steam/steamapps/appcache\n"
-    printf ".local/share/Steam/steamapps/htmlcache\n"
-    printf ".local/share/Steam/steamapps/shadercache\n"
-    printf ".mutagen/caches\n"
 
     cat "${_dir}/../restic/excludes"
   ) >> "${excludes}"
   end=$(date +%s)
 
+  # Crappy optimizaton to only cache results of ^^^ for a day to save
+  # on backup times. This adds up in that for macos a warm backup
+  # takes around 3 minutes, with about 2 minutes comprising getting
+  # all the find/mdfind/etc... work dominating the timing.
+  #
+  # If I ever want to force things I can just remove ~/.kopiaignore
+  # and it'll regen so watever.
   printf "took %d seconds to calculate\n" $((end - start))
   cp "${excludes}" "${ignorefile}"
 }

@@ -1,3 +1,6 @@
+# ssh control dir has a ton of stuff that won't backup
+.ssh/.control
+
 # macos specific things we never need to backup
 .DS_Store
 .DocumentRevisions-V100
@@ -7,13 +10,25 @@
 .Trash
 .fseventsd
 
-# Caches is a macos thing but there is a ton of em, ignore anything with that
-# dir name
+# Steam related junk that doesn't need to be backed up
+.local/share/Steam/*/*cache*
+.local/share/Steam/*cache*
+.local/share/Steam/logs
+
+# Mutagen caches can get gihugic and the data they're moving is backed
+# up anyway don't pollute.
+.mutagen/caches
+.mutagen/archives
+
+# Cache(s) is a macos thing but there is a ton of em, ignore anything
+# with that dir name.
+Cache
 Caches
 
 # linux-isms we might manage to hit
 .caches
 .cache
+.crash
 
 # I don't care about less history
 .lesshst
@@ -46,6 +61,9 @@ target/debug
 .cargo/registry/index
 .cargo/registry/cache
 .cargo/registry/src
+
+# .direnv directories are full of stuff that can be regenerated
+.direnv
 
 # Python compiled junk, just ignore the stupid compiled bytecode
 *.pyc
@@ -133,19 +151,15 @@ Pictures/Photos\ Library.photoslibrary
 
 # Caches that aren't obvious, don't need to back this changing junk up
 # Mostly all electron crap for signal/slack or chromiumish based crap
-Library/Application\ Support/*/*/*/GPUCache
-Library/Application\ Support/*/*/GPUCache
-Library/Application\ Support/*/Cache
-Library/Application\ Support/*/Code\ Cache
-Library/Application\ Support/*/GPUCache
+Library/Application\ Support/*/*/*/*Cache*
+Library/Application\ Support/*/*/*Cache*
+Library/Application\ Support/*/*Cache*
 Library/Application\ Support/*/Local\ Storage/leveldb/*.log
-Library/Application\ Support/*/Service\ Worker/Cache
-Library/Application\ Support/*/Service\ Worker/CacheStorage
+Library/Application\ Support/*/Partitions
 
 # And some silly log file dir/logs
 Library/Application\ Support/*/*/*.log
 Library/Application\ Support/*/logs/*.log
-Library/Application\ Support/*/logs/log*
 Library/Application\ Support/*/logs/log*
 
 # Not sure what most of this junk is but there is a lot of "new" and "removed" files
@@ -162,10 +176,16 @@ Library/Weather
 .local/share/baloo/index
 
 # And the linux equivalents of some of the above chromium-isms and logs
+.config/*/*/*/*/*/*/*/*.log
+.config/*/*/*/*/*/*/*.log
+.config/*/*/*/*/*/*.log
+.config/*/*/*/*/*.log
+.config/*/*/*/*.log
 .config/*/*/*.log
-.config/*/*/*/GPUCache
-.config/*/*/GPUCache
-.config/*/GPUCache
+.config/*/*.log
+.config/*/*/*/*Cache*
+.config/*/*/*Cache*
+.config/*/*Cache*
 .cache/nix/eval-cache*
 
 #fin
