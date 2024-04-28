@@ -487,6 +487,9 @@ sed_inplace() {
 
 DEPLOY="${DEPLOY:-$(command -v deploy || echo deploy)}"
 DEPLOYOPTS="${DEPLOYOPTS:-}"
+DEPLOYACTOPTS="${DEPLOYACTOPTS:-}"
+_DEPLOYOPTS=""
+_DEPLOYACTOPTS=""
 
 # Simple wrapper to just make defining/using boolean flake options in
 # functions ez pz lemon squeezy
@@ -500,19 +503,28 @@ _flake_boolean_opt() {
 
 # Deploy to localhost in deploy-rs section (off by default)
 withlocalhost() {
-  DEPLOYOPTS="${DEPLOYOPTS} $(_flake_boolean_opt with-localhost true)"
+  _DEPLOYACTOPTS="${_DEPLOYACTOPTS} $(_flake_boolean_opt with-localhost true)"
   "$@"
 }
 
 # Deploy with local nix cache off (on by default)
 withouthomecache() {
-  DEPLOYOPTS="${DEPLOYOPTS} $(_flake_boolean_opt with-homecache false)"
+  _DEPLOYACTOPTS="${_DEPLOYACTOPTS} $(_flake_boolean_opt with-homecache false)"
   "$@"
 }
 
 deploy() {
   #shellcheck disable=SC2086
-  ${DEPLOY} "$@" ${DEPLOYOPTS}
+  ${DEPLOY} ${_DEPLOYOPTS} "$@" ${_DEPLOYACTOPTS}
+  rc=$?
+  _DEPLOYOPTS=""
+  _DEPLOYACTOPTS=""
+  return $?
+}
+
+norollback() {
+  _DEPLOYOPTS="${_DEPLOYOPTS} ${DEPLOYOPTS} --auto-rollback false "
+  "$@"
 }
 
 # Abuse ^^^ to make it ez pz to do a deploy when out and about with
@@ -528,7 +540,7 @@ testdeploy() {
   host="${1?need a hostname string to test deployment on}"
   shift
   #shellcheck disable=SC2086
-  eval ${DEPLOY} -ds --dry-activate -- ".#${host}" -L --show-trace ${DEPLOYOPTS}
+  eval ${DEPLOY} -ds --dry-activate -- ".#${host}" -L --show-trace ${_DEPLOYACTOPTS}
 }
 
 # like ^^^ but mostly without the dry-activate switch and -d to run checks
@@ -536,7 +548,7 @@ hostdeploy() {
   host="${1?need a hostname string to run a deployment}"
   shift
   #shellcheck disable=SC2086
-  eval ${DEPLOY} -s -- ".#${host}" -L --show-trace ${DEPLOYOPTS}
+  eval ${DEPLOY} -s ${_DEPLOYOPTS} ${DEPLOYOPTS} -- ".#${host}" -L --show-trace ${_DEPLOYACTOPTS} ${DEPLOYACTOPTS}
 }
 
 deploytestedhost() {
