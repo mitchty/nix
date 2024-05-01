@@ -544,7 +544,7 @@ testdeploy() {
 }
 
 # like ^^^ but mostly without the dry-activate switch and -d to run checks
-hostdeploy() {
+deployhost() {
   host="${1?need a hostname string to run a deployment}"
   shift
   #shellcheck disable=SC2086
