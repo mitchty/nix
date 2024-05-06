@@ -302,9 +302,9 @@ in
         DNSOverHTTPS = { Enabled = false; };
         EncryptedMediaExtensions = { Enabled = false; };
         FirefoxHome = {
-          SponsoredTopSites = false;
           Pocket = false;
           SponsoredPocket = false;
+          SponsoredTopSites = false;
         };
         HardwareAcceleration = true;
         Homepage = { StartPage = "none"; };
@@ -320,9 +320,9 @@ in
           Location = { BlockNewRequests = true; };
           Notifications = { BlockNewRequests = true; };
         };
-        #          PopupBlocking = { Default = false; };
+        # PopupBlocking = { Default = false; };
         PromptForDownloadLocation = true;
-        SanitizeOnShutdown = true;
+        SanitizeOnShutdown = false;
         SearchSuggestEnabled = false;
         ShowHomeButton = true;
         UserMessaging = {
@@ -331,37 +331,66 @@ in
         };
       };
       profiles = {
-        default = {
-          id = 0;
-          name = "default";
-          isDefault = true;
-          extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-            auto-tab-discard
-            bitwarden
-            cookies-txt
-            greasemonkey
-            i-dont-care-about-cookies
-            sidebery
-            ublacklist
-            ublock-origin
-          ] ++ lib.optionals pkgs.hostPlatform.isLinux [ pkgs.nur.repos.rycee.firefox-addons.plasma-integration ];
-          settings = {
-            "apz.allow_double_tap_zooming" = false;
-            "apz.allow_zooming" = true;
-            "apz.gtk.touchpad_pinch.enabled" = true;
-            "browser.aboutConfig.showWarning" = false;
-            "browser.startup.page" = 3;
-            "browser.tabs.loadInBackground" = false;
-            "browser.tabs.warnOnClose" = false;
-            "browser.urlbar.shortcuts.bookmarks" = false;
-            "browser.urlbar.shortcuts.history" = false;
-            "browser.urlbar.shortcuts.tabs" = false;
-            "browser.urlbar.update2" = false;
-            "dom.w3c.touch_events.enabled" = true;
-            "dom.w3c_touch_events.legacy_apis.enabled" = true;
-            "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+        default =
+          let
+            hidetabstoolbar = (pkgs.fetchurl {
+              url = "https://raw.githubusercontent.com/MrOtherGuy/firefox-csshacks/master/chrome/hide_tabs_toolbar.css";
+              sha256 = "sha256-ufcJOlL/rjrE5+FluMPubD/2hSWdZ1w4VcfO0ShlmKQ=";
+            });
+          in
+          {
+            id = 0;
+            name = "default";
+            isDefault = true;
+            userChrome = ''
+              @import url(${hidetabstoolbar});
+
+              :root {
+              	--navbar-height: 48px;
+              	--wc-height: 16px;
+              	--wc-left-margin: 10px;
+              	--wc-red: hsl(-10, 90%, 60%);
+              	--wc-yellow: hsl(50, 90%, 60%);
+              	--wc-green: hsl(160, 90%, 40%);
+              	--sidebar-collapsed-width: var(--navbar-height);
+              	--sidebar-width: 250px;
+              	--transition-duration: 0.2s;
+              	--transition-ease: ease-out;
+              }
+
+              #nav-bar {
+              	margin-right: calc(var(--wc-height) * 6 + var(--wc-left-margin));
+              	padding: calc((var(--navbar-height) - 40px) / 2) 0;
+              }
+            '';
+            extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+              auto-tab-discard
+              bitwarden
+              cookies-txt
+              greasemonkey
+              i-dont-care-about-cookies
+              sidebery
+              ublacklist
+              ublock-origin
+            ] ++ lib.optionals pkgs.hostPlatform.isLinux [ pkgs.nur.repos.rycee.firefox-addons.plasma-integration ];
+            settings = {
+              "apz.allow_double_tap_zooming" = false;
+              "apz.allow_zooming" = true;
+              "apz.gtk.touchpad_pinch.enabled" = true;
+              "browser.aboutConfig.showWarning" = false;
+              "browser.startup.page" = 3;
+              "browser.tabs.loadInBackground" = false;
+              "browser.tabs.warnOnClose" = false;
+              "browser.urlbar.shortcuts.bookmarks" = false;
+              "browser.urlbar.shortcuts.history" = false;
+              "browser.urlbar.shortcuts.tabs" = false;
+              "browser.urlbar.update2" = false;
+              "dom.w3c.touch_events.enabled" = true;
+              "dom.w3c_touch_events.legacy_apis.enabled" = true;
+              "privacy.clearOnShutdown.history" = false;
+              "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+            };
           };
-        };
       };
     }))
   ]);
