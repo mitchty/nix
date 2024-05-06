@@ -555,7 +555,7 @@ deploytestedhost() {
   host="${1?need a hostname string to run a tested deployment}"
   shift
   #shellcheck disable=SC2086
-  testdeploy "${host}" && hostdeploy "${host}"
+  testdeploy "${host}" && deployhost "${host}"
 }
 
 # To make other runtime stuff simpler, note if command -v fails we just "assume"
