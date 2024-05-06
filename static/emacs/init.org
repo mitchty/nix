@@ -797,8 +797,10 @@ validate the agenda changes.
   (add-to-list 'org-structure-template-alist '("cc" . "SRC c"))
   (add-to-list 'org-structure-template-alist '("el" . "SRC emacs-lisp"))
   (add-to-list 'org-structure-template-alist '("elt" . "SRC emacs-lisp :tangle yes"))
+  (add-to-list 'org-structure-template-alist '("elnt" . "SRC emacs-lisp :tangle no"))
   (add-to-list 'org-structure-template-alist '("go" . "SRC go"))
   (add-to-list 'org-structure-template-alist '("hs" . "SRC haskell"))
+  (add-to-list 'org-structure-template-alist '("mer" . "SRC mermaid :file "))
   (add-to-list 'org-structure-template-alist '("pl" . "SRC perl"))
   (add-to-list 'org-structure-template-alist '("py" . "SRC python"))
   (add-to-list 'org-structure-template-alist '("rs" . "src rust"))
@@ -812,6 +814,7 @@ validate the agenda changes.
              (emacs-lisp . t)
              (go . t)
              (latex . t)
+             (mermaid . t)
              (perl . t)
              (python . t)
              (ruby  . t)
@@ -894,6 +897,15 @@ Validate that this installs from scratch fine, blocking babel executions is ass.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package ob-async :after org :ensure :defer)
+#+END_SRC
+
+*** TODO org babel ob-mermaid testing
+
+Validate this works ok enough.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package mermaid-mode :ensure :defer)
+(use-package ob-mermaid :after (org, mermaid-mode) :ensure :defer)
 #+END_SRC
 
 **** org-journal                                                 :validation:

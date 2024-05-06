@@ -106,6 +106,7 @@ in
     manix
     mapcidr
     mercurial
+    mermaid-cli
     minio-client
     monolith
     moreutils
