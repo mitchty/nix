@@ -28,7 +28,36 @@ in
     ./btop.nix
   ];
 
-  systemd.user = lib.mkIf pkgs.hostPlatform.isLinux { startServices = "sd-switch"; };
+  systemd.user = lib.mkIf pkgs.hostPlatform.isLinux {
+    startServices = "sd-switch";
+    services = {
+      kopia = {
+        Unit = {
+          Description = "Kopia backup target";
+          After = [ "network.target" ];
+        };
+        Service = {
+          Type = "oneshot";
+          ExecStart = ../../static/src/bkp.sh;
+          Environment =
+            [ "PATH=${pkgs.lib.makeBinPath [ pkgs.bash pkgs.coreutils pkgs.kopia ]}" ];
+        };
+        Install.WantedBy = [ "default.target" ];
+      };
+    };
+
+    timers = {
+      kopia = {
+        Unit.Description = "Kopia backup schedule";
+        Timer = {
+          Unit = "kopia";
+          OnUnitActiveSec = "15min"; # Instead of every 0/15/30 minutes run every 15 minutes from activate, avoid thundering herds slightly.
+          OnBootSec = "7min"; # jitter with a prime number offset
+        };
+        Install.WantedBy = [ "timers.target" ];
+      };
+    };
+  };
   programs.home-manager.enable = true;
 
   # Common packages across all os's
