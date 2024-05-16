@@ -15,6 +15,10 @@ let
   notify = (pkgs.writeScriptBin "notify" (builtins.readFile ../../static/src/notify)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
+
+  ugde = (pkgs.writeScriptBin "ugde" (builtins.readFile ../../static/src/ugde.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
 in
 {
   imports = [
@@ -38,6 +42,7 @@ in
   # obs-studio etc.. something akin to roles in ansible.
   home.packages = with pkgs; [
     notify
+    ugde
   ] ++ [
     inputs.agenix.packages.${pkgs.system}.agenix
     inputs.deploy-rs.packages.${pkgs.system}.deploy-rs

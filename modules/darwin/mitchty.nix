@@ -19,10 +19,6 @@ let
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
 
-  ugde = (pkgs.writeScriptBin "ugde" (builtins.readFile ../../static/src/ugde.sh)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
   reopen = (pkgs.writeScriptBin "reopen" (builtins.readFile ../../static/src/reopen)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
@@ -59,7 +55,6 @@ in
       gohome
       nopb
       reopen
-      ugde
     ];
 
     system = {
