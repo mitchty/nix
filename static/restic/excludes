@@ -14,11 +14,13 @@
 .local/share/Steam/*/*cache*
 .local/share/Steam/*cache*
 .local/share/Steam/logs
+.steam/steam.pipe
 
 # Mutagen caches can get gihugic and the data they're moving is backed
 # up anyway don't pollute.
 .mutagen/caches
 .mutagen/archives
+.mutagen/daemon/daemon.sock
 
 # Cache(s) is a macos thing but there is a ton of em, ignore anything
 # with that dir name.
