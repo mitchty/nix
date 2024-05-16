@@ -27,7 +27,8 @@ in
   # darwin is ignored for now, mostly just a boolean oracle for home-manager there
   config = lib.mkIf config.roles.${name}.enable (lib.mkMerge [
     (lib.optionalAttrs (options ? launchd) (lib.mkIf (config.roles.${name}.isDarwin) { }))
-    (lib.optionalAttrs (options ? systemd) (lib.mkIf (config.roles.${name}.isLinux) {
+
+    (lib.optionalAttrs (options ? systemd) (lib.mkIf (config.roles.${name}.enable) {
       # google-chrome is unfree so make sure nixpkgs lets us use it
       nixpkgs.config.allowUnfree = true;
 
