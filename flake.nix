@@ -69,7 +69,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     dnsblacklist = {
-      url = "github:notracking/hosts-blocklists";
+      url = "github:hagezi/dns-blocklists";
       flake = false;
     };
 
