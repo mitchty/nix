@@ -22,7 +22,7 @@ jobs:
       - run: rm -f flake.lock
       - run: nix flake update
       - run: nix flake check
-      - uses: stefanzweifel/git-auto-commit-action@v4
+      - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           branch: master
           commit_message: Update flake.lock
