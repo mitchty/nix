@@ -50,6 +50,9 @@ Use use-package to configure emacs itself.
 
 (unless (display-graphic-p)
   (menu-bar-mode t))
+
+(setq compilation-scroll-output 'first-error)
+(setq compilation-scroll-output t)
 #+end_src
 
 The use-package emacs declaration for general configuration. Everything except ^^^ that I can't seem to make work in use-package is up there.
@@ -67,7 +70,8 @@ The use-package emacs declaration for general configuration. Everything except ^
   (before-save . delete-trailing-whitespace)
   (emacs-startup . my/display-startup-timing)
   (dired-load . my/dired-hook-thing)
-  (find-file 'auto-insert)
+  :init
+  (add-hook 'find-file-hook 'auto-insert)
   :config
 (setq-local indent-tabs-mode nil)
 (setq-local lisp-indent-function nil)
