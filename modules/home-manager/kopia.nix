@@ -4,7 +4,7 @@
 , config
 , ...
 }:
-let
+{
   systemd.user = lib.mkIf pkgs.hostPlatform.isLinux {
     startServices = "sd-switch";
     services = {
