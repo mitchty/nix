@@ -11,8 +11,8 @@
 
     # this is to let me set the host used for deploy-rs to localhost
     # instead of having 2x definitions for each.
-    with-localhost.url = "github:boolean-option/false";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    with-localhost.url = "github:boolean-option/true";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     latest.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     # Ignore whatever I used for inputs.nixpkgs to save on extraneous
@@ -23,13 +23,13 @@
     };
     # mitchty.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixos";
     # mitchty.url = "path:/Users/tishmack/src/pub/github.com/mitchty/nixos";
-    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-23.11-darwin";
+    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-24.05-darwin";
     nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
     # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
     nil = {
-      url = "github:oxalica/nil";
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:oxalica/nil/059d33a24bb76d2048740bcce936362bf54b5bc9";
+      #      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     darwin = {
@@ -43,7 +43,7 @@
     };
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-23.11";
+      url = "github:nix-community/home-manager/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
