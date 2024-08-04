@@ -1,0 +1,9 @@
+#-*-mode: Shell-script; coding: utf-8;-*-
+
+# outputs to ~/.cache/direnv/layouts/sha1sum-path-with-es instead of $PWD/.direnv
+direnv_layout_dir() {
+  local prefix=${XDG_CACHE_HOME:=${HOME}/.cache}
+  local hash=$(echo ${PWD} | sha1sum | head -c40)
+  local path="${PWD//[^a-zA-Z0-0]/-}"
+  printf "%s/direnv/layouts/%s%s" "${prefix}" "${hash}" "${path}"
+}

@@ -216,6 +216,10 @@ in
       source = ../../static/src/lib.sh;
       recursive = true;
     };
+    ".config/direnv/direnvrc" = {
+      source = ../../static/src/direnvrc;
+      recursive = true;
+    };
     # TODO: programs.ssh instead? Eh for now this is fine...
     ".ssh/config" = {
       source = ../../static/home/sshconfig;
