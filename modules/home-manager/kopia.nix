@@ -1,8 +1,10 @@
 { inputs
 , pkgs
 , lib
+, config
 , ...
-}: {
+}:
+let
   systemd.user = lib.mkIf pkgs.hostPlatform.isLinux {
     startServices = "sd-switch";
     services = {
@@ -29,7 +31,7 @@
           # Why is home-manager systemd services like nixos and lets
           # me just do pkgs = [list]; sigh
           Environment =
-            [ "PATH=${pkgs.lib.makeBinPath [ pkgs.bash pkgs.coreutils pkgs.gnused pkgs.kopia ]}" ];
+            [ "PATH=${pkgs.lib.makeBinPath [ pkgs.bash pkgs.coreutils pkgs.findutils pkgs.gnused pkgs.kopia ]}" ];
         };
         # Let the timers run this not when/if the service is reloaded.
         #Install.WantedBy = [ "default.target" ];
@@ -52,7 +54,9 @@
             "Sat,Sun 06,07,08,09,10,11,12,13,14,15,16,17,18,19,20:7"
           ];
         };
-        Install.WantedBy = [ "timers.target" ];
+        Install = {WantedBy = [ "timers.target" ];
+                   RequiredBy = [ "nas-backup.mount" ];
+                  };
       };
     };
   };
