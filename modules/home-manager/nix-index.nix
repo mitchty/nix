@@ -25,7 +25,7 @@ in
   config =
     let
       common = {
-        path = [ pkgs.restic pkgs.moreutils pkgs.coreutils pkgs.gnugrep ];
+        path = [ pkgs.moreutils pkgs.coreutils pkgs.gnugrep ];
       };
     in
     # mkIf cfg.enable (mkMerge [

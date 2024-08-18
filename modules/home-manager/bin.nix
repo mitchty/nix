@@ -15,19 +15,11 @@ let
   portchk = (pkgs.writeScriptBin "portchk" (builtins.readFile ../../static/src/portchk)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
-  ptreepl = (pkgs.writeScriptBin "ptree.pl" (builtins.readFile ../../static/src/ptree.pl)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-  stconflicts = (pkgs.writeScriptBin "stconflicts" (builtins.readFile ../../static/src/st-conflicts.zsh)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
 in
 {
   home.packages = [
     dns
     iso8601
     portchk
-    ptreepl
-    stconflicts
   ];
 }

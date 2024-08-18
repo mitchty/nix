@@ -19,11 +19,19 @@ let
   ugde = (pkgs.writeScriptBin "ugde" (builtins.readFile ../../static/src/ugde.sh)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
+  dns = (pkgs.writeScriptBin "dns" (builtins.readFile ../../static/src/dns)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+  portchk = (pkgs.writeScriptBin "portchk" (builtins.readFile ../../static/src/portchk)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+  nixgc = (pkgs.writeScriptBin "nixgc" (builtins.readFile ../../bin/nixgc.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
 in
 {
   imports = [
     # ./${sys}
-    ./bin.nix
     ./registry.nix
     ./sh.nix
     ./zsh.nix
@@ -33,6 +41,8 @@ in
     ./kopia.nix
   ];
 
+#  nixpkgs.overlays = [citrixOverlay];
+
   programs.home-manager.enable = true;
 
   # Common packages across all os's
@@ -41,22 +51,33 @@ in
   # aka have something to control: is this a box for streaming? if so add
   # obs-studio etc.. something akin to roles in ansible.
   home.packages = with pkgs; [
+    dns
     notify
+    portchk
     ugde
+    nixgc
   ] ++ [
     inputs.agenix.packages.${pkgs.system}.agenix
     inputs.deploy-rs.packages.${pkgs.system}.deploy-rs
     inputs.mitchty.packages.${pkgs.system}.altshfmt
     inputs.mitchty.packages.${pkgs.system}.hatools
-    inputs.mitchty.packages.${pkgs.system}.hwatch
     inputs.mitchty.packages.${pkgs.system}.no-more-secrets
     inputs.mitchty.packages.${pkgs.system}.transcrypt
-    inputs.rust.packages.${pkgs.system}.rust
     # inputs.nixinit.packages.${pkgs.system}.default
+    inputs.mitchty.packages.${pkgs.system}.hwatch
+    inputs.mitchty.packages.${pkgs.system}.ytdl-sub
+    #      rust = rust-bin.stable.latest.default;
+    #      rust = pkgs.rust;
+
+    # ] ++ [
+    #   # TODO: Not turning this junk into an overlay yet... maybe later
+    #   # future mitch problem
+    #   (../overlays/transcrypt.nix)
   ] ++ [
     (pkgs.hiPrio clang)
     (pkgs.hiPrio go) # Ensure this is the go to use in case of collision
     act
+    aria
     asm-lsp
     aspell
     aspellDicts.de
@@ -67,7 +88,6 @@ in
     aspellDicts.pt_PT
     bind
     bitwarden-cli
-    bonnie
     bwcli # this is my wrapper for ^^^
     ccls
     clang-tools
@@ -97,6 +117,7 @@ in
     gopls
     graphviz
     gron
+    home-manager
     htop
     hyperfine
     iftop
@@ -105,7 +126,9 @@ in
     ispell
     jid
     jless
+    k9s
     kopia
+    libqalculate
     less
     ltex-ls
     manix
@@ -116,11 +139,11 @@ in
     monolith
     moreutils
     nasm
-    nil
+    #    nil
     nix-prefetch-github
     nix-prefetch-scripts
     nix-tree
-    nixpkgs-fmt
+    nixfmt-rfc-style
     nodePackages.bash-language-server
     nom
     nvd
@@ -136,7 +159,6 @@ in
     python3Full # For emacs python-mode
     rage
     rclone
-    restic
     ripgrep
     rq
     rust-analyzer
@@ -147,12 +169,14 @@ in
     silver-searcher
     sipcalc
     sshpass
+    texliveFull
     tldr
     tmuxp
     unzip
     vim
     wget
     xz
+    yamlfmt
     yaml-language-server
     yt-dlp
     zstd
@@ -162,13 +186,21 @@ in
     pragmata-pro
     # Non gui linux stuff
   ] ++ lib.optionals pkgs.hostPlatform.isLinux [
+    uhk-agent
+#    citrix_workspace
     #    hponcfg
+    bonnie
     bpftrace
+    bridge-utils
     docker
     docker-compose
+    ethtool
     flamegraph
-    lshw
     linuxPackages.bcc
+    lshw
+    netperf
+    multitail
+    owamp
     podman
     podman-compose
     sysstat
@@ -179,9 +211,13 @@ in
     xorg.xauth
     # Gui linux stuff
   ] ++ lib.optionals (roles.gui.enable && pkgs.hostPlatform.isLinux) [
-    noto-fonts
+    xclip
+    xdotool
+    ferdium
     freetube
     kdialog
+    mpv
+    noto-fonts
     xsel
   ] ++ lib.optionals (pkgs.hostPlatform.isLinux) [
     efibootmgr
@@ -292,6 +328,22 @@ in
       enable = true;
     };
   };
+  programs.zsh = {
+    enable = true;
+    plugins = [
+      # TODO: yeet me into github:mitchty/nixos for updates n such this is for testing/poc only
+      {
+        name = "zsh-async";
+        file = "async.zsh";
+        src = pkgs.fetchFromGitHub {
+          owner = "mafredri";
+          repo = "zsh-async";
+          rev = "3ba6e2d1ea874bfb6badb8522ab86c1ae272923d";
+          sha256 = "3hhZXL8/Ml7UlkkHBPpS5NfUGB5BqgO95UvtpptXf8E=";
+        };
+      }
+    ];
+  };
 
   # Mostly yeeted from here https://gitlab.com/usmcamp0811/dotfiles/-/blob/fb584a888680ff909319efdcbf33d863d0c00eaa/modules/home/apps/firefox/default.nix
   #
@@ -345,7 +397,7 @@ in
           let
             hidetabstoolbar = (pkgs.fetchurl {
               url = "https://raw.githubusercontent.com/MrOtherGuy/firefox-csshacks/master/chrome/hide_tabs_toolbar.css";
-              sha256 = "sha256-ufcJOlL/rjrE5+FluMPubD/2hSWdZ1w4VcfO0ShlmKQ=";
+              sha256 = "sha256-R8MB1Y389WLRf52bTaulBePmP3zR14fw6+49fimjkQw=";
             });
           in
           {
