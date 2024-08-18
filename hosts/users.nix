@@ -19,6 +19,7 @@ in
         hashedPasswordFile = config.age.secrets."passwd/mitch".path;
         group = "users";
         extraGroups = [
+          "input"
           "audio"
           "docker"
           "jackaudio"
