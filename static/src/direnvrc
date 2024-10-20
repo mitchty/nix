@@ -1,6 +1,10 @@
 #-*-mode: Shell-script; coding: utf-8;-*-
 
-# outputs to ~/.cache/direnv/layouts/sha1sum-path-with-es instead of $PWD/.direnv
+# outputs to ~/.cache/direnv/layouts/sha1sum-path-with-es instead of
+# $PWD/.direnv
+#
+# Keeps .direnv files out of things like network shares etc... where things
+# probably shouldn't be.
 direnv_layout_dir() {
   local prefix=${XDG_CACHE_HOME:=${HOME}/.cache}
   local hash=$(echo ${PWD} | sha1sum | head -c40)
