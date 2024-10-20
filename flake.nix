@@ -11,9 +11,17 @@
 
     # this is to let me set the host used for deploy-rs to localhost
     # instead of having 2x definitions for each.
-    with-localhost.url = "github:boolean-option/false";
+    with-localhost.url = "github:boolean-option/true";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
-    latest.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    # nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    # Splicing this into where I needs it.
+    unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    #    master.url = "github:NixOS/nixpkgs/master";
+
+    # Currently mostly abusing this for open-webui nixos module+pkg
+    master.url = "github:NixOS/nixpkgs/551c0f1ec4efe400c70f33b57c6e8caf23a04b97";
 
     # Ignore whatever I used for inputs.nixpkgs to save on extraneous
     # derivations.
@@ -28,8 +36,8 @@
     # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
     nil = {
-      url = "github:oxalica/nil";
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:oxalica/nil/059d33a24bb76d2048740bcce936362bf54b5bc9";
+      #      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     darwin = {
@@ -62,7 +70,7 @@
     };
     agenix = {
       url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      #      inputs.nixpkgs.follows = "nixpkgs";
     };
     rust = {
       url = "github:oxalica/rust-overlay";
@@ -80,6 +88,12 @@
 
     # nixinit.url = "github:nix-community/nix-init";
     otest.url = "github:mitchty/nix/refactor";
+
+    ollama = {
+      url = "github:mastoca/ollama-flake";
+      inputs.nixpkgs.follows = "unstable";
+    };
+
   };
 
   outputs =
@@ -88,7 +102,7 @@
     }:
     let
       inherit (inputs.darwin.lib) darwinSystem;
-      inherit (inputs.nixpkgs.lib) attrValues makeOverridable nixosSystem;
+      inherit (inputs.nixpkgs.lib) attrValues makeOverridable nixosSystem writeScriptBin;
 
       x86-linux = "x86_64-linux";
 
@@ -118,9 +132,45 @@
       nixpkgsOverlays = [
         inputs.emacs-overlay.overlay
         inputs.rust.overlays.default
+        inputs.rust.overlays.rust-overlay
         inputs.nur.overlay
         inputs.nil.overlays.default
+        #        inputs.mitchty.overlays.default
       ] ++ myOverlays ++ [
+        # Splice in unstable pkgs into pkgs to be abused as pkgs.unstable.NAME
+        (final: prev: {
+          unstable = import inputs.unstable {
+            system = prev.system;
+            config = {
+              allowUnfree = true;
+            };
+          };
+        })
+        # and master (this ones touchy af master barely builds lol)
+        (final: prev: {
+          master = import inputs.master {
+            system = prev.system;
+            config = {
+              allowUnfree = true;
+            };
+          };
+        })
+        (final: prev: {
+          agenix = import inputs.agenix.packages {
+            system = prev.system;
+          };
+        })
+        # And do similar for my stuff until I get time to make it an overlay of its own
+        (final: prev: {
+          mitchty = import inputs.mitchty.packages {
+            system = prev.system;
+          };
+        })
+        (final: prev: {
+          ollama = import inputs.ollama.packages {
+            system = prev.system;
+          };
+        })
         # Note these come after ^^^ as they use some things those overlays define
         # TODO: this stuff should all get put into a flake overlay in this repo
         # stop being lazy, just not sure how to pass in the custom pacemaker
@@ -168,8 +218,15 @@
       nixpkgsConfig = extras: {
         overlays = nixpkgsOverlays ++ extras;
         # config.permittedInsecurePackages = [ "garage-0.7.3" ];
-        config.permittedInsecurePackages = [ "python3.10-django-3.1.14" ];
-        config.allowUnfree = true;
+        config = {
+          #          permittedInsecurePackages = [ "python3.10-django-3.1.14" ];
+          allowUnfreePredicate = pkg: builtins.elem (inputs.nixpkgs.lib.getName pkg) [
+            "cuda-merged"
+            "nvidia-x11"
+          ];
+          allowUnfree = true;
+          allowCuda = true;
+        };
       };
 
       homeManagerStateVersion = "21.11";
@@ -409,13 +466,6 @@
         };
       };
 
-      resticSecret = user: {
-        "restic/env.sh" = {
-          file = ./secrets/restic/env.sh.age;
-          owner = user;
-        };
-      };
-
       passwdSecrets = {
         "passwd/root" = {
           file = ./secrets/passwd/root.age;
@@ -432,6 +482,15 @@
         };
       };
 
+      cifsSecrets = {
+        "cifs/plex" = {
+          file = ./secrets/cifs/plex.age;
+        };
+        "cifs/mitch" = {
+          file = ./secrets/cifs/mitch.age;
+        };
+      };
+
       # Make age.secrets = a bit simpler with some defined variables
       homeUser = "mitch";
       homeGroup = "users";
@@ -441,12 +500,13 @@
 
       ageDefault = user: canarySecret user;
       ageGit = user: gitSecret user // ghcliPubSecret user;
-      ageRestic = user: resticSecret user;
 
       ageHome = user: ageDefault user // ageGit user;
-      ageHomeWithBackup = user: ageHome user // ageRestic user;
+      ageHomeWithBackup = user: ageHome user;
       ageHomeNixos = user: ageHome user // passwdSecrets;
-      ageHomeNixosWithBackup = user: ageHomeNixos user // ageRestic user;
+      ageHomeNixosWithBackup = user: ageHomeNixos user;
+
+      ageCifsNixos = cifsSecrets;
 
       # Simple wrapper function to save on some redundancy for being lay zee
       withLocalhost = host: if inputs.with-localhost.value then "localhost" else host;
@@ -549,10 +609,6 @@
             roles.gui = {
               enable = true;
               isDarwin = true;
-            };
-            services.restic = {
-              enable = true;
-              repo = "s3:http://cluster.home.arpa:3900/restic/";
             };
             services.home.enable = true;
             services.mitchty.enable = true;
