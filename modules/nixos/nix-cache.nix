@@ -42,7 +42,7 @@ in
     };
     iface = mkOption {
       type = types.str;
-      default = "eno1";
+      default = "enp142s0";
       description = "interface to add vip to";
     };
   };
@@ -50,7 +50,7 @@ in
   config = mkIf cfg.enable rec {
     networking = {
       interfaces = {
-        eno1 = {
+        "${cfg.iface}" = {
           ipv4.addresses = [
             {
               address = cfg.ip;
