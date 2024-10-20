@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
+#shellcheck disable=SC3034
 
 # Cheap copy function to make copying a file via ssh from one host
 # to another less painful, use pipeviewer to give some idea as to progress.
@@ -38,7 +39,7 @@ extract() {
       ,*.tar) tar -xvf "$1" ;;
       ,*.z) uncompress "$1" ;;
       ,*.rpm) rpm2cpio "$1" | cpio -idv ;;
-      ,*) echo "Unable to extract <$1> Unknown extension." ;;
+      ,*) printf "fatal: unable to extract: %s Unknown extension\n" "${1}" ;;
     esac
   else
     print "File <$1> does not exist."
@@ -111,15 +112,26 @@ alias kille='emacsclient -e "(kill-emacs)"'
 alias g=git
 alias m=mosh
 alias tl='tmux ls'
-alias tp="tmuxp load \${HOST}"
 alias res='. ~/.profile'
+
+# List out all the tmuxp configs present
+tpl() {
+  (cd ~/.config/tmuxp && echo * | sed -e 's/\.yml//g')
+}
+
+tp() {
+  tmuxpfile="${1:-$HOST}"
+  if [ -e "${HOME}/.config/tmuxp/${tmuxpfile}.yml" ]; then
+    tmuxp load "${tmuxpfile}"
+  fi
+}
 
 # Seriously don't get how syncthing constantly breaks stuff when I only make
 # changes on ONE machine.
 alias watdidstbreak='find . -type f -name "*sync-conflict*" -print'
 
 # Run nixpkgs-fmt and format things iff there are changes.
-alias nfmt='find . -type f -name \*\.nix -exec sh -c "nixpkgs-fmt --check {} > /dev/null 2>&1 || nixpkgs-fmt {}" \;'
+alias nfmt='find . -type f -name \*\.nix -exec sh -c "nixfmt --check {} > /dev/null 2>&1 || nixpkgs-fmt {}" \;'
 
 # Find dead code in nix files
 alias nded='find . -type f -name \*\.nix -exec deadnix {} \+'
@@ -133,15 +145,13 @@ export PATH
 # Mostly to make it easy to jumpstart a rust project nix+cargo+git all in one
 # via the crane flake.
 crane() {
-  unset _crane_dir _crane_name
-
   # Arg is the directory to do stuff to, required
-  _crane_dir=${1?}
+  local _crane_dir="${1?}"
   shift > /dev/null 2>&1 || :
-  _crane_name=${1}
+  local _crane_name="${1}"
 
   if [ -e "${_crane_dir}" ]; then
-    printf "fatal: %S already exists, refusing to use it for anything\n" "${_crane_dir}" >&2
+    printf "fatal: %s already exists, refusing to use it for anything\n" "${_crane_dir}" >&2
     return 1
   fi
 
@@ -149,24 +159,43 @@ crane() {
 
   cd "${_crane_dir}" || return 126
 
-  nix flake init -t github:ipetkov/crane
+  template="${CRANE_TEMPLATE:+#}${CRANE_TEMPLATE:-}"
+  nix flake init -t github:ipetkov/crane"${template}"
   git init
 
   printf "result\ntarget\n" > .gitignore
-  printf 'use flake\n' > .envrc
 
+  # Go away I know; this is intentional, makes it easier to just use the
+  # binaries created directly.
+  #shellcheck disable=SC2016
+  printf 'export PATH=$PATH:$(pwd)/result/bin\nuse flake\n' > .envrc
+  git add -A
+
+  direnv allow
   # Rename it if we want a different name for the thing
   if [ -n "${_crane_name}" ]; then
-    sed -i '' -e "s/quick-start/${_crane_name}/g" -e "s/my-crate/${_crane_name}/g" Cargo.toml flake.nix
+    sed_inplace -e "s/quick-start/${_crane_name}/g" -e "s/cross-musl/${_crane_name}/g" -e "s/my-crate/${_crane_name}/g" Cargo.toml flake.nix
   fi
 
-  cargo update
+  # Set the license to blue oak by default for my crap
+  sed_inplace -e "s/MIT/Blue Oak Model License 1.0.0/g" Cargo.toml
+
+  nix run nixpkgs#cargo -- update
 
   # Get the basic build cached straight away.
   nix build
 
   git add -A
-  git commit -m "nix flake init -t github:ipetkov/crane"
+  git commit -m "nix flake init -t github:ipetkov/crane${template}"
+}
+
+kdiff() {
+  lhs="${1?need a number for the diff to start}"
+  shift
+  rhs="${1?need a number for the diff to end}"
+  lhsid=$(kopia snapshot list | tac | awk 'NR == '${rhs}' && /files/ {print $4}')
+  rhsid=$(kopia snapshot list | tac | awk 'NR == '${lhs}' && /files/ {print $4}')
+  kopia diff "${lhsid}" "${rhsid}"
 }
 
 alias nbld='nix build && nix flake check'
