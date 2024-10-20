@@ -2,32 +2,44 @@
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
 #
-# Allow using local even though its not "posix" can't find a relevant shell that
-# doesn't support it. Even busybox sh does so eh.
-#shellcheck disable=SC3043
+# Allow using local (SC3043) even though its not "posix" can't find a relevant
+# shell that doesn't support it. Even busybox sh does so eh.
+#
+# Same for SC2016, shellcheck seems to not like ${AWK:-awk} '/some/thing/' vs
+# awk '/some/thing/' Its totally valid given I assign "something" to the top
+# level by default so just globally ignore those "errors" as it lets me adjust
+# commands at runtime.
+#
+#shellcheck disable=SC3043,SC2016
 #
 # General library utility functions I end up re-writing all over the damn place
 # in random scripts I create. No more! Shared library it is for once.
 
 # TODO: add tests for this in shellspec, for now just yeeted this from random
-# disparate shell I have lying around.
+# disparate shell I have lying around. Future winter mitch problem. Suck it
+# future mitch past mitch knows he's a jerk.
+
+AWK="${AWK:-awk}"
+GREP="${GREP:-grep}"
+OD="${OD:-od}"
+UNAME="${UNAME:-uname}"
 
 # Silly functions to make certain filtering easier/be lazy.
 nocomments() {
-  grep -Ev '^[#].*'
+  ${GREP} -Ev '^[#].*'
 }
 
 squishws() {
-  grep -Ev '^[[:space:]]*$'
+  ${GREP} -Ev '^[[:space:]]*$'
 }
 
 hidepass() {
-  grep -Evi 'password'
+  ${GREP} -Evi 'password'
 }
 
 # Silly helper functions to run stuff on specific platforms only
 onlinux() {
-  if [ "Linux" = "$(uname -s)" ]; then
+  if [ "Linux" = "$(${UNAME} -s)" ]; then
     "$@"
   fi
 }
@@ -35,7 +47,7 @@ onlinux() {
 # These aren't args really just a way to chain commands.
 #shellcheck disable=SC2120
 onmac() {
-  if [ "Darwin" = "$(uname -s)" ]; then
+  if [ "Darwin" = "$(${UNAME} -s)" ]; then
     "$@"
   fi
 }
@@ -46,14 +58,14 @@ onmac() {
 # cat out a : separated env variable
 # variable is the parameter
 cat_env() {
-  set | grep '^'"$1"'=' > /dev/null 2>&1 && eval "echo \$$1" | tr ':' '
-' | awk '!/^\s+$/' | awk '!/^$/'
+  set | ${GREP} '^'"$1"'=' > /dev/null 2>&1 && eval "echo \$$1" | tr ':' '
+' | ${AWK} '!/^\s+$/' | ${AWK} '!/^$/'
 }
 
 # Convert a line delimited input to : delimited
 to_env() {
-  awk '!a[$0]++' < /dev/stdin | tr -s '
-' ':' | sed -e 's/\:$//' | awk 'NF > 0'
+  ${AWK} '!a[$0]++' < /dev/stdin | tr -s '
+' ':' | sed -e 's/\:$//' | ${AWK} 'NF > 0'
 }
 
 # Unshift a new value onto the env var
@@ -67,7 +79,7 @@ unshift_env() {
 # Opposite of above, but echos what was shifted off
 shift_env() {
   first=$(cat_env "$1" | head -n 1)
-  rest=$(cat_env "$1" | awk '{if (NR!=1) {print}}' | to_env)
+  rest=$(cat_env "$1" | ${AWK} '{if (NR!=1) {print}}' | to_env)
   eval "$1=$rest; export $1"
   echo "${first}"
 }
@@ -94,7 +106,7 @@ try_git() {
   # it as golden and let git complain or not
   uri="${1}"
   shift
-  uproto=$(printf "%s" "${uri}" | grep '://' > /dev/null 2>&1 && printf "%s" "${uri}" | sed -e 's|[:]\/\/.*||g')
+  uproto=$(printf "%s" "${uri}" | ${GREP} '://' > /dev/null 2>&1 && printf "%s" "${uri}" | sed -e 's|[:]\/\/.*||g')
   proto=${uproto:-https}
   wtbranch=${1:-}
   shift > /dev/null 2>&1
@@ -135,8 +147,8 @@ try_git() {
   # Handle if the last arg is a worktree dir or not
   if [ -n "${wtbranch}" ]; then
     # Find the default branch to not treat as a workspace
-    rhead=$(git ls-remote "${repo}" HEAD | awk '!/remotes/ {print $1}')
-    defbranch=$(git ls-remote "${repo}" 'refs/heads/*' | awk "/${rhead}/ {sub(/refs\/heads\//,X,\$0);print \$2}")
+    rhead=$(git ls-remote "${repo}" HEAD | ${AWK} '!/remotes/ {print $1}')
+    defbranch=$(git ls-remote "${repo}" 'refs/heads/*' | ${AWK} "/${rhead}/ {sub(/refs\/heads\//,X,\$0);print \$2}")
 
     # Treat the defaultbranch only as not a worktree branch
     if [ "${defbranch}" = "${wtbranch}" ]; then
@@ -148,7 +160,7 @@ try_git() {
       cdrepo="${wtdir}"
 
       if [ ! -d "${wtdir}" ]; then
-        if git branch -r --list 'origin/*' | grep -E "^\s+origin/${wtbranch}$" > /dev/null 2>&1; then
+        if git branch -r --list 'origin/*' | ${GREP} -E "^\s+origin/${wtbranch}$" > /dev/null 2>&1; then
           git worktree add "${repo}@${wtbranch}" "${wtbranch}"
         else
           printf "error: branch named %s not present in repo %s\n" "${wtbranch}" "${rrepo}" >&2
@@ -185,12 +197,35 @@ bb() {
   try_git "https://bitbucket.org/${1}" "${2:-}"
 }
 
+# Get the default git branch name from a remote without cloning it. If ran in an
+# existing repo it will return that repos data
+gitdefbranch() {
+  local remote=
+  if [ $# -eq 0 ]; then
+    # This is only valid when we're in a git repo already, note a bare/local
+    # git repo could fail here, future mitch problem its such an edge case
+    # i'm not concerned.
+    if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+      printf "fatal: gitdefbranch requires an argument to a remote when run outside of a git repo\n" >&2
+      return 1
+    fi
+  else
+    remote=${1?first arg must be a git repo}
+  fi
+  # If I quote here if ${remote} is null I get '' which is wrong
+  #shellcheck disable=SC2086
+  lsremote=$(git ls-remote ${remote} 2> /dev/null)
+  headcommit=$(echo "${lsremote}" | ${AWK} '/HEAD$/ {print $1}')
+  primary=$(echo "${lsremote}" | ${AWK} '!/HEAD/ && !/tag/ && /^'"${headcommit}/"' {print $2; exit}')
+  echo "${primary}" | sed -e 's|refs/heads/||g'
+}
+
 # TODO Shamelessly copy/pasting from try_git, future me figure out a way to bridge the two
 try_hg() {
   # assume https if input doesn't contain a protocol string :// otherwise treat
   # it as golden and let hg complain or not
   uri="${1}"
-  uproto=$(printf "%s" "${uri}" | grep '://' > /dev/null 2>&1 && printf "%s" "${uri}" | sed -e 's|[:]\/\/.*||g')
+  uproto=$(printf "%s" "${uri}" | ${GREP} '://' > /dev/null 2>&1 && printf "%s" "${uri}" | sed -e 's|[:]\/\/.*||g')
   shift
   proto=${uproto:-https}
   defbranches="${1:-master main}"
@@ -234,7 +269,7 @@ try_hg() {
     # if [ "${branch}" != "master" ] && [ "${branch}" != "main" ]; then
     #   wtdir="${repo}@${branch}"
     #   if [ ! -d "${wtdir}" ]; then
-    #     if git branch -r --list 'origin/*' | grep -E "^\s+origin/${branch}$" > /dev/null 2>&1; then
+    #     if git branch -r --list 'origin/*' | ${GREP} -E "^\s+origin/${branch}$" > /dev/null 2>&1; then
     #       git worktree add "${repo}@${branch}" "${branch}"
     #     else
     #       printf "%s at branch %s not present in repo %s\n" "${wtdir}" "${branch}" "${rrepo}"  >&2
@@ -285,12 +320,13 @@ orgpub() {
   mt org-mode/public
 }
 
-AWK="${AWK:-awk}"
-
 # Portably generate a random integer, can't depend on $RANDOM everywhere,
 # especially since I am not a fan of the bash.
 randint() {
-  ${AWK} "BEGIN{\"date +%s\"|getline rseed;srand(rseed);close(\"date +%s\");printf \"%i\n\", (rand()*${1-10})}"
+  local floor="${1:-1}"
+  shift > /dev/null 2>&1
+  local ceil="${1:-10}"
+  ${OD} -An -N2 -i /dev/urandom | ${AWK} -v f="${floor}" -v c="${ceil}" '{print (f + ($1 % (c - f)))}'
 }
 
 # Just a convenient way to do a random sleep
@@ -421,7 +457,7 @@ randretry() {
 # Put another way, if we say backoff 100 10, what we're saying is that when the
 # limit has doubled past 10, it gets reset to 1 for any further tries until it
 # again goes above 10 and repeats. The backoff limit is simply to prevent
-# doubling scaling to obscene sleeps unless someone *really* wants it.
+# exp scaling to obscene sleeps unless someone *really* wants it.
 backoff() {
   limit=${1-1}
   shift
@@ -465,7 +501,6 @@ _sed_inplace_once() {
 # For unit tests only to make sure we're calling what we expect to
 _sut_sed_inplace() {
   _sed_inplace_once
-  echo "-i${SED_NEEDS_WHITESPACE- }''"
 }
 
 # Cause bsd/gnu sed differ in -i/inplace semantics/arg parsing
@@ -475,8 +510,9 @@ _sut_sed_inplace() {
 #
 # So abuse eval/param expansion to make a portable-er/ish wrapper
 sed_inplace() {
+  _sut_sed_inplace
   #shellspec disable=SC2119
-  ${SED?} "$(_sut_sed_inplace)" "$@"
+  ${SED?} -i${SED_NEEDS_WHITESPACE:+ }'' "$@"
 }
 
 # Command not found, just a silly wrapper around command to cover cases where
@@ -536,7 +572,7 @@ mobiledeploy() {
 # Simple wrapper function to do a deploy with checks and
 # --dry-activate so that nothing of substance happens if anything is
 # amiss there.
-testdeploy() {
+deploytest() {
   host="${1?need a hostname string to test deployment on}"
   shift
   #shellcheck disable=SC2086
@@ -555,7 +591,7 @@ deploytestedhost() {
   host="${1?need a hostname string to run a tested deployment}"
   shift
   #shellcheck disable=SC2086
-  testdeploy "${host}" && deployhost "${host}"
+  deploytest "${host}" && deployhost "${host}"
 }
 
 # To make other runtime stuff simpler, note if command -v fails we just "assume"
@@ -609,24 +645,24 @@ _s_host() {
   local hascolon=false
   local hasat=false
 
-  if echo "$@" | grep '@' > /dev/null 2>&1; then
+  if echo "$@" | ${GREP} '@' > /dev/null 2>&1; then
     hasat=true
   fi
-  if echo "$@" | grep ':' > /dev/null 2>&1; then
+  if echo "$@" | ${GREP} ':' > /dev/null 2>&1; then
     hascolon=true
   fi
   if $hascolon && $hasat; then
-    echo "$@" | awk -F'@' '{print $NF}' | sed -e 's/[:].*//g' | awk '{print $NF}'
+    echo "$@" | ${AWK} -F'@' '{print $NF}' | sed -e 's/[:].*//g' | ${AWK} '{print $NF}'
   elif $hascolon; then
-    echo "$@" | sed -e 's/[:].*//g' | awk '{print $NF}'
+    echo "$@" | sed -e 's/[:].*//g' | ${AWK} '{print $NF}'
   elif $hasat; then
-    echo "$@" | awk -F'@' '{print $NF}' | awk '{print $1}'
+    echo "$@" | ${AWK} -F'@' '{print $NF}' | ${AWK} '{print $1}'
   else
     # skip anything starting with - as its an argument most likely use first non - word
     #shellcheck disable=SC2068
     for x in $@; do
-      if ! echo "${x}" | grep -q '^-'; then
-        echo "$x" | awk '{print $1}'
+      if ! echo "${x}" | ${GREP} -q '^-'; then
+        echo "$x" | ${AWK} '{print $1}'
         break
       fi
     done
@@ -646,9 +682,9 @@ _s_wrapcmd() {
 
   # I'm abusing assignment here
   #shellcheck disable=SC2155,SC2046
-  local hostcmd=$(grep -A2 -E "^Host ${host}" ~/.ssh/sshpass | awk '/^  LocalCommand/ {$1=""; print $0}')
+  local hostcmd=$(${GREP} -A2 -E "^Host ${host}" ~/.ssh/sshpass | ${AWK} '/^  LocalCommand/ {$1=""; print $0}')
   if [ -z "${hostcmd}" ]; then
-    hostcmd=$(grep -A1 -E "^Hostname ${host}" ~/.ssh/sshpass | awk '/^  LocalCommand/ {$1=""; print $0}')
+    hostcmd=$(${GREP} -A1 -E "^Hostname ${host}" ~/.ssh/sshpass | ${AWK} '/^  LocalCommand/ {$1=""; print $0}')
   fi
   echo "${hostcmd}"
 }
@@ -716,7 +752,7 @@ wtf() {
   prefix=""
 
   #shellcheck disable=SC2119
-  if [ "Darwin" = "$(uname -s)" ]; then
+  if [ "Darwin" = "$(${UNAME} -s)" ]; then
     prefix="caffeinate -sid"
   fi
 
@@ -737,7 +773,7 @@ wtf() {
 
   # abuse notify/say so I can hear if something went sideways on macos.
   #shellcheck disable=SC2119
-  if [ "Darwin" = "$(uname -s)" ]; then
+  if [ "Darwin" = "$(${UNAME} -s)" ]; then
     if [ "${rc}" -gt 0 ]; then
       notify failed "${action}" &
       say "${action}" "failed" &
@@ -774,4 +810,23 @@ rotatelog() {
       fi
     done
   done
+}
+
+# Sick of having long ass build commands in my history so function it up.
+nb() {
+  #shellcheck disable=SC2046,SC2034
+  local d="$(basename $(pwd))"
+  nix build --print-build-logs --show-trace --no-warn-dirty "$@" || :
+  local rc=$?
+  if [ ${rc} -eq 0 ]; then
+    notify "${d} ok"
+  else
+    notify "${d} O SNAP SON ITS ALL BROKEN GAME OVER"
+  fi
+  return ${rc}
+}
+
+#^^^ but tag .#release for my shit
+nbr() {
+  nb .#release
 }
