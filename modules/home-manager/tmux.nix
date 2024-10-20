@@ -42,33 +42,6 @@ let
     }];
   };
 
-  nixos = {
-    window_name = "gh/nixos";
-    layout = "even-vertical";
-    panes = [
-      {
-        shell_command = [
-          "ssh -t srv.home.arpa \"zsh --login -i -c 'gi mitchty/nixos && nci'\""
-        ];
-        sleep_before = sleepDefault;
-      }
-      {
-        shell_command = [
-          "gi mitchty/nixos"
-          "nci"
-        ];
-        sleep_before = sleepDefault;
-      }
-      {
-        focus = true;
-        shell_command = [
-          "gi mitchty/nixos"
-        ];
-        sleep_before = sleepDefault;
-      }
-    ];
-  };
-
   refactor = {
     window_name = "nixrefactor";
     layout = "even-vertical";
@@ -82,46 +55,79 @@ let
     ];
   };
 
-  rswip = {
-    window_name = "rswip";
-    layout = "even-vertical";
+  wip = {
+    window_name = "wip";
     panes = [
       {
         shell_command = [
-          "ssh -t srv.home.arpa \"zsh --login -i -c 'cd ~/src/localhost/wip/ria/grep-lite && nrsci'\""
-        ];
-        sleep_before = sleepDefault;
-      }
-      {
-        shell_command = [
-          "cd ~/src/localhost/wip/ria/grep-lite && nrsci"
+          "cd ~/src/pub/github.com/mitchty/yeet.static"
         ];
         sleep_before = sleepDefault;
       }
       {
         focus = true;
         shell_command = [
-          "~/src/localhost/wip/ria/grep-lite"
+          "cd ~/src/localhost/iocaine"
         ];
         sleep_before = sleepDefault;
       }
+      # {
+      #   shell_command = [
+      #     "~/src/localhost/wip/ria/grep-lite"
+      #   ];
+      #   sleep_before = sleepDefault;
+      # }
     ];
-  };
-
-  wip = {
-    window_name = "wip";
-    panes = [ "pane" ];
   };
 
   rebuild = {
     shell_command = [
-      "gi mitchty/nix"
       {
-        cmd = "wtf rebuild";
+        cmd = "update && mobiledeploy deployhost \$HOST && notify deploy done";
         enter = false;
       }
     ];
     sleep_before = sleepDefault;
+  };
+
+  shenanigans = {
+    window_name = "gh mt/shenanigans";
+    layout = "even-vertical";
+    panes = [
+      {
+        shell_command = [
+          "nuke-libvirt.sh && pulumi up -yf"
+        ];
+        sleep_before = sleepDefault;
+        enter = false;
+      }
+      {
+        focus = true;
+      }
+    ];
+  };
+
+  ai = {
+    window_name = "gh mt/teketeke";
+    layout = "even-vertical";
+    panes = [
+      {
+        shell_command = [
+          "ollama serve"
+        ];
+        sleep_before = sleepDefault;
+      }
+      {
+        shell_command = [
+          "pytest"
+        ];
+        sleep_before = sleepDefault;
+        enter = false;
+      }
+      {
+        focus = true;
+      }
+    ];
   };
 
   site-update = {
@@ -155,6 +161,30 @@ rec {
   };
 
   # Setup some tmuxp configs
+  home.file.".config/tmuxp/ai.yml".text = (lib.generators.toYAML { } {
+    start_directory = "~/src/pub/github.com/mitchty/teketeke";
+    session_name = "ai";
+    windows = [ ai ];
+  });
+
+  home.file.".config/tmuxp/shenanigans.yml".text = (lib.generators.toYAML { } {
+    start_directory = "~/src/pub/github.com/mitchty/shenanigans";
+    session_name = "shenanigans";
+    windows = [ shenanigans ];
+  });
+
+  home.file.".config/tmuxp/nix.yml".text = (lib.generators.toYAML { } {
+    start_directory = "~/src/pub/github.com/mitchty/nix";
+    session_name = "nix";
+    windows = [ initial rebuildlocal refactor ];
+  });
+
+  home.file.".config/tmuxp/journal.yml".text = (lib.generators.toYAML { } {
+    start_directory = "~/src/pub/git.mitchty.net/mitchty/org";
+    session_name = "journal";
+    windows = [ journal ];
+  });
+
   home.file.".config/tmuxp/etc.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "etc";
@@ -164,7 +194,7 @@ rec {
   home.file.".config/tmuxp/wip.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "wip";
-    windows = [ wip nix nixos rswip ];
+    windows = [ wip ];
   });
 
   home.file.".config/tmuxp/mb.yml".text = (lib.generators.toYAML { } {
@@ -176,7 +206,7 @@ rec {
   home.file.".config/tmuxp/wm2.yml".text = (lib.generators.toYAML { } {
     start_directory = "~/";
     session_name = "wm2";
-    windows = [ initial rebuildall journal refactor ];
+    windows = [ initial ];
   });
 
   home.file.".config/tmuxp/srv.yml".text = (lib.generators.toYAML { } {
