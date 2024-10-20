@@ -54,8 +54,8 @@ in
             "vmstat"
           ] ++ (
             optionals (hasFileSystemType "xfs") [ "xfs" ]
-          ) ++ (
-            optionals (hasFileSystemType "zfs" || elem "zfs" config.boot.supportedFilesystems) [ "zfs" ]
+            # ) ++ (
+            #   optionals (hasFileSystemType "zfs" || elem "zfs" config.boot.supportedFilesystems) [ "zfs" ]
           );
           port = 9002;
         };

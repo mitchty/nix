@@ -21,7 +21,7 @@ in
     };
     iface = mkOption {
       type = types.str;
-      default = "eno1";
+      default = "enp142s0";
       description = "interface to add vip to";
     };
     interval = mkOption {
@@ -34,7 +34,7 @@ in
   config = mkIf cfg.enable rec {
     networking = {
       interfaces = {
-        eno1 = {
+        "${cfg.iface}" = {
           ipv4.addresses = [
             {
               address = cfg.ip;
@@ -45,7 +45,7 @@ in
       };
       firewall = {
         interfaces = {
-          eno1 = {
+          "${cfg.iface}" = {
             allowedTCPPorts = [
               9001
             ];
@@ -80,10 +80,10 @@ in
             }
             {
               targets = [
-                "nexus.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+                "wm2.home.arpa:${toString config.services.prometheus.exporters.node.port}"
               ];
               labels = {
-                alias = "nexus.home.arpa";
+                alias = "wm2.home.arpa";
               };
             }
             {
@@ -100,6 +100,14 @@ in
               ];
               labels = {
                 alias = "srv.home.arpa";
+              };
+            }
+            {
+              targets = [
+                "rtx.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              ];
+              labels = {
+                alias = "rtx.home.arpa";
               };
             }
             {

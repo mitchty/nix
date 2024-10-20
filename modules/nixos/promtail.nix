@@ -61,7 +61,6 @@ in
         ExecStart = "${pkgs.grafana-loki}/bin/promtail --config.file ${promtailConfigFile}";
         Restart = "on-failure";
         RestartSec = "20s";
-        DefaultTimeoutStopSec = "10s";
         SuccessExitStatus = 143;
         StateDirectory = "promtail";
         # DynamicUser = true;
