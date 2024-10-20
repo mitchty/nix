@@ -13,4 +13,6 @@ sync:
         - ".directory"
         - "*.swp"
         - ".terraform"
+        - "tmp"
+        - "cache"
       vcs: false # I'm normally syncing git dirs too and only really doing work on one host so I *DO* want to sync .git dirs
