@@ -91,7 +91,7 @@ fi
 #
 # Additionally if we're in a tty tag that as well so I can filter out
 # manual backups from non.
-cmd="kopia snapshot create ${base} --tags script:true --parallel=4 --log-level=debug"
+cmd="kopia snapshot create ${base} --tags script:true --parallel=4"
 
 printf "cmd: %s\n" "${cmd}" >&2
 ${cmd}
