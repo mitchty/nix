@@ -99,13 +99,31 @@ in
       # };
     };
 
-    services.openssh = {
-      extraConfig = ''
-      UseDNS no
-    '';
-    enable = true;
-    permitRootLogin = "yes";
-                       };
+    services = {
+      openssh = {
+        extraConfig = ''
+          UseDNS no
+        '';
+        enable = true;
+        permitRootLogin = "yes";
+      };
+      xserver.displayManager.gdm.autoSuspend = false;
+    };
+
+    # For some reason things are suspending all the time
+
+
+    security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+        if (action.id == "org.freedesktop.login1.suspend" ||
+            action.id == "org.freedesktop.login1.suspend-multiple-sessions" ||
+            action.id == "org.freedesktop.login1.hibernate" ||
+            action.id == "org.freedesktop.login1.hibernate-multiple-sessions")
+        {
+            return polkit.Result.NO;
+        }
+    });
+  '';
 
     boot = {
       # Boosts overall write speed for cifs
