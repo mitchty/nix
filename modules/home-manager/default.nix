@@ -106,6 +106,7 @@ in
     jid
     jless
     kopia
+    libqalculate
     less
     ltex-ls
     manix
@@ -130,6 +131,7 @@ in
     pbzip2
     pigz
     procps
+    pssh
     pup
     pv
     pyright
@@ -167,8 +169,9 @@ in
     docker
     docker-compose
     flamegraph
-    lshw
+    inotify-tools
     linuxPackages.bcc
+    lshw
     podman
     podman-compose
     sysstat
@@ -216,10 +219,6 @@ in
       source = ../../static/src/lib.sh;
       recursive = true;
     };
-    # ".config/direnv/direnvrc" = {
-    #   source = ../../static/src/direnvrc;
-    #   recursive = true;
-    # };
     # TODO: programs.ssh instead? Eh for now this is fine...
     ".ssh/config" = {
       source = ../../static/home/sshconfig;
@@ -287,9 +286,10 @@ in
   # stdlib is here to replace .config/direnv/direnvrc in home.file now that
   # home-manager wants to own the file
   # TODO future mitch is this a common sh lib I can abuse for my common lib.sh?
-  stdlib = pkgs.lib.readFile ../../static/src/direnvrc;
+
   programs.direnv = {
     enable = true;
+    stdlib = pkgs.lib.readFile ../../static/src/direnvrc;
     enableBashIntegration = true;
     enableFishIntegration = false;
     enableZshIntegration = true;
@@ -307,9 +307,9 @@ in
     (optionalAttrs pkgs.hostPlatform.isDarwin (mkIf (pkgs.hostPlatform.isDarwin) { }))
     (optionalAttrs pkgs.hostPlatform.isLinux (mkIf (pkgs.hostPlatform.isLinux) {
       enable = true;
+      package = pkgs.unstable.firefox;
       policies = {
         CaptivePortal = true;
-        DisableFirefoxAccounts = true;
         DisableFirefoxStudies = true;
         DisableFormHistory = true;
         DisablePocket = true;
@@ -350,7 +350,7 @@ in
           let
             hidetabstoolbar = (pkgs.fetchurl {
               url = "https://raw.githubusercontent.com/MrOtherGuy/firefox-csshacks/master/chrome/hide_tabs_toolbar.css";
-              sha256 = "sha256-ufcJOlL/rjrE5+FluMPubD/2hSWdZ1w4VcfO0ShlmKQ=";
+              sha256 = "sha256-R8MB1Y389WLRf52bTaulBePmP3zR14fw6+49fimjkQw=";
             });
           in
           {
@@ -394,7 +394,7 @@ in
               "apz.gtk.touchpad_pinch.enabled" = true;
               "browser.aboutConfig.showWarning" = false;
               "browser.startup.page" = 3;
-              "browser.tabs.loadInBackground" = false;
+              "browser.tabs.loadInBackground" = true;
               "browser.tabs.warnOnClose" = false;
               "browser.urlbar.shortcuts.bookmarks" = false;
               "browser.urlbar.shortcuts.history" = false;
