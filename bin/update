@@ -12,7 +12,7 @@ set "${SETOPTS:--eu}"
 # Note this whole thing should be swapped to something like this later
 # in some flake package in a persystem like call
 update="nix flake lock"
-for input in mitchty nixpkgs nixpkgs-darwin emacs-overlay home-manager darwin dnsblacklist; do
+for input in mitchty nixpkgs nixpkgs-darwin emacs-overlay home-manager darwin dnsblacklist unstable; do
   update="${update} --update-input ${input}"
 done
 
