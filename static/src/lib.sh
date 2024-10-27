@@ -814,14 +814,16 @@ rotatelog() {
 
 # Sick of having long ass build commands in my history so function it up.
 nb() {
-  #shellcheck disable=SC2046,SC2034
+  #shellcheck disable=SC2046,SC2034,SC2155
   local d="$(basename $(pwd))"
-  nix build --print-build-logs --show-trace --no-warn-dirty "$@" || :
-  local rc=$?
-  if [ ${rc} -eq 0 ]; then
-    notify "${d} ok"
+
+  local rc=1
+  if nix build --print-build-logs --show-trace --no-warn-dirty "$@"; then
+    rc=$?
+    notify "${d} ok" "all good bra"
   else
-    notify "${d} O SNAP SON ITS ALL BROKEN GAME OVER"
+    rc=$?
+    notify "${d} GAME OVER MAN GAME OVER" "rc: ${rc}"
   fi
   return ${rc}
 }
