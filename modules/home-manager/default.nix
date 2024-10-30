@@ -117,10 +117,6 @@ in
     monolith
     moreutils
     nasm
-    #    nil This damn thing somehow causes this
-    # error: nixVersions.unstable has been removed. For bleeding edge (Nix master, roughly weekly updated) use nixVersions.git, otherwise use nixVersions.latest.
-    # even when I set the follows to nixpkgs
-    # I don't use it often enough to care, FUTURE MITCH HEED THY PAST WARNING
     nix-prefetch-github
     nix-prefetch-scripts
     nix-tree

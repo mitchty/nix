@@ -35,11 +35,6 @@
     nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
     # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
-    nil = {
-      url = "github:oxalica/nil/059d33a24bb76d2048740bcce936362bf54b5bc9";
-      #      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
@@ -134,7 +129,6 @@
         inputs.rust.overlays.default
         inputs.rust.overlays.rust-overlay
         inputs.nur.overlay
-        inputs.nil.overlays.default
         #        inputs.mitchty.overlays.default
       ] ++ myOverlays ++ [
         # Splice in unstable pkgs into pkgs to be abused as pkgs.unstable.NAME
