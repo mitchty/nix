@@ -811,24 +811,3 @@ rotatelog() {
     done
   done
 }
-
-# Sick of having long ass build commands in my history so function it up.
-nb() {
-  #shellcheck disable=SC2046,SC2034,SC2155
-  local d="$(basename $(pwd))"
-
-  local rc=1
-  if nix build --print-build-logs --show-trace --no-warn-dirty "$@"; then
-    rc=$?
-    notify "${d} ok" "all good bra"
-  else
-    rc=$?
-    notify "${d} GAME OVER MAN GAME OVER" "rc: ${rc}"
-  fi
-  return ${rc}
-}
-
-#^^^ but tag .#release for my shit
-nbr() {
-  nb .#release
-}
