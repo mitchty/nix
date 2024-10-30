@@ -6,7 +6,7 @@
 _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
-set "${SETOPTS:--eu}"
+set "${SETOPTS:--e}"
 
 iam=$(uname -s)
 title=${1?need at least one arg for a title}
@@ -14,7 +14,10 @@ shift
 
 case "${iam}" in
   Linux)
-    kdialog --title "${title}" --passivepopup "$@" 15
+    # No sense in trying to use an X app without X
+    if [ -n "$DISPLAY" ]; then
+      kdialog --title "${title}" --passivepopup "$@" 2> /dev/null
+    fi
     ;;
   Darwin)
     osascript << END
