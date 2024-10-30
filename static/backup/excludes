@@ -1,8 +1,18 @@
 # my shenanigans/artifacts dir is full of useless junk that don't need a backup
 shenanigans/artifacts
 
+# nix/img is full of stuff I can rebuild
+nix/img
+
 # The .ollama dir is full of giant crap I don't need to backup
 .ollama
+
+# Where this file content eventually gets written to doesn't need to be backed
+# up either.
+.kopiaignore
+
+# ssh control fifo's can't be backed up
+.ssh/.control
 
 # macos specific things we never need to backup
 .DS_Store
@@ -20,11 +30,11 @@ shenanigans/artifacts
 .local/share/Steam/*/*cache*
 .local/share/Steam/*cache*
 .local/share/Steam/logs
+.local/share/Steam/steamapps
 
 # Mutagen caches can get gihugic and the data they're moving is backed
 # up anyway don't pollute.
-.mutagen/caches
-.mutagen/archives
+.mutagen
 
 # Cache(s) is a macos thing but there is a ton of em, ignore anything
 # with that dir name.
@@ -67,9 +77,7 @@ target/release
 target/debug
 
 # .cargo is huge
-.cargo/registry/index
-.cargo/registry/cache
-.cargo/registry/src
+.cargo
 
 # .direnv directories are full of stuff that can be regenerated
 .direnv
@@ -205,7 +213,6 @@ Library/Weather
 .mozilla/firefox/default/sessionstore-backups
 
 # pulumi stuff
-.pulumi/backups
-.pulumi/history
+.pulumi
 
 #fin
