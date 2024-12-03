@@ -242,6 +242,7 @@
         inputs.home-manager.darwinModules.home-manager
         ./modules/darwin
         ./modules/roles/gui.nix
+        ./modules/roles/gui-new.nix
         #      ] ++ myRoles ++ [
         inputs.agenix.darwinModules.age
         (

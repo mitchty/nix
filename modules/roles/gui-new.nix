@@ -1,7 +1,8 @@
 { lib, pkgs, options, config, ... }:
 
+# Going to test out i3 as a dm here
 let
-  name = "gui";
+  name = "gui-new";
 in
 {
   options.roles.${name} = {
@@ -22,6 +23,12 @@ in
       type = lib.types.bool;
     };
 
+    displaySize = lib.mkOption {
+      default = "big";
+      example = lib.literalExample "big";
+      description = "How big of a display are we talkin about here? Options: big, anything else";
+      type = lib.types.str;
+    };
   };
 
   # darwin is ignored for now, mostly just a boolean oracle for home-manager there
@@ -29,19 +36,25 @@ in
     (lib.optionalAttrs (options ? launchd) (lib.mkIf (config.roles.${name}.isDarwin) { }))
 
     (lib.optionalAttrs (options ? systemd) (lib.mkIf (config.roles.${name}.enable) {
-      # google-chrome is unfree so make sure nixpkgs lets us use it
-      nixpkgs.config.allowUnfree = true;
-
       environment.systemPackages = with pkgs; [
+        terminator
+        dmenu
+        gnome.gnome-keyring
         element-desktop
+        nitrogen
+        pasystray
+        picom
+        polkit_gnome
+        pulseaudioFull
+        rofi
         google-chrome
-        intel-media-driver
         kmix
         libv4l
         libvirt
         networkmanager
         networkmanager-openconnect
         networkmanagerapplet
+        parcellite
         pavucontrol
         pipewire
         plasma-desktop
@@ -50,7 +63,6 @@ in
         rtkit
         sddm
         xorg.xauth
-        yakuake
       ];
 
       # Configure dri/vaapi support for ffmpeg so OBS can use the intel hardware encoding
@@ -64,10 +76,40 @@ in
       };
       environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
 
+      sound.enable = true;
+
+      programs = {
+        thunar.enable = true;
+        dconf.enable = true;
+      };
+
+      security = {
+        polkit.enable = true;
+        rtkit.enable = true;
+      };
+
+      systemd = {
+        user.services.polkit-gnome-authentication-agent-1 = {
+          description = "polkit-gnome-authentication-agent-1";
+          wantedBy = [ "graphical-session.target" ];
+          wants = [ "graphical-session.target" ];
+          after = [ "graphical-session.target" ];
+          serviceConfig = {
+            Type = "simple";
+            ExecStart =
+              "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+            Restart = "on-failure";
+            RestartSec = 1;
+            TimeoutStopSec = 10;
+          };
+        };
+      };
+
       # Enable the Plasma 5 Desktop Environment for xorg.
       services.xserver = {
         enable = true;
         layout = "us";
+        xkbVariant = "";
 
         libinput = {
           enable = true;
@@ -77,10 +119,22 @@ in
           };
         };
 
-        xkbVariant = "";
-
-        displayManager.sddm.enable = true;
-        desktopManager.plasma5.enable = true;
+        windowManager.i3 = {
+          enable = true;
+          extraPackages = [ pkgs.i3status ];
+        };
+        desktopManager = {
+          xterm.enable = false;
+          xfce = {
+            enable = true;
+            noDesktop = true;
+            enableXfwm = false;
+          };
+        };
+        displayManager = {
+          lightdm.enable = true;
+          defaultSession = "xfce+i3";
+        };
 
         xkbOptions = lib.concatStringsSep "," [
           # Capslock is control, I'm not a heathen.
