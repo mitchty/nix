@@ -1,15 +1,24 @@
 # Don't offload on every host or at least make it configurable per node
+#
+# I should have all my nix config be a module, then I can append the home
+# offload via the outside world be an optional thing for only the mobile
+# clients. Which really isn't more than 1 really right now.
 { lib, inputs, ... }: {
   programs.ssh.extraConfig = ''
     Host offload
-      HostName srv.home.arpa
+      HostName rtx.home.arpa
       User root
       IdentitiesOnly yes
       IdentityFile /home/mitch/.ssh/id_rsa
-    Host offload-coffee-shoppe
-      HostName srv.home.arpa
-      ProxyJump mitch@home.mitchty.net
+    Host home
+      HostName home.mitchty.net
+      User mitch
+      IdentitiesOnly yes
+      IdentityFile /home/mitch/.ssh/id_rsa
+    Host offload-via-home
+      HostName rtx.home.arpa
       User root
+      ProxyJump home
       IdentitiesOnly yes
       IdentityFile /home/mitch/.ssh/id_rsa
   '';
