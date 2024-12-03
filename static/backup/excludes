@@ -73,8 +73,7 @@ Docker.qcow2
 # somehow... eh
 
 # Rust build temp directories we don't need to backup
-target/release
-target/debug
+src/**/target
 
 # .cargo is huge
 .cargo
