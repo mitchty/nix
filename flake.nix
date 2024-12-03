@@ -20,14 +20,16 @@
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     #    master.url = "github:NixOS/nixpkgs/master";
 
-    # Currently mostly abusing this for open-webui nixos module+pkg
-    master.url = "github:NixOS/nixpkgs/551c0f1ec4efe400c70f33b57c6e8caf23a04b97";
+    # Currently mostly abusing this for open-webui nixos module+pkg 0.3.35 open-webui
+    master.url = "github:NixOS/nixpkgs/a37eba4c96ca51a50a2fb9ce70729f928a18034a";
+    #    master.url = "github:mitchty/nixpkgs/open-webui-changes";
+    #master.url = "github:NixOS/nixpkgs/d8791f8ac39579cd1ce1d480c454968653af83bb";
 
     # Ignore whatever I used for inputs.nixpkgs to save on extraneous
     # derivations.
     mitchty = {
       url = "github:mitchty/nixos";
-      #      inputs.nixpkgs.follows = "nixpkgs"; TODO hwatch fails to build with 1.74 rustc fix later
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     # mitchty.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixos";
     # mitchty.url = "path:/Users/tishmack/src/pub/github.com/mitchty/nixos";
@@ -147,16 +149,24 @@
             config = {
               allowUnfree = true;
             };
+            # overlays = [
+            #   (import ./overlays/open-webui.nix)
+            # ];
           };
         })
         (final: prev: {
           agenix = import inputs.agenix.packages {
-            system = prev.system;
+            inherit (final) system;
           };
         })
         # And do similar for my stuff until I get time to make it an overlay of its own
         (final: prev: {
           mitchty = import inputs.mitchty.packages {
+            system = prev.system;
+          };
+        })
+        (final: prev: {
+          morerust = import inputs.rust.packages {
             system = prev.system;
           };
         })
@@ -279,10 +289,11 @@
         ./modules/nixos
         #      ] ++ myRoles ++ [
         (import ./modules/roles/gui.nix)
+        (import ./modules/roles/gui-new.nix)
         inputs.agenix.nixosModules.age
         "${inputs.nixpkgs-pacemaker}/nixos/modules/${pacemakerPath}"
         (
-          { config, ... }:
+          { config, pkgs, ... }:
           let
             inherit (config.users) primaryUser;
           in
@@ -303,10 +314,10 @@
             home-manager.useGlobalPkgs = true;
             home-manager.users.${primaryUser} = homeManagerCommonConfig;
             home-manager.extraSpecialArgs = {
-              inherit inputs;
+              inherit inputs pkgs;
               inherit (config) age roles;
             };
-            nix.registry.my.flake = self;
+            nix.registry = inputs.nixpkgs.lib.mapAttrs (_: value: { flake = value; }) inputs;
           }
         )
       ];
@@ -375,6 +386,20 @@
         };
       };
 
+      rtxAutoinstall = {
+        autoinstall = {
+          flavor = "zfs";
+          hostName = "rtx";
+          rootDevices = [
+            "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNJ0X207489F"
+            "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNJ0X201453Y"
+          ];
+          swapSize = "32GiB";
+          osSize = "0";
+          bootSize = "1GiB";
+        };
+      };
+
       # Start of a Terramaster tm4-423 cluster
       cl1Autoinstall = {
         autoinstall = {
@@ -438,6 +463,16 @@
             "/dev/disk/by-id/ata-KINGSTON_SA400M8120G_50026B7684B2F04E"
           ];
         };
+      };
+
+      # nexus, here mostly to do stuff over vpn
+      nexusAutoinstall = {
+        autoinstall.flavor = "zfs";
+        autoinstall.hostName = "nexus";
+        autoinstall.rootDevices = [
+          "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300325L"
+          "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300329W"
+        ];
       };
 
       canarySecret = user: {
@@ -567,6 +602,18 @@
           ];
           format = "install-iso";
         };
+        isoRtx = inputs.nixos-generators.nixosGenerate {
+          pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            ./modules/iso/autoinstall.nix
+            rtxAutoinstall
+            {
+              autoinstall.debug = true;
+              autoinstall.wipe = true;
+            }
+          ];
+          format = "install-iso";
+        };
       };
 
       darwinConfigurations = rec {
@@ -648,45 +695,10 @@
               mosh.enable = true;
               node-exporter.enable = true;
               promtail.enable = true;
-              router.enable = true;
-            };
-          }];
-          specialArgs = {
-            inherit inputs;
-            latest = inputs.latest.legacyPackages.${x86-linux};
-          };
-        };
-        srv = (makeOverridable nixosSystem) {
-          system = "x86_64-linux";
-          modules = nixOSModules ++ [
-            ./hosts/srv/configuration.nix
-          ] ++ [{
-            users = {
-              primaryUser = homeUser;
-              primaryGroup = homeGroup;
-            };
-            age.secrets = ageHomeNixosWithBackup homeUser;
-            services.role = {
-              media = {
+              router = {
                 enable = true;
-                services = true;
+                blacklist = "${inputs.dnsblacklist}/dnsmasq/pro.plus.txt";
               };
-
-              qemu.enable = true;
-              grafana.enable = true;
-              highmem.enable = true;
-              intel.enable = true;
-              loki.enable = true;
-              mosh.enable = true;
-              node-exporter.enable = true;
-              nixcache.enable = true;
-              prometheus.enable = true;
-              promtail.enable = true;
-            };
-            services.shared.mutagen = {
-              enable = true;
-              user = homeUser;
-              group = homeGroup;
             };
           }];
           specialArgs = {
@@ -694,27 +706,69 @@
             latest = inputs.latest.legacyPackages.${x86-linux};
           };
         };
-        wm2 =
+        srv = (makeOverridable nixosSystem)
+          {
+            system = "x86_64-linux";
+            modules = nixOSModules ++ [
+              ./hosts/srv/configuration.nix
+            ] ++ [{
+              users = {
+                primaryUser = homeUser;
+                primaryGroup = homeGroup;
+              };
+              age.secrets = ageHomeNixosWithBackup homeUser // ageCifsNixos;
+              services.role = {
+                media = {
+                  enable = true;
+                  services = true;
+                };
+
+                qemu.enable = true;
+                grafana.enable = true;
+                highmem.enable = true;
+                intel.enable = true;
+                loki.enable = true;
+                mosh.enable = true;
+                node-exporter.enable = true;
+                nixcache.enable = true;
+                prometheus.enable = true;
+                promtail.enable = true;
+              };
+              services.shared.mutagen = {
+                enable = true;
+                user = homeUser;
+                group = homeGroup;
+              };
+            }];
+            specialArgs = {
+              inherit inputs;
+              latest = inputs.latest.legacyPackages.${x86-linux};
+            };
+          };
+        rtx =
           (makeOverridable nixosSystem)
             rec {
               system = "x86_64-linux";
               modules = nixOSModules ++ [
-                ./hosts/wm2/configuration.nix
+                ./hosts/rtx/configuration.nix
                 inputs.nixos-hardware.nixosModules.common-cpu-amd
-                # inputs.nixos-hardware.nixosModules.common-gpu-amd
-                inputs.nixos-hardware.nixosModules.common-pc-laptop
-                inputs.nixos-hardware.nixosModules.common-pc-laptop-ssd
-                inputs.nixos-hardware.nixosModules.gpd-win-max-2-2023
+                inputs.nixos-hardware.nixosModules.common-gpu-amd
+                inputs.nixos-hardware.nixosModules.common-pc-ssd
               ] ++ [{
                 users = {
                   primaryUser = homeUser;
                   primaryGroup = homeGroup;
                 };
-                age.secrets = ageHomeNixos homeUser;
+                age.secrets = ageHomeNixos homeUser // ageCifsNixos;
 
                 roles.gui = {
+                  enable = false;
+                  isLinux = true;
+                };
+                roles.gui-new = {
                   enable = true;
                   isLinux = true;
+                  displaySize = "big";
                 };
                 services.role = {
                   gaming.enable = true;
@@ -732,6 +786,81 @@
               }];
               specialArgs = {
                 inherit inputs;
+              };
+            };
+        nexus = (makeOverridable nixosSystem)
+          {
+            system = "x86_64-linux";
+            modules = nixOSModules ++ [
+              ./hosts/nexus/configuration.nix
+            ] ++ [{
+              users = {
+                primaryUser = homeUser;
+                primaryGroup = homeGroup;
+              };
+              age.secrets = ageHomeNixos homeUser // ageCifsNixos;
+              #              roles.gui.enable = true;
+              services.role = {
+                intel.enable = true;
+                mosh.enable = true;
+                node-exporter.enable = true;
+                promtail.enable = true;
+              };
+              services.shared.mutagen = {
+                enable = true;
+                user = homeUser;
+                group = homeGroup;
+              };
+            }];
+            specialArgs = {
+              inherit inputs;
+              latest = inputs.latest.legacyPackages.${x86-linux};
+            };
+          };
+        wm2 =
+          (makeOverridable nixosSystem)
+            rec {
+              system = "x86_64-linux";
+              modules = nixOSModules ++ [
+                ./hosts/wm2/configuration.nix
+                inputs.nixos-hardware.nixosModules.common-cpu-amd
+                # inputs.nixos-hardware.nixosModules.common-gpu-amd
+                inputs.nixos-hardware.nixosModules.common-pc-laptop
+                inputs.nixos-hardware.nixosModules.common-pc-laptop-ssd
+                inputs.nixos-hardware.nixosModules.gpd-win-max-2-2023
+                ./modules/nixos/unstable-ai.nix
+              ] ++ [{
+                users = {
+                  primaryUser = homeUser;
+                  primaryGroup = homeGroup;
+                };
+                age.secrets = ageHomeNixos homeUser // ageCifsNixos;
+
+                roles.gui = {
+                  enable = false;
+                  isLinux = true;
+                };
+                roles.gui-new = {
+                  enable = true;
+                  isLinux = true;
+                  displaySize = "teeny";
+                };
+                services.role = {
+                  gaming.enable = true;
+                  qemu.enable = true;
+                  intel.enable = true;
+                  mosh.enable = true;
+                  node-exporter.enable = true;
+                  promtail.enable = true;
+                };
+                services.shared.mutagen = {
+                  enable = true;
+                  user = homeUser;
+                  group = homeGroup;
+                };
+              }];
+              specialArgs = {
+                inherit inputs system;
                 latest = inputs.latest.legacyPackages.${x86-linux};
               };
             };
@@ -947,12 +1076,6 @@
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."srv";
             };
           };
-          "local-srv" = {
-            hostname = "127.0.0.1";
-            profiles.system = {
-              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."srv";
-            };
-          };
           "nexus" = {
             hostname = "nexus.home.arpa";
             profiles.system = {
@@ -960,9 +1083,17 @@
             };
           };
           "wm2" = {
-            hostname = withLocalhost "10.10.10.115";
+            hostname = withLocalhost "wm2.home.arpa";
             profiles.system = {
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."wm2";
+            };
+          };
+          "rtx" = {
+            hostname = withLocalhost "rtx.home.arpa";
+            #hostname = "rtx.home.arpa";
+            #hostname = "localhost";
+            profiles.system = {
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."rtx";
             };
           };
           "cl1" = {
