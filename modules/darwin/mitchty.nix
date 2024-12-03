@@ -46,7 +46,7 @@ in
       inputs.mitchty.packages.${pkgs.system}.nheko
       inputs.mitchty.packages.${pkgs.system}.notunes
       inputs.mitchty.packages.${pkgs.system}.keepingyouawake
-      inputs.mitchty.packages.${pkgs.system}.obs-studio
+      #      inputs.mitchty.packages.${pkgs.system}.obs-studio
       inputs.mitchty.packages.${pkgs.system}.stats
       inputs.mitchty.packages.${pkgs.system}.swiftbar
       inputs.mitchty.packages.${pkgs.system}.vlc
