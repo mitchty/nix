@@ -15,8 +15,11 @@
       hostId = "89fdcfd5";
     };
 
-    boot.loader.grub.mirroredBoots = [
-      { devices = [ "nodev" ]; path = "/boot"; }
-    ];
+    boot.loader.grub = {
+      configurationLimit = 10;
+      mirroredBoots = [
+        { devices = [ "nodev" ]; path = "/boot"; }
+      ];
+    };
   };
 }
