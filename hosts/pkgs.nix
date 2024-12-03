@@ -5,13 +5,15 @@
   programs.bash.enableCompletion = true;
   programs.zsh.enableCompletion = true;
 
+  #  programs.nix-ld.enable = true;
+
   environment.systemPackages = with pkgs; [
     btop
+    cifs-utils
     conntrack-tools
     dmidecode
     dropwatch
     dstat
-    inputs.latest.legacyPackages.${pkgs.system}.polkit
     iotop
     jq
     linux-firmware
@@ -19,14 +21,17 @@
     linuxPackages.perf
     masscan
     mosh
-    nftables
     nfs-utils
+    nftables
     nmap
     pciutils
+    pkgs.unstable.nvtopPackages.full
+    polkit
     powertop
     psmisc
-    smem
     s-tui
+    smem
+    sshpass
     strace
     tcpdump
     thin-provisioning-tools
