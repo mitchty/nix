@@ -15,7 +15,11 @@ in
 
   config = mkIf cfg.enable {
     nixpkgs.config.packageOverrides = pkgs: {
-      qemu = pkgs.qemu.override { gtkSupport = true; };
+      qemu = pkgs.qemu.override {
+        gtkSupport = false;
+        #        spiceSupport = true;
+        pixman = pkgs.pixman;
+      };
     };
 
     environment = {

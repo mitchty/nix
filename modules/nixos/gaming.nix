@@ -13,8 +13,6 @@ in
   # Other stuff uses this to indicate if things should(n't) be installed
   config = mkIf cfg.enable {
     programs.steam.enable = true;
-    hardware.opengl.driSupport32Bit = true;
-    nixpkgs.config.allowUnfree = true;
 
     services.pipewire = {
       enable = true;
@@ -25,7 +23,5 @@ in
       socketActivation = true;
     };
     programs.dconf.enable = true;
-
-    #environment.systemPackages = [ pkgs.steam ];
   };
 }

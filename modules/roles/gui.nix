@@ -56,8 +56,6 @@ in
       # Configure dri/vaapi support for ffmpeg so OBS can use the intel hardware encoding
       hardware.opengl = {
         enable = true;
-        driSupport = true;
-        driSupport32Bit = true;
         extraPackages = with pkgs; [
           intel-media-driver
         ];

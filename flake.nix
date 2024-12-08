@@ -12,7 +12,7 @@
     # this is to let me set the host used for deploy-rs to localhost
     # instead of having 2x definitions for each.
     with-localhost.url = "github:boolean-option/true";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
 
     # nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
@@ -32,8 +32,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # mitchty.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixos";
-    # mitchty.url = "path:/Users/tishmack/src/pub/github.com/mitchty/nixos";
-    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-24.05-darwin";
+    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-24.11-darwin";
     nixpkgs-pacemaker.url = "github:mitchty/nixpkgs/corosync-pacemaker-ocf";
     # nixpkgs-pacemaker.url = "path:/Users/mitch/src/pub/github.com/mitchty/nixpkgs@pacemaker";
 
@@ -48,7 +47,7 @@
     };
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.05";
+      url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -91,6 +90,11 @@
       inputs.nixpkgs.follows = "unstable";
     };
 
+    # TODO Work stuff, future me figure out if this is a decent spot or not
+    beamer-theme-suse = {
+      url = "github:mitchty/beamertheme-suse";
+      flake = false;
+    };
   };
 
   outputs =
@@ -1065,7 +1069,8 @@
             };
           };
           "gw" = {
-            hostname = "gw.home.arpa";
+            #            hostname = "gw.home.arpa";
+            hostname = "10.10.10.1";
             profiles.system = {
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."gw";
             };
@@ -1120,11 +1125,14 @@
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations."dfs1";
             };
           };
-          "local-mb" = {
-            hostname = "localhost";
+          "mb" = {
+            hostname = withLocalhost "mb.home.arpa";
             profiles.system = {
               sshUser = "mitch";
+              user = "mitch";
               sudo = "sudo -S -u";
+              interactiveSudo = true;
+              sshOptions = [ "-t" ];
               path = inputs.deploy-rs.lib.x86_64-darwin.activate.darwin self.darwinConfigurations."mb";
             };
           };

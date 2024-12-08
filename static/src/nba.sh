@@ -8,7 +8,7 @@ _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 set "${SETOPTS:--eu}"
 
-# Kill off any prior runs
-pkill -x nba
+# Kill off any prior runs that might be going on
+pkill -f nba.sh || :
 nb
 nb .#release

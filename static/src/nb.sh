@@ -11,15 +11,22 @@ set "${SETOPTS:--eu}"
 
 # Snag the directory name, compress $HOME to ~
 #shellcheck disable=SC2046,SC2034,SC2155,SC3043
-d=$(pwd | sed -e "s|HOME|~|g")
+d=$(pwd | sed -e "s|$HOME|~|g")
 
 #shellcheck disable=SC3043
 rc=1
+
 if nix build --print-build-logs --show-trace --no-warn-dirty "$@"; then
   rc=$?
-  notify "${d} $* ok" "all good bra"
+  # Piss off its fine
+  #shellcheck disable=SC2145
+  notify "${d} $@" "ok bra"
 else
   rc=$?
-  notify "${d} $* GAME OVER MAN GAME OVER" "rc: ${rc}"
+  # Piss off its fine
+  #shellcheck disable=SC2145
+  notify "${d} $@" "GAME OVER MAN GAME OVER\nrc: ${rc}"
 fi
 exit ${rc}
+
+#nix build --print-build-logs --show-trace --no-warn-dirty "$@"

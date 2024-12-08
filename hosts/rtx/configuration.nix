@@ -136,7 +136,7 @@ in
     };
   };
 
-  boot.kernelPackages = pkgs.unstable.linuxKernel.packages.linux_6_6;
+  boot.kernelPackages = pkgs.linuxKernel.packages.linux_6_6;
 
   hardware = {
     opengl.enable = true;
