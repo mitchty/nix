@@ -10,13 +10,33 @@ with lib;
 
 let
   # TODO: maybe yeet this into the gui role itself as a default?
-  gooey = (pkgs.hostPlatform.isDarwin || (roles.gui.enable or false));
+  gooey = (pkgs.hostPlatform.isDarwin || (roles.gui.enable or false) || (roles.gui-new.enable or false));
+
+  # Default font size based off display size in role, basically big or else...
+  fontSize = if roles.gui-new.displaySize == "big" then 12 else 10;
+  fontName = "Comic Code Bold";
 
   notify = (pkgs.writeScriptBin "notify" (builtins.readFile ../../static/src/notify)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
 
   ugde = (pkgs.writeScriptBin "ugde" (builtins.readFile ../../static/src/ugde.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+
+  nb = (pkgs.writeScriptBin "nb" (builtins.readFile ../../static/src/nb.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+
+  nba = (pkgs.writeScriptBin "nba" (builtins.readFile ../../static/src/nba.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+
+  nixgc = (pkgs.writeScriptBin "nixgc" (builtins.readFile ../../bin/nixgc.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+
+  mystatus = (pkgs.writeScriptBin "mystatus" (builtins.readFile ../../static/src/mystatus.sh)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
 in
@@ -43,17 +63,26 @@ in
   home.packages = with pkgs; [
     notify
     ugde
+    nb
+    nba
+    nixgc
   ] ++ [
+    # pkgs.agenix.${pkgs.system}.agenix
     inputs.agenix.packages.${pkgs.system}.agenix
     inputs.deploy-rs.packages.${pkgs.system}.deploy-rs
+    # pkgs.mitchty.x86_64_linux.altshfmt
+    #    pkgs.mitchty.altshfmt
     inputs.mitchty.packages.${pkgs.system}.altshfmt
     inputs.mitchty.packages.${pkgs.system}.hatools
     inputs.mitchty.packages.${pkgs.system}.hwatch
     inputs.mitchty.packages.${pkgs.system}.no-more-secrets
-    inputs.mitchty.packages.${pkgs.system}.transcrypt
+    #    inputs.mitchty.packages.${pkgs.system}.transcrypt
+    #    pkgs.morerust.rust
     inputs.rust.packages.${pkgs.system}.rust
     # inputs.nixinit.packages.${pkgs.system}.default
   ] ++ [
+    transcrypt
+    xq
     (pkgs.hiPrio clang)
     (pkgs.hiPrio go) # Ensure this is the go to use in case of collision
     act
@@ -137,10 +166,9 @@ in
     python3Full # For emacs python-mode
     rage
     rclone
-    restic
     ripgrep
     rq
-    rust-analyzer
+    pkgs.unstable.rust-analyzer
     s3cmd
     shellcheck
     shellspec
@@ -158,7 +186,7 @@ in
     yt-dlp
     zstd
     # General gui stuff
-  ] ++ lib.optionals roles.gui.enable [
+  ] ++ lib.optionals gooey [
     comic-code
     pragmata-pro
     # Non gui linux stuff
@@ -178,13 +206,21 @@ in
     tio
     traitor
     usbutils
-    xorg.xauth
+    pkgs.unstable.webex
     # Gui linux stuff
-  ] ++ lib.optionals (roles.gui.enable && pkgs.hostPlatform.isLinux) [
+  ] ++ lib.optionals (gooey && pkgs.hostPlatform.isLinux) [
+    mystatus
+    obs-studio
+    ffmpeg
+    bitwarden-desktop
+    pulseaudio-ctl
     noto-fonts
     freetube
     kdialog
+    xclip
     xsel
+    xorg.xauth
+    inputs.mitchty.packages.${pkgs.system}.ytdl-sub
   ] ++ lib.optionals (pkgs.hostPlatform.isLinux) [
     efibootmgr
     # macos specific stuff
@@ -201,11 +237,27 @@ in
   ];
 
   # Let home-manager setup fonts on macos/linux the same way.
-  fonts.fontconfig.enable = true;
+  fonts.fontconfig.enable = gooey;
 
   programs.emacs = {
     enable = gooey;
+    #    package = pkgs.wrappedEmacs;
     package = pkgs.myEmacs;
+  };
+
+  programs.kitty = {
+    enable = (pkgs.hostPlatform.isLinux && gooey);
+    font = {
+      name = fontName;
+      package = pkgs.comic-code;
+      size = fontSize;
+    };
+    shellIntegration.enableZshIntegration = true;
+    #    theme = "Spring";
+    extraConfig = ''
+      enable_audio_bell no
+      visual_bell_duration 0.5
+    '';
   };
 
   home.file = {
@@ -214,21 +266,30 @@ in
     ".config/mitchty/.canary".source = config.lib.file.mkOutOfStoreSymlink age.secrets.canary.path;
 
     # Make everything in my lib.sh available for all .envrc files
-    ".config/direnv/lib/mycrap.sh" = {
-      source = ../../static/src/lib.sh;
-      recursive = true;
-    };
+    ".config/direnv/lib/mycrap.sh".source = ../../static/src/lib.sh;
     # TODO: programs.ssh instead? Eh for now this is fine...
-    ".ssh/config" = {
-      source = ../../static/home/sshconfig;
-    };
+    ".ssh/config".source = ../../static/home/sshconfig;
     # Setup the default mutagen ignore list/config
     ".mutagen.yml".source = ../../static/home/mutagen.yaml;
-  } // lib.optionalAttrs pkgs.hostPlatform.isDarwin {
-    "Library/Scripts/force-paste.scpt" = {
-      source = ../../static/src/force-paste.scpt;
-      recursive = true;
+  } // lib.optionalAttrs (gooey && pkgs.hostPlatform.isLinux) {
+    # Setup ~/.config as needed for gui stuff
+    ".config/i3/config" = {
+      text = pkgs.lib.strings.concatStringsSep "\n" ([
+        (pkgs.lib.strings.fileContents ../../static/xorg/i3/config)
+      ] ++ [
+        ''
+          # Font for window titles and bar.
+          font pango:${fontName} ${builtins.toString fontSize}
+        ''
+      ]);
+      force = true; # I can't get why I need to set force for ~/.config/i3* stuff
     };
+    ".config/i3status/config" = {
+      source = ../../static/xorg/i3status/config;
+      force = true;
+    };
+  } // lib.optionalAttrs pkgs.hostPlatform.isDarwin {
+    "Library/Scripts/force-paste.scpt".source = ../../static/src/force-paste.scpt;
   }; # darwin home.files
 
   home.activation.dirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -302,7 +363,7 @@ in
   # TODO: get this working on macos, this only works on linux
   #
   # ALso problematic is this firefox module is 23.11 only, need to debug the hokey segfault in emacs with 23.11 setups with treesitter.
-  programs.firefox = mkIf (roles.gui.enable or false) (mkMerge [
+  programs.firefox = mkIf gooey (mkMerge [
     (optionalAttrs pkgs.hostPlatform.isDarwin (mkIf (pkgs.hostPlatform.isDarwin) { }))
     (optionalAttrs pkgs.hostPlatform.isLinux (mkIf (pkgs.hostPlatform.isLinux) {
       enable = true;
@@ -386,7 +447,10 @@ in
               sidebery
               ublacklist
               ublock-origin
-            ] ++ lib.optionals pkgs.hostPlatform.isLinux [ pkgs.nur.repos.rycee.firefox-addons.plasma-integration ];
+              user-agent-string-switcher
+            ] ++ lib.optionals pkgs.hostPlatform.isLinux [
+              plasma-integration
+            ];
             settings = {
               "apz.allow_double_tap_zooming" = false;
               "apz.allow_zooming" = true;
