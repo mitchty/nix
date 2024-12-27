@@ -192,6 +192,7 @@ in
     # Non gui linux stuff
   ] ++ lib.optionals pkgs.hostPlatform.isLinux [
     #    hponcfg
+    bc
     bpftrace
     docker
     docker-compose
@@ -256,7 +257,8 @@ in
     #    theme = "Spring";
     extraConfig = ''
       enable_audio_bell no
-      visual_bell_duration 0.5
+      visual_bell_duration 0.1
+      tab_bar_style slant
     '';
   };
 
@@ -283,10 +285,6 @@ in
         ''
       ]);
       force = true; # I can't get why I need to set force for ~/.config/i3* stuff
-    };
-    ".config/i3status/config" = {
-      source = ../../static/xorg/i3status/config;
-      force = true;
     };
   } // lib.optionalAttrs pkgs.hostPlatform.isDarwin {
     "Library/Scripts/force-paste.scpt".source = ../../static/src/force-paste.scpt;
