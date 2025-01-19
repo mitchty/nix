@@ -811,3 +811,46 @@ rotatelog() {
     done
   done
 }
+
+# Spit out a directory path that is:
+# - Unique
+# - based on path/$PWD
+# - Also uses the host to segregate paths
+#
+# The premise here is to get stuff out of /tmp and into ~/src/tmp so that I can
+# sync things if needed and keep stuff like cargo build artifacts out of the
+# $PWD
+#
+# This function is intended to be portable and usable for other things too.
+uniq_tmpdir() {
+  local label="${1:-unknown}"
+  local base="${TMPDIR:-/tmp}"
+  local thishost="${HOST:-$(uname -n)}"
+  #shellcheck disable=SC2046,SC2155
+  local hash=$(echo "${PWD}" | sha1sum | head -c40)
+  # TODO portable-ize this to use sed prolly
+  local tmppath="${PWD//[^a-zA-Z0-0]/-}"
+
+  printf "%s/uniq/%s" "${base}" "${thishost}"
+
+  if [ "${label}" != "unknown" ]; then
+      printf "/%s" "${label}"
+  fi
+
+  printf "/%s%s" "${hash}" "${tmppath}"
+}
+
+# Make abusing .patch files from github or locally easier... cause I'm a lazy jerk
+maybe_patch() {
+  input="$(cat /dev/stdin)"
+  patchargs=${patchargs:--p1}
+
+  # If I quote this if there are multiple args it will be "--foo --bar" vs
+  # --foo --bar so NOOOOOO SHELLCHECK I am not quoting this ffs.
+  #shellcheck disable=SC2086
+  if echo "${input}" | patch -R -s -f --dry-run ${patchargs}; then
+    printf "patch already applied\n" >&2
+  else
+    echo "${input}" | patch ${patchargs}
+  fi
+}

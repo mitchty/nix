@@ -15,66 +15,6 @@ hgi() {
   wrk try_git "https://github.hpe.com/${1}" "${2:-}"
 }
 
-# Save on typing wrk gi ... all the time...
-wgi() {
-  wrk gi "$@"
-}
-
-wbod() {
-  cd ~/src/wrk/wip
-  j todo > todo
-  git add todo && git ci -m "bod: $(date +%Y-%b-%d)"
-}
-
-weod() {
-  cd ~/src/wrk/wip
-  j todo > todo
-  git add todo && git ci -m "eod: $(date +%Y-%b-%d)"
-  eod
-}
-
-# Daily jira cli alias, first arg should always be something jira-cli doens't
-# have so it can fall through to the cli if its not known. That way this acts
-# like a fancy alias with extra features.
-j() {
-  if [ "todo" = "$1" ]; then
-    shift
-    jira issue list -a "$(jira me)" --plain --jql 'project is not empty and status not in (Closed,Done)' --no-headers --columns KEY,TYPE,STATUS,SUMMARY
-  elif [ "unassign" = "$1" ]; then
-    shift
-    jira issue assign $1 x
-  elif [ "self" = "$1" ]; then
-    shift
-    jira issue assign $1 $(jira me)
-    # Special arg that assigns and moves the ticket to in progress
-  elif [ "wip" = "$1" ]; then
-    shift
-    j self "$@"
-    j inprogress "$@"
-    return
-  elif [ "inprogress" = "$1" ]; then
-    shift
-    jira issue move $1 'In Progress'
-  elif [ "inreview" = "$1" ]; then
-    shift
-    jira issue move $1 'In Review'
-  elif [ "done" = "$1" ]; then
-    shift
-    jira issue move $1 'Done'
-  elif [ "comment" = "$1" ]; then
-    shift
-    jira issue comment add '$*'
-  elif [ "spy" = "$1" ]; then
-    shift
-    jira issue view --comments 3 --plain $1
-  elif [ "deluge" = "$1" ]; then
-    shift
-    jira issue view --comments 10000 --plain $1
-  else
-    jira $@
-  fi
-}
-
 # Note I largely (ab)used https://stackoverflow.com/questions/62356589/how-to-use-gcloud-cli-to-update-firewall-rules-to-append-new-ip-addresses-to-sou for this nonsense and it woiks.
 # Get current firewall ips as a comma delimited list
 hpe_gcp_fw_current() {
@@ -199,15 +139,4 @@ start_zscaler() {
 stop_zscaler() {
   find /Library/LaunchAgents -name '*zscaler*' -exec launchctl unload -w {} \;
   sudo find /Library/LaunchDaemons -name '*zscaler*' -exec launchctl unload -w {} \;
-}
-
-# Make abusing .patch files from github or locally easier... cause I'm a lazy jerk
-maybe_patch() {
-  input="$(cat /dev/stdin)"
-  patchargs=${patchargs:--p1}
-  if echo "${input}" | patch -R -s -f --dry-run ${patchargs}; then
-    printf "patch already applied\n" >&2
-  else
-    echo "${input}" | patch ${patchargs}
-  fi
 }

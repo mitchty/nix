@@ -87,7 +87,7 @@ t() {
 # general aliases
 alias s=ssh
 alias quit=exit
-alias cr='reset; clear'
+alias rc='reset; clear'
 alias a=ag
 alias n=noglob
 alias l=ls
@@ -213,11 +213,24 @@ nci() {
 # restart using the last files input, also handle if/when you control-c (rc >
 # 128 basically assuming a non crap non posix compliant exec() shell should be
 # rc 130) Pass the stuff to watch on stdin and args are what is passed to entr
+#
+# Added ability to specify command to run via WENTR env var, this will append to
+# whatever was passed in on stdin if anything. This should allow new files/dirs
+# to get detected on the fly by allowing a command to be used to detect them.
 wentr() {
-  files="$(cat /dev/stdin)"
+  if [ ! -t 0 ]; then
+    local files="$(cat /dev/stdin)"
+  else
+    local files=""
+  fi
   while [ $? -le 128 ]; do
     sleep 1
-    echo "${files}" | entr -ad "$@"
+    local union=${files}
+    if [ -n "${WENTR}" ]; then
+      local new=$(eval ${WENTR})
+      union="${union}\n${new}"
+    fi
+    echo "${union}" | entr -crznpad "$@"
   done
 }
 
@@ -243,34 +256,94 @@ mut() {
   fi
 }
 
-# Create a new .envrc file
-ndir() {
-  echo 'has nix && use flake' > .envrc
-}
-
 # I only allow what I want and don't like typing letters
 da() {
   direnv allow
 }
 
-# Sick of having long ass build commands in my history so function it up.
-nb() {
-  #shellcheck disable=SC2046,SC2034,SC2155,SC3043
-  local d="$(basename $(pwd))"
-
-  #shellcheck disable=SC3043
-  local rc=1
-  if nix build --print-build-logs --show-trace --no-warn-dirty "$@"; then
-    rc=$?
-    notify "${d} ok" "all good bra"
-  else
-    rc=$?
-    notify "${d} GAME OVER MAN GAME OVER" "rc: ${rc}"
-  fi
-  return ${rc}
-}
-
 #^^^ but tag .#release for my shit
 nbr() {
   nb .#release
+}
+
+cb() {
+  time cargo build "$@"
+}
+
+cbr() {
+  cb --release
+}
+
+# Private localhost work that I don't trust being in "da klowd", this is all
+# backed up and synced across computers so watevs.
+prg() {
+  prv try_git localhost/"$*"
+}
+
+# Work related section
+
+# Save on typing wrk gi ... all the time...
+wgi() {
+  wrk gi "$@"
+}
+
+wbod() {
+  cd ~/src/wrk/wip || return 126
+  # I'm not writing to the same file stoppit
+  #shellcheck disable=SC2094
+  j todo > todo
+  git add todo && git ci -m "bod: $(date +%Y-%b-%d)"
+}
+
+weod() {
+  cd ~/src/wrk/wip || return 126
+  # I'm not writing to the same file stoppit
+  #shellcheck disable=SC2094
+  j todo > todo
+  git add todo && git ci -m "eod: $(date +%Y-%b-%d)"
+  eod
+}
+
+# Daily jira cli alias, first arg should always be something jira-cli doesn't
+# have so it can fall through to the cli if its not known. That way this acts
+# like a fancy alias with extra features.
+j() {
+  # NO quoting bad here too
+  #shellcheck disable=SC2086
+  if [ "todo" = "$1" ]; then
+    shift
+    jira issue list -a "$(jira me)" --plain --jql 'project is not empty and status not in (Closed,Done)' --no-headers --columns KEY,TYPE,STATUS,SUMMARY
+  elif [ "unassign" = "$1" ]; then
+    shift
+    jira issue assign $1 x
+  elif [ "self" = "$1" ]; then
+    shift
+    jira issue assign $1 "$(jira me)"
+    # Special arg that assigns and moves the ticket to in progress
+  elif [ "wip" = "$1" ]; then
+    shift
+    j self "$@"
+    j inprogress "$@"
+    return
+  elif [ "inprogress" = "$1" ]; then
+    shift
+    jira issue move $1 'In Progress'
+  elif [ "inreview" = "$1" ]; then
+    shift
+    jira issue move $1 'In Review'
+  elif [ "done" = "$1" ]; then
+    shift
+    jira issue move $1 'Done'
+  elif [ "comment" = "$1" ]; then
+    shift
+    jira issue comment add '$*'
+  elif [ "spy" = "$1" ]; then
+    shift
+    jira issue view --comments 3 --plain $1
+  elif [ "deluge" = "$1" ]; then
+    shift
+    jira issue view --comments 10000 --plain $1
+  else
+    jira "$@"
+  fi
 }
