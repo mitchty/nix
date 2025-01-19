@@ -16,6 +16,7 @@ in
 {
   # imports = [ mylib.nixFiles ./. ];
   imports = [
+    ./fw.nix
     ./cluster.nix
     ./media.nix
     ./grafana.nix
