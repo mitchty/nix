@@ -37,8 +37,7 @@ setopt auto_cd
 setopt glob_dots
 setopt print_exit_value # I love you zsh for this, print out non zero exits.
 
-other_term()
-{
+other_term() {
   case $TERM in
   ,*xterm*|*rxvt*|dtterm|kterm|eterm)
     print -Pn "\e]2;%~\a"
@@ -51,8 +50,7 @@ other_term()
   esac
 }
 
-chpwd()
-{
+chpwd() {
   [[ -o interactive ]] || return
   case $TERM in
   eterm-color) # getting emacs terminal to not be annoying... sucks
@@ -81,7 +79,6 @@ zstyle ':completion:*:*:*:*:processes' force-list always
 
 # No need to setup ssh known host parsing as root, just regular users.
 # This is pretty old using compctl, need to update eventually.
-
 if [[ "$LOGNAME" != "root" ]]; then
     zmodload zsh/mathfunc
     if [[ -f "$HOME/.ssh/known_hosts" ]]; then
@@ -90,9 +87,6 @@ if [[ "$LOGNAME" != "root" ]]; then
         zstyle ':completion:*:*:*:hosts-host' ignored-patterns '|1|*' loopback localhost
     fi
     zstyle ':completion:::complete*' use-cache 1
-
-    # This really should be closer to the definition of extract.
-    compctl -g '*.tar.bz2 *.tbz2 *.tbz *.tar.gz *.tgz *.bz2 *.gz *.jar *.zip *.rar *.tar *.Z *.tZ *.tar.Z' + -g '*(-/)' extract
 fi
 
 # More history options for newer zsh versions
@@ -101,6 +95,10 @@ setopt hist_save_no_dups
 setopt hist_find_no_dups
 setopt hist_no_functions
 setopt hist_expire_dups_first
+
+# History > 5000 in size seems to be problematic in fzf
+export HISTSIZE=5000
+export SAVEHIST=$HISTSIZE
 
 bindkey ' ' magic-space # Complete spaces too dammit, i'm lazy.
 
@@ -123,8 +121,7 @@ zstyle ':vcs_info:*' enable git
 zstyle ':vcs_info:*' check-for-changes true
 setopt prompt_subst
 
-precmd()
-{
+precmd() {
   if [[ -d .git ]]; then
     vcs_info
   else
@@ -137,8 +134,9 @@ function +vi-git-st() {
     local ahead behind
     local -a gitstatus
 
-    ahead=$(git rev-list ${hook_com[branch]}@{upstream}..HEAD 2>/dev/null | wc -l | sed -e 's|^ *||g')
-    behind=$(git rev-list HEAD..${hook_com[branch]}@{upstream} 2>/dev/null | wc -l | sed -e 's|^ *||g')
+    # Using awk for line count and not wc just to keep things portable on bsd wc
+    ahead=$(git rev-list ${hook_com[branch]}@{upstream}..HEAD 2>/dev/null | awk 'END{print NR}')
+    behind=$(git rev-list HEAD..${hook_com[branch]}@{upstream} 2>/dev/null | awk 'END{print NR}')
 
     (( $ahead )) && gitstatus+=( "+${ahead}" )
     (( $behind )) && gitstatus+=( "-${behind}" )
@@ -149,7 +147,7 @@ function +vi-git-st() {
 # Untracked crap in the repo not covered by .gitignore?
 function +vi-git-untracked(){
     if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && \
-        git status --porcelain | grep '??' &> /dev/null ; then
+        git status --porcelain | grep -q '??'; then
         hook_com[staged]+="%{$fg[red]%}N"
     fi
 }
