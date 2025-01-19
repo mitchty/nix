@@ -7,6 +7,8 @@ _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 set "${SETOPTS:--eu}"
 
+# We run this twice to catch if/when say result dir gets updated/removed so we
+# can recover that gc root and delete any garbage from it
 nix-collect-garbage --delete-older-than 31d
 nix-store --gc
 nix-store --optimise
