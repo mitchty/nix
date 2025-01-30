@@ -516,6 +516,21 @@
         };
       };
 
+      rootWifiSecrets = user: {
+        "wifi/lostfox" = {
+          file = ./secrets/wifi/lostfox.age;
+          owner = user;
+        };
+        "wifi/newerhotness" = {
+          file = ./secrets/wifi/newerhotness.age;
+          owner = user;
+        };
+        "wifi/gambit" = {
+          file = ./secrets/wifi/gambit.age;
+          owner = user;
+        };
+      };
+
       cifsSecrets = {
         "cifs/plex" = {
           file = ./secrets/cifs/plex.age;
@@ -838,8 +853,7 @@
                   primaryUser = homeUser;
                   primaryGroup = homeGroup;
                 };
-                age.secrets = ageHomeNixos homeUser // ageCifsNixos;
-
+                age.secrets = ageHomeNixos homeUser // ageCifsNixos // rootWifiSecrets rootUser;
                 roles.gui = {
                   enable = false;
                   isLinux = true;
@@ -850,6 +864,7 @@
                   displaySize = "teeny";
                 };
                 services.role = {
+                  wiffy.enable = true;
                   gaming.enable = true;
                   qemu.enable = true;
                   intel.enable = true;

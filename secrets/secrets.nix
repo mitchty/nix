@@ -30,7 +30,7 @@ let
   allhosts = homehosts;
 
   # Just router(s)
-  router = [ gw ];
+  #router = [ gw ];
 
   # Mostly for the canary secret for testing
   everything = allusers ++ allhosts;
@@ -40,6 +40,9 @@ let
 
   # ytdl
   ytdl = [ srv nexus ];
+
+  # wifi connections
+  wifi = [ wm2 ];
 in
 {
   # Just a canary file to know if things are working
@@ -53,8 +56,9 @@ in
   "passwd/root.age".publicKeys = allnixos ++ ageadmins;
   "passwd/mitch.age".publicKeys = allnixos ++ ageadmins;
 
+  # TODO moved to using an ap instead
   # Only the router needs the the hostapd stuff
-  "wifi/passphrase.age".publicKeys = router ++ ageadmins;
+  #  "wifi/passphrase.age".publicKeys = router ++ ageadmins;
 
   # cifs mount user/pass files
   "cifs/plex.age".publicKeys = cifs ++ ageadmins;
@@ -62,4 +66,8 @@ in
 
   # Cookies for ytdl-sub
   "net/cookies.txt.age".publicKeys = ytdl ++ ageadmins;
+
+  # Wifi networkmanager setup
+  "wifi/lostfox.age".publicKeys = wifi ++ ageadmins;
+  "wifi/newerhotness.age".publicKeys = wifi ++ ageadmins;
 }
