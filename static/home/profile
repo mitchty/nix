@@ -209,31 +209,6 @@ nci() {
   find . \( -name "*.lock" -o -name "*.nix" \) -type f | entr -d sh -c "time nix build && time nix flake check; printf '%s %s\n' \"\`date\`\" \$(git diff | sha256sum | awk '{print \$1}')"
 }
 
-# Wrapped entr to handle when the directory gets updated and it exits and just
-# restart using the last files input, also handle if/when you control-c (rc >
-# 128 basically assuming a non crap non posix compliant exec() shell should be
-# rc 130) Pass the stuff to watch on stdin and args are what is passed to entr
-#
-# Added ability to specify command to run via WENTR env var, this will append to
-# whatever was passed in on stdin if anything. This should allow new files/dirs
-# to get detected on the fly by allowing a command to be used to detect them.
-wentr() {
-  if [ ! -t 0 ]; then
-    local files="$(cat /dev/stdin)"
-  else
-    local files=""
-  fi
-  while [ $? -le 128 ]; do
-    sleep 1
-    local union=${files}
-    if [ -n "${WENTR}" ]; then
-      local new=$(eval ${WENTR})
-      union="${union}\n${new}"
-    fi
-    echo "${union}" | entr -crznpad "$@"
-  done
-}
-
 h() {
   # PUBTOKEN="${HOME}/.gh-cli-pub${CATEGORY+-}${CATEGORY-}"
   PUBTOKEN="${HOME}/.gh-cli-${CATEGORY:-pub}"
@@ -259,19 +234,6 @@ mut() {
 # I only allow what I want and don't like typing letters
 da() {
   direnv allow
-}
-
-#^^^ but tag .#release for my shit
-nbr() {
-  nb .#release
-}
-
-cb() {
-  time cargo build "$@"
-}
-
-cbr() {
-  cb --release
 }
 
 # Private localhost work that I don't trust being in "da klowd", this is all

@@ -9,11 +9,15 @@
 with lib;
 
 let
+  cb = (pkgs.writeScriptBin "cb" (builtins.readFile ../../static/src/cb.sh)).overrideAttrs (old: {
+    buildCommand = "${old.buildCommand}\n patchShebangs $out";
+  });
+
   # TODO: maybe yeet this into the gui role itself as a default?
   gooey = (pkgs.hostPlatform.isDarwin || (roles.gui.enable or false) || (roles.gui-new.enable or false));
 
   # Default font size based off display size in role, basically big or else...
-  fontSize = if roles.gui-new.displaySize == "big" then 12 else 10;
+  fontSize = if roles.gui-new.displaySize == "big" then 14 else 12;
   fontName = "Comic Code Bold";
 
   notify = (pkgs.writeScriptBin "notify" (builtins.readFile ../../static/src/notify)).overrideAttrs (old: {
@@ -21,14 +25,6 @@ let
   });
 
   ugde = (pkgs.writeScriptBin "ugde" (builtins.readFile ../../static/src/ugde.sh)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
-  nb = (pkgs.writeScriptBin "nb" (builtins.readFile ../../static/src/nb.sh)).overrideAttrs (old: {
-    buildCommand = "${old.buildCommand}\n patchShebangs $out";
-  });
-
-  nba = (pkgs.writeScriptBin "nba" (builtins.readFile ../../static/src/nba.sh)).overrideAttrs (old: {
     buildCommand = "${old.buildCommand}\n patchShebangs $out";
   });
 
@@ -61,10 +57,10 @@ in
   # aka have something to control: is this a box for streaming? if so add
   # obs-studio etc.. something akin to roles in ansible.
   home.packages = with pkgs; [
+    bwcli
+    cb
     notify
     ugde
-    nb
-    nba
     nixgc
   ] ++ [
     # pkgs.agenix.${pkgs.system}.agenix
@@ -97,7 +93,6 @@ in
     bind
     bitwarden-cli
     bonnie
-    bwcli # this is my wrapper for ^^^
     ccls
     clang-tools
     coreutils
@@ -150,7 +145,6 @@ in
     nix-prefetch-scripts
     nix-tree
     nixpkgs-fmt
-    nodePackages.bash-language-server
     nom
     nvd
     openssl
@@ -168,7 +162,6 @@ in
     rclone
     ripgrep
     rq
-    pkgs.unstable.rust-analyzer
     s3cmd
     shellcheck
     shellspec
@@ -179,14 +172,16 @@ in
     tldr
     tmuxp
     unzip
+    yt-dlp
     vim
     wget
     xz
-    yaml-language-server
-    yt-dlp
     zstd
     # General gui stuff
   ] ++ lib.optionals gooey [
+    nodePackages.bash-language-server
+    pkgs.unstable.rust-analyzer
+    yaml-language-server
     comic-code
     pragmata-pro
     # Non gui linux stuff
@@ -202,12 +197,15 @@ in
     lshw
     podman
     podman-compose
+    progress
     sysstat
     tcpdump
     tio
     traitor
+    trickle
     usbutils
-    pkgs.unstable.webex
+    inputs.mitchty.packages.${pkgs.system}.ytdl-sub
+    #    pkgs.unstable.webex
     # Gui linux stuff
   ] ++ lib.optionals (gooey && pkgs.hostPlatform.isLinux) [
     mystatus
@@ -221,7 +219,6 @@ in
     xclip
     xsel
     xorg.xauth
-    inputs.mitchty.packages.${pkgs.system}.ytdl-sub
   ] ++ lib.optionals (pkgs.hostPlatform.isLinux) [
     efibootmgr
     # macos specific stuff
@@ -242,7 +239,6 @@ in
 
   programs.emacs = {
     enable = gooey;
-    #    package = pkgs.wrappedEmacs;
     package = pkgs.myEmacs;
   };
 

@@ -228,7 +228,7 @@ try_hg() {
   uproto=$(printf "%s" "${uri}" | ${GREP} '://' > /dev/null 2>&1 && printf "%s" "${uri}" | sed -e 's|[:]\/\/.*||g')
   shift
   proto=${uproto:-https}
-  defbranches="${1:-master main}"
+  defbranches="${1:-master main shenanigans}"
   shift > /dev/null 2>&1
   # For wrapper functions, allow destination to be an env var iff unset and
   # nonnull and $3 is present use $3 or as a fallback use $HOME/src
@@ -853,4 +853,31 @@ maybe_patch() {
   else
     echo "${input}" | patch ${patchargs}
   fi
+}
+
+# Wrapped entr to handle when the directory gets updated and it exits and just
+# restart using the last files input, also handle if/when you control-c (rc >
+# 128 basically assuming a non crap non posix compliant exec() shell should be
+# rc 130) Pass the stuff to watch on stdin and args are what is passed to entr
+#
+# Added ability to specify command to run via WENTR env var, this will append to
+# whatever was passed in on stdin if anything. This should allow new files/dirs
+# to get detected on the fly by allowing a command to be used to detect them.
+wentr() {
+  #shellcheck disable=SC2155
+  if [ ! -t 0 ]; then
+    local files="$(cat /dev/stdin)"
+  else
+    local files=""
+  fi
+  while [ $? -le 128 ]; do
+    sleep 1
+    local union="${files}"
+    if [ -n "${WENTR}" ]; then
+      #shellcheck disable=SC2046,SC2086,SC2155
+      local new=$(eval ${WENTR})
+      union="${union}\n${new}"
+    fi
+    echo "${union}" | entr -crznpad "$@"
+  done
 }
