@@ -70,4 +70,5 @@ in
   # Wifi networkmanager setup
   "wifi/lostfox.age".publicKeys = wifi ++ ageadmins;
   "wifi/newerhotness.age".publicKeys = wifi ++ ageadmins;
+  "wifi/gambit.age".publicKeys = wifi ++ ageadmins;
 }

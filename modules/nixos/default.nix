@@ -33,6 +33,7 @@ in
     ./prometheus.nix
     ./promtail.nix
     ./router.nix
+    ./wifi-nm.nix
     ../shared/default.nix
   ];
 }
