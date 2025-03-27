@@ -35,7 +35,7 @@
   nixConfig.commit-lockfile-summary = "flake: Update inputs";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
+    nixpkgs.url = "github:NixOS/nixpkgs/release-24.11";
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flakelight = {
       url = "github:nix-community/flakelight";
