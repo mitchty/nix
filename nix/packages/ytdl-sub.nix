@@ -17,6 +17,8 @@ python3.pkgs.buildPythonApplication rec {
   };
 
   postPatch = ''
+    substituteInPlace src/ytdl_sub/__init__.py \
+        --replace '2023.10.22+bfba4f0' '${version}'
     substituteInPlace src/ytdl_sub/config/defaults.py  \
         --replace '/usr/bin/ffmpeg' '${pkgs.ffmpeg}/bin/ffmpeg' \
         --replace '/usr/bin/ffprobe' '${pkgs.ffmpeg}/bin/ffprobe'
