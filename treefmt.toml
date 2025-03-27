@@ -1,0 +1,7 @@
+[formatter.nix]
+command = "nixfmt"
+includes = ["nix/**/*.nix"]
+
+[formatter.sh]
+command = "altshfmt"
+includes = ["bin/*versions"]
