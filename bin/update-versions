@@ -22,10 +22,10 @@ ${DIR:+cd $DIR}
 #
 # Abusing git commit -u to be sure any changes/updates only apply to
 # the specific package nix-update updated.
-if ! git diff-index --quiet HEAD; then
-  printf "local git changes, refusing to continue.\n" >&2
-  exit 2
-fi
+# if ! git diff-index --quiet HEAD; then
+#   printf "local git changes, refusing to continue.\n" >&2
+#   exit 2
+# fi
 
 # 2> /dev/null to nuke the stderr warning: messages
 for pkg in ytdl-sub; do
