@@ -1,8 +1,24 @@
-Note if you are using anything here as a reference be aware I'm refactoring/rebuilding all of this gihugic hack using flake-parts etc...
+My home nixos/nix-darwin configuration rewrite in flakelight
 
-Consider the primary branch as legacy and old and busted. Not all the new hotness is ready yet though while I rebuild this setup from the ground up to be a lot less sus based on my past few years of learning nix and flakes and finding out how I did things was.... less than optimal or plain up just "wrong". Live and learn.
+This is a work in progress. Don't abuse it yet.
 
-You've been warned!
+Its main raison d'etre is to do disk setup/partitioning via disko and autogeneration of stuff. As well as to get deploy-rs to do all the rest of the work so I can do deploys of things from one location out to remote systems over ssh.
+
+Todos:
+- ssh ca setup so I can use an ssh ca setup for all ssh internally
+- wireguard setup so I can setup my own overlay vpn for everything
+
+* Testing via qemu/vm
+
+I have a truly hacky script/wrapper around qemu in the bin dir, [[file:bin/test-iso][test-iso]]. Its a hacky simple way to test out derivations.
+
+For now it defaults to the vm setup in nix/nixosConfiguratins/vm
+
+This is a temporary state for now, I hope, its mostly to bootstrap into a fully automated install again. I want to figure out how to replace this script with "normal" nixos testing infra in python like the nixos/nixpkgs repo has.
+
+For now quick hacks is fine. Also useful for testing "air-gap" use cases as I can just disable network on qemu.
+
+Below here be old readme I haven't updated. Its likely not applicable any longer.
 
 * My home network nix flake setup
 
@@ -33,15 +49,6 @@ https://mipmip.github.io/home-manager-option-search/?query=
 
   A nice cli that searches both is https://github.com/mlvzk/manix
 
-** Potent Notables
-
-   So what in here is worth looking at exactly? Well this is a combined NixOS and x86 Macos setup with home manager. That is, while its incomplete I manage both my macos laptop and any/all NixOS nodes from this shared flake repo.
-
-   There is also iso generation and autoinstall setup as well, for that reference [[file:modules/iso/autoinstall.nix][this autoinstall module]]. As well as the generators in [[file:flake.nix][flake.nix]] (search for iso).
-
-   My current setup is basically build an iso that will autoinstall nixos onto a system then poweroff/reboot and from there I can pivot that install into this install via deploy-rs.
-
-   On the deploy-rs note, the flake file also has those.
 
 ** Rough usage
 

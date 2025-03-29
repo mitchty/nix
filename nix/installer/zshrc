@@ -1,3 +1,4 @@
+#-*-mode: Shell-script; coding: utf-8;-*-
 # Installer only zshrc config
 set -o emacs
 
@@ -15,7 +16,6 @@ asroot() {
 # input could be like:
 # sda|/dev/sda, so just see if its a block device first then prepend
 # /dev/ to it and try that if it fails it fails.
-
 disklinks() {
   target="${1?need a target bra}"
 
@@ -35,3 +35,10 @@ alias autostatus="asroot systemctl status autoinstall"
 alias autorestart="asroot systemctl restart autoinstall"
 alias autof="journalctl -fu autoinstall"
 alias autoc="journalctl -u autoinstall | cat"
+
+installer() {
+  asroot disko
+  asroot nixos-generate-config --root /mnt
+  asroot install -m644 /etc/machine-id /mnt/etc/machine-id
+  asroot nixos-install --no-root-password
+}

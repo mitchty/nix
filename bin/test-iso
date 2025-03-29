@@ -16,7 +16,7 @@ set -xeu
 # fine.
 QEMU=${QEMU:-qemu-system-x86_64-uefi}
 
-ISO=${1:-installiso}
+ISO=${1:-vm-iso}
 PREFIX="${PREFIX:-${HOME}/.cache/mitchty}"
 
 install -dm755 "${PREFIX}"
