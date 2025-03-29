@@ -16,74 +16,29 @@ set -xeu
 # fine.
 QEMU=${QEMU:-qemu-system-x86_64-uefi}
 
-qemuargs="-enable-kvm -smp 4 -nographic -m 8096 -boot d"
+ISO=${1:-installiso}
+PREFIX="${PREFIX:-${HOME}/.cache/mitchty}"
+
+install -dm755 "${PREFIX}"
+
+qemuargs="${qemuargs:--enable-kvm -smp 4 -nographic -m 8096 -boot d}"
 
 get_iso() {
-  readlink -f $(find -L ${_dir}/.. -name custom.iso -type f | head -n1)
+  readlink -f $(find -L ${_dir}/.. -name "*.iso" -type f | head -n1)
 }
 
-# Test out single, zfs, and lvm autoinstalls, the end result is these vm's
-# shouldn't stay running forever
-#
-# I need to come up with some way to get this into nix flake checks that makes
-# sense.
+nix build ${NIXOPTS-} ".#${ISO}"
+base=$(TMPDIR=${PREFIX} mktemp -d XXXXXXXX -t)
 
-test_simple() {
-  # Single simple one disk straight up fs setup.
-  typ=isoSimpleTest
-  nix build ${NIXOPTS-} ".#${typ}"
-  iso=$(get_iso)
-  tmpdir=$(mktemp -d XXXXXXXX -t)
-  trap "rm -fr $tmpdir" EXIT TERM INT QUIT
+trap "rm -fr ${base}" EXIT TERM INT QUIT
 
-  disk0="${tmpdir}/vdisk0"
-  qemu-img create -f qcow2 ${disk0} 40G
+disk0="${base}/vdisk0"
+qemu-img create -f qcow2 ${disk0} 40G
+disk1="${base}/vdisk1"
+qemu-img create -f qcow2 ${disk1} 40G
+disk2="${base}/vdisk2"
+qemu-img create -f qcow2 ${disk2} 40G
 
-  sshport=$((($(echo ${typ} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
+sshport=$((($(echo ${ISO} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
 
-  qemu-system-x86_64-uefi ${qemuargs} -cdrom ${iso} -hda ${disk0} -net user,hostfwd=tcp::${sshport}-:22 -net nic
-  # qemu-system-x86_64-uefi -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -net user,hostfwd=tcp::10022-:22 -net nic
-}
-
-test_iso() {
-  typ=isoTest
-  nix build ${NIXOPTS-} ".#isoWm2"
-  tmpdir=$(mktemp -d XXXXXXXX -t)
-  trap "rm -fr $tmpdir" EXIT TERM INT QUIT
-
-  disk0="${tmpdir}/vdisk0"
-  qemu-img create -f qcow2 ${disk0} 40G
-
-  sshport=$((($(echo ${typ} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
-
-  qemu-system-x86_64-uefi -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -net user,hostfwd=tcp::${sshport}-:22 -net nic
-}
-
-test_zfs() {
-  typ=isoZfsTest
-  nix build ${NIXOPTS-} ".#${typ}"
-  iso=$(get_iso)
-  tmpdir=$(mktemp -d XXXXXXXX -t)
-  trap "rm -fr $tmpdir" EXIT TERM INT QUIT
-
-  disk0="${tmpdir}/vdisk0"
-  qemu-img create -f qcow2 ${disk0} 40G
-  disk1="${tmpdir}/vdisk1"
-  qemu-img create -f qcow2 ${disk1} 40G
-
-  sshport=$((($(echo ${typ} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
-
-  qemu-system-x86_64-uefi ${qemuargs} -cdrom ${iso} -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::${sshport}-:22 -net nic
-  #qemu-system-x86_64-uefi -bios ${efibios}/FV/OVMF.fd -enable-kvm -smp 4 -nographic -m 8096 -boot d -cdrom $(find -L ${_dir}/.. -name custom.iso) -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
-  #qemu-system-x86_64-uefi -enable-kvm -smp 4 -nographic -m 8096 -boot d -hda ${disk0} -hdb ${disk1} -net user,hostfwd=tcp::10022-:22 -net nic
-}
-
-tests="simple zfs"
-
-if [ $# -gt 0 ]; then
-  tests="$@"
-fi
-
-for t in ${tests}; do
-  test_${t}
-done
+${QEMU} ${qemuargs} -cdrom $(get_iso) -hda ${disk0} -hdb ${disk1} -hdd ${disk2} -net user,hostfwd=tcp::${sshport}-:22 -net nic

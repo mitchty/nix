@@ -1,14 +1,16 @@
 {
-  description = "my nix flakelight configuration rewrite";
+  description = "my nix flakelight configuration rewrite... attempt (partier deux)";
 
   outputs = { flakelight, ... }@inputs:
     flakelight ./. {
       imports = [ inputs.flakelight-elisp.flakelightModules.default ];
       inherit inputs;
       withOverlays = [
-        # Stuff straight from the inputs is overlaid here. "normal" overlay
-        # stuffs in nix/overlays. This stuff is "special"
         (final: prev: {
+          # Exposes each input as pkgs.name in the normal package set
+          #
+          # Not quite an "overlay" but a way to abuse different package inputs
+          # or use all of em if I want in my own derivations.
           unstable = import inputs.unstable {
             system = prev.system;
             config = {
@@ -34,6 +36,8 @@
 
   nixConfig.commit-lockfile-summary = "flake: Update inputs";
 
+  # Just inputs after here. TODO: some of these might be derivations in disguise
+  # future mitch figure it out.
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/release-24.11";
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
