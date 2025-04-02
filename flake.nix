@@ -5,6 +5,8 @@
     flakelight ./. {
       imports = [ inputs.flakelight-elisp.flakelightModules.default ];
       inherit inputs;
+      # All here and not in ./nix cause I don't feel like figuring out how to
+      # deal with inputs being passed in right now.
       withOverlays = [
         (final: prev: {
           # Exposes each input as pkgs.name in the normal package set
@@ -29,7 +31,15 @@
         inputs.self.overlays.overrides
         inputs.self.overlays.emacs
       ];
-      checks.statix = pkgs: "${pkgs.statix}/bin/statix check";
+      checks = {
+        statix = pkgs: "${pkgs.statix}/bin/statix check";
+        # Make sure this beast builds at least
+        myEmacs = pkgs: pkgs.myEmacs;
+        libTest = lib: lib.test == 4;
+      };
+      formatters = pkgs: {
+        "*.sh" = "${pkgs.shfmt}/bin/shfmt -w .";
+      };
       legacyPackages = pkgs: pkgs;
       formatter = pkgs: pkgs.nixfmt-rfc-style;
     };

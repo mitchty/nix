@@ -1,10 +1,11 @@
-{ stdenv
-, lib
-, pkgs
-, makeWrapper
-, inputs
-, system ? "x86_64-linux"
-, ...
+{
+  stdenv,
+  lib,
+  pkgs,
+  makeWrapper,
+  inputs,
+  system ? "x86_64-linux",
+  ...
 }:
 let
   inherit (inputs) self;
