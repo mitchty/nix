@@ -27,7 +27,9 @@ get_iso() {
   readlink -f $(find -L ${_dir}/.. -name "*.iso" -type f | head -n1)
 }
 
-nix build ${NIXOPTS-} ".#${ISO}"
+# TODO: lets try this instead of nixos-generators...
+# nix build .#nixosConfigurations.NAME.config.system.build.isoImage
+nix build ${NIXOPTS-} ".#nixosConfigurations.${ISO}.config.system.build.isoImage"
 base=$(TMPDIR=${PREFIX} mktemp -d XXXXXXXX -t)
 
 trap "rm -fr ${base}" EXIT TERM INT QUIT

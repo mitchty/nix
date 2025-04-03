@@ -3,7 +3,11 @@
 
   outputs = { flakelight, ... }@inputs:
     flakelight ./. {
-      imports = [ inputs.flakelight-elisp.flakelightModules.default ];
+      imports = [
+        #        inputs.flakelight-elisp.flakelightModules.default
+        # Where can I import this beast?
+        #        inputs.disko.nixosModules.disko
+      ];
       inherit inputs;
       # All here and not in ./nix cause I don't feel like figuring out how to
       # deal with inputs being passed in right now.
@@ -35,7 +39,8 @@
         statix = pkgs: "${pkgs.statix}/bin/statix check";
         # Make sure this beast builds at least
         myEmacs = pkgs: pkgs.myEmacs;
-        libTest = lib: lib.test == 4;
+        # TODO: double check this check in disko is right, seems wrong
+        #wtf = inputs.nixpkgs.lib.versionAtLeast inputs.nixpkgs.lib.version "24.11.20240709";
       };
       formatters = pkgs: {
         "*.sh" = "${pkgs.shfmt}/bin/shfmt -w .";

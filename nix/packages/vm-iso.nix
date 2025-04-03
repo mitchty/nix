@@ -1,11 +1,10 @@
-{
-  stdenv,
-  lib,
-  pkgs,
-  makeWrapper,
-  inputs,
-  config,
-  ...
+{ stdenv
+, lib
+, pkgs
+, makeWrapper
+, inputs
+, config
+, ...
 }:
 let
   inherit (inputs) self;
@@ -14,9 +13,9 @@ inputs.nixos-generators.nixosGenerate {
   inherit pkgs;
   format = "install-iso";
   modules = [
-    inputs.disko.nixosModules.default
-    ./../nixosConfigurations/vm/disko.nix
-    ./../nixosConfigurations/vm/configuration-disko.nix
+    # inputs.disko.nixosModules.default
+    # ./../nixosConfigurations/vm/disko.nix
+    # ./../nixosConfigurations/vm/configuration-disko.nix
     # default.nix is setup for a nixosSystem derivation
     ./../nixosConfigurations/vm/configuration.nix
     ./../installer

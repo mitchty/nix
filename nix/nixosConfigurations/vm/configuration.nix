@@ -1,10 +1,13 @@
+{ inputs, lib, pkgs, ... }:
+# let
+#   inherit (inputs) disko;
+# in
 {
-  config,
-  lib,
-  pkgs,
-  inputs,
-  ...
-}:
-{
+  imports = [
+    # infinite recursion...
+    #    disko.nixosModules.disko
+
+    #    (import ./disko.nix { })
+  ];
   environment.variables.EDITOR = "vi";
 }

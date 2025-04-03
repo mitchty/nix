@@ -1,9 +1,9 @@
-{
+{ disks ? [ "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001" ], ... }: {
   disko.devices = {
     disk = {
       main = {
         type = "disk";
-        device = "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001";
+        device = builtins.elemAt disks 0;
         content = {
           type = "gpt";
           partitions = {
