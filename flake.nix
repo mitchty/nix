@@ -37,6 +37,9 @@
       ];
       checks = {
         statix = pkgs: "${pkgs.statix}/bin/statix check";
+        # Make sure ytdl-sub builds at least (its got its own unit tests in the
+        # derivation we're testing against nixpkgs)
+        ytdlSub = pkgs: pkgs.ytdl-sub;
         # Make sure this beast builds at least
         myEmacs = pkgs: pkgs.myEmacs;
         # TODO: double check this check in disko is right, seems wrong
