@@ -1,4 +1,12 @@
-_self: super: {
+self: super: {
+  asm-lsp = super.asm-lsp.overrideAttrs (old: {
+    meta.platforms = self.lib.platforms.unix;
+    buildInputs =
+      old.buildInputs
+      ++ self.lib.optionals self.stdenv.isDarwin [
+        self.darwin.apple_sdk.frameworks.SystemConfiguration
+      ];
+  });
   transcrypt = super.transcrypt.overrideAttrs (old: rec {
     patches = old.patches or [ ] ++ [
       (super.fetchpatch {
@@ -8,4 +16,7 @@ _self: super: {
       })
     ];
   });
+  # open-webui = super.open-webui.overrideAttrs (old: {
+  #   dependencies = old.dependencies ++ [ super.python311Packages.emoji ];
+  # });
 }

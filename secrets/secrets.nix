@@ -16,14 +16,27 @@ let
   cl2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO9/+zDNc2RTZNn25SN0z/iKBc6RrT+uleTUaJT+nPIh";
   cl3 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFjWCCiZOEVe0MWZgpJSMQKrXdA26x8MuaTM7gI6qLYN";
 
-  allnixos = [ rtx srv wm2 gw cl1 cl2 cl3 nexus ];
+  allnixos = [
+    rtx
+    srv
+    wm2
+    gw
+    cl1
+    cl2
+    cl3
+    nexus
+  ];
 
   # To make the following a skosh simpler/easier
   homeusers = [ mitch ];
   homehosts = [ mb ] ++ allnixos;
 
   git = homehosts ++ homeusers;
-  backup = [ mb srv wm2 ];
+  backup = [
+    mb
+    srv
+    wm2
+  ];
 
   # Some secrets should be usable everywhere
   allusers = homeusers;
@@ -36,10 +49,18 @@ let
   everything = allusers ++ allhosts;
 
   # Cifs hosts
-  cifs = [ srv wm2 rtx nexus ];
+  cifs = [
+    srv
+    wm2
+    rtx
+    nexus
+  ];
 
   # ytdl
-  ytdl = [ srv nexus ];
+  ytdl = [
+    srv
+    nexus
+  ];
 
   # wifi connections
   wifi = [ wm2 ];

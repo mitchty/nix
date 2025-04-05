@@ -1,7 +1,8 @@
 {
   description = "my nix flakelight configuration rewrite... attempt (partier deux)";
 
-  outputs = { flakelight, ... }@inputs:
+  outputs =
+    { flakelight, ... }@inputs:
     flakelight ./. {
       imports = [
         #        inputs.flakelight-elisp.flakelightModules.default
@@ -18,13 +19,13 @@
           # Not quite an "overlay" but a way to abuse different package inputs
           # or use all of em if I want in my own derivations.
           unstable = import inputs.unstable {
-            system = prev.system;
+            inherit (prev) system;
             config = {
               allowUnfree = true;
             };
           };
           open-webui-cli = inputs.open-webui-cli.packages.${prev.system}.release;
-          nix-update = inputs.nix-update.packages.${prev.system}.nix-update;
+          inherit (inputs.nix-update.packages.${prev.system}) nix-update;
         })
         inputs.nixgl.overlays.default
         inputs.emacs-overlay.overlay
@@ -38,7 +39,7 @@
       ];
 
       checks = {
-        statix = pkgs: "${pkgs.statix}/bin/statix check";
+        openwebui = pkgs: pkgs.open-webui;
         ytdlp = pkgs: pkgs.yt-dlp;
         #        ytdlp = pkgs: pkgs.yt-dlp-wrapped;
         # Make sure ytdl-sub and yt-dlp overlay builds at least (its got its own
@@ -48,7 +49,9 @@
         myEmacs = pkgs: pkgs.myEmacs;
         # TODO: double check this check in disko is right, seems wrong
         #wtf = inputs.nixpkgs.lib.versionAtLeast inputs.nixpkgs.lib.version "24.11.20240709";
+        statix = pkgs: "${pkgs.statix}/bin/statix check";
       };
+
       formatters = pkgs: {
         "*.sh" = "${pkgs.shfmt}/bin/shfmt -w .";
       };

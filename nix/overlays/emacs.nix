@@ -1,4 +1,37 @@
-self: super: rec {
+self: super:
+let
+  # These are the nixpkgs packages that I need to make sure are included with
+  # emacs for editing.
+  #
+  # The idea is we use wrapProgram to setup PATH for emacs itself versus make
+  # sure that these are installed within the $HOME or system packages.
+  editorPackages = with super.pkgs; [
+    coreutils
+    curl
+    gitFull
+    git-lfs
+    deadnix
+    gcc11
+    gnumaek
+    ispell
+    nodePackages.bash-language-server
+    nixpkgs-fmt
+    python3Full
+    rage
+    shellcheck
+    shellspec
+    shfmt
+    yaml-language-server
+    emacs-lsp-booster
+  ];
+
+in
+# TODO Hack to make the "version" of this crap take on the mtime of the file
+# itself. Note, not working entirely for some reason grrr future me problem.
+#   datever =
+#     super.pkgs.runCommand "emacs-overlay-file-mtime"
+#       "date -r ${./default.nix} +%Y.%m.%d.%H.%M.%S > $out";
+rec {
   # This is my complicated af overlay for emacs
   #
   # The overall situation is I've hit issues with using org mode init files with the overlay.
@@ -82,8 +115,36 @@ self: super: rec {
           ];
         });
 
+  # https://github.com/nix-community/emacs-overlay/issues/411
+  #
+  # Fix is only in nixpkgs-unstable
+  #
+  # TODO Figure out a way to not have to hack in the patch override for emacs-org
+  override2405OrgHack = final: prev: {
+    org = prev.org.overrideAttrs (old: {
+      patches = [ ];
+    });
+    # emacsWithPackages = epkgs: with epkgs; [
+    #   (treesit-grammars.with-all-grammars)
+    #   # (treesit-grammars.with-grammars (p: [
+    #   #   p.tree-sitter-bash
+    #   #   p.tree-sitter-c
+    #   #   p.tree-sitter-dockerfile
+    #   #   p.tree-sitter-elisp
+    #   #   p.tree-sitter-glsl
+    #   #   p.tree-sitter-haskell
+    #   #   p.tree-sitter-html
+    #   #   p.tree-sitter-http
+    #   #   p.tree-sitter-json
+    #   #   p.tree-sitter-latex
+    #   #   p.tree-sitter-
+    #   # ]))
+    # ];
+  };
+
   # Only used to validate the overlay
   myEmacsPrime = super.emacsWithPackagesFromUsePackage {
+    #      override = override2405OrgHack;
     config = ../../static/emacs/init.org;
     package = emacsPatched;
   };
@@ -91,6 +152,8 @@ self: super: rec {
   # Convert org to .el so init.el can stay in the nix store.
   myInitEl = super.stdenv.mkDerivation rec {
     pname = "myinitel";
+    # version = builtins.readFile super.pkgs.runCommand "emacs-overlay-file-mtime"
+    #   "date -r ${./default.nix} +%Y.%m.%d.%H.%M.%S > $out";
     version = "0.0.0";
     buildInputs = [
       self.myEmacsPrime
@@ -117,23 +180,26 @@ self: super: rec {
   };
 
   # Use the generated init.el to test out the configuration.
-  myEmacsConfig = super.stdenv.mkDerivation rec {
-    pname = "myemacsconfig";
+  myTestedEmacsConfig = super.stdenv.mkDerivation rec {
+    pname = "mytestedemacsconfig";
+
+    # version = builtins.readFile wtfMtime;
     version = "0.0.0";
+    # TODOhow in the hell does this work in nix repl but not in a derivation? I
+    # just want to have the package date come from build time...
+    # version = builtins.readFile (super.pkgs.runCommand "init-el-mtime" { } "${super.pkgs.coreutils}/bin/date -r ./. +%Y.%m.%d.%H.%M.%S > $out");
     buildInputs = [
       self.myEmacsPrime
     ];
     src = ../../static/emacs;
 
-    # abuse this derivation to munge org->el so we can use that for default init file
-    # and then also use that to batch load it.
+    # For emacs 28.?+ --init-directory simplifies this a skosh to my prior
+    # --load hacks.
+    # https://stackoverflow.com/questions/71146526/how-to-start-emacs-with-specific-user-init-file-and-user-emacs-directory
     buildPhase = ''
       export HOME=$TMPDIR
       echo emacs batch load to make sure init.el is parseable >&2
-      emacs -nw --batch --debug-init --load ${self.myInitEl}/init.el
-
-      echo emacs batch load init.el with itself to make sure all of the config works with modes/tree-sitter etc... >&2
-      emacs -nw --batch --debug-init --load ${self.myInitEl}/init.el ${self.myInitEl}/init.el
+      emacs -nw --batch --debug-init --init-directory ${self.myInitEl}
     '';
 
     installPhase = ''
@@ -143,14 +209,33 @@ self: super: rec {
   };
 
   # me emacs all wrapped up in one spiel
+  # TODO make a wrapper "emacs" that wraps the entire config + package
+  # dependencies so that I don't need to include things in the emacs config into
+  # my regular config.
+  #
+  # TODO also include any setup outside of init.org here like treesitter
+  # grammars etc...
   myEmacs = super.emacsWithPackagesFromUsePackage {
+    #      override = override2405OrgHack;
     package = emacsPatched;
     defaultInitFile = true;
-    config = "${self.myEmacsConfig}/init.el";
+    config = "${self.myTestedEmacsConfig}/init.el";
 
     # If for some reason I need to override an emacs package directly
-    # override = epkgs: epkgs // {
-    #   ligature = epkgs.trivialBuild { pname = "ligature"; src = sources.emacs-ligature; };
-    # });
+    #      override = epkgs: epkgs // {
+    #        inherit eglot-booster;
+    # ligature = epkgs.trivialBuild { pname = "ligature"; src = sources.emacs-ligature; };
+    #     };
+  };
+
+  # use symlinkJoin instead of PATH for pkgs knowledge
+  wrappedEmacs = super.pkgs.symlinkJoin {
+    name = "mt-emacs";
+    meta.mainProgram = "emacs";
+    paths = [ myEmacs ];
+    nativeBuildInputs = [ super.pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/emacs --prefix PATH : "${super.lib.makeBinPath editorPackages}"
+    '';
   };
 }

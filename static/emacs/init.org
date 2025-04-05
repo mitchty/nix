@@ -50,10 +50,52 @@ Use use-package to configure emacs itself.
 
 (unless (display-graphic-p)
   (menu-bar-mode t))
-
-(setq compilation-scroll-output 'first-error)
-(setq compilation-scroll-output t)
 #+end_src
+
+** Compilation mode related
+
+TODO: testing
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(require 'xterm-color)
+(defun my-advice-compilation-filter (f proc string)
+  (funcall f proc (xterm-color-filter string)))
+(advice-add 'compilation-filter :around #'my-advice-compilation-filter)
+
+(use-package fancy-compilation
+  :ensure
+  :defer
+  :after compile
+;;  :hook (compilation-filter . ansi-color-compilation-filter)
+  :custom
+;;  (fancy-compilation-scroll-output 'first-error)
+  (compilation-scroll-output t)
+  (compilation-environment '("TERM=xterm-256color"))
+  (compilation-auto-jump-to-first-error t)
+  (compilation-scroll-output t)
+  (compilation-max-output-line-length nil)
+  :bind ("C-x C-m" . compile)
+  :commands
+  (fancy-compilation-mode))
+
+(use-package multi-compile
+  :ensure
+  :after ivy
+  :custom
+  (multi-compile-completion-system 'ivy)
+  (multi-compile-alist '((rust-mode . (("cargo build" ("cargo build --workspace")
+                                      (locate-dominating-file buffer-file-name ".git"))
+                                     ("cargo release" "cargo build --release --workspace"
+                                      (locate-dominating-file buffer-file-name ".git")))))))
+
+;; Not sure I want to recompile every save...
+;; (use-package recompile-on-save
+;;     :ensure nil
+;;     :defer
+;;     :after fancy-compilation
+;;     :init
+;;     (recompile-on-save-advice compile))
+#+END_SRC
 
 The use-package emacs declaration for general configuration. Everything except ^^^ that I can't seem to make work in use-package is up there.
 
@@ -62,12 +104,16 @@ The use-package emacs declaration for general configuration. Everything except ^
   :ensure
   :demand t
   :bind ("C-x ," . kill-whole-line)
+  ;; TODO figure it out future mitch
+  ;; (:map prog-mode-map
+  ;;       ("C-c C-c"   . compile))
   :hook
   ((prog-mode text-mode org-mode) . hl-line-mode)
+  ((prog-mode text-mode org-mode) . auto-revert-mode)
   (after-init . recentf-mode)
   (after-init . recentf-load-list)
-  (after-save . executable-make-buffer-file-executable-if-script-p)
-  (before-save . delete-trailing-whitespace)
+  ('after-save . #'executable-make-buffer-file-executable-if-script-p)
+  ('before-save . #'delete-trailing-whitespace)
   (emacs-startup . my/display-startup-timing)
   (dired-load . my/dired-hook-thing)
   :init
@@ -140,9 +186,9 @@ The use-package emacs declaration for general configuration. Everything except ^
   (savehist-mode 1)
   (save-place-mode 1)
 
-  (global-auto-revert-mode 1)
-  (global-auto-revert-non-file-buffers t)
-  (auto-revert-remote-files t)
+  ;; (global-auto-revert-mode t)
+  ;; (global-auto-revert-non-file-buffers t)
+  ;; (auto-revert-remote-files t)
 
   (word-wrap t)
   (default-major-mode 'text-mode)
@@ -256,7 +302,7 @@ Sick of solarized, going back to good old black on white minimalism like paper. 
 
 TODO get this hunk o junk working on linux by hook or crook.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package zenburn-theme :ensure)
 (use-package minimal-theme :ensure)
 
@@ -315,7 +361,7 @@ Command should be meta on cocoa emacs like the old carbon/macports version.
 
 *** x copy/paste
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (when (and (memq window-system '(x)) (display-graphic-p))
   (progn
     (setq interprogram-paste-function 'x-get-selection)
@@ -373,11 +419,10 @@ Setup the presets, by default troll with comic code sans cause its funny and not
          :default-family "Monospace"
          )))
   :config
-  ;; For macos not soooo gihugic, xorg fonts are tiny that or I'm
-  ;; getting old.  af, probably both.
-  (if (memq window-system '(mac ns))
-    (fontaine-set-preset 'comic-medium)
-    (fontaine-set-preset 'comic-chonky)))
+  ;; rtx has a gihugic monitor so use smaller size stuff
+  (fontaine-set-preset
+     (cond ((string-equal "rtx" (system-name)) 'comic-base)
+       (t 'comic-medium))))
 #+END_SRC
 
 *** tty
@@ -506,11 +551,8 @@ Direnv and *.envrc* integration/automagic stuff in emacs too.
 (use-package envrc
   :after emacs
   :ensure
-  :defer
   :diminish envrc-mode
-  :commands envrc-global-mode
-  :init
-  (envrc-global-mode))
+  :hook (after-init . envrc-global-mode))
 #+END_SRC
 
 *** exec-path-from-shell
@@ -651,18 +693,35 @@ crap I found on github.
 
 *** yasnippet
 
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp :tangle yes
+(defun my-insert-default-yasnippet ()
+  (when (and (bobp) (eobp))
+    (yas-expand-snippet (yas-lookup-snippet "default"))))
+
+(add-hook 'c-mode-hook 'my-insert-default-yasnippet)
+
 (use-package yasnippet
   :ensure
   :defer
   :init
-  (setq yas-snippet-dirs
-        '("~/.emacs.d/snippets"
-          "~/.emacs.d/snippets-upstream"
-          ))
+  ;;(add-to-list 'yas-snippet-dirs (expand-file-name "~/.emacs.d/yasnippet"))
+  (setq yas-snippet-dirs '((expand-file-name "~/.emacs.d/yasnippet")))
   :config
+  (yas-global-mode 1)
   (yas/reload-all)
   :hook ((prog-mode text-mode org-mode) . yas-minor-mode))
+
+;; (use-package yasnippet
+;;   :ensure
+;;   :defer
+;;   :init
+;;   (setq yas-snippet-dirs
+;;         '("~/.emacs.d/snippets"
+;;           "~/.emacs.d/snippets-upstream"
+;;           ))
+;;   :config
+;;   (yas/reload-all)
+;;
 #+END_SRC
 
 *** expand-region
@@ -715,7 +774,7 @@ Switching to ivy mode+swiper
 
 (use-package counsel-projectile
   :ensure
-  :after counsel
+  :after (counsel projectile)
   :config (counsel-projectile-mode))
 #+END_SRC
 
@@ -912,6 +971,12 @@ Validate this works ok enough.
 (use-package ob-mermaid :after (org, mermaid-mode) :ensure :defer)
 #+END_SRC
 
+*** org latex/babel testing
+
+#+BEGIN_SRC emacs-lisp :tangle no
+
+(use-package ob-beamer :after org :ensure :defer)
+#+END_SRC
 **** org-journal                                                 :validation:
 
 Try out org journal https://github.com/bastibe/org-journal
@@ -1145,7 +1210,7 @@ This mode is neat-o cuase it can highlight/block highlight indentation n stuff.
 
 *** tree-sitter
 
-Since 29.1ish or whatever has it now lets just use it for all the things new hotness and avoid ide's like the plague as is tradition.
+TODO: this should be builtin to emacs 30.1 test it untangled
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package tree-sitter
@@ -1166,21 +1231,50 @@ Since 29.1ish or whatever has it now lets just use it for all the things new hot
 
 Also start using the lsp-mode stuff in 29.x or whatever too. If it works well enough maybe flycheck goes away? Doubt it cause eglots got that correct error at point integration to do an autofix soooo future me figure it out.
 
+TODO eglot-booster/emacs-lsp-booster removal for 30.x+ allegedly its json parsing perf is 8x+ faster so maybe not needed anymore. Future me problem.
+
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package eglot
   :ensure
   :defer
+  :custom
+  (eglot-report-progress nil)
   :config
+  ;; (use-package eglot-booster
+  ;;   :after (eglot)
+  ;;   :config (eglot-booster-mode))
   (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
   (add-hook 'prog-mode-hook 'eglot-ensure)
   (add-to-list 'eglot-stay-out-of 'eldoc))
 
-(use-package lsp-mode :after eglot :ensure :defer)
-
-(use-package flycheck-eglot
+(use-package lsp-mode
+  :after (rustic)
   :ensure
   :defer
+  :custom
+  (lsp-rust-analyzer-cargo-watch-command "clippy")
+  (lsp-eldoc-render-all t)
+  (lsp-idle-delay 0.6)
+  (lsp-inlay-hint-enable t)
+  (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
+  (lsp-rust-analyzer-display-chaining-hints t)
+  (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
+  (lsp-rust-analyzer-display-closure-return-type-hints t)
+  (lsp-rust-analyzer-display-parameter-hints nil)
+  (lsp-rust-analyzer-display-reborrow-hints nil)
+  )
+
+;; (use-package lsp-ui
+;;   :after (lsp-mode)
+;;   :custom
+;;   (lsp-ui-peek-always-show t)
+;;   (lsp-ui-sideline-show-hover t)
+;;   (lsp-ui-doc-enable nil))
+
+(use-package flycheck-eglot
   :after (flycheck eglot)
+  :ensure
+  :defer
   :config
   (global-flycheck-eglot-mode 1))
 #+END_SRC
@@ -1223,50 +1317,29 @@ So I write gooder. Me fail English? Thats unpossible.
 (use-package writegood-mode :ensure :defer)
 #+END_SRC
 
-*** c(ish?)-modes
+*** glsl-mode
 
-#+BEGIN_SRC emacs-lisp :tangle no
-(setq auto-insert-alist
-      (append
-       '(
-         ((c-mode . "c")
-          nil
-          "/*\n"
-          "SPDX-License-Identifier: BlueOak-1.0.0\n"
-          "Description: " _ "\n"
-          "*/\n"
-          "#include <stdio.h>\n"
-          "#include <stdlib.h>\n\n"
-          "int main(int argc, char **argv) {\n"
-          "  return 0;\n"
-          "}\n"
-          )
-         )
-       auto-insert-alist)
-      )
+For GL Shader Language mode.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package glsl-mode :ensure :defer)
+#+END_SRC
+
+*** wgsl-mode
+
+For WebGpu Shader Language mode.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package wgsl-mode :ensure :defer)
 #+END_SRC
 
 *** python-mode
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package python
   :after emacs
-  :config
-  (setq auto-insert-alist
-        (append
-         '(((python-mode . "python")
-            nil
-            "#!/usr/bin/env python\n"
-            "# -*-mode: Python; coding: utf-8;-*-\n"
-            "# SPDX-License-Identifier: BlueOak-1.0.0\n"
-            "# Description: " _ "\n\n"
-            )
-           )
-         auto-insert-alist)
-        )
-)
+  :defer)
 #+END_SRC
-
 
 *** elisp-mode
 
@@ -1281,46 +1354,16 @@ For now just autoformatter related junk.
   :hook (emacs-lisp-mode . elisp-autofmt-mode)
   :config
   (setq elisp-autofmt-python-bin "python3")
-  (setq elisp-autofmt-style 'fixed)
-  (setq auto-insert-alist
-      (append
-       '(
-         ((emacs-lisp-mode . "elisp")
-          nil
-          ";;-*-mode: emacs-lisp; coding: utf-8;-*-\n"
-          ";; SPDX-License-Identifier: BlueOak-1.0.0\n"
-          ";; Description: " _ "\n"
-          )
-         )
-       auto-insert-alist)
-      )
-  )
+  (setq elisp-autofmt-style 'fixed))
 #+END_SRC
 
 *** shell-mode
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package sh-script
-  :after emacs
-  :config
-  (setq auto-insert-alist
-        (append
-         '(
-           ((sh-mode . "sh")
-            nil
-            "#!/usr/bin/env sh\n"
-            "#-*-mode: Shell-script; coding: utf-8;-*-\n"
-            "# SPDX-License-Identifier: BlueOak-1.0.0\n"
-            "# Description: " _ "\n"
-            "_base=$(basename \"$0\")\n"
-            "_dir=$(cd -P -- \"$(dirname -- \"$(command -v -- \"$0\")\")\" && pwd -P || exit 126)\n"
-            "export _base _dir\n"
-            "set \"${SETOPTS:--eu}\"\n"
-            )
-           )
-         auto-insert-alist)
-        ))
+  :after emacs)
 #+END_SRC
+
 *** rust-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -1328,32 +1371,27 @@ For now just autoformatter related junk.
   :after emacs
   :ensure
   :defer
-  :commands rust-mode
-  :config
- (setq auto-insert-alist
-      (append
-       '(
-         ((rust-mode . "rust")
-          nil
-          "/*\n"
-          "SPDX-License-Identifier: BlueOak-1.0.0\n"
-          "Description: " _ "\n"
-          "*/\n"
-          "fn main() {\n"
-          "println!(\"Hi\");\n"
-          "}\n"
-          )
-         )
-       auto-insert-alist)
-      ))
+  ;; TODO: keep? https://github.com/rust-lang/rust-mode/issues/524#issuecomment-2664699717 its not useful for emacs 30.x+
+  ;; :init
+  ;; (setq rust-mode-treesitter-derive t)
+  :commands rust-mode)
 
 (use-package rustic
   :after eglot
   :ensure
+  :bind (:map rustic-mode-map
+;;              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
   :defer
   :custom
   (rustic-rustfmt-config-alist '((edition . "2021")))
-;;  (rustic-format-on-save t)
+  (rustic-format-on-save t)
   (rustic-lsp-client 'eglot)
   :config
   (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1))))
@@ -1384,6 +1422,14 @@ For now just autoformatter related junk.
   :defer
   :config
   (setq flycheck-go-vet-executable "env CC=gcc go vet"))
+#+END_SRC
+
+*** wgsl-mode
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package wgsl-mode
+  :ensure
+  :defer)
 #+END_SRC
 
 *** undo-tree
@@ -1607,6 +1653,30 @@ Probably need to check if this file exists first...
 * TESTING
 
 Stuff thats getting tested...
+
+TODO: this shits not working with ollama for some reason, future mitch figure it out
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package chatgpt-shell
+  :ensure t
+  :defer t
+;;  :init
+;;  (chatgpt-shell-ollama-load-models)
+  :config
+  (setq chatgpt-shell-model-version "qwen2.5:latest")
+  (setq chatgpt-shell-ollama-api-url-base "http://10.10.10.220:11434")
+;;  (setq chatgpt-shell-api-url-base "http://10.10.10.220:11434")
+  (setq chatgpt-shell-openai-key "")
+;;  (setq chatgpt-shell-ollama-models
+;;      '("qwen2.5-coder:32b"
+;;        "deepseek-coder-v2:latest"
+;;        "deepseek-r1:32b"
+;;        "qwen2.5:32b"
+;;        ))
+  )
+#+END_SRC
+
+#+RESULTS:
+
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package no-littering :ensure :custom (create-lockfiles nil))
 #+END_SRC

@@ -1,7 +1,10 @@
 [formatter.nix]
 command = "nixfmt"
-includes = ["nix/**/*.nix"]
+includes = ["**/*.nix"]
+#includes = ["nix/**/*.nix", "flake.nix", "treefmt.nix"]
 
 [formatter.sh]
 command = "altshfmt"
-includes = ["bin/*versions"]
+# TODO: Have a lot of mksh/search/replace non posix stuff to fix
+#includes = ["**/*.sh"]
+includes = ["bin/**/*"]
