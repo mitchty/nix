@@ -26,6 +26,7 @@
           };
           open-webui-cli = inputs.open-webui-cli.packages.${prev.system}.release;
           inherit (inputs.nix-update.packages.${prev.system}) nix-update;
+          inherit (inputs.nixos-generators.packages.${prev.system}) nixos-generate;
         })
         inputs.nixgl.overlays.default
         inputs.emacs-overlay.overlay
