@@ -8,6 +8,8 @@ pkgs: with pkgs; {
     jq
     curl
     htmlq
+    yt-dlp
+    #    yt-dlp-wrapped
     ytdl-sub
     qemu-uefi-wrapper
     hwatch
@@ -17,6 +19,7 @@ pkgs: with pkgs; {
     nix-update
     open-webui-cli
     treefmt
+    statix
     nixfmt-rfc-style
   ];
 }

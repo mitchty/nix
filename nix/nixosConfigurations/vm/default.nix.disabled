@@ -1,19 +1,21 @@
 { inputs, ... }:
 let
   system = "x86_64-linux";
-  nixpkgs = {
-    inherit system;
-  };
+  #   nixpkgs = {
+  #     inherit system;
+  #   };
 in
 {
-  # imports = [
-  #   inputs.disko.nixosModules.disko
-  # ];
   inherit system;
-  specialArgs = { inherit inputs nixpkgs system; };
-  modules = [
-    ./configuration.nix
-  ];
+
+  # imports = [
+  #   #    inputs.disko.nixosModules.disko
+  #   (import ./disko.nix { })
+  # ];
+  # specialArgs = { inherit inputs nixpkgs system; };
+  # modules = [
+  #   ./configuration.nix
+  # ];
 }
 # TODO: Maybe yeet ideas from this comment
 #https://github.com/nix-community/disko/issues/613#issuecomment-2079307891

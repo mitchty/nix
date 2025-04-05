@@ -1,0 +1,98 @@
+final: prev:
+let
+  getDeps = x: map (p: "${p}/${p.pythonModule.sitePackages}") ([ x ] ++ x.propagatedBuildInputs);
+  toPathWithSep = x: prev.pkgs.lib.concatStringsSep ":" (getDeps x);
+in
+rec {
+  # Add in the player object tokens as plugins to yt-dlp
+  yt-dlp-get-pot = prev.python3Packages.buildPythonPackage rec {
+    pname = "yt-dlp-get-pot";
+    version = "0.3.0";
+    pyproject = true;
+    src = prev.fetchFromGitHub {
+      owner = "coletdjnz";
+      repo = "yt-dlp-get-pot";
+      rev = "v${version}";
+      hash = "sha256-MtQFXWJByo/gyftMtywCCfpf8JtldA2vQP8dnpLEl7U=";
+    };
+    build-system = [ prev.python3Packages.hatchling ];
+    doCheck = false;
+    pythonImportsCheck = [ "yt_dlp_plugins" ];
+    latest = "curl --silent https://api.github.com/repos/coletdjnz/yt-dlp-get-pot/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | tr -d v";
+  };
+  bgutil-ytdlp-pot-provider = prev.python3Packages.buildPythonPackage rec {
+    pname = "bgutil-ytdlp-pot-provider";
+    version = "0.8.2";
+    pyproject = true;
+    src = prev.fetchFromGitHub {
+      owner = "Brainicism";
+      repo = "bgutil-ytdlp-pot-provider";
+      rev = version;
+      hash = "sha256-u34RkPmNr0yC2PH8GWF24T+uwCsrVQmg9/qfE3YJQHw=";
+    };
+    propagatedBuildInputs = [ yt-dlp-get-pot ];
+    postUnpack = "pwd; ls; cp source/README.md source/plugin/";
+    sourceRoot = "source/plugin";
+    build-system = [ prev.python3Packages.hatchling ];
+    doCheck = false;
+    pythonImportsCheck = [ "yt_dlp_plugins" ];
+    latest = "curl --silent https://api.github.com/repos/Brainicism/bgutil-ytdlp-pot-provider/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1";
+  };
+  yt-dlp = prev.yt-dlp.overrideAttrs (old: rec {
+    latest = "curl --silent https://api.github.com/repos/yt-dlp/yt-dlp/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1";
+    version = "2025.3.31";
+    src = prev.fetchPypi {
+      inherit version;
+      pname = "yt_dlp";
+      hash = "sha256-G/4OZg0acKCeJ7LVj5LjCx4uNizEh4KfL4JDRq5J+5E=";
+    };
+    # postPatch = ''
+    #   true
+    # '';
+    propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
+      final.yt-dlp-get-pot
+      final.bgutil-ytdlp-pot-provider
+    ];
+    # propagatedBuildInputs = [
+    #   final.yt-dlp-get-pot
+    #   final.bgutil-ytdlp-pot-provider
+    # ] ++ prev.lib.optionals prev.yt-dlp.propagatedBuildInputs [ ];
+  });
+
+  # pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+  #   (pfinal: pprev: {
+  #     yt-dlp-plugins = pfinal.callPackage ./. { };
+  #   })
+  # ];
+  # This basically just wraps yt-dlp+the po token plugins in symlinkJoin and
+  # points PYTHONPATH so that yt-dlp can use those plugins.
+  #
+  # This also acts as a mini derivation that includes all the necessary deps for
+  # the plugins too.
+
+  # TODO: get yt-dlp plugins working transparently without crap in $HOME
+  # yt-dlp-wrapped =
+  #   let
+  #     # extract appropriate python3Packages
+  #     pp = with builtins; (filter (x: x.pname == "python3") final.yt-dlp.propagatedBuildInputs);
+
+  #     # pp = with builtins; head (filter (x: x.pname == "python3") final.yt-dlp.propagatedBuildInputs);
+
+  #     # pp = with builtins; head (filter (x: x.pname == "python3")
+  #     #   (prev.propagatedBuildInputs or [ ]) ++ [
+  #     #   final.yt-dlp-get-pot
+  #     #   final.bgutil-ytdlp-pot-provider
+  #     # ]
+  #     # );
+  #   in
+  #   prev.symlinkJoin
+  #     {
+  #       name = "yt-dlp-wrapped";
+  #       paths = [ final.yt-dlp ];
+  #       buildInputs = [ prev.makeWrapper ];
+  #       postBuild = ''
+  #         wrapProgram $out/bin/yt-dlp \
+  #           --prefix PYTHONPATH : "${toPathWithSep final.${pp.pythonAttr}.pkgs.yt-dlp}"
+  #       '';
+  #     };
+}

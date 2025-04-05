@@ -1,4 +1,8 @@
-{ disks ? [ "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001" ], ... }: {
+{
+  disks ? [ "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001" ],
+  ...
+}:
+{
   disko.devices = {
     disk = {
       main = {

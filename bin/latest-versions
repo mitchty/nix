@@ -17,7 +17,7 @@ ok=0
 
 ${DIR:+cd $DIR}
 
-junk="ytdl-sub"
+junk="ytdl-sub yt-dlp yt-dlp-get-pot bgutil-ytdlp-pot-provider"
 
 if [ "$(uname -s)" = "Darwin" ]; then
   # For now ignore the macos stuff when ran on linux
