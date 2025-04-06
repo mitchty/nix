@@ -1,8 +1,9 @@
-{ inputs
-, lib
-, pkgs
-, self
-, ...
+{
+  inputs,
+  lib,
+  pkgs,
+  self,
+  ...
 }:
 let
   dependencies = [
@@ -32,7 +33,7 @@ in
       # TODO: replace --flake with the build toplevel instead?
       (pkgs.writeShellScriptBin "install-nixos-unattended" ''
         set -eux
-        exec ${pkgs.disko}/bin/disko-install --flake "${./../../..}#vm-simple" --disk prime /dev/sda "$@"
+        exec ${pkgs.disko}/bin/disko-install --write-efi-boot-entries --flake "${./../../..}#vm-simple" --disk prime /dev/sda "$@"
       '')
     ];
   };
