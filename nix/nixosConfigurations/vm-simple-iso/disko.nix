@@ -5,7 +5,7 @@
 {
   disko.devices = {
     disk = {
-      main = {
+      prime = {
         type = "disk";
         device = builtins.elemAt disks 0;
         content = {

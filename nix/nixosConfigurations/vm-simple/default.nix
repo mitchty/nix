@@ -1,12 +1,7 @@
 {
   system = "x86_64-linux";
-  #  inherit system;
-
-  #imports = [
-  #specialArgs = { inherit inputs nixpkgs; };
 
   modules = [
-
     ./configuration.nix
     {
       system.stateVersion = "24.11";
@@ -14,11 +9,6 @@
       networking.hostName = "vm-simple";
     }
   ];
-
-  #];
-  # modules = [
-  #
-  # ];
 }
 # TODO: Maybe yeet ideas from this comment
 #https://github.com/nix-community/disko/issues/613#issuecomment-2079307891

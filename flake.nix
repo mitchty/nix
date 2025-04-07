@@ -63,9 +63,15 @@
   nixConfig.commit-lockfile-summary = "flake: Update inputs";
 
   # Just inputs after here. TODO: some of these might be derivations in disguise
-  # future mitch figure it out.
+  # future mitch figure it out. The dns blocklist is definitely in this category.
   inputs = {
+    # Release YY.MM branch name stuff kept close together for lazy.
     nixpkgs.url = "github:NixOS/nixpkgs/release-24.11";
+    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-24.11-darwin";
+    darwin = {
+      url = "github:LnL7/nix-darwin/nix-darwin-24.11";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
+    };
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flakelight = {
       url = "github:nix-community/flakelight";
@@ -82,6 +88,7 @@
     };
     disko = {
       url = "github:nix-community/disko";
+      #url = "path:/home/mitch/src/pub/github.com/nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-generators = {
@@ -98,7 +105,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     emacs-overlay = {
-      url = "github:nix-community/emacs-overlay";
+      #      url = "github:nix-community/emacs-overlay";
+      url = "github:nix-community/emacs-overlay/87d5e2bbc04a8d2ddff9e1f9e266bf81c3bd45b2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixgl = {
@@ -115,10 +123,8 @@
       flake = false;
     };
     agenix.url = "github:ryantm/agenix";
-    open-webui-cli.url = "github:mitchty/open-webui-cli";
-    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-24.11-darwin";
-    darwin = {
-      url = "github:LnL7/nix-darwin/nix-darwin-24.11";
+    open-webui-cli = {
+      url = "github:mitchty/open-webui-cli";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
     treefmt-nix = {
