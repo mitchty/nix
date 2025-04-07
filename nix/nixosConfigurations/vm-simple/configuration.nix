@@ -1,8 +1,9 @@
-{ inputs
-, lib
-, pkgs
-, self
-, ...
+{
+  inputs,
+  lib,
+  pkgs,
+  self,
+  ...
 }:
 let
   pubKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7";
@@ -11,6 +12,7 @@ in
   imports = [
     inputs.disko.nixosModules.disko
     (import ./disko.nix { })
+    ./../../nixosModules/kernel.nix
   ];
 
   environment.variables.EDITOR = "vi";
@@ -25,10 +27,15 @@ in
   };
 
   boot = {
+    tmp = {
+      cleanOnBoot = true;
+      useTmpfs = true;
+      tmpfsSize = "10%";
+    };
+
     kernelPackages = pkgs.linuxPackages_latest;
     # I want my magic sysrq triggers to work
     kernel.sysctl = {
-      "kernel.sysrq" = 1;
       "vm.overcommit_memory" = lib.mkForce 1;
     };
     kernelParams = [

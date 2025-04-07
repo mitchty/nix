@@ -35,20 +35,3 @@ alias autostatus="asroot systemctl status autoinstall"
 alias autorestart="asroot systemctl restart autoinstall"
 alias autof="journalctl -fu autoinstall"
 alias autoc="journalctl -u autoinstall | cat"
-
-inst() {
-  asroot disko
-  asroot nixos-generate-config --root /mnt
-  asroot install -m644 /etc/machine-id /mnt/etc/machine-id
-
-  # This is all a huge hack I need to install the nixos system config for the target
-  #
-  # How the hell do I do that without recursion though... my iso hack works but
-  # means I have an "iso" configuration that embeds the target configuration.
-  #
-  # I'd like to remove that duplication somehow...
-  asroot sed -i '/^\}$/i\boot.kernelParams = [ "console=tty0" "console=ttyS0,115200n8" "console=ttyAMA0,115200n8" ];' /mnt/etc/nixos/configuration.nix
-  asroot sed -i '/&\}$/i\boot.loader.systemd-boot.consoleMode = "auto";' /mnt/etc/nixos/configuration.nix
-
-  asroot nixos-install --no-root-password
-}

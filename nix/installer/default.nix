@@ -1,9 +1,8 @@
-{
-  inputs,
-  lib,
-  pkgs,
-  modulesPath,
-  ...
+{ inputs
+, lib
+, pkgs
+, modulesPath
+, ...
 }:
 let
   sshPubKeys = [
@@ -18,6 +17,21 @@ in
     info.enable = false;
   };
 
+  # For max compression (takes way longer to build an image tho)
+  isoImage.squashfsCompression = "zstd -Xcompression-level 9";
+  # Whilst testing uncomment me
+  #isoImage.squashfsCompression = "lz4";
+
+  environment = {
+    variables = {
+      # Since we have no swap, have the heap be a bit less extreme
+      GC_INITIAL_HEAP_SIZE = "1M";
+
+      # if I need it...
+      EDITOR = "vi";
+    };
+  };
+
   users = {
     mutableUsers = false;
     users.root = {
@@ -25,19 +39,59 @@ in
     };
     users.nixos = {
       isNormalUser = true;
+      description = "nixos install user";
+      extraGroups = [
+        "wheel"
+        "networkmanager"
+      ];
       openssh.authorizedKeys.keys = sshPubKeys;
+      # This is a test vm only used to test out disk/install automation. Its not
+      # getting out/exposed to the outside world ever.
+      # echo nixos | openssl passwd -6 -stdin -salt vmtestsalt
+      hashedPassword = "$6$vmtestsalt$RU13pQq.NolDt0ZFHiLVzYNjIdTY1aj43jklM/6hrge1NAIosvc.W16.dLf5CwsSaSlbCg0pqupZdkLQdf0/z0";
     };
   };
 
+  # Let me ssh in by default
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "yes";
+    };
+  };
+
+  # Don't flush to the backing store
+  environment.etc."systemd/pstore.conf".text = ''
+    [PStore]
+    Unlink=no
+  '';
+
+  # TODO: moveme/determine common settings
   nix = {
     settings = {
+      substituters = [
+        # "http://cache.cluster.home.arpa"
+        "https://cache.nixos.org"
+        "https://nix-community.cachix.org"
+      ];
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
       experimental-features = [
         "nix-command"
         "flakes"
         "ca-derivations"
       ];
     };
+
+    # Lets things download in parallel
+    extraOptions = ''
+      binary-caches-parallel-connections = 100
+    '';
   };
+
+  # TODO: whats common here exactly?
   boot = {
     # I want my magic sysrq triggers to work
     kernel.sysctl = {
@@ -47,8 +101,7 @@ in
     kernelParams = [
       "boot.shell_on_fail"
       "console=ttyS0,115200n8"
-      #              "console=tty0" # fallback somehow if serial no work somehow?
-      "copytoram=1"
+      #      "console=tty0" # fallback somehow if serial no work somehow?
       "delayacct"
       "intel-spi.writeable=1"
       "iomem=relaxed"
@@ -91,4 +144,32 @@ in
       done
     '';
 
+  # The autoinstall script is setup in the iso configuration.nix file(s) as they have the derivation data
+  systemd.services.autoinstall = {
+    description = "NixOS Autoinstall";
+    wantedBy = [ "multi-user.target" ];
+
+    after = [
+      "network.target"
+      "polkit.service"
+    ];
+
+    path = with pkgs; [
+      "/run/current-system/sw/"
+      "/usr/bin/"
+      "${systemd}/bin/"
+    ];
+
+    script = ''
+      set -eux
+      autoinstall
+    '';
+
+    # This should only be ran when on the iso installer. So don't ever include /iso as a path in a setup dumass.
+    unitConfig.ConditionPathExists = "/iso";
+
+    serviceConfig = {
+      Type = "oneshot";
+    };
+  };
 }
