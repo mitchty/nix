@@ -4,11 +4,6 @@
   outputs =
     { flakelight, ... }@inputs:
     flakelight ./. {
-      imports = [
-        #        inputs.flakelight-elisp.flakelightModules.default
-        # Where can I import this beast?
-        #        inputs.disko.nixosModules.disko
-      ];
       inherit inputs;
       # All here and not in ./nix cause I don't feel like figuring out how to
       # deal with inputs being passed in right now.
@@ -67,6 +62,10 @@
   inputs = {
     # Release YY.MM branch name stuff kept close together for lazy.
     nixpkgs.url = "github:NixOS/nixpkgs/release-24.11";
+    home-manager = {
+      url = "github:nix-community/home-manager/release-24.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-24.11-darwin";
     darwin = {
       url = "github:LnL7/nix-darwin/nix-darwin-24.11";
@@ -82,10 +81,6 @@
       inputs.flakelight.follows = "flakelight";
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware";
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     disko = {
       url = "github:nix-community/disko";
       #url = "path:/home/mitch/src/pub/github.com/nix-community/disko";

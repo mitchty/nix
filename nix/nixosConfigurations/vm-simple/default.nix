@@ -1,7 +1,11 @@
+{ inputs, ... }:
 {
   system = "x86_64-linux";
 
   modules = [
+    # TODO: this no worky at fixing the home-manager-USER.service thing, future
+    # mitch figure it out and look at source like a professional.
+    #    inputs.home-manager.nixosModules.home-manager
     ./configuration.nix
     {
       system.stateVersion = "24.11";

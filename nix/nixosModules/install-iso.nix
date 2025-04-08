@@ -150,7 +150,8 @@ in
   systemd.services.autoinstall = {
     description = "NixOS Autoinstall";
     wantedBy = [ "multi-user.target" ];
-
+    # TODO: wait for network instead? Not a huge deal it installs in airgap anyway.
+    #        wantedBy = [ (if somedumcondition then "network-online.target" else "multi-user.target") ];
     after = [
       "network.target"
       "polkit.service"
@@ -164,10 +165,12 @@ in
 
     # If the disko-install worked reboot into the firmware setup so I can move
     # things along manually
+    #
+    # TODO: reboot only in vm's otherwise into firmware?
     script = ''
       set -eux
       autoinstall
-      sudo systemctl reboot --firmware-setup
+      sudo systemctl reboot
     '';
 
     # This should only be ran when on the iso installer. So don't ever include /iso as a path in a setup dumass.

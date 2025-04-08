@@ -7,12 +7,23 @@ Its main raison d'etre is to do disk setup/partitioning via disko and autogenera
 Todos:
 - ssh ca setup so I can use an ssh ca setup for all ssh internally
 - wireguard setup so I can setup my own overlay vpn for everything
+- figure out the home manager activation issue:
+#+begin_src
+[FAILED] Failed to start Home Manager environment for mitch.
+See 'systemctl status home-manager-mitch.service' for details.
+...
+vm-simple systemd[1]: Starting Home Manager environment for mitch...
+vm-simple hm-activate-mitch[710]: Starting Home Manager activation
+vm-simple hm-activate-mitch[710]: Could not find suitable profile directory, tried /home/mitch/.local/state/nix/profiles and /nix/var/nix/profiles/per-user/mitch
+#+end_src
+
+Its complaining about profiles
 
 * Testing via qemu/vm
 
 I have a truly hacky script/wrapper around qemu in the bin dir, [[file:bin/test-iso][test-iso]]. Its a hacky simple way to test out derivations.
 
-For now it defaults to the vm setup in nix/nixosConfiguratins/vm
+For now it defaults to the vm setup in nix/nixosConfigurations/vm-simple
 
 This is a temporary state for now, I hope, its mostly to bootstrap into a fully automated install again. I want to figure out how to replace this script with "normal" nixos testing infra in python like the nixos/nixpkgs repo has.
 
