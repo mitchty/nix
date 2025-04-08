@@ -7,4 +7,4 @@ includes = ["**/*.nix"]
 command = "altshfmt"
 # TODO: Have a lot of mksh/search/replace non posix stuff to fix
 #includes = ["**/*.sh"]
-includes = ["bin/**/*"]
+includes = ["bin/**/*", "src/**/*.sh"]

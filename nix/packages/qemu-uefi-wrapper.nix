@@ -23,7 +23,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     mainProgram = "qemu-system-x86_64-uefi";
-    description = "qemu uefi wrapper to make testing easier and forget stupid cli args";
+    description = "qemu uefi wrapper to make testing easier and forget stupid cli args to quemu as well as where the hell the OVMF firmware is";
     maintainers = with lib.maintainers; [ mitchty ];
   };
 }

@@ -1,0 +1,53 @@
+#!/usr/bin/env nix-shell
+#-*-mode: Shell-script; coding: utf-8;-*-
+#!nix-shell -i bash -p bash
+# SPDX-License-Identifier: BlueOak-1.0.0
+# Description: Want to test out the autoinstall iso setup.
+_base=$(basename "$0")
+_dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
+export _base _dir
+
+set -xeu
+
+# Note: nix-shell for now whilst I work out kinks manually.
+
+# Note this is just a custom wrapper script that auto uses the OVMF firmware. I
+# need to validate/test using efi vars to do more automation but for now this is
+# fine.
+QEMU=${QEMU:-qemu-system-x86_64-uefi}
+
+ISO=${1:-vm-iso}
+PREFIX="${PREFIX:-${HOME}/.cache/mitchty}"
+
+install -dm755 "${PREFIX}"
+
+sshport=$((($(echo ${ISO} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
+
+networkqemuargs="-net user,hostfwd=tcp::${sshport}-:22 -net nic"
+
+qemuargs="${qemuargs:--enable-kvm -smp 4 -nographic -m 8096 -boot d ${networkqemuargs}}"
+
+# TODO: lets try this instead of nixos-generators...
+# nix build .#nixosConfigurations.NAME.config.system.build.isoImage
+#nix build ${NIXOPTS-} ".#nixosConfigurations.${ISO}.config.system.build.isoImage"
+
+nix flake show --show-trace
+nix flake check -L --show-trace
+
+iso=$(nixos-generate --flake .#vm-simple-iso -f install-iso)
+
+echo using ${iso} to boot from
+du -hs ${iso}
+
+base=$(TMPDIR=${PREFIX} mktemp -d XXXXXXXX -t)
+
+trap "rm -fr ${base}" EXIT TERM INT QUIT
+
+disk0="${base}/vdisk0"
+qemu-img create -f qcow2 ${disk0} 40G
+disk1="${base}/vdisk1"
+qemu-img create -f qcow2 ${disk1} 40G
+disk2="${base}/vdisk2"
+qemu-img create -f qcow2 ${disk2} 40G
+
+${QEMU} ${qemuargs} -cdrom ${iso} -hda ${disk0} -hdb ${disk1} -hdd ${disk2}

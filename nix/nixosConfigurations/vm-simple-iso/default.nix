@@ -1,7 +1,6 @@
 {
   system = "x86_64-linux";
   modules = [
-    ./../../installer
     ./configuration.nix
     {
       system.stateVersion = "24.11";

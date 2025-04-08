@@ -6,9 +6,7 @@
   ...
 }:
 let
-  pubKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7";
   dependencies = [
-    # TODO: get this all to work in an airgap setup, some of the .#nixosconfigname stuff pulls stuff down inputs wise
     pkgs.stdenv.drvPath
     inputs.self.nixosConfigurations.vm-simple.config.system.build.toplevel
     inputs.self.nixosConfigurations.vm-simple.config.system.build.diskoScript
@@ -22,7 +20,7 @@ let
     #    (inputs.self.nixosConfigurations.vm-simple.pkgs.closureInfo { rootPaths = [ ]; }).drvPath
   ] ++ builtins.map (i: i.outPath) (builtins.attrValues inputs);
 
-  # TODO: this is what I originally used
+  # TODO: this is what I originally used keep? Future mitch figure it out sucker.
   #  closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
 
   closureInfo = inputs.self.nixosConfigurations.vm-simple.pkgs.closureInfo {
@@ -37,8 +35,7 @@ in
 {
   imports = [
     "${toString inputs.nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
-    ./../../installer
-  ];
+  ] ++ (with inputs.self.nixosModules; [ install-iso ]);
 
   environment = {
     etc."install-closure".source = "${closureInfo}/store-paths";

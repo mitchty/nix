@@ -1,8 +1,9 @@
-{ inputs
-, lib
-, pkgs
-, modulesPath
-, ...
+{
+  inputs,
+  lib,
+  pkgs,
+  modulesPath,
+  ...
 }:
 let
   sshPubKeys = [
@@ -56,7 +57,7 @@ in
   services.openssh = {
     enable = true;
     settings = {
-      PermitRootLogin = "yes";
+      PermitRootLogin = lib.mkForce "yes";
     };
   };
 
@@ -113,7 +114,6 @@ in
       };
       # iso uses grub installed system uses systemd-boot
       grub.memtest86.enable = true;
-      systemd-boot.memtest86.enable = true;
     };
   };
 
@@ -128,7 +128,8 @@ in
       nixosHomeDir = "/home/" + "${userName}/";
       rootHomeDir = "/root/";
     in
-    # TODO: integrate home-manager into the iso setup? For now lets just get this shit working first.
+    # TODO: integrate home-manager into the iso setup? For now lets just get
+    # this shit working first.
     ''
       for user in root nixos; do
         if [ $user == "root" ]; then
@@ -139,12 +140,13 @@ in
           group=users
         fi
 
-        install -m644 --owner $user --group $group ${./zshrc} $homedir/.zshrc
+        install -m644 --owner $user --group $group ${./installer-zshrc} $homedir/.zshrc
         install -m644 --owner $user --group $group /dev/null $homedir/.zsh_history
       done
     '';
 
-  # The autoinstall script is setup in the iso configuration.nix file(s) as they have the derivation data
+  # The autoinstall script is setup in the iso configuration.nix file(s) as they
+  # have the derivation data.
   systemd.services.autoinstall = {
     description = "NixOS Autoinstall";
     wantedBy = [ "multi-user.target" ];
@@ -160,9 +162,12 @@ in
       "${systemd}/bin/"
     ];
 
+    # If the disko-install worked reboot into the firmware setup so I can move
+    # things along manually
     script = ''
       set -eux
       autoinstall
+      sudo systemctl reboot --firmware-setup
     '';
 
     # This should only be ran when on the iso installer. So don't ever include /iso as a path in a setup dumass.

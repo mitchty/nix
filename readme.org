@@ -136,28 +136,6 @@ Need to get vps using nix as well now that 22.11 has image build support.
 
 https://github.com/Vanilla-s-Lab/linode-nix/tree/master
 
-** Pipewire
-
-  Refs:
-  - https://nixos.wiki/wiki/PipeWire
-  - https://wiki.archlinux.org/title/PipeWire
-  - https://github.com/NixOS/nixpkgs/issues/102547
-
-  Need to get pipewire tested again, probably via this to do things simple first to see if newer pipewire is less fiddly:
-
-#+begin_src conf
-services.pipewire = {
-  enable = true;
-  alsa.enable = true;
-  alsa.support32Bit = true;
-  jack.enable = true;
-  pulse.enable = true;
-  socketActivation = true;
-};
-programs.dconf.enable = true;
-services.gnome.at-spi2-core.enable = true;
-#+end_src
-
 ** Network booting?
 
   Might be fun to look into for a pi4 k8s cluster or something.
