@@ -9,17 +9,20 @@
 }:
 let
   inherit (inputs) self;
-  inherit (builtins) mapAttrs substring hashString;
 in
 {
-  imports = [
-    #    inputs.impermanence.nixosModules.impermanence
-    #    inputs.lanzaboote.nixosModules.lanzaboote
-    # self.nixosModules.lix
-    # self.nixosModules.kernel
-    # self.nixosModules.disks
-    # self.nixosModules.tailscale
-  ];
-
-  system.configurationRevision = self.rev or null;
+  # Common imports for nixos
+  imports =
+    [
+      inputs.home-manager.nixosModules.default
+      inputs.disko.nixosModules.disko
+    ]
+    ++ (with inputs.self.nixosModules; [
+      kernel
+      boot
+      ssh
+      sudo
+      nix-common
+      user-root
+    ]);
 }

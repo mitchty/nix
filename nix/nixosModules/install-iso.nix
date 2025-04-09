@@ -24,6 +24,9 @@ in
   #isoImage.squashfsCompression = "lz4";
 
   environment = {
+    systemPackages = [
+      pkgs.home-manager
+    ];
     variables = {
       # Since we have no swap, have the heap be a bit less extreme
       GC_INITIAL_HEAP_SIZE = "1M";
@@ -149,7 +152,8 @@ in
   # have the derivation data.
   systemd.services.autoinstall = {
     description = "NixOS Autoinstall";
-    wantedBy = [ "multi-user.target" ];
+    wantedBy = [ "network-online.target" ];
+    # wantedBy = [ "multi-user.target" ];
     # TODO: wait for network instead? Not a huge deal it installs in airgap anyway.
     #        wantedBy = [ (if somedumcondition then "network-online.target" else "multi-user.target") ];
     after = [

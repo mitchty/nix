@@ -4,24 +4,20 @@ pkgs: with pkgs; {
   # For now I'm just including them in the devshell so I can test local pacakge
   # derivations.
   packages = [
-    nixos-generate
-    myEmacs
-    coreutils
-    jq
-    curl
-    htmlq
-    yt-dlp
     #    yt-dlp-wrapped
-    ytdl-sub
-    qemu-uefi-wrapper
-    hwatch
     altshfmt
-    no-more-secrets
-    hponcfg
+    coreutils
+    curl
+    home-manager
+    htmlq
+    hwatch
+    jq
     nix-update
-    open-webui-cli
-    treefmt
-    statix
     nixfmt-rfc-style
+    nixos-generate
+    qemu-uefi-wrapper
+    statix
+    treefmt
+    ytdl-sub
   ];
 }

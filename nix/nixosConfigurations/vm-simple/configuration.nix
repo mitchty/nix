@@ -10,61 +10,9 @@ let
 in
 {
   imports =
-    [
-      inputs.disko.nixosModules.disko
-      (import ./disko.nix { })
-    ]
-    ++ (with inputs.self.nixosModules; [
-      kernel
-      user-root
+    (with inputs.self.nixosModules; [
+      common
       user-mitch
-    ]);
-
-  environment.variables.EDITOR = "vi";
-  nix = {
-    settings = {
-      experimental-features = [
-        "nix-command"
-        "flakes"
-        "ca-derivations"
-      ];
-    };
-  };
-
-  boot = {
-    tmp = {
-      cleanOnBoot = true;
-      useTmpfs = true;
-      tmpfsSize = "10%";
-    };
-
-    kernelPackages = pkgs.linuxPackages_latest;
-    # I want my magic sysrq triggers to work
-    kernel.sysctl = {
-      "vm.overcommit_memory" = lib.mkForce 1;
-    };
-    kernelParams = [
-      "boot.shell_on_fail"
-      "console=ttyS0,115200n8"
-      #              "console=tty0" # fallback somehow if serial no work somehow?
-      "delayacct"
-      "intel-spi.writeable=1"
-      "iomem=relaxed"
-    ];
-    loader = {
-      efi = {
-        canTouchEfiVariables = true;
-      };
-      # iso uses grub installed system uses systemd-boot
-      systemd-boot.memtest86.enable = true;
-    };
-  };
-
-  # Let me ssh in by default
-  services.openssh = {
-    enable = true;
-    settings = {
-      PermitRootLogin = "yes";
-    };
-  };
+    ])
+    ++ [ (import ./disko.nix { }) ];
 }
