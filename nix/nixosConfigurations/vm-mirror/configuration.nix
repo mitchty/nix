@@ -19,4 +19,7 @@ in
   systemd.services."mdmonitor".environment = {
     MDADM_MONITOR_ARGS = "--scan --syslog";
   };
+
+  # Shut up the silly warning
+  boot.swraid.mdadmConf = "PROGRAM ${pkgs.coreutils}/bin/true";
 }

@@ -8,6 +8,21 @@ let
   sshPubKeys = [
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7"
   ];
+
+  # For max compression (takes way longer to build an image tho)
+  #
+  # Compression levels: https://github.com/facebook/zstd/blob/dev/lib/compress/clevels.h#L25
+  #
+  # Use 5 for testing, 19 for keeping iso size down on a chonky system
+  zstdCompressionLevel = 5;
+  #
+  # Rough size diff with current test data:
+  # level 5
+  # 6.5G    /nix/store/j82paybcnppn5s9g9pc0pih6f3jknaxx-nixos-24.11.20250408.a62d20d-x86_64-linux.iso/iso/nixos-24.11.20250408.a62d20d-x86_64-linux.iso
+  # level 19
+  # 6.2G    /nix/store/66az8g3g98crb1zx7wnnkpcjvaanayfa-nixos-24.11.20250408.a62d20d-x86_64-linux.iso/iso/nixos-24.11.20250408.a62d20d-x86_64-linux.iso
+  #
+  # TODO: add timing tests (warm not cold)
 in
 {
   # I don't want docs on the iso system derivation. Don't need em wasting space/time.
@@ -17,13 +32,7 @@ in
     info.enable = false;
   };
 
-  # For max compression (takes way longer to build an image tho)
-  #
-  # Compression levels: https://github.com/facebook/zstd/blob/dev/lib/compress/clevels.h#L25
-  #
-  # Use 5 for testing, 19 for keeping size down
-  isoImage.squashfsCompression = "zstd -Xcompression-level 5";
-  # isoImage.squashfsCompression = "zstd -Xcompression-level 19";
+  isoImage.squashfsCompression = "zstd -Xcompression-level ${zstdCompressionLevel}";
 
   # Whilst testing uncomment me (note this takes ages at the end for incremental
   # changes so probably jut nuke this comment and this option entirely its ass)
@@ -136,7 +145,7 @@ in
       rootHomeDir = "/root/";
     in
     # TODO: integrate home-manager into the iso setup? For now lets just get
-    # this shit working first.
+      # this shit working first.
     ''
       for user in root nixos; do
         if [ $user == "root" ]; then
