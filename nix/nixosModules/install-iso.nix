@@ -1,17 +1,12 @@
-{
-  inputs,
-  lib,
-  pkgs,
-  modulesPath,
-  ...
+{ inputs
+, lib
+, pkgs
+, modulesPath
+, ...
 }:
 let
   sshPubKeys = [
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7"
-  ];
-  modules = [
-    "dm-thin-pool"
-    "dm-cache"
   ];
 in
 {
@@ -22,25 +17,21 @@ in
     info.enable = false;
   };
 
-  boot = {
-    initrd = {
-      kernelModules = modules;
-      availableKernelModules = modules;
-    };
-    kernelModules = modules;
-  };
-
   # For max compression (takes way longer to build an image tho)
-  isoImage.squashfsCompression = "zstd -Xcompression-level 9";
-  # Whilst testing uncomment me
+  #
+  # Compression levels: https://github.com/facebook/zstd/blob/dev/lib/compress/clevels.h#L25
+  #
+  # Use 5 for testing, 19 for keeping size down
+  isoImage.squashfsCompression = "zstd -Xcompression-level 5";
+  # isoImage.squashfsCompression = "zstd -Xcompression-level 19";
+
+  # Whilst testing uncomment me (note this takes ages at the end for incremental
+  # changes so probably jut nuke this comment and this option entirely its ass)
   #isoImage.squashfsCompression = "lz4";
 
   environment = {
     systemPackages = with pkgs; [
       home-manager
-      lvm2
-      lvm2.bin
-      mdadm
     ];
     variables = {
       # Since we have no swap, have the heap be a bit less extreme
@@ -130,16 +121,12 @@ in
       efi = {
         canTouchEfiVariables = true;
       };
-      # iso uses grub installed system uses systemd-boot
-      grub.memtest86.enable = true;
     };
   };
 
   # Use only the final shell not crappy bash
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
-
-  services.lvm.boot.thin.enable = true;
 
   # Abuse the nixos user activation script to do the install work
   system.activationScripts.nixosUserInit =
@@ -194,7 +181,8 @@ in
       sudo systemctl reboot
     '';
 
-    # This should only be ran when on the iso installer. So don't ever include /iso as a path in a setup dumass.
+    # This should only be ran when on the iso installer. So don't ever include
+    # /iso as a path in a setup dumass.
     unitConfig.ConditionPathExists = "/iso";
 
     serviceConfig = {

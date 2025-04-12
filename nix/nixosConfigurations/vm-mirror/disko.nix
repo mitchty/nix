@@ -1,5 +1,8 @@
 {
-  disks ? [ "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001" ],
+  disks ? [
+    "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001"
+    "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00002"
+  ],
   ...
 }:
 {
@@ -21,9 +24,62 @@
                 type = "filesystem";
                 format = "vfat";
                 mountpoint = "/boot";
-                mountOptions = [ "umask=0077" ];
+                mountOptions = [
+                  "umask=0077"
+                  "nofail"
+                ];
               };
             };
+            mdadm = {
+              size = "100%";
+              content = {
+                type = "mdraid";
+                name = "raid1";
+              };
+            };
+          };
+        };
+      };
+      m0 = {
+        type = "disk";
+        device = builtins.elemAt disks 1;
+        content = {
+          type = "gpt";
+          partitions = {
+            ESP = {
+              priority = 1;
+              name = "ESP";
+              start = "1M";
+              end = "1024M";
+              type = "EF00";
+              content = {
+                type = "filesystem";
+                format = "vfat";
+                mountpoint = "/boot1";
+                mountOptions = [
+                  "umask=0077"
+                  "nofail"
+                ];
+              };
+            };
+            mdadm = {
+              size = "100%";
+              content = {
+                type = "mdraid";
+                name = "raid1";
+              };
+            };
+          };
+        };
+      };
+    };
+    mdadm = {
+      raid1 = {
+        type = "mdadm";
+        level = 1;
+        content = {
+          type = "gpt";
+          partitions = {
             root = {
               size = "100%";
               content = {

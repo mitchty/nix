@@ -18,6 +18,8 @@ let
     inputs.self.nixosConfigurations."${hostName}".pkgs.perlPackages.ConfigIniFiles
     inputs.self.nixosConfigurations."${hostName}".pkgs.perlPackages.FileSlurp
 
+    # TODO: what do I need to include exactly to include all the home-manager derivation?
+    #    inputs.self.homeModules
     #    (inputs.self.nixosConfigurations."${hostName}".pkgs.closureInfo { rootPaths = [ ]; }).drvPath
   ] ++ builtins.map (i: i.outPath) (builtins.attrValues inputs);
 
@@ -34,11 +36,6 @@ let
     exit 1
   '';
 in
-# TODO: still trying to figure out how to get the activation package to auto install at partition/copy time
-#    ${pkgs.home-manager}/bin/home-manager switch --flake "${inputs.self}#mitch"
-#    ${pkgs.home-manager}/bin/home-manager switch --flake "${inputs.self}#homeModules.mitch"
-#    nix run "${inputs.self}#homeConfigurations.mitch.activationPackage"
-#    nixos-rebuild switch --flake "${inputs.self}#${hostName}"
 {
   imports = [
     "${toString inputs.nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
