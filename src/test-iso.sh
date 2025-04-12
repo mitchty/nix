@@ -16,7 +16,7 @@ set -xeu
 # fine.
 QEMU=${QEMU:-qemu-system-x86_64-uefi}
 
-ISO=${1:-vm-iso}
+SYS=${1:-vm-mirror-iso}
 PREFIX="${PREFIX:-${HOME}/.cache/mitchty}"
 
 install -dm755 "${PREFIX}"
@@ -27,14 +27,10 @@ networkqemuargs="-net user,hostfwd=tcp::${sshport}-:22 -net nic"
 
 qemuargs="${qemuargs:--enable-kvm -smp 4 -nographic -m 8096 -boot d ${networkqemuargs}}"
 
-# TODO: lets try this instead of nixos-generators...
-# nix build .#nixosConfigurations.NAME.config.system.build.isoImage
-#nix build ${NIXOPTS-} ".#nixosConfigurations.${ISO}.config.system.build.isoImage"
-
 nix flake show --show-trace
 nix flake check -L --show-trace
 
-iso=$(nixos-generate --flake .#vm-simple-iso -f install-iso)
+iso=$(nixos-generate --flake ".#${SYS}" -f install-iso)
 
 echo using ${iso} to boot from
 du -hs ${iso}

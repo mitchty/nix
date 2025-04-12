@@ -9,6 +9,10 @@ let
   sshPubKeys = [
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7"
   ];
+  modules = [
+    "dm-thin-pool"
+    "dm-cache"
+  ];
 in
 {
   # I don't want docs on the iso system derivation. Don't need em wasting space/time.
@@ -18,14 +22,25 @@ in
     info.enable = false;
   };
 
+  boot = {
+    initrd = {
+      kernelModules = modules;
+      availableKernelModules = modules;
+    };
+    kernelModules = modules;
+  };
+
   # For max compression (takes way longer to build an image tho)
   isoImage.squashfsCompression = "zstd -Xcompression-level 9";
   # Whilst testing uncomment me
   #isoImage.squashfsCompression = "lz4";
 
   environment = {
-    systemPackages = [
-      pkgs.home-manager
+    systemPackages = with pkgs; [
+      home-manager
+      lvm2
+      lvm2.bin
+      mdadm
     ];
     variables = {
       # Since we have no swap, have the heap be a bit less extreme
@@ -123,6 +138,8 @@ in
   # Use only the final shell not crappy bash
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
+
+  services.lvm.boot.thin.enable = true;
 
   # Abuse the nixos user activation script to do the install work
   system.activationScripts.nixosUserInit =

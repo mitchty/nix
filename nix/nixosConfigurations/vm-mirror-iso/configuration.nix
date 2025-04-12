@@ -6,7 +6,7 @@
   ...
 }:
 let
-  hostName = "vm-simple";
+  hostName = "vm-mirror";
   dependencies = [
     pkgs.stdenv.drvPath
     inputs.self.nixosConfigurations."${hostName}".config.system.build.toplevel
@@ -30,8 +30,7 @@ let
 
   autoinstall = pkgs.writeShellScriptBin "autoinstall" ''
     set -eux
-    ${pkgs.disko}/bin/disko-install --write-efi-boot-entries --disk prime /dev/disk/by-id/ata-QEMU_HARDDISK_QM00001 --flake "${inputs.self}#${hostName}" "$@"
-    exit 1
+    ${pkgs.disko}/bin/disko-install --write-efi-boot-entries --disk prime /dev/disk/by-id/ata-QEMU_HARDDISK_QM00001 --disk m0 /dev/disk/by-id/ata-QEMU_HARDDISK_QM00002 --flake "${inputs.self}#${hostName}" "$@"
   '';
 in
 # TODO: still trying to figure out how to get the activation package to auto install at partition/copy time

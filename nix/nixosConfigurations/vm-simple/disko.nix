@@ -43,10 +43,6 @@
                   };
                   # Sub(sub)volume doesn't need a mountpoint as its parent is mounted
                   "/home/mitch" = { };
-                  # I keep a lot of source here
-                  "/home/mitch/src" = { };
-                  # Steam gets its own subvolume
-                  "/home/mitch/.local/share/Steam" = { };
                   # Parent is not mounted so the mountpoint must be set
                   "/nix" = {
                     mountOptions = [
