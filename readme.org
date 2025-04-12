@@ -97,6 +97,44 @@ And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Ak
    - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use.
 
 * Todo's
+** NixOS
+
+I need to brain up how exactly I want to do mirroed systemd boot setups.
+
+My current setup that I abused with zfs is basically just rsync the data from the primary boot disk to the rest.
+
+This is hacky and it needs tests/proof.
+
+#+begin_src
+    boot.loader.systemd-boot.extraInstallCommands = ''
+      set -e
+      ${pkgs.util-linux}/bin/mountpoint -q /efiboot/efi0 || ${pkgs.util-linux}/bin/mount -t vfat -o iocharset=iso8859-1 /dev/disk/by-partlabel/ESP0 /efiboot/efi0
+      ${pkgs.util-linux}/bin/mountpoint -q /efiboot/efi1 || ${pkgs.util-linux}/bin/mount -t vfat -o iocharset=iso8859-1 /dev/disk/by-partlabel/ESP1 /efiboot/efi1
+      ${pkgs.rsync}/bin/rsync -Havz --exclude .lost+found --delete --delete-before /efiboot/efi0/ /efiboot/efi1
+    '';
+#+end_src
+
+The upstream nixos pr to add it was this:
+https://github.com/NixOS/nixpkgs/pull/246897
+
+Of note:
+https://serverfault.com/questions/1101507/how-should-the-efi-system-partition-be-made-redundant-without-using-hardware-rai
+
+I am thinking I should just make my own nixosModule that does:
+- On systemd-boot updates do the rsyncs to the mirrored boot devices/partitions
+- efibootmgr install to the boot devices with an increment of 1 to specify the boot order for things
+- That should do it.
+
+Non goals:
+- I don't care about windows/other os's here. That is nixos is the only os
+- Not dealing with encryption related stuff for now, future mitch problem
+- Its not intended to be perfect
+
+Goals:
+- Just be able to boot a system without rebuilding if the primary disk fails
+- Thats it, its not meant to be forever, more than likely I will be rebuilding anyway just want to be able to have resiliency to hardware failures
+
+
 ** Macos
 
 Nice lists of open source stuff to poke at someday.
