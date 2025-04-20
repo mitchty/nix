@@ -17,15 +17,20 @@ ok=0
 
 ${DIR:+cd $DIR}
 
-junk="ytdl-sub yt-dlp yt-dlp-get-pot bgutil-ytdlp-pot-provider"
+# if [ "$(uname -s)" = "Darwin" ]; then
+#   # For now ignore the macos stuff when ran on linux
+#   junk="${junk} freetube keepingyouawake ferdium clocker maccy nheko obs-studio stats stretchly swiftbar wireshark vlc"
+# fi
 
-if [ "$(uname -s)" = "Darwin" ]; then
-  # For now ignore the macos stuff when ran on linux
-  junk="${junk} freetube keepingyouawake ferdium clocker maccy nheko obs-studio stats stretchly swiftbar wireshark vlc"
+uname_s=$(uname -s)
+uname_m=$(uname -m)
+
+if [ "${uname_s}" = "Linux" ]; then
+  arch="${uname_m}-linux"
 fi
 
 # 2> /dev/null to nuke the stderr warning: messages
-for pkg in ${junk}; do
+for pkg in $(nix flake show --json 2> /dev/null | jq -r '.packages."'${arch}'" | keys[]'); do
   evalstring=$(nix eval --raw ".#${pkg}.latest" 2> /dev/null)
   if [ "$?" -eq 0 ]; then
     latest=$(eval "${evalstring}")
@@ -42,6 +47,8 @@ for pkg in ${junk}; do
         fi
       fi
     fi
+  # else
+  #   printf "%s: likely has no latest key ignoring\n" "${pkg}" >&2
   fi
 done
 

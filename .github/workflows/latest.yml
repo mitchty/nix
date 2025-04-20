@@ -1,0 +1,22 @@
+name: Find latest versions of flake packages
+on:
+  schedule:
+    - cron: "15 1 * * 0"
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - run: ./bin/latest-versions

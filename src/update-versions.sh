@@ -22,13 +22,20 @@ ${DIR:+cd $DIR}
 #
 # Abusing git commit -u to be sure any changes/updates only apply to
 # the specific package nix-update updated.
-# if ! git diff-index --quiet HEAD; then
-#   printf "local git changes, refusing to continue.\n" >&2
-#   exit 2
-# fi
+if ! git diff-index --quiet HEAD; then
+  printf "local git changes, refusing to continue.\n" >&2
+  exit 2
+fi
+
+uname_s=$(uname -s)
+uname_m=$(uname -m)
+
+if [ "${uname_s}" = "Linux" ]; then
+  arch="${uname_m}-linux"
+fi
 
 # 2> /dev/null to nuke the stderr warning: messages
-for pkg in ytdl-sub; do
+for pkg in $(nix flake show --json 2> /dev/null | jq -r '.packages."'${arch}'" | keys[]'); do
   evalstring=$(nix eval --raw ".#${pkg}.latest" 2> /dev/null)
   if [ "$?" -eq 0 ]; then
     latest=$(eval "${evalstring}")
