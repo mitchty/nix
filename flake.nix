@@ -43,6 +43,7 @@
         ytdlSub = pkgs: pkgs.ytdl-sub;
         # Make sure this beast builds at least
         myEmacs = pkgs: pkgs.myEmacs;
+        dns = pkgs: pkgs.dns-blocklists;
         # TODO: double check this check in disko is right, seems wrong
         #wtf = inputs.nixpkgs.lib.versionAtLeast inputs.nixpkgs.lib.version "24.11.20240709";
         statix = pkgs: "${pkgs.statix}/bin/statix check";
@@ -61,7 +62,7 @@
   # future mitch figure it out. The dns blocklist is definitely in this category.
   inputs = {
     # Release YY.MM branch name stuff kept close together for lazy.
-    nixpkgs.url = "github:NixOS/nixpkgs/release-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -100,8 +101,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     emacs-overlay = {
-      #      url = "github:nix-community/emacs-overlay";
-      url = "github:nix-community/emacs-overlay/87d5e2bbc04a8d2ddff9e1f9e266bf81c3bd45b2";
+      # url = "github:nix-community/emacs-overlay";
+      # git bisected to this as last good commit, bad is b8093212f99e5d41e077a65bd4d21fd81f5cb092
+      # I have no idea what is failing/why with this
+      url = "github:nix-community/emacs-overlay/6cdcd31f6f9d252a2c94eac01e6e23696bc3d0ff";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixgl = {
@@ -112,10 +115,6 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.rust-analyzer-src.follows = "";
-    };
-    dnsblacklist = {
-      url = "github:hagezi/dns-blocklists";
-      flake = false;
     };
     agenix.url = "github:ryantm/agenix";
     open-webui-cli = {

@@ -551,6 +551,7 @@ Direnv and *.envrc* integration/automagic stuff in emacs too.
 (use-package envrc
   :after emacs
   :ensure
+  :defer
   :diminish envrc-mode
   :hook (after-init . envrc-global-mode))
 #+END_SRC

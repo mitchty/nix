@@ -33,5 +33,5 @@ alias tofw="asroot systemctl reboot --firmware-setup"
 
 alias autostatus="asroot systemctl status autoinstall"
 alias autorestart="asroot systemctl restart autoinstall"
-alias autof="journalctl -fu autoinstall"
-alias autoc="journalctl -u autoinstall | cat"
+alias f="journalctl --no-pager -fu autoinstall"
+alias fl="journalctl --no-pager -u autoinstall |  less"

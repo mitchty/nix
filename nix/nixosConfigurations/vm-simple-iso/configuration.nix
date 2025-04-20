@@ -10,6 +10,7 @@ let
   dependencies = [
     pkgs.stdenv.drvPath
     inputs.self.nixosConfigurations."${hostName}".config.system.build.toplevel
+    #    inputs.self.nixosConfigurations."${hostName}".config.system.build.toplevel.drvPath
     inputs.self.nixosConfigurations."${hostName}".config.system.build.diskoScript
     inputs.self.nixosConfigurations."${hostName}".config.system.build.diskoScript.drvPath
     inputs.self.nixosConfigurations."${hostName}".pkgs.stdenv.drvPath
@@ -18,8 +19,13 @@ let
     inputs.self.nixosConfigurations."${hostName}".pkgs.perlPackages.ConfigIniFiles
     inputs.self.nixosConfigurations."${hostName}".pkgs.perlPackages.FileSlurp
 
-    # TODO: what do I need to include exactly to include all the home-manager derivation?
+    # TODO: what do I need to include exactly to include all of home-manager derivations?
     #    inputs.self.homeModules
+    #    inputs.home-manager.lib.homeManagerConfiguration.drvPath
+    #$   inputs.self.homeConfigurations.mitch.inputs.home-manager.default
+
+    #    inputs.self.homeModules.common.drvPath
+
     #    (inputs.self.nixosConfigurations."${hostName}".pkgs.closureInfo { rootPaths = [ ]; }).drvPath
   ] ++ builtins.map (i: i.outPath) (builtins.attrValues inputs);
 
@@ -33,7 +39,6 @@ let
   autoinstall = pkgs.writeShellScriptBin "autoinstall" ''
     set -eux
     ${pkgs.disko}/bin/disko-install --write-efi-boot-entries --disk prime /dev/disk/by-id/ata-QEMU_HARDDISK_QM00001 --flake "${inputs.self}#${hostName}" "$@"
-    exit 1
   '';
 in
 {
