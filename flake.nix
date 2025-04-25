@@ -41,9 +41,10 @@
         # Make sure ytdl-sub and yt-dlp overlay builds at least (its got its own
         # unit tests in the derivation we're testing against nixpkgs)
         ytdlSub = pkgs: pkgs.ytdl-sub;
+        # Ensure the dns blocklist package is working
+        dns = pkgs: pkgs.dns-blocklists;
         # Make sure this beast builds at least
         myEmacs = pkgs: pkgs.myEmacs;
-        dns = pkgs: pkgs.dns-blocklists;
         # TODO: double check this check in disko is right, seems wrong
         #wtf = inputs.nixpkgs.lib.versionAtLeast inputs.nixpkgs.lib.version "24.11.20240709";
         statix = pkgs: "${pkgs.statix}/bin/statix check";
@@ -101,10 +102,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     emacs-overlay = {
-      # url = "github:nix-community/emacs-overlay";
-      # git bisected to this as last good commit, bad is b8093212f99e5d41e077a65bd4d21fd81f5cb092
-      # I have no idea what is failing/why with this
-      url = "github:nix-community/emacs-overlay/6cdcd31f6f9d252a2c94eac01e6e23696bc3d0ff";
+      url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixgl = {

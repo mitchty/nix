@@ -57,7 +57,7 @@ Use use-package to configure emacs itself.
 TODO: testing
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(require 'xterm-color)
+(use-package xterm-color :defer)
 (defun my-advice-compilation-filter (f proc string)
   (funcall f proc (xterm-color-filter string)))
 (advice-add 'compilation-filter :around #'my-advice-compilation-filter)
@@ -1378,8 +1378,8 @@ For now just autoformatter related junk.
   :commands rust-mode)
 
 (use-package rustic
-  :after eglot
-  :ensure
+  :after (eglot flycheck)
+  :defer
   :bind (:map rustic-mode-map
 ;;              ("M-j" . lsp-ui-imenu)
               ("M-?" . lsp-find-references)
