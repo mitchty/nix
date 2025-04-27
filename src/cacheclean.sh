@@ -1,7 +1,10 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
-# Description: Clean up ~/.cache (on linux, macos work tbd by future me... sucker)
+# Description: Clean up ~/.cache (on linux, macos work tbd by future me...
+# sucker)
+#
+# This will eventually become something ran periodically.
 _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
@@ -30,15 +33,19 @@ done
 
 # Nix build turds leftover in /tmp: ref https://github.com/NixOS/nix/issues/5207
 # for upstream issue this is a workaround.
-find /tmp -maxdepth 1 -name "nix-build-*" -type d -ctime +1 -print -exec rm -fr {} \+
-
-xorgturd=~/.local/share/Trash
-#find "${xorgturd}" -type f -ctime +31 -print -exec rm {} \+
-if [ -e "${xorgturd}" ]; then
-  find "${xorgturd}" -type d -ctime +31 -print -exec rm -fr {} \+
-fi
+find /tmp -maxdepth 1 -name "nix-build-*" -type d -ctime +1 -print -exec sudo rm -fr {} \+
 
 # Find all result symlinks and nuke em
 for d in ~/src/prv ~/src/pub; do
   find ${d} -type l -name result -lname "/nix/store/*" -print -exec rm {} \+
 done
+
+# Prep for specific type of system
+uname_m=$(uname -m)
+
+if [ "${uname_m}" = "linux" ]; then
+  xorgturd=~/.local/share/Trash
+  if [ -e "${xorgturd}" ]; then
+    find "${xorgturd}" -type d -ctime +31 -print -exec rm -fr {} \+
+  fi
+fi
