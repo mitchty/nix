@@ -4,15 +4,18 @@
   pkgs,
   makeWrapper,
 }:
+let
+  owner = "hagezi";
+  repo = "dns-blocklists";
+in
 stdenv.mkDerivation rec {
   pname = "dns-blocklists";
-  version = "32025.110.13251";
+  version = "32025.115.11311";
 
   src = pkgs.fetchFromGitHub {
-    owner = "hagezi";
-    repo = "dns-blocklists";
+    inherit owner repo;
     rev = "${version}";
-    sha256 = "sha256-7ICQRTMXqT7vak1laIgov7zoSnq5xZCvsJDXit8MGF8=";
+    sha256 = "sha256-P91pYVNmr9abg+h1DwKTLgvW3sTwSeAORfrG1Vpss5Y=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
@@ -24,7 +27,8 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Dnsmasq blacklist";
-    maintainers = with lib.maintainers; [ mitchty ];
-    homepage = "https://github.com/hagezi/dns-blocklists";
+    homepage = "https://github.com/${owner}/${repo}";
   };
+
+  latest = "curl --silent https://api.github.com/repos/${owner}/${repo}/tags | jq -r '.[] | .name' | head -n 1";
 }
