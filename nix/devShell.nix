@@ -10,7 +10,6 @@ pkgs: with pkgs; {
     curl
     home-manager
     htmlq
-    hwatch
     jq
     nix-update
     nixfmt-rfc-style
@@ -18,6 +17,5 @@ pkgs: with pkgs; {
     qemu-uefi-wrapper
     statix
     treefmt
-    ytdl-sub
   ];
 }
