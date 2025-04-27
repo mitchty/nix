@@ -1,6 +1,6 @@
 My home nixos/nix-darwin configuration rewrite in flakelight
 
-This is a work in progress. Don't abuse it yet.
+This is a work in progress. Don't abuse it yet. The legacy branch has all my old stuff, I'll be migrating setup to here as I'll be rebuilding systems with 25.05 when it is out.
 
 Its main raison d'etre is to do disk setup/partitioning via disko and autogeneration of stuff. As well as to get deploy-rs to do all the rest of the work so I can do deploys of things from one location out to remote systems over ssh.
 
