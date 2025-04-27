@@ -4,14 +4,17 @@
   fetchFromGitHub,
   python3,
 }:
+let
+  owner = "jmbannon";
+  repo = "ytdl-sub";
+in
 python3.pkgs.buildPythonApplication rec {
   pname = "ytdl-sub";
   version = "2025.04.18";
   format = "pyproject";
 
   src = fetchFromGitHub {
-    owner = "jmbannon";
-    repo = "ytdl-sub";
+    inherit owner repo;
     rev = "refs/tags/${version}";
     hash = "sha256-TaZS9kaBcl6F1CvP8q4pGcZE1b1dAf1qnXHjfM/AFWg=";
   };
@@ -65,9 +68,9 @@ python3.pkgs.buildPythonApplication rec {
   meta = with lib; {
     mainProgram = "ytdl-sub";
     description = "Automate downloading and metadata generation with YoutubeDL";
-    homepage = "https://github.com/jmbannon/ytdl-sub";
+    homepage = "https://github.com/${owner}/${repo}";
     license = licenses.gpl3Only;
   };
 
-  latest = "curl --silent https://api.github.com/repos/jmbannon/${pname}/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1";
+  latest = "curl --silent https://api.github.com/repos/${owner}/${repo}/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1";
 }
