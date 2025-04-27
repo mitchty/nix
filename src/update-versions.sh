@@ -36,8 +36,8 @@ fi
 
 # 2> /dev/null to nuke the stderr warning: messages
 for pkg in $(nix flake show --json 2> /dev/null | jq -r '.packages."'${arch}'" | keys[]'); do
-  evalstring=$(nix eval --raw ".#${pkg}.latest" 2> /dev/null)
-  if [ "$?" -eq 0 ]; then
+  if nix eval --raw ".#${pkg}.latest" 2> /dev/null; then
+    evalstring=$(nix eval --raw ".#${pkg}.latest" 2> /dev/null)
     latest=$(eval "${evalstring}")
     ours=$(nix eval --raw ".#${pkg}.version" 2> /dev/null)
 
