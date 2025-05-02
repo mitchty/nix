@@ -1,6 +1,6 @@
 [formatter.nix]
 command = "nixfmt"
-includes = ["**/*.nix"]
+includes = ["*.nix"]
 #includes = ["nix/**/*.nix", "flake.nix", "treefmt.nix"]
 
 [formatter.sh]
