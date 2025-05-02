@@ -2,6 +2,7 @@
 #
 # Importing into my setup so I can better keep track of versioning/etc... or until his repo is a bit easier to use from flakes.
 {
+  system,
   stdenv,
   lib,
   fetchurl,
@@ -11,67 +12,79 @@
   openssl,
   busybox,
 }:
-stdenv.mkDerivation rec {
-  pname = "hponcfg";
-  version = "5.6.0-0";
+# TODO: This is bogus but whatever, hacks for now future me can fix it when I
+# figure out how to constrain these package derivations just on one platform but do it outside of the
+if (system == "x86_64-linux") then
 
-  src = fetchurl {
-    url = "https://downloads.linux.hpe.com/SDR/repo/mcp/centos/8/x86_64/current/${pname}-${version}.x86_64.rpm";
-    sha256 = "0cjzslclli79z2vpah7ksckpi7as1ay65qi5b5ds612mp95d1c0w";
-  };
+  stdenv.mkDerivation rec {
+    pname = "hponcfg";
+    version = "5.6.0-0";
 
-  nativeBuildInputs = [
-    rpmextract
-    autoPatchelfHook
-    makeWrapper
-  ];
+    src = fetchurl {
+      url = "https://downloads.linux.hpe.com/SDR/repo/mcp/centos/8/x86_64/current/${pname}-${version}.x86_64.rpm";
+      sha256 = "0cjzslclli79z2vpah7ksckpi7as1ay65qi5b5ds612mp95d1c0w";
+    };
 
-  unpackPhase = ''
-    rpmextract $src
-  '';
+    nativeBuildInputs = [
+      rpmextract
+      autoPatchelfHook
+      makeWrapper
+    ];
 
-  # TODO: Use install instead of cp
-  installPhase = ''
-    runHook preInstall
-
-    cp -r usr $out
-    cp -r sbin $out/
-
-    runHook postInstall
-  '';
-
-  postFixup =
-    let
-      # hponcfg shells out to:
-      # $ /sbin/ldconfig -p | awk '{ print $NF }' | grep libssl.so | sort -t. -k 3 -g -r | head -n +%d
-      #
-      # `ldconfig -p` doesn't work on NixOS, so we have to replace it.
-      # Both must be the same length to not mess with the offsets in the binary.
-      #                         "/sbin/ldconfig -p | awk '{ print $NF }' | grep libssl.so | sort -t. -k 3 -g -r | head -n +%d";
-      oldFindSslCommandPrefix = "/sbin/ldconfig -p ..........................................................................";
-      # The openssl path is guaranteed to be the same length if the package name
-      # and version doesn't change length. The hash is always the same size.
-      #                                              /nix/store/aqafh2kgahm2hv3nkihmgnvsg7y4ihcj-openssl-1.1.1g/lib/libssl.so
-      newFindSslCommandPrefix = "echo                ${openssl.out}/lib/libssl.so";
-    in
-    ''
-      cp $out/lib64/libhponcfg64.so $out/lib64/libhponcfg.so
-
-      ln -s ${openssl.out}/lib/libssl.so $out/lib/libssl.so
-      sed -i 's@${oldFindSslCommandPrefix}@${newFindSslCommandPrefix}@g' $out/bin/hponcfg
-
-      wrapProgram "$out/bin/hponcfg" \
-      --prefix PATH : "${openssl}/bin:${busybox}/bin" \
-      --prefix LD_LIBRARY_PATH : "$out/lib"
+    unpackPhase = ''
+      rpmextract $src
     '';
 
-  meta = {
-    mainProgram = "hponcfg";
-    description = "HPE RILOE II/iLO online configuration utility";
-    maintainers = with lib.maintainers; [ johnazoidberg ];
-    # mitchty removing so its easier to install cause i'm lay zee
-    # license = lib.licenses.unfree;
-    homepage = "https://downloads.linux.hpe.com/SDR/project/mcp/";
-    platforms = [ "x86_64-linux" ];
-  };
-}
+    # TODO: Use install instead of cp
+    installPhase = ''
+      runHook preInstall
+
+      cp -r usr $out
+      cp -r sbin $out/
+
+      runHook postInstall
+    '';
+
+    postFixup =
+      let
+        # hponcfg shells out to:
+        # $ /sbin/ldconfig -p | awk '{ print $NF }' | grep libssl.so | sort -t. -k 3 -g -r | head -n +%d
+        #
+        # `ldconfig -p` doesn't work on NixOS, so we have to replace it.
+        # Both must be the same length to not mess with the offsets in the binary.
+        #                         "/sbin/ldconfig -p | awk '{ print $NF }' | grep libssl.so | sort -t. -k 3 -g -r | head -n +%d";
+        oldFindSslCommandPrefix = "/sbin/ldconfig -p ..........................................................................";
+        # The openssl path is guaranteed to be the same length if the package name
+        # and version doesn't change length. The hash is always the same size.
+        #                                              /nix/store/aqafh2kgahm2hv3nkihmgnvsg7y4ihcj-openssl-1.1.1g/lib/libssl.so
+        newFindSslCommandPrefix = "echo                ${openssl.out}/lib/libssl.so";
+      in
+      ''
+        cp $out/lib64/libhponcfg64.so $out/lib64/libhponcfg.so
+
+        ln -s ${openssl.out}/lib/libssl.so $out/lib/libssl.so
+        sed -i 's@${oldFindSslCommandPrefix}@${newFindSslCommandPrefix}@g' $out/bin/hponcfg
+
+        wrapProgram "$out/bin/hponcfg" \
+        --prefix PATH : "${openssl}/bin:${busybox}/bin" \
+        --prefix LD_LIBRARY_PATH : "$out/lib"
+      '';
+
+    meta = {
+      mainProgram = "hponcfg";
+      description = "HPE RILOE II/iLO online configuration utility";
+      maintainers = with lib.maintainers; [ johnazoidberg ];
+      # mitchty removing so its easier to install cause i'm lay zee
+      # license = lib.licenses.unfree;
+      homepage = "https://downloads.linux.hpe.com/SDR/project/mcp/";
+      platforms = [ "x86_64-linux" ];
+      badPlatforms = [ "aarch64-darwin" ];
+    };
+  }
+else
+  stdenv.mkDerivation {
+    pname = "hponcfg";
+    version = "5.6.0-0";
+    src = ./.;
+    installPhase = "mkdir -p $out/bin";
+  }

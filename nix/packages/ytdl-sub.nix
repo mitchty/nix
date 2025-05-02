@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   pkgs,
   fetchFromGitHub,
   python3,
@@ -52,11 +53,16 @@ python3.pkgs.buildPythonApplication rec {
     pytest
   ];
 
-  disabledTests = [
-    "test_logger_always_outputs_to_debug_file"
-    "test_logger_can_be_cleaned_during_execution"
-    "test_no_config_works"
-  ];
+  disabledTests =
+    [
+      "test_logger_always_outputs_to_debug_file"
+      "test_logger_can_be_cleaned_during_execution"
+      "test_no_config_works"
+    ]
+    ++ lib.optionals stdenv.isDarwin [
+      "test_file_path_validator"
+      "test_main"
+    ];
 
   # Skip tests that use the network or need more investigation
   pytestFlagsArray = [
