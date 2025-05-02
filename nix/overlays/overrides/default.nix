@@ -16,7 +16,12 @@ self: super: {
       })
     ];
   });
-  # open-webui = super.open-webui.overrideAttrs (old: {
-  #   dependencies = old.dependencies ++ [ super.python311Packages.emoji ];
-  # });
+  # TODO: what other packages do I need to splice in here?
+  pythonPackagesExtensions = super.pythonPackagesExtensions ++ [
+    (pyfinal: pyprev: {
+      open-webui = pyprev.open-webui.overridePythonAttrs (old: {
+        dependencies = old.dependencies ++ [ super.pkgs.python311Packages.emoji ];
+      });
+    })
+  ];
 }

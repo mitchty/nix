@@ -34,7 +34,7 @@ if (system == "x86_64-linux") then
 else
   stdenv.mkDerivation {
     pname = "qemu-uefi-wrapper";
-    version = "0.1.0"; # version is bs
+    version = "0.0.0";
     src = ./.;
     installPhase = "mkdir -p $out/bin";
   }

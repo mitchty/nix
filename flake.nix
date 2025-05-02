@@ -18,6 +18,7 @@
         # Without this ^^^ sets systems to just aarch64-darwin and x86_64-darwin
         systems = lib.mkForce [
           "x86_64-linux"
+          "x86_64-darwin"
           "aarch64-darwin"
         ];
 
@@ -33,6 +34,12 @@
                 allowUnfree = true;
               };
             };
+            # workaround for macos
+            # https://github.com/NixOS/nixpkgs/issues/402079#issuecomment-2846520987
+            # for bash-language-server/yaml-language-server ultimately, mabye I
+            # skip it for a while till the fix gets into 24.11
+            nodejs = prev.nodejs_22;
+            nodejs-slim = prev.nodejs-slim_22;
             open-webui-cli = inputs.open-webui-cli.packages.${prev.system}.release;
             inherit (inputs.nix-update.packages.${prev.system}) nix-update;
             inherit (inputs.nixos-generators.packages.${prev.system}) nixos-generate;

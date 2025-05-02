@@ -84,7 +84,7 @@ if (system == "x86_64-linux") then
 else
   stdenv.mkDerivation {
     pname = "hponcfg";
-    version = "5.6.0-0";
+    version = "0.0.0";
     src = ./.;
     installPhase = "mkdir -p $out/bin";
   }
