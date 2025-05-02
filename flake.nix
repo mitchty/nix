@@ -2,60 +2,78 @@
   description = "my nix flakelight configuration rewrite... attempt (partier deux)";
 
   outputs =
-    { flakelight, ... }@inputs:
-    flakelight ./. {
-      inherit inputs;
-      # All here and not in ./nix cause I don't feel like figuring out how to
-      # deal with inputs being passed in right now.
-      withOverlays = [
-        (final: prev: {
-          # Exposes each input as pkgs.name in the normal package set
-          #
-          # Not quite an "overlay" but a way to abuse different package inputs
-          # or use all of em if I want in my own derivations.
-          unstable = import inputs.unstable {
-            inherit (prev) system;
-            config = {
-              allowUnfree = true;
+    {
+      flakelight,
+      flakelight-darwin,
+      nixpkgs,
+      ...
+    }@inputs:
+    flakelight ./. (
+      { lib, stdenv, ... }:
+      {
+        inherit inputs;
+        # All here and not in ./nix cause I don't feel like figuring out how to
+        imports = [ flakelight-darwin.flakelightModules.default ];
+
+        # Without this ^^^ sets systems to just aarch64-darwin and x86_64-darwin
+        systems = lib.mkForce [
+          "x86_64-linux"
+          "aarch64-darwin"
+        ];
+
+        withOverlays = [
+          (final: prev: {
+            # Exposes each input as pkgs.name in the normal package set
+            #
+            # Not quite an "overlay" but a way to abuse different package inputs
+            # or use all of em if I want in my own derivations.
+            unstable = import inputs.unstable {
+              inherit (prev) system;
+              config = {
+                allowUnfree = true;
+              };
             };
-          };
-          open-webui-cli = inputs.open-webui-cli.packages.${prev.system}.release;
-          inherit (inputs.nix-update.packages.${prev.system}) nix-update;
-          inherit (inputs.nixos-generators.packages.${prev.system}) nixos-generate;
-          inherit (inputs.home-manager.packages.${prev.system}) home-manager;
-        })
-        inputs.emacs-overlay.overlay
-        inputs.deploy-rs.overlay
-        inputs.agenix.overlays.default
-        inputs.fenix.overlays.default
-        inputs.nur.overlays.default
-        inputs.self.overlays.overrides
-        inputs.self.overlays.emacs
-        inputs.self.overlays.yt-dlp
-      ];
+            open-webui-cli = inputs.open-webui-cli.packages.${prev.system}.release;
+            inherit (inputs.nix-update.packages.${prev.system}) nix-update;
+            inherit (inputs.nixos-generators.packages.${prev.system}) nixos-generate;
+            inherit (inputs.home-manager.packages.${prev.system}) home-manager;
+          })
+          inputs.emacs-overlay.overlay
+          inputs.deploy-rs.overlay
+          inputs.agenix.overlays.default
+          inputs.fenix.overlays.default
+          inputs.nur.overlays.default
+          inputs.self.overlays.overrides
+          inputs.self.overlays.emacs
+          inputs.self.overlays.yt-dlp
+        ];
 
-      checks = {
-        openwebui = pkgs: pkgs.open-webui;
-        ytdlp = pkgs: pkgs.yt-dlp;
-        #        ytdlp = pkgs: pkgs.yt-dlp-wrapped;
-        # Make sure ytdl-sub and yt-dlp overlay builds at least (its got its own
-        # unit tests in the derivation we're testing against nixpkgs)
-        ytdlSub = pkgs: pkgs.ytdl-sub;
-        # Ensure the dns blocklist package is working
-        dns = pkgs: pkgs.dns-blocklists;
-        # Make sure this beast builds at least
-        myEmacs = pkgs: pkgs.myEmacs;
-        # TODO: double check this check in disko is right, seems wrong
-        #wtf = inputs.nixpkgs.lib.versionAtLeast inputs.nixpkgs.lib.version "24.11.20240709";
-        statix = pkgs: "${pkgs.statix}/bin/statix check";
-      };
+        checks = {
+          altshfmt = pkgs: pkgs.altshfmt;
+          openwebui = pkgs: pkgs.open-webui;
+          # Make sure yt stuff builds at least (its got its own unit tests in the
+          # derivation we're testing against nixpkgs so no need for further checks
+          # here... yet?)
+          ytdlSub = pkgs: pkgs.ytdl-sub;
+          ytDlp = pkgs: pkgs.yt-dlp;
+          ytdlpgetpot = pkgs: pkgs.yt-dlp-get-pot;
+          # Ensure the dns blocklist package is working
+          dns = pkgs: pkgs.dns-blocklists;
+          # Make sure this beast builds at least
+          myEmacs = pkgs: pkgs.myEmacs;
+          myWrappedEmacs = pkgs: pkgs.wrappedEmacs;
+          # TODO: double check this check in disko is right, seems wrong
+          #wtf = inputs.nixpkgs.lib.versionAtLeast inputs.nixpkgs.lib.version "24.11.20240709";
+          statix = pkgs: "${pkgs.statix}/bin/statix check";
+        };
 
-      formatters = pkgs: {
-        "*.sh" = "${pkgs.shfmt}/bin/shfmt -w .";
-      };
-      legacyPackages = pkgs: pkgs;
-      formatter = pkgs: pkgs.nixfmt-rfc-style;
-    };
+        formatters = pkgs: {
+          "*.sh" = "${pkgs.shfmt}/bin/shfmt -w .";
+        };
+        legacyPackages = pkgs: pkgs;
+        formatter = pkgs: pkgs.nixfmt-rfc-style;
+      }
+    );
 
   nixConfig.commit-lockfile-summary = "flake: Update inputs";
 
@@ -73,6 +91,7 @@
       url = "github:LnL7/nix-darwin/nix-darwin-24.11";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
+    flakelight-darwin.url = "github:cmacrae/flakelight-darwin";
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flakelight = {
       url = "github:nix-community/flakelight";
