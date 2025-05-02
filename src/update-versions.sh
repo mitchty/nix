@@ -32,6 +32,13 @@ uname_m=$(uname -m)
 
 if [ "${uname_s}" = "Linux" ]; then
   arch="${uname_m}-linux"
+elif [ "${uname_s}" = "Darwin" ]; then
+  # nix platform arch is named aarch64 not arm64 like uname returns on macos
+  if [ "${uname_m}" = "arm64" ]; then
+    arch="aarch64-darwin"
+  else
+    arch="${uname_m}-darwin"
+  fi
 fi
 
 # 2> /dev/null to nuke the stderr warning: messages

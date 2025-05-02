@@ -17,16 +17,18 @@ ok=0
 
 ${DIR:+cd $DIR}
 
-# if [ "$(uname -s)" = "Darwin" ]; then
-#   # For now ignore the macos stuff when ran on linux
-#   junk="${junk} freetube keepingyouawake ferdium clocker maccy nheko obs-studio stats stretchly swiftbar wireshark vlc"
-# fi
-
 uname_s=$(uname -s)
 uname_m=$(uname -m)
 
 if [ "${uname_s}" = "Linux" ]; then
   arch="${uname_m}-linux"
+elif [ "${uname_s}" = "Darwin" ]; then
+  # nix platform arch is named aarch64 not arm64 like uname returns on macos
+  if [ "${uname_m}" = "arm64" ]; then
+    arch="aarch64-darwin"
+  else
+    arch="${uname_m}-darwin"
+  fi
 fi
 
 # 2> /dev/null to nuke the stderr warning: messages
@@ -47,8 +49,6 @@ for pkg in $(nix flake show --json 2> /dev/null | jq -r '.packages."'${arch}'" |
         fi
       fi
     fi
-  # else
-  #   printf "%s: likely has no latest key ignoring\n" "${pkg}" >&2
   fi
 done
 
