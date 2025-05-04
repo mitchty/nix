@@ -4,10 +4,10 @@
   ...
 }:
 {
-  # imports = with inputs.self.homeModules; [
-  #   common
-  #   emacs
-  # ];
+  imports = with inputs.self.homeModules; [
+    common
+    emacs
+  ];
 
   home = {
     sessionVariables = {
@@ -16,7 +16,7 @@
       QT_SCALE_FACTOR = "1.25";
     };
     packages = with pkgs; [
-      httpie
+      gron
     ];
   };
 }

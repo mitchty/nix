@@ -88,17 +88,25 @@
   # future mitch figure it out. The dns blocklist is definitely in this category.
   inputs = {
     # Release YY.MM branch name stuff kept close together for lazy.
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-release.url = "github:NixOS/nixpkgs/nixos-24.11";
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-24.11-darwin";
-    darwin = {
+    # TODO: do I really need this?
+    #    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-24.11-darwin";
+    nix-darwin = {
       url = "github:LnL7/nix-darwin/nix-darwin-24.11";
-      inputs.nixpkgs.follows = "nixpkgs-darwin";
+      inputs.nixpkgs.follows = "nixpkgs-release";
     };
-    flakelight-darwin.url = "github:cmacrae/flakelight-darwin";
+    flakelight-darwin = {
+      url = "github:cmacrae/flakelight-darwin";
+      inputs = {
+        flakelight.follows = "flakelight";
+        nix-darwin.follows = "nix-darwin";
+      };
+    };
     unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flakelight = {
       url = "github:nix-community/flakelight";
@@ -143,7 +151,7 @@
     agenix.url = "github:ryantm/agenix";
     open-webui-cli = {
       url = "github:mitchty/open-webui-cli";
-      inputs.nixpkgs.follows = "nixpkgs-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";

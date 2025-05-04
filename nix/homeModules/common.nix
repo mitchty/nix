@@ -11,10 +11,13 @@ in
 {
   #  imports = with inputs.self.homeModules; [ emacs ];
 
+  programs.home-manager.enable = true;
+
   home-manager = {
+    enable = true;
     useGlobalPkgs = true;
     useUserPackages = true;
-    extraSpecialArgs = { inherit inputs; };
+    extraSpecialArgs = { inherit inputs pkgs; };
   };
 
   # config = {

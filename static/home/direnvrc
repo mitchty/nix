@@ -11,3 +11,30 @@ direnv_layout_dir() {
   local path="${PWD//[^a-zA-Z0-0]/-}"
   printf "%s/direnv/layouts/%s%s" "${prefix}" "${hash}" "${path}"
 }
+
+# Spit out a directory path that is:
+# - Unique
+# - based on path/$PWD
+# - Also uses the host to segregate paths
+#
+# The premise here is to get stuff out of /tmp and into ~/src/tmp so that I can
+# sync things if needed and keep stuff like cargo build artifacts out of the
+# $PWD
+#
+# This function is intended to be portable and usable for other things too.
+uniq_cache() {
+  local label="${1:-unknowncache-$$}"
+  local base="${TMPDIR:-${HOME}/.cache}"
+  #shellcheck disable=SC2046,SC2155
+  local hash=$(echo "${PWD}" | sha1sum | head -c40)
+  # TODO portable-ize this to use sed prolly
+  local tmppath="${PWD//[^a-zA-Z0-0]/-}"
+
+  printf "%s/uniq" "${base}"
+
+  if [ "${label}" != "unknown" ]; then
+    printf "/%s" "${label}"
+  fi
+
+  printf "/%s%s" "${hash}" "${tmppath}"
+}
