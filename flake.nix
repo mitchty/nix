@@ -10,8 +10,12 @@
       { lib, stdenv, ... }:
       {
         inherit inputs;
-        # All here and not in ./nix cause I don't feel like figuring out how to
-        imports = [ inputs.flakelight-darwin.flakelightModules.default ];
+        # All here and not in ./nix cause I don't feel like doing it better,
+        # future mitch problem.
+        imports = [
+          inputs.flakelight-darwin.flakelightModules.default
+          inputs.flakelight-crossplatform.flakelightModules.default
+        ];
 
         # Without this ^^^ sets systems to just aarch64-darwin and x86_64-darwin
         systems = lib.mkForce [
@@ -118,13 +122,13 @@
         nix-darwin.follows = "nix-darwin";
       };
     };
+    flakelight-crossplatform = {
+      url = "github:rencire/flakelight-crossplatform";
+      inputs.flakelight.follows = "flakelight";
+    };
     flakelight = {
       url = "github:nix-community/flakelight";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    flakelight-elisp = {
-      url = "github:accelbread/flakelight-elisp";
-      inputs.flakelight.follows = "flakelight";
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     disko = {

@@ -293,6 +293,26 @@
         "type": "github"
       }
     },
+    "flakelight-crossplatform": {
+      "inputs": {
+        "flakelight": [
+          "flakelight"
+        ]
+      },
+      "locked": {
+        "lastModified": 1744062247,
+        "narHash": "sha256-TTA3RMXuLy6Zbbg0GsbJbEhFLzeGS4f/wFhTPSpRfnw=",
+        "owner": "rencire",
+        "repo": "flakelight-crossplatform",
+        "rev": "4d07dc76fb5fc12aac4450f3252a66d54ade25fe",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rencire",
+        "repo": "flakelight-crossplatform",
+        "type": "github"
+      }
+    },
     "flakelight-darwin": {
       "inputs": {
         "flakelight": [
@@ -313,26 +333,6 @@
       "original": {
         "owner": "cmacrae",
         "repo": "flakelight-darwin",
-        "type": "github"
-      }
-    },
-    "flakelight-elisp": {
-      "inputs": {
-        "flakelight": [
-          "flakelight"
-        ]
-      },
-      "locked": {
-        "lastModified": 1745930112,
-        "narHash": "sha256-DoHE1TdYz9uJZjDUo42KADvoz6uhlEx+toHEUzZnerI=",
-        "owner": "accelbread",
-        "repo": "flakelight-elisp",
-        "rev": "fa8a7e0fae6a2c57ce90825b94dd1798ed1e3fca",
-        "type": "github"
-      },
-      "original": {
-        "owner": "accelbread",
-        "repo": "flakelight-elisp",
         "type": "github"
       }
     },
@@ -626,8 +626,8 @@
         "emacs-overlay": "emacs-overlay",
         "fenix": "fenix",
         "flakelight": "flakelight",
+        "flakelight-crossplatform": "flakelight-crossplatform",
         "flakelight-darwin": "flakelight-darwin",
-        "flakelight-elisp": "flakelight-elisp",
         "home-manager": "home-manager_2",
         "nix-darwin": "nix-darwin",
         "nix-update": "nix-update",

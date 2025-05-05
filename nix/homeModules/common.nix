@@ -9,6 +9,7 @@
   imports = with inputs.self.homeModules; [
     git
     sh
+    tmux
   ];
 
   home = {
