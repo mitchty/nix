@@ -1,19 +1,16 @@
 {
-  description = "my nix flakelight configuration rewrite... attempt (partier deux)";
+  description = "my nix flake configuration rewrite (partier deux en flakelight)";
 
   outputs =
-    {
-      flakelight,
-      flakelight-darwin,
-      nixpkgs,
-      ...
+    { flakelight
+    , ...
     }@inputs:
     flakelight ./. (
       { lib, stdenv, ... }:
       {
         inherit inputs;
         # All here and not in ./nix cause I don't feel like figuring out how to
-        imports = [ flakelight-darwin.flakelightModules.default ];
+        imports = [ inputs.flakelight-darwin.flakelightModules.default ];
 
         # Without this ^^^ sets systems to just aarch64-darwin and x86_64-darwin
         systems = lib.mkForce [
@@ -27,19 +24,15 @@
             # Exposes each input as pkgs.name in the normal package set
             #
             # Not quite an "overlay" but a way to abuse different package inputs
-            # or use all of em if I want in my own derivations.
-            unstable = import inputs.unstable {
+            # or use all of em if I want in derivations here.
+            release = import inputs.nixpkgs-release {
               inherit (prev) system;
               config = {
                 allowUnfree = true;
               };
             };
-            # workaround for macos
-            # https://github.com/NixOS/nixpkgs/issues/402079#issuecomment-2846520987
-            # for bash-language-server/yaml-language-server ultimately, mabye I
-            # skip it for a while till the fix gets into 24.11
-            nodejs = prev.nodejs_22;
-            nodejs-slim = prev.nodejs-slim_22;
+            # TODO: Should I even keep this here? Also nix-hardware needs to get
+            # in here at some point.
             open-webui-cli = inputs.open-webui-cli.packages.${prev.system}.release;
             inherit (inputs.nix-update.packages.${prev.system}) nix-update;
             inherit (inputs.nixos-generators.packages.${prev.system}) nixos-generate;
@@ -57,7 +50,6 @@
 
         checks = {
           altshfmt = pkgs: pkgs.altshfmt;
-          openwebui = pkgs: pkgs.open-webui;
           # Make sure yt stuff builds at least (its got its own unit tests in the
           # derivation we're testing against nixpkgs so no need for further checks
           # here... yet?)
@@ -68,10 +60,22 @@
           dns = pkgs: pkgs.dns-blocklists;
           # Make sure this beast builds at least
           myEmacs = pkgs: pkgs.myEmacs;
+          # TODO: need to get this stupid version working with default builtin
+          # tools wrapped inside as well. That way I can lighten the development
+          # module.
           myWrappedEmacs = pkgs: pkgs.wrappedEmacs;
           # TODO: double check this check in disko is right, seems wrong
           #wtf = inputs.nixpkgs.lib.versionAtLeast inputs.nixpkgs.lib.version "24.11.20240709";
+          # My paid font derivation (note this WILL fail for anyone that doesn't
+          # have the encryption key so... your problem not mine buy the fonts
+          # don't be stingy support font makers)
+          myFonts = pkgs: pkgs.paid-fonts;
           statix = pkgs: "${pkgs.statix}/bin/statix check";
+          # }
+          # TODO: how this isn't working is beyond me for now wgaf I'm not using it yet future me problem.
+          # // lib.optionalAttrs stdenv.isLinux {
+          #   # Make sure my overlay for this thing works but only on linux
+          #   openwebui = pkgs: pkgs.open-webui;
         };
 
         formatters = pkgs: {
@@ -88,7 +92,7 @@
   # future mitch figure it out. The dns blocklist is definitely in this category.
   inputs = {
     # Release YY.MM branch name stuff kept close together for lazy.
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-release.url = "github:NixOS/nixpkgs/nixos-24.11";
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";
@@ -107,7 +111,6 @@
         nix-darwin.follows = "nix-darwin";
       };
     };
-    unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flakelight = {
       url = "github:nix-community/flakelight";
       inputs.nixpkgs.follows = "nixpkgs";

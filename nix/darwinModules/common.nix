@@ -38,10 +38,13 @@
       environment = {
         variables.SHELL = "${pkgs.zsh}/bin/zsh";
 
-        systemPackages = with pkgs; [
-          jq
-          git
-        ];
+        # Like in nixos keep a copy of the current flake so I can diff if needed
+        # to bisect issues.
+        #
+        # Need to get this and stuff like nix config to abuse this when I get to
+        # unifying things between both os's:
+        # https://github.com/rencire/flakelight-crossplatform
+        etc."current-flake".source = ./../..;
       };
 
       home-manager = {
@@ -51,21 +54,9 @@
         extraSpecialArgs = { inherit inputs; };
         users.mitch = {
           imports = with inputs.self.homeModules; [
+            common
             emacs
-            git
-            sh
           ];
-          programs.direnv = {
-            enable = true;
-            stdlib = inputs.nixpkgs.lib.readFile ../../static/home/direnvrc;
-            enableBashIntegration = true;
-            enableFishIntegration = false;
-            enableZshIntegration = true;
-            nix-direnv = {
-              enable = true;
-            };
-          };
-          home.file.".canary".text = "ok";
         };
       };
     }

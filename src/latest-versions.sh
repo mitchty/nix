@@ -1,7 +1,6 @@
 #!/usr/bin/env nix-shell
 #-*-mode: Shell-script; coding: utf-8;-*-
 #!nix-shell -i bash -p bash jq coreutils curl htmlq
-# File: versions.sh
 # Copyright: 2022 Mitchell Tishmack
 # Description: Script for ci to run to see if any specific package(s) have newer versions
 _base=$(basename "$0")

@@ -15,6 +15,8 @@
   };
   home = {
     packages = with pkgs; [
+      transcrypt
+      gist
       git-absorb
       git-extras
       git-lfs
