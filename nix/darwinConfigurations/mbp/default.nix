@@ -17,6 +17,14 @@
       # We don't change these two from what they were installed with generally unless reinstalling.
       system.stateVersion = 5;
       home-manager.users.mitch.home.stateVersion = "24.11";
+
+      home-manager.users.mitch = {
+        imports = with inputs.self.homeModules; [
+          emacs
+          development
+          gui
+        ];
+      };
     }
   ];
 }
