@@ -8,6 +8,8 @@
     packages =
       with pkgs;
       [
+        scripts # TODO: should pull this package apart and make scripts-macos scripts-blah future mitch problem
+        hatools
         altshfmt
         no-more-secrets
         open-webui-cli
