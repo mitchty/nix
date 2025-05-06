@@ -3,14 +3,6 @@
   pkgs,
   ...
 }:
-let
-  rustStable = with inputs.fenix.packages.${pkgs.system}.stable; [
-    rustc
-    rust-src
-    rustfmt
-    rust-analyzer
-  ];
-in
 {
   home = {
     packages =
@@ -32,7 +24,12 @@ in
         yaml-language-server
         ripgrep
       ]
-      ++ rustStable
+      ++ (with inputs.fenix.packages.${pkgs.system}.stable; [
+        rustc
+        rust-src
+        rustfmt
+        rust-analyzer
+      ])
       ++ [ (pkgs.hiPrio inputs.fenix.packages.${pkgs.system}.stable.clippy) ];
   };
 }
