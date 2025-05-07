@@ -1,9 +1,8 @@
-{
-  pkgs,
-  lib,
-  inputs,
-  config,
-  ...
+{ pkgs
+, lib
+, inputs
+, config
+, ...
 }:
 {
   imports = with inputs.self.homeModules; [
@@ -12,9 +11,27 @@
     tmux
   ];
 
+  nix = {
+    nixPath = [
+      "nixpkgs=flake:nixpkgs"
+    ];
+  };
+
   home = {
     packages = with pkgs; [
       btop
+      curl
+      du-dust
+      file
+      gron
+      htop
+      hwatch
+      less
+      libqalculate
+      moreutils
+      ripgrep
+      tree
+      wget
     ];
   };
 

@@ -206,8 +206,8 @@ rec {
 
   home = {
     packages = with pkgs; [
-      tmuxp
       btop
+      tmuxp
     ];
 
     # tmuxp configs

@@ -1,7 +1,5 @@
-#!/usr/bin/env nix-shell
+#!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
-#!nix-shell -i bash -p bash jq curl
-# File: pikvm.sh
 # Description: For now wrapper to just toggle the jiggler on/off
 #
 # Future me can port over the other iso upload stuff.

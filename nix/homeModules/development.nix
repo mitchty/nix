@@ -8,29 +8,31 @@
     packages =
       with pkgs;
       [
-        scripts # TODO: should pull this package apart and make scripts-macos scripts-blah future mitch problem
-        hatools
-        altshfmt
-        no-more-secrets
-        open-webui-cli
         (pkgs.hiPrio clang)
+        altshfmt
         asm-lsp
         clang-tools
-        gcc11
         entr
+        gcc11
         gnumake
+        hatools
+        hyperfine
+        idris2
+        no-more-secrets
+        nodePackages.bash-language-server
+        open-webui-cli
+        ripgrep
+        scripts # TODO: should pull this package apart and make scripts-macos scripts-blah future mitch problem
         shellcheck
         shellspec
         shfmt
-        nodePackages.bash-language-server
         yaml-language-server
-        ripgrep
       ]
       ++ (with inputs.fenix.packages.${pkgs.system}.stable; [
-        rustc
-        rust-src
-        rustfmt
         rust-analyzer
+        rust-src
+        rustc
+        rustfmt
       ])
       ++ [ (pkgs.hiPrio inputs.fenix.packages.${pkgs.system}.stable.clippy) ];
   };

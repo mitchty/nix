@@ -41,7 +41,11 @@
           $DRY_RUN_CMD /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
         '';
 
-        environment.variables.SHELL = "${pkgs.zsh}/bin/zsh";
+        environment = {
+          variables.SHELL = "${pkgs.zsh}/bin/zsh";
+          # We're building from a flake this is for channel nonsense/configuration.nix shenanigans
+          darwinConfig = null;
+        };
 
         home-manager = {
           useGlobalPkgs = true;
