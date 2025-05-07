@@ -194,6 +194,8 @@ let
   };
 in
 rec {
+  # Look at pkgs.tmuxPlugins
+  # https://github.com/NixOS/nixpkgs/blob/master/pkgs/misc/tmux-plugins/default.nix
   programs.tmux = {
     enable = true;
     keyMode = "vi";

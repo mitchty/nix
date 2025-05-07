@@ -20,7 +20,6 @@
     ])
     ++ [
       inputs.home-manager.darwinModules.home-manager
-
       {
         networking = {
           computerName = config.networking.hostName;

@@ -7,8 +7,8 @@
 {
   system = {
     defaults = {
-      NSGlobalDomain.AppleShowAllExtensions = true;
       finder = {
+        CreateDesktop = false;
         AppleShowAllExtensions = true;
         FXEnableExtensionChangeWarning = false;
         QuitMenuItem = true;
