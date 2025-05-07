@@ -15,10 +15,12 @@ stdenv.mkDerivation rec {
   # what matters.
   installPhase = ''
     install -dm755 $out/bin
-    install -m755 $src/cr.sh $out/bin/cr
-    install -m755 $src/cb.sh $out/bin/cb
-    install -m755 $src/notify $out/bin/notify
-    install -m755 $src/nixgc $out/bin/nixgc
+    for s in cr cb pikvm cacheclean b; do
+      install -m755 $src/$s.sh $out/bin/$s
+    done
+    for l in notify nixgc; do
+      install -m755 $src/$l $out/bin/$l
+    done
     patchShebangs $out/bin
   '';
 
