@@ -10,12 +10,12 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "dns-blocklists";
-  version = "32025.125.66586";
+  version = "32025.128.9198";
 
   src = pkgs.fetchFromGitHub {
     inherit owner repo;
     rev = "${version}";
-    sha256 = "sha256-dPbHIbpf5T11PmnvrUXE2fsQj55YAhCOzHS+E2rWAkg=";
+    sha256 = "sha256-+vhQ+kGqjNv1Rcn0e/lrPPzZWxTpWLAOo5Mt/WXBT7g=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
