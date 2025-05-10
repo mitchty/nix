@@ -5,7 +5,7 @@
 _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
-set "${SETOPTS:--xe}"
+set "${SETOPTS:--e}"
 
 #shellcheck disable=SC1090
 . ~/.config/direnv/direnvrc
