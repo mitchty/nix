@@ -23,6 +23,7 @@
           emacs
           development
           gui
+          macos
         ];
       };
     }

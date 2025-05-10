@@ -17,6 +17,7 @@
       finder
       dock
       defaults
+      gui
     ])
     ++ [
       inputs.home-manager.darwinModules.home-manager

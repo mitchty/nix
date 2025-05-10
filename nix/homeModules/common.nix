@@ -1,8 +1,9 @@
-{ pkgs
-, lib
-, inputs
-, config
-, ...
+{
+  pkgs,
+  lib,
+  inputs,
+  config,
+  ...
 }:
 {
   imports = with inputs.self.homeModules; [
@@ -29,6 +30,7 @@
       less
       libqalculate
       moreutils
+      mosh
       ripgrep
       tree
       wget
