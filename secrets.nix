@@ -7,8 +7,8 @@ let
   # Host keys
   gw = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0EYJsNFz7dWxdRSID5E5Qq/l+i17nNYoJKLAv4jG06";
   mb = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINhaAD9U8kHtlMrFsy8vytWITHLe55DYy8kObDhoMqTO";
+  mbp = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILaNLdykXNG7SbXyEFV3q1OVevNbIxSb8Of0AnSLxR11";
   srv = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsX6e+fhe/CxoGIbZ4auuk83H3sUK5XQhia8OWFz4pt";
-  nexus = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJCQJlqfzBYIjuWAIl72Q4o264vMEKWc4b+Tc30cqgtO";
   wm2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNzRSDjB8WJHSEepNu2GTrZIgFWprv+wMnX6xbeoD0U";
   rtx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBaFOFERMbg/d7DHrTBJ7pPKiJhwxFadQZlagalg51/";
 
@@ -24,16 +24,19 @@ let
     cl1
     cl2
     cl3
-    nexus
   ];
 
   # To make the following a skosh simpler/easier
   homeusers = [ mitch ];
-  homehosts = [ mb ] ++ allnixos;
+  homehosts = [
+    mb
+    mbp
+  ] ++ allnixos;
 
   git = homehosts ++ homeusers;
   backup = [
     mb
+    mbp
     srv
     wm2
   ];
@@ -53,43 +56,37 @@ let
     srv
     wm2
     rtx
-    nexus
   ];
 
   # ytdl
-  ytdl = [
-    srv
-    nexus
-  ];
+  ytdl = [ srv ];
 
   # wifi connections
   wifi = [ wm2 ];
 in
 {
-  # Just a canary file to know if things are working
-  "canary.age".publicKeys = everything;
+  # Just a canary file to know if things are working or not, otherwise unused
+  # TODO: yeet this into a git hook or something?
+  "secrets/canary.age".publicKeys = everything;
 
   # For authenticated git push/pull mainly.
-  "git/netrc.age".publicKeys = git ++ ageadmins;
-  "git/gh-cli-pub.age".publicKeys = git ++ ageadmins;
+  "secrets/git/netrc.age".publicKeys = git ++ ageadmins;
+  "secrets/git/gh-cli-pub.age".publicKeys = git ++ ageadmins;
 
   # nixos specific
-  "passwd/root.age".publicKeys = allnixos ++ ageadmins;
-  "passwd/mitch.age".publicKeys = allnixos ++ ageadmins;
-
-  # TODO moved to using an ap instead
-  # Only the router needs the the hostapd stuff
-  #  "wifi/passphrase.age".publicKeys = router ++ ageadmins;
+  "secrets/passwd/root.age".publicKeys = allnixos ++ ageadmins;
+  "secrets/passwd/mitch.age".publicKeys = allnixos ++ ageadmins;
 
   # cifs mount user/pass files
-  "cifs/plex.age".publicKeys = cifs ++ ageadmins;
-  "cifs/mitch.age".publicKeys = cifs ++ ageadmins;
+  "secrets/cifs/plex.age".publicKeys = cifs ++ ageadmins;
+  "secrets/cifs/mitch.age".publicKeys = cifs ++ ageadmins;
 
-  # Cookies for ytdl-sub
-  "net/cookies.txt.age".publicKeys = ytdl ++ ageadmins;
+  # TODO: Cookies for ytdl-sub, need to get all that junk into here somehow
+  "secrets/net/cookies.txt.age".publicKeys = ytdl ++ ageadmins;
 
   # Wifi networkmanager setup
-  "wifi/lostfox.age".publicKeys = wifi ++ ageadmins;
-  "wifi/newerhotness.age".publicKeys = wifi ++ ageadmins;
-  "wifi/gambit.age".publicKeys = wifi ++ ageadmins;
+  "secrets/wifi/lostfox.age".publicKeys = wifi ++ ageadmins;
+  "secrets/wifi/newerhotness.age".publicKeys = wifi ++ ageadmins;
+  "secrets/wifi/gambit.age".publicKeys = wifi ++ ageadmins;
+  "secrets/wifi/pp.age".publicKeys = wifi ++ ageadmins;
 }
