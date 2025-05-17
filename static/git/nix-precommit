@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+#-*-mode: Shell-script; coding: utf-8;-*-
+# SPDX-License-Identifier: BlueOak-1.0.0
+# Description: Git precommit hook to ensure nix flake check is *ALWAYS* working
+# cause I suck at doing it manually/remembering and need to care more.
+_base=$(basename "$0")
+_dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
+export _base _dir
+set "${SETOPTS:--eu}"
+
+if [ -e flake.nix ]; then
+  CHECKME=$(mktemp -d)
+
+  trap 'rm -fr -- "${CHECKME}"' EXIT TERM INT QUIT
+
+  cp -r .git "${CHECKME}/"
+
+  # Be good shell and exit posixly if chdir fails for god knows why.
+  cd "${CHECKME}" || exit 126
+
+  # This is a copy of the checkout so nuke the lock file for git restore if present.
+  rm -fr .git/index.lock
+  git restore .
+  git status
+
+  nix flake check -L "${CHECKME}"
+fi
