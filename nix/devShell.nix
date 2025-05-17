@@ -22,6 +22,7 @@
       treefmt
       nixos-generate
       agenix
+      git-agecrypt
     ]
     # Only need these on linux
     ++ lib.optionals stdenv.isLinux [
