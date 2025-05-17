@@ -30,6 +30,22 @@ elif [ "${uname_s}" = "Darwin" ]; then
   fi
 fi
 
+cmp_versions() {
+  latest=$1
+  shift
+  ours=$1
+
+  if [ "${latest}" != "${ours}" ]; then
+    printf "%s latest version out of date: ours=%s latest=%s\n" "${pkg}" "${ours}" "${latest}" >&2
+    printf "nix-update --flake %s --version %s\n" "${pkg}" "${latest}"
+    ok=$((ok + 1))
+  else
+    if [ -n "${VERBOSE}" ]; then
+      printf "%s have=%s latest=%s\n" "${pkg}" "${ours}" "${latest}" >&2
+    fi
+  fi
+}
+
 # 2> /dev/null to nuke the stderr warning: messages
 for pkg in $(nix flake show --json 2> /dev/null | jq -r '.packages."'${arch}'" | keys[]'); do
   evalstring=$(nix eval --raw ".#${pkg}.latest" 2> /dev/null)
@@ -38,15 +54,22 @@ for pkg in $(nix flake show --json 2> /dev/null | jq -r '.packages."'${arch}'" |
     ours=$(nix eval --raw ".#${pkg}.version" 2> /dev/null)
 
     if [ "$?" -eq 0 ]; then
-      if [ "${latest}" != "${ours}" ]; then
-        printf "%s latest version out of date: ours=%s latest=%s\n" "${pkg}" "${ours}" "${latest}" >&2
-        printf "nix-update --flake %s --version %s\n" "${pkg}" "${latest}"
-        ok=$((ok + 1))
-      else
-        if [ -n "${VERBOSE}" ]; then
-          printf "%s have=%s latest=%s\n" "${pkg}" "${ours}" "${latest}" >&2
-        fi
-      fi
+      cmp_versions "${latest}" "${ours}"
+    fi
+  fi
+done
+
+# Ok this is for overlays, and I'm not sure I want to trawl the entire set so
+# just specifying things manually for now. If i start overlaying a lot more
+# future me problem.
+for pkg in yt-dlp bgutil-ytdlp-pot-provider yt-dlp-get-pot; do
+  evalstring=$(nix eval --raw ".#.legacyPackages.\"${arch}\".${pkg}.latest" 2> /dev/null)
+  if [ "$?" -eq 0 ]; then
+    latest=$(eval "${evalstring}")
+    ours=$(nix eval --raw ".#${pkg}.version" 2> /dev/null)
+
+    if [ "$?" -eq 0 ]; then
+      cmp_versions "${latest}" "${ours}"
     fi
   fi
 done
