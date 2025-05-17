@@ -54,26 +54,24 @@ Use use-package to configure emacs itself.
 
 ** Compilation mode related
 
-TODO: testing
+TODO: testing compilation mode color shenanigans
+
+More shenanigans to yeet from in https://www.reddit.com/r/emacs/comments/1h2o8hr/share_your_mx_compile_compilationmode_config/
+
+Future me problem.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package xterm-color :defer)
-(defun my-advice-compilation-filter (f proc string)
-  (funcall f proc (xterm-color-filter string)))
-(advice-add 'compilation-filter :around #'my-advice-compilation-filter)
-
 (use-package fancy-compilation
   :ensure
   :defer
   :after compile
-;;  :hook (compilation-filter . ansi-color-compilation-filter)
   :custom
-;;  (fancy-compilation-scroll-output 'first-error)
+  (fancy-compilation-term  "xterm-color")
   (compilation-scroll-output t)
-  (compilation-environment '("TERM=xterm-256color"))
   (compilation-auto-jump-to-first-error t)
   (compilation-scroll-output t)
   (compilation-max-output-line-length nil)
+  (compilation-ask-about-save nil)
   :bind ("C-x C-m" . compile)
   :commands
   (fancy-compilation-mode))
@@ -1238,15 +1236,19 @@ TODO eglot-booster/emacs-lsp-booster removal for 30.x+ allegedly its json parsin
 (use-package eglot
   :ensure
   :defer
+  :hook (rust-mode . eglot-ensure)
   :custom
   (eglot-report-progress nil)
   :config
-  ;; (use-package eglot-booster
-  ;;   :after (eglot)
-  ;;   :config (eglot-booster-mode))
-  (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
-  (add-hook 'prog-mode-hook 'eglot-ensure)
-  (add-to-list 'eglot-stay-out-of 'eldoc))
+  (add-to-list 'eglot-stay-out-of 'eldoc)
+  (add-to-list 'eglot-server-programs
+                '(rust-mode . ("rust-analyzer" :initializationOptions
+                              ( :procMacro (:enable t)
+                                :cargo ( :buildScripts (:enable t)
+                                         :features "all"))))))
+;;    (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
+;;  (add-hook 'prog-mode-hook 'eglot-ensure)
+;;  (add-to-list 'eglot-stay-out-of 'eldoc))
 
 (use-package lsp-mode
   :after (rustic)
