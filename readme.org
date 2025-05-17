@@ -17,7 +17,23 @@ vm-simple hm-activate-mitch[710]: Starting Home Manager activation
 vm-simple hm-activate-mitch[710]: Could not find suitable profile directory, tried /home/mitch/.local/state/nix/profiles and /nix/var/nix/profiles/per-user/mitch
 #+end_src
 
-Its complaining about profiles
+- Also need to figure out how to have nix-shell get rid of this dum message:
+
+https://github.com/NixOS/nix/issues/2982
+
+Its complaining about profiles, probably something simple I broke. Will fix as I get time.
+
+#+begin_src
+warning: Nix search path entry '/nix/var/nix/profiles/per-user/root/channels' does not exist, ignoring
+#+end_src
+
+Coming from here when using /usr/bin/nix-shell in a shebang line.
+
+#+begin_src
+echo $NIX_PATH
+nixpkgs=flake:nixpkgs:nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/per-user/root/channels
+#+end_src
+- https://github.com/Misterio77/nix-colors theming? veeeery future mitch task
 
 * Testing via qemu/vm
 
@@ -29,6 +45,9 @@ This is a temporary state for now, I hope, its mostly to bootstrap into a fully 
 
 For now quick hacks is fine. Also useful for testing "air-gap" use cases as I can just disable network on qemu.
 
+https://github.com/compactcode/dot-files/blob/c10315a9559dceaa1fbc0b8beb81c9b83e712bcf/nix/darwinModules/desktop/default.nix
+
+https://nix-community.github.io/home-manager/index.xhtml#_how_do_i_install_packages_from_nixpkgs_unstable
 Below here be old readme I haven't updated. Its likely not applicable any longer.
 
 * My home network nix flake setup
