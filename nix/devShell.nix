@@ -20,10 +20,11 @@
       ripgrep
       statix
       treefmt
+      nixos-generate
+      agenix
     ]
     # Only need these on linux
     ++ lib.optionals stdenv.isLinux [
-      nixos-generate
       qemu-uefi-wrapper
     ];
 }

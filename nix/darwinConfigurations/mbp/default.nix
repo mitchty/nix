@@ -8,6 +8,7 @@
       imports = with inputs.self.darwinModules; [
         common
         laptop
+        mutagen
       ];
 
       networking.hostName = "mbp";
@@ -24,6 +25,7 @@
           development
           gui
           macos
+          mutagen
         ];
       };
     }

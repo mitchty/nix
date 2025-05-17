@@ -5,7 +5,7 @@
     #
     # Not quite an "overlay" but a way to abuse different package inputs
     # or use all of em if I want in derivations here.
-    release = import inputs.nixpkgs-release {
+    unstable = import inputs.nixpkgs-unstable {
       inherit (prev) system;
       config.allowUnfree = true;
       config.allowBroken = true; # darwin/aarch64 OVMF marked broken
