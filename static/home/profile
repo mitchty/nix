@@ -84,6 +84,15 @@ t() {
   fi
 }
 
+ta() {
+  if [ -z "$1" ]; then
+    printf "Supply a tmux session name to connect to/create\n" >&2
+  else
+    tmux has-session -t "$1" 2> /dev/null || tmux new-session -d -s "$1"
+    tmux attach-session -t "$1"
+  fi
+}
+
 # general aliases
 alias s=ssh
 alias quit=exit
@@ -141,53 +150,6 @@ alias hb='rsync -e "ssh -T -c aes128-ctr -o Compression=no -x" --exclude .cache 
 
 PATH="${PATH}:${HOME}/bin:${HOME}/.local/bin"
 export PATH
-
-# Mostly to make it easy to jumpstart a rust project nix+cargo+git all in one
-# via the crane flake.
-crane() {
-  # Arg is the directory to do stuff to, required
-  local _crane_dir="${1?}"
-  shift > /dev/null 2>&1 || :
-  local _crane_name="${1}"
-
-  if [ -e "${_crane_dir}" ]; then
-    printf "fatal: %s already exists, refusing to use it for anything\n" "${_crane_dir}" >&2
-    return 1
-  fi
-
-  install -dm755 "${_crane_dir}"
-
-  cd "${_crane_dir}" || return 126
-
-  template="${CRANE_TEMPLATE:+#}${CRANE_TEMPLATE:-}"
-  nix flake init -t github:ipetkov/crane"${template}"
-  git init
-
-  printf "result\ntarget\n" > .gitignore
-
-  # Go away I know; this is intentional, makes it easier to just use the
-  # binaries created directly.
-  #shellcheck disable=SC2016
-  printf 'export PATH=$PATH:$(pwd)/result/bin\nuse flake\n' > .envrc
-  git add -A
-
-  direnv allow
-  # Rename it if we want a different name for the thing
-  if [ -n "${_crane_name}" ]; then
-    sed_inplace -e "s/quick-start/${_crane_name}/g" -e "s/cross-musl/${_crane_name}/g" -e "s/my-crate/${_crane_name}/g" Cargo.toml flake.nix
-  fi
-
-  # Set the license to blue oak by default for my crap
-  sed_inplace -e "s/MIT/Blue Oak Model License 1.0.0/g" Cargo.toml
-
-  nix run nixpkgs#cargo -- update
-
-  # Get the basic build cached straight away.
-  nix build
-
-  git add -A
-  git commit -m "nix flake init -t github:ipetkov/crane${template}"
-}
 
 kdiff() {
   lhs="${1?need a number for the diff to start}"
@@ -264,6 +226,11 @@ weod() {
   j todo > todo
   git add todo && git ci -m "eod: $(date +%Y-%b-%d)"
   eod
+}
+
+leod() {
+  nixgc
+  sudo systemctl sleep
 }
 
 # Daily jira cli alias, first arg should always be something jira-cli doesn't
