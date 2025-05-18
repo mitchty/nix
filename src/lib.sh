@@ -682,9 +682,9 @@ _s_wrapcmd() {
 
   # I'm abusing assignment here
   #shellcheck disable=SC2155,SC2046
-  local hostcmd=$(${GREP} -A2 -E "^Host ${host}" ~/.ssh/sshpass | ${AWK} '/^  LocalCommand/ {$1=""; print $0}')
+  local hostcmd=$(${GREP} -A2 -E "^Host ${host}" "${_s_defaultfile}" | ${AWK} '/^  LocalCommand/ {$1=""; print $0}')
   if [ -z "${hostcmd}" ]; then
-    hostcmd=$(${GREP} -A1 -E "^Hostname ${host}" ~/.ssh/sshpass | ${AWK} '/^  LocalCommand/ {$1=""; print $0}')
+    hostcmd=$(${GREP} -A1 -E "^Hostname ${host}" "${_s_defaultfile}" | ${AWK} '/^  LocalCommand/ {$1=""; print $0}')
   fi
   echo "${hostcmd}"
 }
