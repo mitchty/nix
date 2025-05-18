@@ -9,6 +9,7 @@
         common
         laptop
         mutagen
+        age
       ];
 
       networking.hostName = "mbp";

@@ -142,10 +142,9 @@
 [github]
   user = mitchty
 
-# TODO: Back to gpg?
-#  Use a gpg encrypted .netrc file.
-# [credential]
-#   helper = netrc -v -f ~/.netrc.gpg -f ~/.netrc
+[credential]
+#  helper = rbw
+  helper = netrc
 
 # Shut up already, I don't need hints.
 [advice]

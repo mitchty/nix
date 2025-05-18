@@ -21,11 +21,16 @@
       ];
     };
 
-    age.secrets."git/netrc".file = ../../secrets/git/netrc.age;
+    # TODO: figure out how to get home-manager agenix option to work.
+    # Note: this is actually being setup in nixos/darwin modules not here
+    # https://github.com/ryantm/agenix/issues/329
+    #
+    # I'm abusing the platform level decryption.
+    # age.secrets."git/netrc".file = ../../secrets/git/netrc.age;
 
     home = {
       packages = with pkgs; [
-        transcrypt
+        transcrypt # TODO: nuke me once everythings converted to main branch until then leave it around like a human tail
         gist
         git-absorb
         git-extras
@@ -35,6 +40,10 @@
         git-sizer
         git-vendor
         gitFull
+
+        # Ab(use) the unofficial bitwarden cli and use that as a credential helper
+        rbw
+        pinentry-tty
       ];
 
       file = {
@@ -44,7 +53,7 @@
         # TODO: using config.age.secrets.name.path doesn't work directly ref:
         # https://github.com/ryantm/agenix/issues/329
         ".netrc".source = config.lib.file.mkOutOfStoreSymlink "/run/agenix/git/netrc";
-        #".gh-cli-pub".source = config.lib.file.mkOutOfStoreSymlink age.secrets."git/gh-cli-pub".path;
+        ".gh-cli-pub".source = config.lib.file.mkOutOfStoreSymlink "/run/agenix/git/gh-cli-pub";
         ".gitignore".source = ../../static/git/ignore;
         ".gitconfig-work".source = ../../static/git/config-work;
         ".gitconfig".text =
