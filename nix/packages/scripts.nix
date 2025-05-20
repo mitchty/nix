@@ -15,10 +15,10 @@ stdenv.mkDerivation rec {
   # what matters.
   installPhase = ''
     install -dm755 $out/bin
-    for s in cr cb pikvm cacheclean b crane; do
+    for s in b cacheclean cb cdu cr crane pikvm; do
       install -m755 $src/$s.sh $out/bin/$s
     done
-    for l in notify nixgc; do
+    for l in nixgc notify; do
       install -m755 $src/$l $out/bin/$l
     done
     patchShebangs $out/bin
