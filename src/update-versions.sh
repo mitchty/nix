@@ -51,7 +51,7 @@ for pkg in $(nix flake show --json 2> /dev/null | jq -r '.packages."'${arch}'" |
     if [ "$?" -eq 0 ]; then
       if [ "${latest}" != "${ours}" ]; then
         printf "%s latest version out of date: ours=%s latest=%s\n" "${pkg}" "${ours}" "${latest}" >&2
-        printf "nix run github:MiC92/nix-update -- --flake %s --version %s\n" "${pkg}" "${latest}"
+        printf "nix-update --flake %s --version %s\n" "${pkg}" "${latest}"
         nix-update --flake "${pkg}" --version "${latest}"
         nix build .#${pkg}
         git add -u
