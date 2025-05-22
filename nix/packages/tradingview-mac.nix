@@ -12,7 +12,7 @@ if (system == "aarch64-darwin") then
 
     src = fetchurl {
       url = "https://tvd-packages.tradingview.com/stable/${version}/darwin/TradingView.dmg";
-      sha256 = "";
+      sha256 = "sha256-i6GNI916WqkYxe1iFiSF48eCoqeEqittmCftrOrSRsI=";
     };
 
     sourceRoot = ".";
