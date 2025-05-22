@@ -1,7 +1,5 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i bash -p bash coreutils puppeteer-cli poppler_utils
+#!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
-# SPDX-License-Identifier: BlueOak-1.0.0
 # Description: Check for updates to firmware for crap I own, none of this shell
 # is pretty, just functional enough to get the job done.
 _base=$(basename "$0")
@@ -19,7 +17,7 @@ install -dm755 "${T}"
 
 cleanup() {
   [ -d "${T}" ] && rm -fr "${T}"
-  [ ${ok} -ne 0 ] && printf "note: %s did not succesfully try again with SETOPTS=-eux\n" "${_base}" >&2
+  [ ${ok} -ne 0 ] && printf "note: %s did not run succesfully try again with SETOPTS=-eux \n" "${_base}" >&2
   exit $ok
 }
 

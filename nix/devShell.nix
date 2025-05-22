@@ -23,9 +23,12 @@
       nixos-generate
       agenix
       git-agecrypt
+      #      ytdl-sub-with-plugins
     ]
-    # Only need these on linux
+    # Only need these on linux or they don't build on macos...
     ++ lib.optionals stdenv.isLinux [
+      puppeteer-cli
+      poppler_utils
       qemu-uefi-wrapper
     ];
 }
