@@ -41,7 +41,10 @@
         git-vendor
         gitFull
 
-        # Ab(use) the unofficial bitwarden cli and use that as a credential helper
+        # TODO: Ab(use) the unofficial bitwarden cli and use that as a credential helper
+        # How do I use this with a token? I can't auth with username/password...
+        #
+        # https://github.com/doy/rbw
         rbw
         pinentry-tty
       ];

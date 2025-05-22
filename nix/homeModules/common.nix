@@ -31,7 +31,6 @@
       libqalculate
       moreutils
       mosh
-      rbw
       ripgrep
       tree
       wget
