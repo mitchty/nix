@@ -40,7 +40,9 @@
           # derivation we're testing against nixpkgs so no need for further checks
           # here... yet?)
           ytdlSub = pkgs: pkgs.ytdl-sub;
+          ytdlSubPlugins = pkgs: pkgs.ytdl-sub-with-plugins;
           ytDlp = pkgs: pkgs.yt-dlp;
+          ytDlpPlugins = pkgs: pkgs.yt-dlp-with-plugins;
           ytdlpgetpot = pkgs: pkgs.yt-dlp-get-pot;
           # Ensure the dns blocklist package is working
           dns = pkgs: pkgs.dns-blocklists;
