@@ -15,7 +15,7 @@ stdenv.mkDerivation rec {
   # what matters.
   installPhase = ''
     install -dm755 $out/bin
-    for s in b cacheclean cb cdu cr crane pikvm; do
+    for s in b cacheclean cb cdu cr crane git-exec pikvm; do
       install -m755 $src/$s.sh $out/bin/$s
     done
     for l in nixgc notify; do
