@@ -50,7 +50,7 @@ rec {
     #   true
     # '';
     propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
-      #      final.yt-dlp-get-pot
+      final.yt-dlp-get-pot
       final.bgutil-ytdlp-pot-provider
     ];
   });
@@ -69,7 +69,7 @@ rec {
         wrapProgram $out/bin/yt-dlp \
           --prefix PYTHONPATH : "${
             toPathWithSep final.${pp.pythonAttr}.pkgs.yt-dlp
-          }:${toPathWithSep final.bgutil-ytdlp-pot-provider}"
+          }:${toPathWithSep final.bgutil-ytdlp-pot-provider}:${toPathWithSep final.yt-dlp-get-pot}"
       '';
     };
 
@@ -87,7 +87,7 @@ rec {
         wrapProgram $out/bin/ytdl-sub \
           --prefix PYTHONPATH : "${
             toPathWithSep final.${pp.pythonAttr}.pkgs.yt-dlp
-          }:${toPathWithSep final.bgutil-ytdlp-pot-provider}"
+          }:${toPathWithSep final.bgutil-ytdlp-pot-provider}:${toPathWithSep final.yt-dlp-get-pot}"
       '';
     };
 }
