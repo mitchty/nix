@@ -30,12 +30,13 @@ self: super: {
         dontCheck = true;
         disabledTests = [
           "test_llm_caching"
+          "test_llm_caching_async"
         ] ++ old.disabledTests;
       });
       open-webui = pyprev.open-webui.overridePythonAttrs (old: {
         dependencies =
           old.dependencies
-          ++ (with super.pkgs.python3Packages; [
+            ++ (with super.pkgs.python3Packages; [
             emoji
             iso-639
             langdetect
