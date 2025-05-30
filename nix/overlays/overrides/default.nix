@@ -16,11 +16,30 @@ self: super: {
       })
     ];
   });
+
   # TODO: what other packages do I need to splice in here?
   pythonPackagesExtensions = super.pythonPackagesExtensions ++ [
     (pyfinal: pyprev: {
+      # I keep getting errno 3 Temporary failure in name resolution on this for some reason now.
+      #
+      # Who does a POST to a webpage in a unit test though? Why is this data not
+      # in the repo ungh ai tooling is as bad as the llm responses they give.
+      langchain-community = pyprev.langchain-community.overridePythonAttrs (old: {
+        doCheck = false;
+        doInstallCheck = false;
+        dontCheck = true;
+        disabledTests = [
+          "test_llm_caching"
+        ] ++ old.disabledTests;
+      });
       open-webui = pyprev.open-webui.overridePythonAttrs (old: {
-        dependencies = old.dependencies ++ [ super.pkgs.python311Packages.emoji ];
+        dependencies =
+          old.dependencies
+          ++ (with super.pkgs.python3Packages; [
+            emoji
+            iso-639
+            langdetect
+          ]);
       });
     })
   ];
