@@ -17,7 +17,10 @@
       users.users.mitch.home = "/Users/mitch";
 
       # We don't change these two from what they were installed with generally unless reinstalling.
-      system.stateVersion = 5;
+      system = {
+        stateVersion = 5;
+        primaryUser = "mitch";
+      };
       home-manager.users.mitch.home.stateVersion = "24.11";
 
       home-manager.users.mitch = {
