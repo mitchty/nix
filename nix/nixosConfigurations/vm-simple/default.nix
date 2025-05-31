@@ -8,11 +8,11 @@ in
   modules = [
     {
       imports =
-        # (with inputs.self.nixosModules; [
-        #   common
-        #   user-mitch
-        # ])
-        [
+        (with inputs.self.nixosModules; [
+          common
+          #   user-mitch
+        ])
+        ++ [
           inputs.disko.nixosModules.disko
           inputs.home-manager.nixosModules.home-manager
           #          inputs.self.nixosModules.user-mitch
@@ -44,20 +44,21 @@ in
             "wheel"
           ];
           home = "/home/mitch";
-          #                shell = pkgs.zsh;
+          #          shell = pkgs.zsh;
           initialPassword = "changeme";
         };
       };
 
-      home-manager.users.mitch.home = {
-        username = "mitch";
-        homeDirectory = "/home/mitch";
-        programs.home-manager.enable = true;
-        # packages = with pkgs; [
-        #   # your desired nixpkgs here
-        # ];
-        stateVersion = "24.11";
-      };
+      # Disabled for now
+      # home-manager.users.mitch.home = {
+      #   username = "mitch";
+      #   homeDirectory = "/home/mitch";
+      #   programs.home-manager.enable = true;
+      #   # packages = with pkgs; [
+      #   #   # your desired nixpkgs here
+      #   # ];
+      #   stateVersion = "24.11";
+      # };
     }
   ];
 }
