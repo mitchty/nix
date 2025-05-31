@@ -72,6 +72,54 @@ let
     ];
   };
 
+  mutagen = {
+    window_name = "mutagen";
+    layout = "even-vertical";
+    panes = [
+      {
+        shell_command = [
+          "hwatch -n 10 -t -d word -o stdout mutmon"
+        ];
+      }
+      {
+        shell_command = [
+          {
+            enter = true;
+            cmd = "mutagen sync monitor src-rtx -l";
+          }
+        ];
+        sleep_before = sleepDefault;
+      }
+      {
+        shell_command = [
+          {
+            enter = true;
+            cmd = "mutagen sync monitor src-srv -l";
+          }
+        ];
+        sleep_before = sleepDefault;
+      }
+      {
+        shell_command = [
+          {
+            enter = true;
+            cmd = "mutagen sync monitor src-wm2 -l";
+          }
+        ];
+        sleep_before = sleepDefault;
+      }
+      {
+        shell_command = [
+          {
+            enter = true;
+            cmd = "mutagen sync monitor src-mb -l";
+          }
+        ];
+        sleep_before = sleepDefault;
+      }
+    ];
+  };
+
   wip = {
     window_name = "wip";
     panes = [
@@ -86,7 +134,6 @@ let
         sleep_before = sleepDefault;
       }
       {
-        focus = true;
         shell_command = [
           {
             enter = true;
@@ -239,6 +286,14 @@ rec {
           initial
           rebuildlocal
           refactor
+        ];
+      };
+
+      ".config/tmuxp/mutagen.yml".text = lib.generators.toYAML { } {
+        start_directory = "~";
+        session_name = "monitor";
+        windows = [
+          mutagen
         ];
       };
 
