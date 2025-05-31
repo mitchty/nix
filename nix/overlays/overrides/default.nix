@@ -17,7 +17,6 @@ self: super: {
     ];
   });
 
-  # TODO: what other packages do I need to splice in here?
   pythonPackagesExtensions = super.pythonPackagesExtensions ++ [
     (pyfinal: pyprev: {
       # I keep getting errno 3 Temporary failure in name resolution on this for some reason now.
@@ -36,7 +35,7 @@ self: super: {
       open-webui = pyprev.open-webui.overridePythonAttrs (old: {
         dependencies =
           old.dependencies
-            ++ (with super.pkgs.python3Packages; [
+          ++ (with super.pkgs.python3Packages; [
             emoji
             iso-639
             langdetect
