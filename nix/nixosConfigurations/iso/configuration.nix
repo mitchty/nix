@@ -24,6 +24,10 @@ in
     variables.EDITOR = "vi";
   };
 
-  users.users.root.openssh.authorizedKeys.keys = sshPubKeys;
+  users.users = {
+    root.openssh.authorizedKeys.keys = sshPubKeys;
+    nixos.openssh.authorizedKeys.keys = sshPubKeys;
+  };
+
   isoImage.squashfsCompression = lib.mkForce "zstd -Xcompression-level 19";
 }
