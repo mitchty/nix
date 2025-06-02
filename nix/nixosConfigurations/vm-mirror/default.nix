@@ -3,12 +3,25 @@
   system = "x86_64-linux";
 
   modules = [
-    # TODO: this no worky at fixing the home-manager-USER.service thing, future
-    # mitch figure it out and look at source like a professional.
-    #    inputs.home-manager.nixosModules.home-manager
-    ./configuration.nix
     {
-      system.stateVersion = "24.11";
+      imports =
+        (with inputs.self.nixosModules; [
+          common
+          user-mitch
+        ])
+        ++ [
+          inputs.disko.nixosModules.disko
+          inputs.home-manager.nixosModules.home-manager
+        ]
+        ++ [
+          ./diskconfig.nix
+        ];
+
+      diskConfig.disks = [
+        "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001"
+        "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00002"
+      ];
+      system.stateVersion = "25.05";
       boot.loader.systemd-boot.enable = true;
       networking.hostName = "vm-mirror";
     }

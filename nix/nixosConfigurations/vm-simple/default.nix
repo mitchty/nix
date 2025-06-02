@@ -21,7 +21,7 @@ in
         ];
 
       diskConfig.disks = [ "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001" ];
-      system.stateVersion = "24.11";
+      system.stateVersion = "25.05";
       boot.loader.systemd-boot.enable = true;
       networking.hostName = "vm-simple";
 
