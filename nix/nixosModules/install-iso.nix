@@ -26,6 +26,15 @@ in
 #
 # TODO: add timing tests (warm not cold)
 {
+  imports =
+    builtins.map (mod: inputs.${mod}.nixosModules.${mod}) [
+      "disko"
+      "home-manager"
+    ]
+    ++ [
+      "${toString inputs.nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+    ];
+
   # I don't want docs on the iso system derivation. Don't need em wasting space/time.
   documentation = {
     enable = false;
@@ -166,7 +175,7 @@ in
   # have the derivation data.
   systemd.services.autoinstall = {
     description = "NixOS Autoinstall";
-    wantedBy = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
     # wantedBy = [ "multi-user.target" ];
     # TODO: wait for network instead? Not a huge deal it installs in airgap anyway.
     #        wantedBy = [ (if somedumcondition then "network-online.target" else "multi-user.target") ];
