@@ -7,12 +7,26 @@ self: super: {
         self.darwin.apple_sdk.frameworks.SystemConfiguration
       ];
   });
+
   transcrypt = super.transcrypt.overrideAttrs (old: rec {
     patches = old.patches or [ ] ++ [
       (super.fetchpatch {
         name = "suppress-openssl-pbkdf2-warnings";
         url = "https://github.com/elasticdog/transcrypt/compare/suppress-openssl-pbkdf2-warnings.diff";
         sha256 = "sha256-wRMx/Kbkm/Xpl1aaX9jjk6xMXZf6seEg5BhkZ34WEpI=";
+      })
+    ];
+  });
+
+  # Latest version of powertop was like 3-4 years ago, this patch is from 2 years ago
+  #
+  # Be nice if they plopped out a new release at some point.
+  powertop = super.powertop.overrideAttrs (old: rec {
+    patches = old.patches or [ ] ++ [
+      (super.fetchpatch {
+        name = "add-auto-tune-dump";
+        url = "https://github.com/fenrus75/powertop/commit/fa916f11b7cd5dadeb838068e2a0aaec03e062ff.diff";
+        sha256 = "sha256-4/FGmf5xxvyzLLvl4BBkntQL7abR5vsMIgrMR7EoX7M=";
       })
     ];
   });
