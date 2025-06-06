@@ -24,7 +24,7 @@
     nodejs-slim = prev.nodejs-slim_22;
   })
   inputs.emacs-overlay.overlay
-  inputs.deploy-rs.overlay
+  inputs.deploy-rs.overlays.default
   inputs.agenix.overlays.default
   inputs.fenix.overlays.default
   inputs.nur.overlays.default
