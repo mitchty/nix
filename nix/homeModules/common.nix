@@ -7,6 +7,7 @@
 }:
 {
   imports = with inputs.self.homeModules; [
+    age
     git
     sh
     tmux

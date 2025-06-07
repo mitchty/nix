@@ -21,6 +21,17 @@
       ];
     };
 
+    age.secrets = {
+      "git/netrc" = {
+        file = ../../secrets/git/netrc.age;
+        path = config.home.homeDirectory + "/.netrc";
+      };
+      "git/gh-cli-pub" = {
+        file = ../../secrets/git/gh-cli-pub.age;
+        path = config.home.homeDirectory + "/.gh-cli-pub";
+      };
+    };
+
     # TODO: figure out how to get home-manager agenix option to work.
     # Note: this is actually being setup in nixos/darwin modules not here
     # https://github.com/ryantm/agenix/issues/329
@@ -50,13 +61,6 @@
       ];
 
       file = {
-        # NO WORKY
-        #        ".netrc".source = config.lib.file.mkOutOfStoreSymlink config.age.secrets."git/netrc".path;
-
-        # TODO: using config.age.secrets.name.path doesn't work directly ref:
-        # https://github.com/ryantm/agenix/issues/329
-        ".netrc".source = config.lib.file.mkOutOfStoreSymlink "/run/agenix/git/netrc";
-        ".gh-cli-pub".source = config.lib.file.mkOutOfStoreSymlink "/run/agenix/git/gh-cli-pub";
         ".gitignore".source = ../../static/git/ignore;
         ".gitconfig-work".source = ../../static/git/config-work;
         ".gitconfig".text =

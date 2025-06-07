@@ -25,11 +25,11 @@
 
       home-manager.users.mitch = {
         imports = with inputs.self.homeModules; [
-          emacs
           development
           gui
           macos
           mutagen
+          macos-mitch
         ];
       };
     }

@@ -10,14 +10,6 @@
     inputs.agenix.darwinModules.age
   ];
 
-  age.secrets = {
-    "git/netrc" = {
-      file = ../../secrets/git/netrc.age;
-      owner = "mitch";
-    };
-    "git/gh-cli-pub" = {
-      file = ../../secrets/git/gh-cli-pub.age;
-      owner = "mitch";
-    };
-  };
+  # Migrated to homeModules, iff I need this in future for non user files in $HOME this is still here.
+  #age.secrets
 }
