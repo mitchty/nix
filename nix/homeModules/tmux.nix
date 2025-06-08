@@ -1,8 +1,7 @@
-{
-  inputs,
-  pkgs,
-  lib,
-  ...
+{ inputs
+, pkgs
+, lib
+, ...
 }:
 let
   # Cause stuff can be slow to warm up before a prompt shows up wait this long
@@ -28,6 +27,13 @@ let
       {
         shell_command = [
           "btop"
+        ];
+      }
+      # TODO: wat the hell works on macos too? yeet that in here.
+    ] ++ lib.optional lib.stdenv.isLinux [
+      {
+        shell_command = [
+          "powerjoular"
         ];
       }
     ];
