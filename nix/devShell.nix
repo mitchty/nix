@@ -9,6 +9,8 @@
     with pkgs;
     [
       altshfmt
+      cf-dns-update
+      open-webui-cli
       coreutils
       curl
       git

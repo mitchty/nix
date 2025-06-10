@@ -13,6 +13,7 @@
     # TODO: Should I even keep this here? Also nix-hardware needs to get
     # in here at some point.
     open-webui-cli = inputs.open-webui-cli.packages.${prev.system}.release;
+    cf-dns-update = inputs.cf-dns-update.packages.${prev.system}.default;
     inherit (inputs.nix-update.packages.${prev.system}) nix-update;
     inherit (inputs.nixos-generators.packages.${prev.system}) nixos-generate;
     inherit (inputs.home-manager.packages.${prev.system}) home-manager;

@@ -107,6 +107,7 @@
       url = "github:nix-community/flakelight";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    mac-app-util.url = "github:hraban/mac-app-util";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     disko = {
       url = "github:nix-community/disko";
@@ -140,12 +141,16 @@
       inputs.rust-analyzer-src.follows = "";
     };
     agenix.url = "github:ryantm/agenix";
-    open-webui-cli = {
-      url = "github:mitchty/open-webui-cli";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    cf-dns-update = {
+      url = "github:mitchty/cf-dns-update";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    open-webui-cli = {
+      url = "github:mitchty/open-webui-cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
