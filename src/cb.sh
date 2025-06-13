@@ -48,8 +48,37 @@ if [ -e "Cargo.toml" ] && [ -z "${NORUST}" ]; then
   # Make sure we don't use RUST_BACKTRACE for cargo test, don't want a full
   # backtrace for that.
   #
-  # Note, we skip doc tests cause they take forever to link/build.
-  env -u RUST_BACKTRACE cargo test --lib --bins --tests
+  # For each target, run the test targets BUT ignore doctests
+  # TODO: have a FULL env var to control if I run full test suite or not?
+
+  # Since there isn't a --no-doctest, parse through all the other types of tests
+  # in cargo metadata, then construct our cargo test command to run what is
+  # there sans that stuff cause it takes forever and ass ages to run doctests
+  # for some stuff.
+
+  for k in $(cargo metadata --format-version 1 --no-deps | jq -r '
+    .packages[].targets[]
+    | select(.kind[] | IN("lib", "bin", "test", "example"))
+    | "\(.kind[])"'); do
+
+    if [ "${k}" = "bin" ]; then
+      bins=true
+    elif [ "${k}" = "lib" ]; then
+      libs=true
+    elif [ "${k}" = "test" ]; then
+      tests=true
+    elif [ "${k}" = "example" ]; then
+      examples=true
+    else
+      printf "fatal: unknown cargo test kind %s refusing to continue fixme\n" "${k}" >&2
+      exit 1
+    fi
+  done
+
+  ct="cargo test ${bins+--bins }${libs+--lib }${tests+--tests }${examples+--examples}"
+  env -u RUST_BACKTRACE "${ct}"
+
+  #  env -u RUST_BACKTRACE cargo test --lib --bins --tests
   singleton cargo build --workspace --all-targets
 
   # build release version
