@@ -75,10 +75,8 @@ if [ -e "Cargo.toml" ] && [ -z "${NORUST}" ]; then
     fi
   done
 
-  ct="cargo test ${bins+--bins }${libs+--lib }${tests+--tests }${examples+--examples}"
-  env -u RUST_BACKTRACE "${ct}"
+  env -u RUST_BACKTRACE cargo test ${bins+--bins }${libs+--lib }${tests+--tests }${examples+--examples}
 
-  #  env -u RUST_BACKTRACE cargo test --lib --bins --tests
   singleton cargo build --workspace --all-targets
 
   # build release version
