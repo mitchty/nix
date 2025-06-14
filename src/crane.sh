@@ -97,6 +97,11 @@ opt-level = "z"
 strip = "debuginfo"
 FIN
 
+cat << 'FIN'
+[licenses]
+allow = ["MIT", "BlueOak-1.0.0"]
+FIN
+
 # Add up to this point for debugging in case something fails in a bit
 git add -A
 
@@ -109,7 +114,7 @@ if [ -n "${_crane_name}" ]; then
 fi
 
 # Set the license to blue oak by default for my crap
-sed_inplace -e "s/MIT/Blue Oak Model License 1.0.0/g" Cargo.toml
+sed_inplace -e "s/MIT/BlueOak-1.0.0/g" Cargo.toml
 
 # Run cargo from nixpkgs to update package repo data
 nix run nixpkgs#cargo -- update
