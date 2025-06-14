@@ -37,7 +37,15 @@
         fonts.packages = [ pkgs.paid-fonts ];
         # fontDir.enable = true; # nixos needs this
 
-        # Avoids a login/out cycle most of the time
+        # Avoids a login/out cycle most of the time for settings changes.
+        # TODO: This resets all the window layouts and if I have emacs full
+        # screen it moves around like a rabbit on crack every generation that is
+        # applied. See if there is a way to figure out if there is a reason to
+        # run this. I'm at a loss how however, maybe dump out all the stuff I've
+        # defined and diff that vs what might be applied and if there is a
+        # difference +/-/changed then run? I've zero clue how to approach that
+        # though right now. Not high priority and maybe a better option is to
+        # use window manager that respects where stuff is.
         system.activationScripts.postuserActivation.text = ''
           $DRY_RUN_CMD /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
         '';
