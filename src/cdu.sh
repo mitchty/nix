@@ -11,6 +11,11 @@ export _base _dir
 # be) then just pipe that crap to sed to strip out everything in front of
 # release/debug and the binary name itself so we don't have gihugic lines and
 # get like size {debug,release}/bin
-(for bin in $(cargo metadata --format-version 1 --no-deps | jq -r '.packages[].targets[] | select(.kind[] == "bin") | .name'); do
-  find "${CARGO_TARGET_DIR}" -type f -name "${bin}" -exec du -hs {} \+
-done) | sed -e "s,/.*\/\(release\|debug\)/\(.*\)$,\1/\2," | sort -k2
+if [ -e "${CARGO_TARGET_DIR:-target}" ]; then
+  (for bin in $(cargo metadata --format-version 1 --no-deps | jq -r '.packages[].targets[] | select(.kind[] == "bin") | .name'); do
+    find "${CARGO_TARGET_DIR}" -type f -name "${bin}" -exec du -hs {} \+
+  done) | sed -e "s,/.*\/\(release\|debug\)/\(.*\)$,\1/\2," | sort -k2
+else
+  printf "fatal: no build dir found to get sizes from\nused: %s\n" "${CARGO_TARGET_DIR:-target}" >&2
+  exit 1
+fi
