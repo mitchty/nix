@@ -8,24 +8,24 @@
     pkgs:
     with pkgs;
     [
+      agenix
       altshfmt
       cf-dns-update
-      open-webui-cli
       coreutils
       curl
       git
+      git-agecrypt
       home-manager
       htmlq
       jq
       nix-update
       nixfmt-rfc-style
+      nixos-generate
+      open-webui-cli
       ripgrep
       statix
       treefmt
-      nixos-generate
-      agenix
-      git-agecrypt
-      #      ytdl-sub-with-plugins
+      yq-go
     ]
     # Only need these on linux or they don't build on macos...
     ++ lib.optionals stdenv.isLinux [
