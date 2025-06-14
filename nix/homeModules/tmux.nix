@@ -36,7 +36,7 @@ let
       ++ lib.optional pkgs.hostPlatform.isLinux [
         {
           shell_command = [
-            "powerjoular"
+            "sudo powerjoular"
           ];
         }
       ];
