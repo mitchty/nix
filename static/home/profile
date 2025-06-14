@@ -155,20 +155,49 @@ kdiff() {
   lhs="${1?need a number for the diff to start}"
   shift
   rhs="${1?need a number for the diff to end}"
-  lhsid=$(kopia snapshot list | tac | awk 'NR == '${rhs}' && /files/ {print $4}')
-  rhsid=$(kopia snapshot list | tac | awk 'NR == '${lhs}' && /files/ {print $4}')
+  lhsid=$(kopia snapshot list | tac | awk 'NR == '"${rhs}"' && /files/ {print $4}')
+  rhsid=$(kopia snapshot list | tac | awk 'NR == '"${lhs}"' && /files/ {print $4}')
   kopia diff "${lhsid}" "${rhsid}"
 }
 
-alias nbld='nix build && nix flake check'
-
-# to be lazy
-nrsci() {
-  find . \( -name "*.rs" -o -name "*.nix" -o -name "*.toml" \) -type f | entr -d sh -c "time nix build && time nix flake check; printf '%s %s\n' \"\`date\`\" \$(git diff | sha256sum | awk '{print \$1}')"
+# List the flake input names, defaults to a local flake in pwd
+nixinputs() {
+  flakepath="${1:-.}"
+  nix flake metadata --json "${flakepath}" 2> /dev/null | jq -r '.locks.nodes.root.inputs | keys[]'
 }
 
-nci() {
-  find . \( -name "*.lock" -o -name "*.nix" \) -type f | entr -d sh -c "time nix build && time nix flake check; printf '%s %s\n' \"\`date\`\" \$(git diff | sha256sum | awk '{print \$1}')"
+# function to search a local flakes inputs
+nixisearch() {
+  input="${1?need the input name to search ex: nixpkgs}"
+  shift
+  thing="${1?need the search string too ex: '.packagename$'}"
+  shift
+  flakepath="${1:-.}"
+
+  printf "flake: %s input: %s\n" "${flakepath}" "${input}" >&2
+  nix search --inputs-from "${flakepath}" "${input}" "${thing}" 2> /dev/null | grep -Ev '(.*warning.*|evaluating)'
+}
+
+# Wrapper function for ^^^ to let me search any nix flake's inputs for a package
+# easy peasy lemon whatever.
+#
+# mnemonic: Nix Input Search
+nis() {
+  # helpful output to remind me how the hell to use this
+  if [ $# -lt 1 ]; then
+    printf "usage: nis input-grep-regex nixpkg-regex\nexample: nis '.*nixpkgs.*' '\.ytdl-sub$' github:org/repo\nnote: the final repo arg is optional and defaults to .\n" >&2
+    return 1
+  fi
+
+  inputregex="${1?need the input grep regex to search ex: nixpkgs}"
+  shift
+  thing="${1?need the search string too ex: '.packagename$'}"
+  shift
+  flakepath="${1:-.}"
+
+  for input in $(nixinputs "${flakepath}" | grep -E "${inputregex}"); do
+    nixisearch "${input}" "${thing}" "${flakepath}"
+  done
 }
 
 h() {

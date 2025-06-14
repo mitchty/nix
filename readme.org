@@ -237,3 +237,47 @@ Cause sometimes *nixos-rebuild switch --rollback* isn't enough or you have multi
 nix-env --switch-generation $GENERATION --profile /nix/var/nix/profiles/system
 /nix/var/nix/profiles/system/bin/switch-to-configuration switch
 #+end_src
+
+** local nix flake stuff I rarely use but isn't documented well
+
+Cause there is a dearth of docs on this and I can't be assed to remember it, future me be happy I remembered to write this down. Future me add to upstream docs? Took a while to figure it out.
+
+*** List a local flakes inputs by name
+
+#+begin_src sh
+nix flake metadata --json | jq -r '.locks.nodes.root.inputs | keys[]'
+#+end_src
+
+*** nix search for a flakes input package version
+
+#+begin_src sh
+for input in nixpkgs nixpkgs-old
+(printf "input: %s\n" "${input}" >&2; nix search --inputs-from . ${input} '\.pkgname$' stdboth | grep -Ev '(.*warning.*|evaluating)')
+#+end_src
+
+I wrapped all this into some wrapper functions ~/profile so I can do this:
+
+#+begin_src sh
+$ nis 'nixpkgs' '\.gcc$'
+flake: . input: nixpkgs
+* legacyPackages.aarch64-darwin.gcc (14.2.1.20250322)
+  GNU Compiler Collection, version 14.2.1.20250322 (wrapper script)
+flake: . input: nixpkgs-old
+* legacyPackages.aarch64-darwin.gcc (13.3.0)
+  GNU Compiler Collection, version 13.3.0 (wrapper script)
+flake: . input: nixpkgs-unstable
+* legacyPackages.aarch64-darwin.gcc (14.2.1.20250322)
+  GNU Compiler Collection, version 14.2.1.20250322 (wrapper script)
+$ nis 'nixpkgs' '\.gcc$' github:mitchty/nix/legacy
+flake: github:mitchty/nix/legacy input: nixpkgs
+* legacyPackages.aarch64-darwin.gcc (13.3.0)
+  GNU Compiler Collection, version 13.3.0 (wrapper script)
+flake: github:mitchty/nix/legacy input: nixpkgs-darwin
+* legacyPackages.aarch64-darwin.gcc (13.3.0)
+  GNU Compiler Collection, version 13.3.0 (wrapper script)
+flake: github:mitchty/nix/legacy input: nixpkgs-pacemaker
+* legacyPackages.aarch64-darwin.gcc (12.3.0)
+  GNU Compiler Collection, version 12.3.0 (wrapper script)
+  #+end_src
+
+Works out pretty nifty to find out what versions of what is where in flake inputs and to compare what others might be abusing in their flakes.
