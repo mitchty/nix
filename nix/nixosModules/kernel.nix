@@ -61,6 +61,10 @@
     kernelParams = [
       "delayacct"
       "boot.shell_on_fail"
+      "console=tty0"
+      "delayacct"
+      "intel-spi.writeable=1"
+      "iomem=relaxed"
     ];
   };
 }

@@ -130,7 +130,7 @@ in
     kernelParams = [
       "boot.shell_on_fail"
       "console=ttyS0,115200n8"
-      #      "console=tty0" # fallback somehow if serial no work somehow?
+      "console=tty0" # fallback somehow if serial no work somehow?
       "delayacct"
       "intel-spi.writeable=1"
       "iomem=relaxed"
@@ -197,7 +197,7 @@ in
     script = ''
       set -eux
       autoinstall
-      sudo systemctl reboot
+      sudo systemctl reboot --firmware-setup
     '';
 
     # This should only be ran when on the iso installer. So don't ever include
