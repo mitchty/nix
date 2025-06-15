@@ -8,7 +8,7 @@ export _base _dir
 
 set "${SETOPTS:--eu}"
 
-ok=1
+ok=0
 
 TEMP=${TMPDIR:-/tmp}
 T="${TEMP}/${_base}-$$"
@@ -30,23 +30,52 @@ fw() {
 
 cd "${T}"
 
-puppeteer print --no-sandbox https://tascam.com/us/product/mixcast_4/download test.pdf > /dev/null 2>&1
+puppeteer print --no-sandbox https://tascam.com/us/product/mixcast_4/download mixcast4.pdf > /dev/null 2>&1
 
 curr="$(fw v131)"
 
-pdftotext test.pdf test.txt
+pdftotext mixcast4.pdf mixcast4.txt
 
-found=$(cat test.txt | grep -E 'Firmware V' | sort -ur | head -n1 | awk '{print $2}' | tr V v | tr -d \.)
+found=$(cat mixcast4.txt | grep -E 'Firmware V' | sort -ur | head -n1 | awk '{print $2}' | tr V v | tr -d \.)
 
 latest=$(fw ${found})
 
-if [[ "${curr}" != "${latest}" ]]; then
+if [ "${curr}" != "${latest}" ]; then
   ok=$((ok + 1))
-  old=$(echo ${curr} | awk -F\_v '{print $2}' | tr -d '.zip')
-  new=$(echo ${latest} | awk -F\_v '{print $2}' | tr -d '.zip')
-  printf "mixcast 4 firmware skew current=%s found=%s\n" "${old}" "${new}"
+  old=$(echo "${curr}" | awk -F\_v '{print $2}' | tr -d '.zip')
+  new=$(echo "${latest}" | awk -F\_v '{print $2}' | tr -d '.zip')
+  printf "mixcast4 firmware skew current=%s found=%s\n" "${old}" "${new}"
   printf "change curr to: %s\n" "${latest}"
 else
-  printf "%s already latest nothing to do \n" "${found}"
-  ok=0
+  printf "mixcast4 version %s already latest nothing to do \n" "${found}"
+fi
+
+# And the GW7664 firmware too cause for some crazy reason there is NO non
+# versioned url for the thing. My biggest gripe about the grandstream ap tbh.
+# How the heck am I supposed to know its updated ungh.
+fw() {
+  v=${1?need a version bra}
+  w=$(echo "${v}" | tr '.' '_')
+  printf "firmware.grandstream.com/gwnap/%s" "${w}"
+}
+
+puppeteer print --no-sandbox https://www.grandstream.com/support/firmware gwnap.pdf > /dev/null 2>&1
+
+have="1.0.25.38"
+curr="$(fw ${have})"
+
+pdftotext gwnap.pdf gwnap.txt
+
+found=$(cat gwnap.txt | grep -A2 -E 'GWN7664$' | tail -n1)
+
+latest=$(fw ${found})
+
+if [ "${curr}" != "${latest}" ]; then
+  ok=$((ok + 1))
+  old=${have}
+  new=${found}
+  printf "GWN7664 firmware skew current=%s found=%s\n" "${old}" "${new}"
+  printf "change curr to: %s\n" "${latest}"
+else
+  printf "GWN7664 version %s already latest nothing to do \n" "${found}"
 fi
