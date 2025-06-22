@@ -12,7 +12,7 @@ export _base _dir
 # release/debug and the binary name itself so we don't have gihugic lines and
 # get like size {debug,release}/bin
 if [ -e "${CARGO_TARGET_DIR:-target}" ]; then
-  (for bin in $(cargo metadata --format-version 1 --no-deps | jq -r '.packages[].targets[] | select(.kind[] == "bin") | .name'); do
+  (for bin in $(cargo metadata --format-version 1 --no-deps | jq -r '.packages[].targets[] | select(.kind[] == "bin") | .name' | sort); do
     find "${CARGO_TARGET_DIR}" -type f -name "${bin}" -exec du -hs {} \+
   done) | sed -e "s,/.*\/\(release\|debug\)/\(.*\)$,\1/\2," | sort -k2
 else
