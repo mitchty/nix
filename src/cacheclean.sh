@@ -23,6 +23,28 @@ if [ -e "${rustturds}" ]; then
   find "${rustturds}" -maxdepth 1 -type d -ctime +7 -print -exec rm -fr {} \+
 fi
 
+# And any target dirs in ~/src that might have slipped by.
+pipe=$(mktemp cleanfile.XXXXX)
+trap 'rm -f ${pipe}' EXIT TERM INT QUIT
+
+# find can fail on stuff like .Trashes in macos, for now just assume it output
+# something useful, read will catch things right or not.
+find ~/src -type d -name target 2> /dev/null > "${pipe}" || :
+
+while IFS='
+' read -r adir; do
+  b=$(dirname "${adir}")
+  c="${b}/Cargo.toml"
+  j="${adir}/.rustc_info.json"
+
+  # Be careful about what we nuke, be sure as sure as we can reasonably be about
+  # this being a rust target build dir by checking all the above, if not leave it be.
+  if [ -e "${c}" ] && [ -e "${j}" ]; then
+    echo rm france rust build dir "${adir}"
+    rm -fr "${adir}"
+  fi
+done < "${pipe}"
+
 # go build cache, no sense keeping stuff around for too long here either.
 for goturd in ~/.cache/go ~/.cache/go-build; do
   if [ -e "${goturd}" ]; then
