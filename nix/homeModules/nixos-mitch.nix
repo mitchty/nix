@@ -4,16 +4,9 @@
   ...
 }:
 {
-  # imports = with inputs.self.homeModules; [
-  #   common
-  #   emacs
-  # ];
-
   home = {
     sessionVariables = {
-      BROWSER = "librewolf";
-      GDK_DPI_SCALE = "1.25";
-      QT_SCALE_FACTOR = "1.25";
+      CARGO_TARGET_DIR = "~/.cache/cargo-bitbucket";
     };
     packages = with pkgs; [
       httpie

@@ -267,8 +267,8 @@ rec {
         btop
         tmuxp
       ]
-      ++ lib.optional pkgs.hostPlatform.isLinux [
-        pkgs.powerjoular
+      ++ lib.optionals pkgs.hostPlatform.isLinux [
+        powerjoular
       ];
 
     # tmuxp configs

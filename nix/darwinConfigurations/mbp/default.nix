@@ -1,6 +1,5 @@
 { inputs, ... }:
 {
-
   system = "aarch64-darwin";
   modules = [
     inputs.home-manager.darwinModules.home-manager
@@ -24,13 +23,18 @@
       home-manager.users.mitch.home.stateVersion = "24.11";
 
       home-manager.users.mitch = {
-        imports = with inputs.self.homeModules; [
-          development
-          gui
-          macos
-          mutagen
-          macos-mitch
-        ];
+        imports =
+          [ inputs.agenix.homeManagerModules.default ]
+          ++ (with inputs.self.homeModules; [
+            development
+            gui
+            macos
+            mutagen
+            macos-mitch
+            age
+            git
+            git-age
+          ]);
       };
     }
   ];

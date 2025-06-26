@@ -15,6 +15,25 @@ in
         ++ [
           inputs.disko.nixosModules.disko
           inputs.home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.users.mitch = {
+              home = {
+                username = "mitch";
+                homeDirectory = "/home/mitch";
+                #   useGlobalPkgs = true;
+                #   useUserPackages = true;
+                #   #        programs.home-manager.enable = true;
+                #   #   # packages = with pkgs; [
+                #   #   #   # your desired nixpkgs here
+                #   #   # ];
+                stateVersion = "25.05";
+              };
+              imports = with inputs.self.homeModules; [
+                sh
+              ];
+            };
+          }
         ]
         ++ [
           ./diskconfig.nix
@@ -24,17 +43,6 @@ in
       system.stateVersion = "25.05";
       boot.loader.systemd-boot.enable = true;
       networking.hostName = "vm-simple";
-
-      # Disabled for now
-      # home-manager.users.mitch.home = {
-      #   username = "mitch";
-      #   homeDirectory = "/home/mitch";
-      #   programs.home-manager.enable = true;
-      #   # packages = with pkgs; [
-      #   #   # your desired nixpkgs here
-      #   # ];
-      #   stateVersion = "24.11";
-      # };
     }
   ];
 }

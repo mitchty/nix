@@ -11,19 +11,14 @@ let
   srv = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsX6e+fhe/CxoGIbZ4auuk83H3sUK5XQhia8OWFz4pt";
   wm2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNzRSDjB8WJHSEepNu2GTrZIgFWprv+wMnX6xbeoD0U";
   rtx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBaFOFERMbg/d7DHrTBJ7pPKiJhwxFadQZlagalg51/";
-
-  cl1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOxV4KEVMkikEM4L9QCvd8QcMwvDK3nryBL28L0BFffZ";
-  cl2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO9/+zDNc2RTZNn25SN0z/iKBc6RrT+uleTUaJT+nPIh";
-  cl3 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFjWCCiZOEVe0MWZgpJSMQKrXdA26x8MuaTM7gI6qLYN";
+  plx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK2IZnIu0StYczf9Z4iJNDpEZt+Wjo8LjqDrlmd2yX4l";
 
   allnixos = [
     rtx
     srv
     wm2
     gw
-    cl1
-    cl2
-    cl3
+    plx
   ];
 
   # To make the following a skosh simpler/easier
@@ -56,10 +51,8 @@ let
     srv
     wm2
     rtx
+    plx
   ];
-
-  # ytdl
-  ytdl = [ srv ];
 
   # wifi connections
   wifi = [ wm2 ];
@@ -80,9 +73,6 @@ in
   # cifs mount user/pass files
   "secrets/cifs/plex.age".publicKeys = cifs ++ ageadmins;
   "secrets/cifs/mitch.age".publicKeys = cifs ++ ageadmins;
-
-  # TODO: Cookies for ytdl-sub, need to get all that junk into here somehow
-  "secrets/net/cookies.txt.age".publicKeys = ytdl ++ ageadmins;
 
   # Wifi networkmanager setup
   "secrets/wifi/lostfox.age".publicKeys = wifi ++ ageadmins;

@@ -5,10 +5,6 @@
   ...
 }:
 {
-  imports = [
-    inputs.agenix.homeManagerModules.default
-  ];
-
   config = {
     # TODO: need to convert this setup to not directly use .gitconfig files
     # Programs not (yet) worthy of their own .nix setup... so far who knows what
@@ -19,17 +15,6 @@
         pkgs.gh-dash
         pkgs.gh-cal
       ];
-    };
-
-    age.secrets = {
-      "git/netrc" = {
-        file = ../../secrets/git/netrc.age;
-        path = config.home.homeDirectory + "/.netrc";
-      };
-      "git/gh-cli-pub" = {
-        file = ../../secrets/git/gh-cli-pub.age;
-        path = config.home.homeDirectory + "/.gh-cli-pub";
-      };
     };
 
     # TODO: figure out how to get home-manager agenix option to work.

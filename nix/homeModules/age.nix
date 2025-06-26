@@ -6,10 +6,7 @@
   ...
 }:
 {
-  imports = [
-    inputs.agenix.homeManagerModules.default
-  ];
-
+  # TODO: this needs to be in home-manager not nixos....
   age.secrets."secrets/canary" = {
     file = ../../secrets/canary.age;
     path = config.home.homeDirectory + "/.age-canary";

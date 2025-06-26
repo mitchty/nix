@@ -6,13 +6,6 @@
   ...
 }:
 {
-  imports = with inputs.self.homeModules; [
-    age
-    git
-    sh
-    tmux
-  ];
-
   nix = {
     nixPath = [
       "nixpkgs=flake:nixpkgs"
