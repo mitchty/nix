@@ -72,7 +72,33 @@
         legacyPackages = pkgs: pkgs;
         formatter = pkgs: pkgs.nixfmt-rfc-style;
       }
-    );
+    )
+    // {
+      # THIS IS ALL A TEMPORARY TEST
+      # "I'll fix it in post"
+      # just want to be sure I can use deploy-rs to deploy a system profile and a homeconfiguration
+      deploy = {
+        sshUser = "root";
+        user = "root";
+        autoRollback = true;
+        magicRollback = true;
+
+        nodes = {
+          "plx" = {
+            hostname = "plx.home.arpa";
+            profiles.system = {
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."plx";
+            };
+            # profiles.mitch = {
+            #   sshUser = "mitch";
+            #   user = "mitch";
+            #   profilePath = "/nix/var/nix/profiles/per-user/mitch/home-manager";
+            #   path = inputs.deploy-rs.lib.x86_64-linux.activate.home-manager inputs.self.homeConfigurations.mitch;
+            # };
+          };
+        };
+      };
+    };
 
   nixConfig.commit-lockfile-summary = "flake: Update inputs";
 
@@ -95,14 +121,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flakelight-darwin = {
-      url = "github:cmacrae/flakelight-darwin";
+      # Until pr is merged use this guys fork with flakelight main branch attr fix
+      # ref: https://github.com/cmacrae/flakelight-darwin/pull/1
+      url = "github:gkze/flakelight-darwin";
       inputs = {
         flakelight.follows = "flakelight";
         nix-darwin.follows = "nix-darwin";
       };
     };
     flakelight-crossplatform = {
-      url = "github:rencire/flakelight-crossplatform";
+      # Until pr is merged use my fork with flakelight main branch attr fix
+      url = "github:mitchty/flakelight-crossplatform";
+      #      url = "github:rencire/flakelight-crossplatform";
+      # url = "path:/Users/mitch/src/pub/github.com/mitchty/flakelight-crossplatform";
       inputs.flakelight.follows = "flakelight";
     };
     flakelight = {
@@ -143,6 +174,7 @@
       inputs.rust-analyzer-src.follows = "";
     };
     agenix.url = "github:ryantm/agenix";
+    #agenix.url = "/Users/mitch/src/pub/github.com/ryantm/agenix";
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -153,6 +185,10 @@
     };
     open-webui-cli = {
       url = "github:mitchty/open-webui-cli";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    kairos = {
+      url = "github:mitchty/kairos";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

@@ -7,13 +7,12 @@
   imports = with inputs.self.homeModules; [
     common
     emacs
+    yt
   ];
 
   home = {
     packages = with pkgs; [
       utm
-      ytdl-sub
-      yt-dlp
     ];
   };
 }

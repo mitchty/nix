@@ -32,6 +32,8 @@
             mutagen
             macos-mitch
             age
+            sh
+            tmux
             git
             git-age
           ]);
