@@ -11,6 +11,8 @@
         age
       ];
 
+      services.shared.mutagen.enable = true;
+
       networking.hostName = "mbp";
 
       users.users.mitch.home = "/Users/mitch";
