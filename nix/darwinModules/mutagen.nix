@@ -52,39 +52,41 @@ in
     };
   };
 
-  # config = mkIf cfg.enable (mkMerge [
-  #   (optionalAttrs (options ? launchd.user.agents) (mkIf (pkgs.hostPlatform.isDarwin) {
-  config = {
-    environment.systemPackages = [ cfg.package ];
-    launchd.user.agents.${name} = {
-      path = [ config.environment.systemPath ];
+  config = mkIf cfg.enable (mkMerge [
+    (optionalAttrs (options ? launchd.user.agents) (
+      mkIf pkgs.hostPlatform.isDarwin {
+        environment.systemPackages = [ cfg.package ];
+        launchd.user.agents.${name} = {
+          path = [ config.environment.systemPath ];
 
-      # For this to save on security shenanigans in the gooey, abuse /bin/bash
-      # for doing work along with ProgramArguments instead of script.
-      serviceConfig = {
-        EnvironmentVariables.MUTAGEN_LOG_LEVEL = "trace";
-        ProgramArguments = [
-          "/bin/bash"
-          "-c"
-          ''
-            ${pkgs.coreutils}/bin/install -Ddm755 ${cfg.logDir}/${label}/${name};
-            . ${../../src/lib.sh};
-            rotatelog 5 ${cfg.logDir}/${label}/${name}/stderr.log ${cfg.logDir}/${label}/${name}/stdout.log
-            exec ${cfg.package}/bin/${name} daemon run
-          ''
-        ];
-        Label = fulllabel;
+          # For this to save on security shenanigans in the gooey, abuse /bin/bash
+          # for doing work along with ProgramArguments instead of script.
+          serviceConfig = {
+            EnvironmentVariables.MUTAGEN_LOG_LEVEL = "trace";
+            ProgramArguments = [
+              "/bin/bash"
+              "-c"
+              ''
+                ${pkgs.coreutils}/bin/install -Ddm755 ${cfg.logDir}/${label}/${name};
+                . ${../../src/lib.sh};
+                rotatelog 5 ${cfg.logDir}/${label}/${name}/stderr.log ${cfg.logDir}/${label}/${name}/stdout.log
+                exec ${cfg.package}/bin/${name} daemon run
+              ''
+            ];
+            Label = fulllabel;
 
-        # low priority io cause the sync doesn't need priority i/o wise generally
-        LowPriorityIO = true;
-        ProcessType = "Adaptive";
-        RunAtLoad = true;
-        StandardErrorPath = "${cfg.logDir}/${label}/${name}/stderr.log";
-        StandardOutPath = "${cfg.logDir}/${label}/${name}/stdout.log";
-        StartInterval = 3600;
-      };
-    };
-  };
+            # low priority io cause the sync doesn't need priority i/o wise generally
+            LowPriorityIO = true;
+            ProcessType = "Adaptive";
+            RunAtLoad = true;
+            StandardErrorPath = "${cfg.logDir}/${label}/${name}/stderr.log";
+            StandardOutPath = "${cfg.logDir}/${label}/${name}/stdout.log";
+            StartInterval = 3600;
+          };
+        };
+      }
+    ))
+  ]);
   # }))
   #   (optionalAttrs (options ? systemd.services) (mkIf (pkgs.hostPlatform.isLinux) {
   #     environment.systemPackages = [ cfg.package ];
