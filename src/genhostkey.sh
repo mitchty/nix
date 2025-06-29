@@ -19,3 +19,8 @@ cd "${d}" || exit 126
 for typ in ed25519 rsa; do
   ssh-keygen -t "${typ}" -f ssh_host_${typ}_key -N '' -C 'private genhostkey.sh'
 done
+
+cd "${_dir}/.." || exit 126
+
+# Ensure any added key is in the agecrypt smudge filter config
+git-agecrypt config add -r "$(cat ~/.ssh/id_ed25519.pub)" -p $(find crypt -type f)
