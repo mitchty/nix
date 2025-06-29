@@ -1,5 +1,20 @@
 {
-  description = "my nix flake configuration rewrite (partier deux en flakelight)";
+  description = "my nix flake postantepenultimate configuration (this is the last rewrite honest yeah I don't buy it either)";
+
+  # This all gets prompted and crap at nix develop or with direnv+.envrc when you cd into the dir... I like it but... its a pita
+  # TODO: future sucker mitch see if there is another option?
+  # nixConfig = {
+  #   extra-experimental-features = "nix-command flakes";
+  #   extra-substituters = [
+  #     "https://cache.nixos.org/"
+  #     "https://nix-community.cachix.org"
+  #     "https://deploy-rs.cachix.org"
+  #   ];
+  #   extra-trusted-public-keys = [
+  #     "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+  #     "deploy-rs.cachix.org-1:xfNobmiwF/vzvK1gpfediPwpdIP0rpDV2rYqx40zdSI="
+  #   ];
+  # };
 
   outputs =
     {
