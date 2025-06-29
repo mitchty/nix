@@ -78,7 +78,7 @@
       };
 
       # Everything we can't define ^^thataway^^
-      initExtra = (builtins.readFile ../../static/home/zshrc) + (builtins.readFile ../../src/lib.sh);
+      initContent = (builtins.readFile ../../static/home/zshrc) + (builtins.readFile ../../src/lib.sh);
     };
   };
 }
