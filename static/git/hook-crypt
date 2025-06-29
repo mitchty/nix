@@ -1,0 +1,42 @@
+#!/usr/bin/env zsh
+#-*-mode: Shell-script; coding: utf-8;-*-
+# SPDX-License-Identifier: BlueOak-1.0.0
+# Description: Git postcommit/prepush hook to ensure everything in crypt is
+# encrypted in the git store itself so no raw secret file data gets committed.
+_base=$(basename "$0")
+_dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
+export _base _dir
+set "${SETOPTS:--eu}"
+
+CHECKME=$(mktemp -d)
+
+trap 'rm -fr -- "${CHECKME}"' EXIT TERM INT QUIT
+
+cp -r .git "${CHECKME}/"
+
+# Be good shell and exit posixly if chdir fails for god knows why.
+cd "${CHECKME}" || exit 126
+
+# This is a copy of the checkout so nuke the lock file for git restore if present.
+rm -fr .git/index.lock
+git restore .
+git status
+
+#cd "$(git rev-parse --show-toplevel)" || exit 126
+
+# Make sure that any files in crypt are encrypted aka they can't == the unencrypted values
+if [ -d "crypt" ]; then
+  ok=0
+  bad=""
+  for f in $(find crypt -type f -print); do
+    if ! git diff --no-index "${f}" =(git show HEAD:${f}); then
+      ((ok+1))
+      bad="${bad} ${f}"
+    fi
+  done
+
+  if [ $ok -gt 0 ]; then
+    printf "Found files that should be encrypted in git that aren't%s" "${bad}" >&2
+    exit $ok
+  fi
+fi

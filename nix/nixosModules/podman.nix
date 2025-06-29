@@ -6,4 +6,6 @@
       defaultNetwork.settings.dns_enabled = true;
     };
   };
+
+  users.users.mitch.extraGroups = [ "podman" ];
 }

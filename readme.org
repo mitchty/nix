@@ -7,17 +7,7 @@ Its main raison d'etre is to do disk setup/partitioning via disko and autogenera
 Todos:
 - ssh ca setup so I can use an ssh ca setup for all ssh internally
 - wireguard setup so I can setup my own overlay vpn for everything
-- figure out the home manager activation issue:
-#+begin_src
-[FAILED] Failed to start Home Manager environment for mitch.
-See 'systemctl status home-manager-mitch.service' for details.
-...
-vm-simple systemd[1]: Starting Home Manager environment for mitch...
-vm-simple hm-activate-mitch[710]: Starting Home Manager activation
-vm-simple hm-activate-mitch[710]: Could not find suitable profile directory, tried /home/mitch/.local/state/nix/profiles and /nix/var/nix/profiles/per-user/mitch
-#+end_src
-
-- Also need to figure out how to have nix-shell get rid of this dum message:
+- need to figure out how to have nix-shell get rid of this dum message:
 
 https://github.com/NixOS/nix/issues/2982
 
@@ -45,10 +35,21 @@ This is a temporary state for now, I hope, its mostly to bootstrap into a fully 
 
 For now quick hacks is fine. Also useful for testing "air-gap" use cases as I can just disable network on qemu.
 
+TODO: Now that I got everything working in *vm-simple* setup validte air gap install works
+
 https://github.com/compactcode/dot-files/blob/c10315a9559dceaa1fbc0b8beb81c9b83e712bcf/nix/darwinModules/desktop/default.nix
 
 https://nix-community.github.io/home-manager/index.xhtml#_how_do_i_install_packages_from_nixpkgs_unstable
-Below here be old readme I haven't updated. Its likely not applicable any longer.
+
+** Layout
+
+   Since I'm trying to document things a bit more a bit of this repos layout convention (note private is for now just a silly work in progress thing):
+   - [[file:bin/][bin]]     Simply a directory for symlinks to *src* scripts that are pertinent to development in this repo only.
+   - [[file:src/][src]]     Shell scripts for whatever
+   - [[file:nix/][nix]]     Flakelight base directory for overlays, packages, nixos configurations, darwin configurations, home-manager etc...
+   - [[file:spec/][spec]]    shellspec unit test dir.
+   - [[file:crypt/][crypt]]   Data that is encrypted within the git repo itself using https://github.com/vlaci/git-agecrypt and ssh keys via age. Basically "private junk hiding in plain sight to be used at runtime". Note this is decrypted at boot time.
+   - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use of its own volition.
 
 * My home network nix flake setup
 
@@ -79,50 +80,36 @@ https://mipmip.github.io/home-manager-option-search/?query=
 
   A nice cli that searches both is https://github.com/mlvzk/manix
 
+* General Todo's
 
-** Rough usage
+While this setup "works" for varying definitions of the word, its got more work to be done yet.
 
-   So the flake has deploy targets setup already for deploy-rs, to update/rebuild all NixOS nodes run:
-
-#+begin_src shell
-clear; nix flake check --show-trace && nix run github:serokell/deploy-rs -- -s .
-#+end_src
-
-   Or use the wrapper function+script in [[file:static/src/lib.sh][lib.sh]] and [[file:src/rebuild.zsh][rebuild]] script:
-
-#+begin_src shell
-wtf rebuild
-#+end_src
-
-   To run a deploy without running *nix flake check*:
-
-#+begin_src shell
-CHECK=anyvalue wtf rebuild
-#+end_src
-
-And should be good to go. Caveats on how/where deploy-rs can deploy to aside. Aka that without builder setup cannot deploy to a macos system from linux. This is on my TODO list to fix at some point.
-
-** Layout
-
-   Since I'm trying to document things a bit more a bit of layout convention explanation:
-
-   - [[file:bin/][bin]]     Simply a directory for any pertinent scripts that use this repo. Note none of these scripts end up in */nix/store*.
-   - [[file:src/][src]]     Source for stuff in bin.
-   - [[file:hosts/][hosts]]   Host specific data, e.g. mostly generated nix configuration files.
-   - [[file:img/][img]]     Nixos specific directory where iso or disk image outputs get dumped.
-   - [[file:modules/][modules]] General directory for any modules for nixos, nix-darwin, and home-manager. Should be intended to encompass "stuff with options". Also includes the img autoinstall module used for iso builds.
-   - [[file:patches/][patches]] Any patch files that may be needed for things like CVE's that might not yet be upstream yet in nixpkgs or anywhere else.
-   - [[file:secrets/][secrets]] Any secret related data for age and/or git-transcrypt. Basically "private junk hiding in plain sight".
-   - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use.
-
-* Todo's
 ** NixOS
 
-I need to brain up how exactly I want to do mirroed systemd boot setups.
+*** Automated iso nixosConfiguration creation
+
+Right now I'm manually creating a nixosConfiguration iso derivation in *nix/nixosConfigurations*, this really could be automated once I finish writing everything twice (or more).
+
+Thoughts as of writing:
+- I should be able to create an iso for testing a vm of the configuration itself like the vm- configurations.
+- I should also be able to create an iso for the setup itself.
+- ??? I'm sure I'm missing something else here.
+
+Thought is I make a lib.nix and create a function to handle this work and then just *// { for system in inputs.self.nixosConfigurations function .... }* somehow.... This is a future mitch winter problem to tackle
+
+*** Deploy-rs flakelight module
+
+I should make a deploy-rs flakelight module instead of the current hack. This is also a future mitch winter problem.
+
+*** Mirored EFI boot partitions
+
+I need to brain up how exactly I want to do mirrored systemd efi boot setups and add a test for it somehow into my vm test setups. Upstream nixos doesn't seem to want any part in this but I like having resiliency to my mirror setups to know I can boot off any of the */dev/diskN* partitions in the event of the primary disk failing without needing to rebuild.
+
+This is in spite of the entire setup being meant to make rebuilds easy. Sometimes I don't really have the time to invest to get that done and would rather get work done instead in the interim. Whats the point of mirroring/raid if I can't boot the damn thing if one disk fails anyway?
 
 My current setup that I abused with zfs is basically just rsync the data from the primary boot disk to the rest.
 
-This is hacky and it needs tests/proof.
+This is hacky and it needs tests/proof to demonstrate it works like I think.
 
 #+begin_src
     boot.loader.systemd-boot.extraInstallCommands = ''

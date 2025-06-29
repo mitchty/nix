@@ -1,6 +1,5 @@
 { config, ... }:
 {
-
   age.secrets = {
     "secrets/git/netrc" = {
       file = ../../secrets/git/netrc.age;
@@ -11,5 +10,4 @@
       path = config.home.homeDirectory + "/.gh-cli-pub";
     };
   };
-
 }

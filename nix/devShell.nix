@@ -13,15 +13,12 @@
       cf-dns-update
       coreutils
       curl
-      git
-      git-agecrypt
       home-manager
       htmlq
       jq
       nix-update
       nixfmt-rfc-style
       nixos-generate
-      open-webui-cli
       ripgrep
       statix
       treefmt

@@ -15,6 +15,7 @@ in
   imports =
     [
       inputs.disko.nixosModules.disko
+      inputs.agenix.nixosModules.default
     ]
     ++ (with inputs.self.nixosModules; [
       kernel

@@ -115,8 +115,11 @@ in
     };
 
     # Lets things download in parallel
+    #
+    # extra-nix-path is to allow disko -m mount to work
     extraOptions = ''
       binary-caches-parallel-connections = 100
+      extra-nix-path = nixpkgs=flake:nixpkgs
     '';
   };
 
@@ -197,7 +200,8 @@ in
     script = ''
       set -eux
       autoinstall
-      sudo systemctl reboot --firmware-setup
+      #sudo systemctl reboot --firmware-setup
+      sudo systemctl reboot
     '';
 
     # This should only be ran when on the iso installer. So don't ever include

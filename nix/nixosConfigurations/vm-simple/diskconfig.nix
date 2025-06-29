@@ -47,6 +47,19 @@
                       mountpoint = "/nix";
                     };
 
+                    # Want to have /var separate
+                    "/var" = {
+                      mountOptions = [
+                        "compress=zstd"
+                        "noatime"
+                      ];
+                      mountpoint = "/var";
+                    };
+
+                    # lib and log are their own volumes too
+                    "/var/lib" = { };
+                    "/var/log" = { };
+
                     # Subvolume name is the same as the mountpoint
                     "/home" = {
                       mountOptions = [ "compress=zstd" ];
@@ -61,24 +74,24 @@
 
                     # This subvolume will be created but not mounted
                     "/test" = { };
-                    # Subvolume for the swapfile
-                    "/swap" = {
-                      mountpoint = "/.swapvol";
-                      swap = {
-                        swapfile.size = "20M";
-                        swapfile2.size = "20M";
-                        swapfile2.path = "rel-path";
-                      };
-                    };
+                    # # Subvolume for the swapfile
+                    # "/swap" = {
+                    #   mountpoint = "/.swapvol";
+                    #   swap = {
+                    #     swapfile.size = "20M";
+                    #     swapfile2.size = "20M";
+                    #     swapfile2.path = "rel-path";
+                    #   };
+                    # };
                   };
 
                   mountpoint = "/partition-root";
                   swap = {
                     swapfile = {
-                      size = "20M";
+                      size = "512M";
                     };
                     swapfile1 = {
-                      size = "20M";
+                      size = "512M";
                     };
                   };
                 };

@@ -13,12 +13,16 @@ let
   rtx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBaFOFERMbg/d7DHrTBJ7pPKiJhwxFadQZlagalg51/";
   plx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK2IZnIu0StYczf9Z4iJNDpEZt+Wjo8LjqDrlmd2yX4l";
 
+  # Test vm keys
+  vm-simple = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOuH9BdXTgFflW0uDF1ytFdgHxIBx0NDrHB4jqCjKhQB";
+
   allnixos = [
     rtx
     srv
     wm2
     gw
     plx
+    vm-simple
   ];
 
   # To make the following a skosh simpler/easier
@@ -52,6 +56,7 @@ let
     wm2
     rtx
     plx
+    vm-simple
   ];
 
   # wifi connections

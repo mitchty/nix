@@ -12,13 +12,17 @@ in
 {
   environment.variables.EDITOR = "vi";
 
+  age.secrets = {
+    "secrets/passwd/root" = {
+      file = ../../secrets/passwd/root.age;
+    };
+  };
+
   users = {
     # Only users I define
     mutableUsers = false;
 
     extraUsers.root.openssh.authorizedKeys.keys = [ pubKey ];
-    users.root = {
-      initialPassword = "changeme";
-    };
+    users.root.hashedPasswordFile = config.age.secrets."secrets/passwd/root".path;
   };
 }

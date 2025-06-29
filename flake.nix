@@ -75,8 +75,7 @@
     )
     // {
       # THIS IS ALL A TEMPORARY TEST
-      # "I'll fix it in post"
-      # just want to be sure I can use deploy-rs to deploy a system profile and a homeconfiguration
+      # "I'll fix it in post" TM C R (I probably won't anytime soon before winter)
       deploy = {
         sshUser = "root";
         user = "root";
@@ -89,12 +88,21 @@
             profiles.system = {
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."plx";
             };
-            # profiles.mitch = {
-            #   sshUser = "mitch";
-            #   user = "mitch";
-            #   profilePath = "/nix/var/nix/profiles/per-user/mitch/home-manager";
-            #   path = inputs.deploy-rs.lib.x86_64-linux.activate.home-manager inputs.self.homeConfigurations.mitch;
-            # };
+          };
+          "vm-simple" = {
+            hostname = "127.0.0.1";
+            sshOpts = [
+              "-p"
+              "19022"
+              "-q"
+              "-o"
+              "UserKnownHostsFile=/dev/null"
+              "-o"
+              "StrictHostKeyChecking=no"
+            ];
+            profiles.system = {
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."vm-simple";
+            };
           };
         };
       };

@@ -42,6 +42,13 @@ let
   autoinstall = pkgs.writeShellScriptBin "autoinstall" ''
     set -eux
     ${pkgs.disko}/bin/disko-install --write-efi-boot-entries --disk prime /dev/disk/by-id/ata-QEMU_HARDDISK_QM00001 --flake "${inputs.self}#${hostName}" "$@"
+    ${pkgs.disko}/bin/disko -m mount --flake "${inputs.self}#${hostName}"
+    install -m600 ${../../../crypt/ssh/${hostName}/ssh_host_ed25519_key} /mnt/etc/ssh/ssh_host_ed25519_key
+    install -m644 ${../../../crypt/ssh/${hostName}}/ssh_host_ed25519_key.pub /mnt/etc/ssh/ssh_host_ed25519_key.pub
+    install -m600 ${../../../crypt/ssh/${hostName}/ssh_host_rsa_key} /mnt/etc/ssh/ssh_host_rsa_key
+    install -m644 ${../../../crypt/ssh/${hostName}}/ssh_host_rsa_key.pub /mnt/etc/ssh/ssh_host_rsa_key.pub
+    chown 1000:100 /mnt/home/mitch/.local /mnt/home/mitch/.local/share /mnt/home/mitch/.local/share/Steam /mnt/home/mitch/src
+    ${pkgs.disko}/bin/disko -m unmount --flake "${inputs.self}#${hostName}"
   '';
 in
 {
