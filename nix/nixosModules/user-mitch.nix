@@ -32,7 +32,7 @@ in
           "networkmanager"
           "wheel"
         ];
-        home = "/home/mitch";
+        home = lib.mkDefault "/home/mitch";
         shell = pkgs.zsh;
         hashedPasswordFile = config.age.secrets."secrets/passwd/mitch".path;
       };

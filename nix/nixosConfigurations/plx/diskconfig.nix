@@ -49,15 +49,30 @@
 
                     # Subvolume name is the same as the mountpoint
                     "/home" = {
-                      mountOptions = [ "compress=zstd" ];
+                      mountOptions = [
+                        "compress=zstd"
+                        "users"
+                      ];
                       mountpoint = "/home";
                     };
-                    # Sub(sub)volume doesn't need a mountpoint as its parent is mounted
-                    "/home/mitch" = { };
+                    # Specify the subvolume mountpoints so we can set mountOptions
+                    "/home/mitch" = {
+                      mountOptions = [ "users" ];
+                      mountpoint = "/home/mitch";
+                    };
                     # I keep a lot of source here
-                    "/home/mitch/src" = { };
+                    "/home/mitch/src" = {
+                      mountOptions = [ "users" ];
+                      mountpoint = "/home/mitch/src";
+                    };
                     # Steam gets its own subvolume
-                    "/home/mitch/.local/share/Steam" = { };
+                    "/home/mitch/.local/share/Steam" = {
+                      mountOptions = [
+                        "users"
+                        "noatime"
+                      ];
+                      mountpoint = "/home/mitch/.local/share/Steam";
+                    };
 
                     # This subvolume will be created but not mounted
                     "/test" = { };

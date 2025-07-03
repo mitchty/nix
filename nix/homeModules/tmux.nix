@@ -264,7 +264,7 @@ rec {
     packages =
       with pkgs;
       [
-        btop
+        #        btop
         tmuxp
       ]
       ++ lib.optionals pkgs.hostPlatform.isLinux [

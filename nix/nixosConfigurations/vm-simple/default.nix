@@ -13,6 +13,7 @@ in
         (with inputs.self.nixosModules; [
           common
           user-mitch
+          user-mitch-compat
           podman
         ])
         ++ [
@@ -25,7 +26,10 @@ in
               users.mitch = {
                 home = {
                   username = "mitch";
-                  homeDirectory = "/home/mitch";
+                  # Simpler this way to sync junk with macos and use stuff like
+                  # git worktrees which uses full paths in .git files.
+                  # TODO: need a compat type home module
+                  homeDirectory = "/Users/mitch";
                   stateVersion = "25.05";
                 };
                 imports =
@@ -44,7 +48,6 @@ in
         ]
         ++ (with inputs.nixos-hardware.nixosModules; [
           common-pc
-          common-cpu-intel
         ])
         ++ [
           ./diskconfig.nix

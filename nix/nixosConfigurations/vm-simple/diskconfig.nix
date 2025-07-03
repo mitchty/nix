@@ -61,16 +61,16 @@
                     "/var/log" = { };
 
                     # Subvolume name is the same as the mountpoint
-                    "/home" = {
+                    "/Users" = {
                       mountOptions = [ "compress=zstd" ];
-                      mountpoint = "/home";
+                      mountpoint = "/Users";
                     };
                     # Sub(sub)volume doesn't need a mountpoint as its parent is mounted
-                    "/home/mitch" = { };
+                    "/Users/mitch" = { };
                     # I keep a lot of source here
-                    "/home/mitch/src" = { };
+                    "/Users/mitch/src" = { };
                     # Steam gets its own subvolume
-                    "/home/mitch/.local/share/Steam" = { };
+                    "/Users/mitch/.local/share/Steam" = { };
 
                     # This subvolume will be created but not mounted
                     "/test" = { };

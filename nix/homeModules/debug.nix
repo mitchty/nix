@@ -6,25 +6,11 @@
   ...
 }:
 {
-  nix = {
-    nixPath = [
-      "nixpkgs=flake:nixpkgs"
-    ];
-  };
-
   home = {
     packages = with pkgs; [
-      curl
-      file
-      gron
-      hwatch
-      less
-      libqalculate
-      moreutils
-      mosh
-      ripgrep
-      tree
-      wget
+      pkgs.unstable.btop
+      htop
+      du-dust
     ];
   };
 

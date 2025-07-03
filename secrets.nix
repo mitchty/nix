@@ -12,9 +12,11 @@ let
   wm2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNzRSDjB8WJHSEepNu2GTrZIgFWprv+wMnX6xbeoD0U";
   rtx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBaFOFERMbg/d7DHrTBJ7pPKiJhwxFadQZlagalg51/";
   plx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK2IZnIu0StYczf9Z4iJNDpEZt+Wjo8LjqDrlmd2yX4l";
+  foo = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDFFvNk88g2x8R5cK1K+iVGQT1Lu1IFKZwSp75s2xegB";
 
   # Test vm keys
   vm-simple = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOuH9BdXTgFflW0uDF1ytFdgHxIBx0NDrHB4jqCjKhQB";
+  vm-mirror = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKVbKj5m/pk2VKzIjX7/zM7MB5BG03kxTv22PowvtexS";
 
   allnixos = [
     rtx
@@ -22,20 +24,24 @@ let
     wm2
     gw
     plx
+    foo
     vm-simple
+    vm-mirror
+  ];
+
+  allmacos = [
+    mb
+    mbp
   ];
 
   # To make the following a skosh simpler/easier
   homeusers = [ mitch ];
-  homehosts = [
-    mb
-    mbp
-  ] ++ allnixos;
+  homehosts = allmacos ++ allnixos;
 
   git = homehosts ++ homeusers;
-  backup = [
-    mb
-    mbp
+
+  backup = allmacos ++ [
+    rtx
     srv
     wm2
   ];
@@ -43,9 +49,6 @@ let
   # Some secrets should be usable everywhere
   allusers = homeusers;
   allhosts = homehosts;
-
-  # Just router(s)
-  #router = [ gw ];
 
   # Mostly for the canary secret for testing
   everything = allusers ++ allhosts;
@@ -56,7 +59,9 @@ let
     wm2
     rtx
     plx
+    foo
     vm-simple
+    vm-mirror
   ];
 
   # wifi connections

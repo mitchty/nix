@@ -14,7 +14,7 @@ let
   ];
   fsCifsPerfOpts = [
     "bsize=8388608"
-    "rsize=130048"
+    "rsize=131072"
     #"cache=loose" # TODO need to test this between nodes
   ];
   fsCifsDefaults = [

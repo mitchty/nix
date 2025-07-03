@@ -1,8 +1,8 @@
-{ inputs, ... }:
+{ inputs, lib, ... }:
 let
   pubKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7";
 
-  shortHost = "plx";
+  shortHost = "foo";
 in
 {
   system = "x86_64-linux";
@@ -25,10 +25,12 @@ in
         (with inputs.self.nixosModules; [
           common
           user-mitch
+          user-mitch-compat
+          podman
           nas
           node-exporter
-          podman
           debug
+          virtualization
         ])
         ++ [
           inputs.home-manager.nixosModules.home-manager
@@ -40,7 +42,7 @@ in
               users.mitch = {
                 home = {
                   username = "mitch";
-                  homeDirectory = "/home/mitch";
+                  homeDirectory = "/Users/mitch";
                   stateVersion = "25.05";
                 };
                 imports =
@@ -53,7 +55,7 @@ in
                     git
                     age
                     debug
-                    misc
+                    development
                   ]);
               };
             };
@@ -64,6 +66,7 @@ in
           common-pc-ssd
           common-cpu-intel
           common-gpu-intel
+          #          common-gpu-nvidia
         ])
         ++ [
           ./diskconfig.nix
@@ -71,21 +74,15 @@ in
 
       services.node-exporter = {
         enable = true;
-        exporterIface = "enp2s0";
+        exporterIface = "enp88s0"; # enp91s0
       };
 
-      # The s100 doesn't have a disk link with a serial number sadly, all I see
-      # as links to /dev/sda is:
-      # /dev/sda
-      # /dev/block/8:0
-      # /dev/disk/by-id/scsi-2SAMSUNG
-      # /dev/disk/by-path/pci-0000:00:12.7-scsi-0:0:0:0
-      # /dev/disk/by-diskseq/12
-      #
-      # So.... by-id it is I suppose...
-      diskConfig.disks = [ "/dev/disk/by-id/scsi-2SAMSUNG" ];
+      diskConfig.disks = [
+        "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X707714B"
+        "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X700496V"
+      ];
       system.stateVersion = "25.05";
-      networking.hostName = "plx";
+      networking.hostName = "foo";
 
       boot = {
         loader.systemd-boot.enable = true;
@@ -97,23 +94,37 @@ in
         # this crap into a custom defconfig instead there and compile this in
         # not as a module at all?
         initrd.availableKernelModules = [
-          "ufshcd_core"
-          "ufshcd_pci"
-          "dwc3_pci"
-          "usbhid"
           "xhci_pci"
-          "ahci"
+          "thunderbolt"
+          "nvme"
+          "usbhid"
           "usb_storage"
-          "sd_mod"
           "sr_mod"
-          "scsi_mod"
-          "scsi_common"
-          "uas"
+          # "ufshcd_core"
+          # "ufshcd_pci"
+          # "dwc3_pci"
+          # "usbhid"
+          # "xhci_pci"
+          # "ahci"
+          # "usb_storage"
+          # "sd_mod"
+          # "sr_mod"
+          # "scsi_mod"
+          # "scsi_common"
+          # "uas"
         ];
         kernelModules = [ "kvm-intel" ];
       };
 
-      nixpkgs.hostPlatform = "x86_64-linux";
+      nixpkgs = {
+        hostPlatform = "x86_64-linux";
+        config.allowUnfreePredicate =
+          pkg:
+          builtins.elem (lib.getName pkg) [
+            "nvidia-x11"
+            "nvidia-settings"
+          ];
+      };
     }
   ];
 }

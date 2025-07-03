@@ -104,11 +104,17 @@
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."plx";
             };
           };
+          "foo" = {
+            hostname = "foo.home.arpa";
+            profiles.system = {
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."foo";
+            };
+          };
           "vm-simple" = {
             hostname = "127.0.0.1";
             sshOpts = [
               "-p"
-              "19022"
+              "14522"
               "-q"
               "-o"
               "UserKnownHostsFile=/dev/null"
@@ -117,6 +123,21 @@
             ];
             profiles.system = {
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."vm-simple";
+            };
+          };
+          "vm-mirror" = {
+            hostname = "127.0.0.1";
+            sshOpts = [
+              "-p"
+              "6622"
+              "-q"
+              "-o"
+              "UserKnownHostsFile=/dev/null"
+              "-o"
+              "StrictHostKeyChecking=no"
+            ];
+            profiles.system = {
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."vm-mirror";
             };
           };
         };

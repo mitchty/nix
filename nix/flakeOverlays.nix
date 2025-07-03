@@ -18,19 +18,15 @@
     inherit (inputs.nix-update.packages.${prev.system}) nix-update;
     inherit (inputs.nixos-generators.packages.${prev.system}) nixos-generate;
     inherit (inputs.home-manager.packages.${prev.system}) home-manager;
-    # workaround for macos
-    # https://github.com/NixOS/nixpkgs/issues/402079#issuecomment-2846520987
-    # for bash-language-server/yaml-language-server ultimately, mabye I
-    # skip it for a while till the fix gets into 24.11
-    nodejs = prev.nodejs_22;
-    nodejs-slim = prev.nodejs-slim_22;
   })
   inputs.emacs-overlay.overlay
   inputs.deploy-rs.overlays.default
   inputs.agenix.overlays.default
   inputs.fenix.overlays.default
   inputs.nur.overlays.default
-  inputs.self.overlays.overrides
-  inputs.self.overlays.emacs
-  inputs.self.overlays.yt-dlp
 ]
+++ (with inputs.self.overlays; [
+  overrides
+  emacs
+  yt-dlp
+])

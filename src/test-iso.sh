@@ -21,7 +21,7 @@ PREFIX="${PREFIX:-${HOME}/.cache/mitchty}"
 
 install -dm755 "${PREFIX}"
 
-sshport=$((($(echo ${ISO} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
+sshport=$((($(echo ${SYS} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
 
 networkqemuargs="-net user,hostfwd=tcp::${sshport}-:22 -net nic"
 

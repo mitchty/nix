@@ -5,7 +5,7 @@
   modules = [
     {
       home = {
-        stateVersion = "24.11";
+        stateVersion = "25.05";
         username = "mitch";
         homeDirectory = "/home/mitch";
         # shellAliases = {

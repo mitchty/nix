@@ -7,7 +7,7 @@ _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 set "${SETOPTS:--eu}"
 
-for x in rtx wm2 srv mb; do
+for x in rtx wm2 srv mb foo; do
   echo $x
   mutagen sync list src-${x} -l | grep -Ev '^[-]+$' | grep -Ev '.*symbolic.*' | tail -n 3
 done

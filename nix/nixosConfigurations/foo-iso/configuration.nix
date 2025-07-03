@@ -6,8 +6,6 @@
   ...
 }:
 let
-  hostName = "vm-simple";
-
   sshPubKeys = [
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7"
   ];
@@ -19,6 +17,7 @@ let
   # Use 5 for testing, 19 for keeping iso size down on a chonky system
   zstdCompressionLevel = "5";
 
+  hostName = "foo";
   dependencies = [
     pkgs.stdenv.drvPath
     inputs.self.nixosConfigurations."${hostName}".config.system.build.toplevel
@@ -40,19 +39,29 @@ let
     #rootPaths = { };
   };
 
+  disk0 = "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X707714B";
+  disk1 = "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X700496V";
+  # Badblocks is here to find out if the device might be bad or not, hardware will fail... try to find out at install time.
   autoinstall = pkgs.writeShellScriptBin "autoinstall" ''
-    set -eux
-    ${pkgs.disko}/bin/disko-install --write-efi-boot-entries --disk prime /dev/disk/by-id/ata-QEMU_HARDDISK_QM00001 --flake "${inputs.self}#${hostName}" "$@"
+     set -eux
+
+     # for disk in ${disk0}; do
+     #   ${pkgs.e2fsprogs}/bin/badblocks -wsv $disk
+     #   ${pkgs.e2fsprogs}/bin/badblocks -b 4096 -c 1024 -s $disk
+     # done
+     ${pkgs.disko}/bin/disko-install --write-efi-boot-entries --disk prime ${disk0} --disk m0 ${disk1} --flake "${inputs.self}#${hostName}" "$@"
+
     ${pkgs.disko}/bin/disko -m mount --flake "${inputs.self}#${hostName}"
-    install -m600 ${../../../crypt/ssh/${hostName}/ssh_host_ed25519_key} /mnt/etc/ssh/ssh_host_ed25519_key
-    install -m644 ${../../../crypt/ssh/${hostName}}/ssh_host_ed25519_key.pub /mnt/etc/ssh/ssh_host_ed25519_key.pub
-    install -m600 ${../../../crypt/ssh/${hostName}/ssh_host_rsa_key} /mnt/etc/ssh/ssh_host_rsa_key
-    install -m644 ${../../../crypt/ssh/${hostName}}/ssh_host_rsa_key.pub /mnt/etc/ssh/ssh_host_rsa_key.pub
-    chown 1000:100 /mnt/Users/mitch/.local /mnt/Users/mitch/.local/share /mnt/Users/mitch/.local/share/Steam /mnt/Users/mitch/src
-    btrfs quota enable /mnt
-    btrfs quota enable /mnt/var
-    btrfs quota enable /mnt/Users
-    ${pkgs.disko}/bin/disko -m unmount --flake "${inputs.self}#${hostName}"
+     install -m600 ${../../../crypt/ssh/${hostName}/ssh_host_ed25519_key} /mnt/etc/ssh/ssh_host_ed25519_key
+     install -m644 ${../../../crypt/ssh/${hostName}}/ssh_host_ed25519_key.pub /mnt/etc/ssh/ssh_host_ed25519_key.pub
+     install -m600 ${../../../crypt/ssh/${hostName}/ssh_host_rsa_key} /mnt/etc/ssh/ssh_host_rsa_key
+     install -m644 ${../../../crypt/ssh/${hostName}}/ssh_host_rsa_key.pub /mnt/etc/ssh/ssh_host_rsa_key.pub
+     chown 1000:100 /mnt/Users/mitch/.local /mnt/Users/mitch/.local/share /mnt/Users/mitch/.local/share/Steam /mnt/Users/mitch/src
+     btrfs quota enable /mnt
+     btrfs quota enable /mnt/var
+     btrfs quota enable /mnt/Users
+     ${pkgs.disko}/bin/disko -m unmount --flake "${inputs.self}#${hostName}"
+
   '';
 in
 {
