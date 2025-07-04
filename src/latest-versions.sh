@@ -61,7 +61,8 @@ done
 # Ok this is for overlays, and I'm not sure I want to trawl the entire set so
 # just specifying things manually for now. If i start overlaying a lot more
 # future me problem.
-for pkg in yt-dlp bgutil-ytdlp-pot-provider yt-dlp-get-pot; do
+#for pkg in $(nix eval ".#legacyPackages.\"${arch}\"" --apply builtins.attrNames --json 2> /dev/null | jq -r '.[]'); do
+for pkg in ipatool yt-dlp bgutil-ytdlp-pot-provider yt-dlp-get-pot; do
   evalstring=$(nix eval --raw ".#.legacyPackages.\"${arch}\".${pkg}.latest" 2> /dev/null)
   if [ "$?" -eq 0 ]; then
     latest=$(eval "${evalstring}")

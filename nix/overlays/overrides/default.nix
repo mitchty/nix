@@ -18,6 +18,24 @@ self: super: {
     ];
   });
 
+  ipatool = super.ipatool.overrideAttrs (old: rec {
+    version = "2.2.0";
+    vendorHash = "sha256-f6mXTePiM5kZUdrYqvbN5pyNp1OGNMeJZMUJ3pvaRrc=";
+    src = super.fetchFromGitHub {
+      owner = "majd";
+      repo = "ipatool";
+      rev = "v${version}";
+      hash = "sha256-z6f5PNxAH+8mS2kWjhST0LFhwTR01m7rR5O95ee+p2E=";
+    };
+
+    # If I don't do this version here seems to be from old.version somehow...
+    # So cheat and just pass another -X into the build system.
+    ldflags = old.ldflags ++ [
+      "-X github.com/majd/ipatool/v2/cmd.version=${version}"
+    ];
+    latest = "curl --silent https://api.github.com/repos/majd/ipatool/tags | jq -r '.[] | .name' | grep -Ev rc | head -n 1 | tr -d v";
+  });
+
   pythonPackagesExtensions = super.pythonPackagesExtensions ++ [
     (pyfinal: pyprev: {
       # I keep getting errno 3 Temporary failure in name resolution on this for some reason now.
