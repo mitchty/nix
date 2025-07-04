@@ -15,7 +15,7 @@ let
   # Compression levels: https://github.com/facebook/zstd/blob/dev/lib/compress/clevels.h#L25
   #
   # Use 5 for testing, 19 for keeping iso size down on a chonky system
-  zstdCompressionLevel = "17";
+  zstdCompressionLevel = "5";
 in
 #
 # Rough size diff with current test data:

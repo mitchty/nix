@@ -104,10 +104,10 @@
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."plx";
             };
           };
-          "foo" = {
-            hostname = "foo.home.arpa";
+          "ark" = {
+            hostname = "ark.home.arpa";
             profiles.system = {
-              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."foo";
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."ark";
             };
           };
           "vm-simple" = {

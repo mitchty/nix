@@ -10,14 +10,7 @@ let
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7"
   ];
 
-  # For max compression (takes way longer to build an image tho)
-  #
-  # Compression levels: https://github.com/facebook/zstd/blob/dev/lib/compress/clevels.h#L25
-  #
-  # Use 5 for testing, 19 for keeping iso size down on a chonky system
-  zstdCompressionLevel = "5";
-
-  hostName = "foo";
+  hostName = "ark";
   dependencies = [
     pkgs.stdenv.drvPath
     inputs.self.nixosConfigurations."${hostName}".config.system.build.toplevel
