@@ -123,8 +123,12 @@
                     };
 
                     # lib and log are their own volumes too
-                    "/var/lib" = { };
-                    "/var/log" = { };
+                    "/var/lib" = {
+                      mountOptions = [
+                        "compress=zstd"
+                      ];
+                      mountpoint = "/var/lib";
+                    };
 
                     # Subvolume name is the same as the mountpoint
                     "/Users" = {
@@ -143,25 +147,24 @@
                       ];
                       mountpoint = "/Users/mitch";
                     };
-                    # # I keep a lot of source here
+                    # I keep a lot of source here
                     "/Users/mitch/src" = {
                       mountOptions = [
+                        "compress=zstd"
                         "users"
                         "exec"
                       ];
                       mountpoint = "/Users/mitch/src";
                     };
-                    # Steam gets its own subvolume
-                    "/Users/mitch/.local/share/Steam" = {
-                      mountOptions = [
-                        "users"
-                        "noatime"
-                      ];
-                      mountpoint = "/Users/mitch/.local/share/Steam";
-                    };
+                    # # Steam gets its own subvolume
+                    # "/Users/mitch/.local/share/Steam" = {
+                    #   mountOptions = [
+                    #     "users"
+                    #     "noatime"
+                    #   ];
+                    #   mountpoint = "/Users/mitch/.local/share/Steam";
+                    # };
 
-                    # This subvolume will be created but not mounted
-                    "/test" = { };
                     # Subvolume for the swapfile
                     "/swap" = {
                       mountpoint = "/.swapvol";
@@ -172,11 +175,6 @@
                   };
 
                   mountpoint = "/partition-root";
-                  swap = {
-                    swapfile = {
-                      size = "64G";
-                    };
-                  };
                 };
               };
             };

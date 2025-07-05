@@ -27,6 +27,12 @@ in
           user-mitch
           nas
           node-exporter
+          {
+            services.my.node-exporter = {
+              enable = true;
+              iface = "enp2s0";
+            };
+          }
           podman
           debug
         ])
@@ -68,11 +74,6 @@ in
         ++ [
           ./diskconfig.nix
         ];
-
-      services.node-exporter = {
-        enable = true;
-        exporterIface = "enp2s0";
-      };
 
       # The s100 doesn't have a disk link with a serial number sadly, all I see
       # as links to /dev/sda is:

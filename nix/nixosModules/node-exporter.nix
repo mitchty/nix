@@ -9,17 +9,17 @@
 with lib;
 
 let
-  cfg = config.services.node-exporter;
+  cfg = config.services.my.node-exporter;
 
   hasFileSystemType = fsType: { } != filterAttrs (n: v: v.fsType == fsType) config.fileSystems;
 
   #  iface = "enp2s0";
 in
 {
-  options.services.node-exporter = {
+  options.services.my.node-exporter = {
     enable = mkEnableOption "Setup as a prometheus node-exporter";
 
-    exporterIface = lib.mkOption {
+    iface = lib.mkOption {
       type = lib.types.str;
       example = lib.literalExample "eno1";
       default = "";
@@ -28,9 +28,9 @@ in
   };
 
   config = mkIf true rec {
-    networking.firewall = mkIf (cfg.exporterIface != "") {
+    networking.firewall = mkIf (cfg.iface != "") {
       interfaces = {
-        "${cfg.exporterIface}" = {
+        "${cfg.iface}" = {
           allowedTCPPorts = [ 9002 ];
         };
       };

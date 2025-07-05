@@ -11,6 +11,9 @@
       pkgs.unstable.btop
       htop
       du-dust
+      bcc
+      tcpdump
+      hwatch
     ];
   };
 

@@ -24,11 +24,39 @@ in
       imports =
         (with inputs.self.nixosModules; [
           common
+          user-root
           user-mitch
           user-mitch-compat
           podman
           nas
           node-exporter
+          {
+            services.my.node-exporter = {
+              enable = true;
+              iface = "enp88s0"; # enp91s0 TODO: determine which of these enables the built in ilom ish thingy
+            };
+          }
+          loki
+          {
+            services.my.loki = {
+              enable = true;
+              iface = "enp88s0";
+            };
+          }
+          prometheus
+          {
+            services.my.prometheus = {
+              enable = true;
+              iface = "enp88s0";
+            };
+          }
+          grafana
+          {
+            services.my.grafana = {
+              enable = true;
+              iface = "enp88s0";
+            };
+          }
           debug
           virtualization
         ])
@@ -72,11 +100,7 @@ in
           ./diskconfig.nix
         ];
 
-      services.node-exporter = {
-        enable = true;
-        exporterIface = "enp88s0"; # enp91s0
-      };
-
+      networking.interfaces.enp88s0.useDHCP = true;
       diskConfig.disks = [
         "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X707714B"
         "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X700496V"
@@ -100,18 +124,6 @@ in
           "usbhid"
           "usb_storage"
           "sr_mod"
-          # "ufshcd_core"
-          # "ufshcd_pci"
-          # "dwc3_pci"
-          # "usbhid"
-          # "xhci_pci"
-          # "ahci"
-          # "usb_storage"
-          # "sd_mod"
-          # "sr_mod"
-          # "scsi_mod"
-          # "scsi_common"
-          # "uas"
         ];
         kernelModules = [ "kvm-intel" ];
       };

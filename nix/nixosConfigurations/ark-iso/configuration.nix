@@ -49,7 +49,7 @@ let
      install -m644 ${../../../crypt/ssh/${hostName}}/ssh_host_ed25519_key.pub /mnt/etc/ssh/ssh_host_ed25519_key.pub
      install -m600 ${../../../crypt/ssh/${hostName}/ssh_host_rsa_key} /mnt/etc/ssh/ssh_host_rsa_key
      install -m644 ${../../../crypt/ssh/${hostName}}/ssh_host_rsa_key.pub /mnt/etc/ssh/ssh_host_rsa_key.pub
-     chown 1000:100 /mnt/Users/mitch/.local /mnt/Users/mitch/.local/share /mnt/Users/mitch/.local/share/Steam /mnt/Users/mitch/src
+     find /mnt/Users/mitch -type d \( ! -user 1000 -o ! -group 100 \) -exec chown 1000:100 {} \+
      btrfs quota enable /mnt
      btrfs quota enable /mnt/var
      btrfs quota enable /mnt/Users
