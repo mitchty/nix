@@ -13,7 +13,7 @@ export _base _dir
 # get like size {debug,release}/bin
 if [ -e "${CARGO_TARGET_DIR:-target}" ]; then
   (for bin in $(cargo metadata --format-version 1 --no-deps | jq -r '.packages[].targets[] | select(.kind[] == "bin") | .name' | sort); do
-    find "${CARGO_TARGET_DIR}" -type f -name "${bin}" -exec du -hs {} \+
+    find "${CARGO_TARGET_DIR:-target}" -type f -name "${bin}" -exec du -hs {} \+
   done) | sed -e "s,/.*\/\(release\|debug\)/\(.*\)$,\1/\2," | sort -k2
 else
   printf "fatal: no build dir found to get sizes from\nused: %s\n" "${CARGO_TARGET_DIR:-target}" >&2
