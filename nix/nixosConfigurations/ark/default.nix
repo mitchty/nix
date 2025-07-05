@@ -28,7 +28,7 @@ in
           user-mitch
           user-mitch-compat
           podman
-          nas
+          #          nas TODO: fix this to work with media as well, will move the base for all media from /nas/media to /nas/srv/media for serving needs
           node-exporter
           {
             services.my.node-exporter = {
@@ -54,6 +54,14 @@ in
           {
             services.my.grafana = {
               enable = true;
+              iface = "enp88s0";
+            };
+          }
+          media
+          {
+            services.my.media = {
+              enable = true;
+              services = true;
               iface = "enp88s0";
             };
           }
@@ -133,6 +141,10 @@ in
         config.allowUnfreePredicate =
           pkg:
           builtins.elem (lib.getName pkg) [
+            # Both needed for plex
+            "plexmediaserver"
+            "unrar"
+
             "nvidia-x11"
             "nvidia-settings"
           ];
