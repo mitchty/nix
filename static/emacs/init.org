@@ -1678,7 +1678,11 @@ TODO: this shits not working with ollama for some reason, future mitch figure it
   )
 #+END_SRC
 
-#+RESULTS:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package csv-mode
+  :ensure
+  :defer)
+#+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package no-littering :ensure :custom (create-lockfiles nil))
