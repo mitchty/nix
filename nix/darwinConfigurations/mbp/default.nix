@@ -4,12 +4,20 @@
   modules = [
     inputs.home-manager.darwinModules.home-manager
     {
-      imports = with inputs.self.darwinModules; [
-        common
-        laptop
-        mutagen
-        age
-      ];
+      imports =
+        with inputs.self.darwinModules;
+        [
+          common
+          laptop
+          mutagen
+          age
+        ]
+        ++ (with inputs.self.crossplatformModules; [
+          mosh
+          {
+            services.common.mosh.enable = true;
+          }
+        ]);
 
       services.shared.mutagen.enable = true;
 
@@ -17,28 +25,34 @@
 
       users.users.mitch.home = "/Users/mitch";
 
-      # We don't change these two from what they were installed with generally unless reinstalling.
       system = {
+        # Don't change nix-darwin stateversion from what things were installed with
         stateVersion = 5;
         primaryUser = "mitch";
       };
-      home-manager.users.mitch.home.stateVersion = "24.11";
 
-      home-manager.users.mitch = {
-        imports =
-          [ inputs.agenix.homeManagerModules.default ]
-          ++ (with inputs.self.homeModules; [
-            development
-            gui
-            macos
-            mutagen
-            macos-mitch
-            age
-            sh
-            tmux
-            git
-            git-age
-          ]);
+      home-manager = {
+        useGlobalPkgs = true;
+        useUserPackages = true;
+
+        users.mitch = {
+          # ditto home manager state version generally
+          home.stateVersion = "24.11";
+          imports =
+            [ inputs.agenix.homeManagerModules.default ]
+            ++ (with inputs.self.homeModules; [
+              development
+              gui
+              macos
+              mutagen
+              macos-mitch
+              age
+              sh
+              tmux
+              git
+              git-age
+            ]);
+        };
       };
     }
   ];
