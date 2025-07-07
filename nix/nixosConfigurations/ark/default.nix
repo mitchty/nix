@@ -67,6 +67,15 @@ in
           }
           debug
           virtualization
+          power
+          power-intel
+          nix-offload
+        ])
+        ++ (with inputs.self.crossplatformModules; [
+          mosh
+          {
+            services.common.mosh.enable = true;
+          }
         ])
         ++ [
           inputs.home-manager.nixosModules.home-manager
@@ -108,7 +117,25 @@ in
           ./diskconfig.nix
         ];
 
-      networking.interfaces.enp88s0.useDHCP = true;
+      networking.interfaces = {
+        enp88s0.useDHCP = true;
+        enp3s0f1np1.ipv4 = {
+          addresses = [
+            {
+              address = "10.10.10.242";
+              prefixLength = 32;
+            }
+          ];
+          routes = [
+            {
+              address = "10.10.10.9";
+              prefixLength = 32;
+              via = "10.10.10.242";
+            }
+          ];
+        };
+      };
+
       diskConfig.disks = [
         "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X707714B"
         "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X700496V"
@@ -117,6 +144,12 @@ in
       networking.hostName = "ark";
 
       boot = {
+        # If this boi needs to build stuff let /tmp be sized enough to build the
+        # kernel and some change at 48GiB of rams. The intel box isn't super
+        # fast but I'm more abusing it to build iso images and copying stuff
+        # directly to the nas over 10g.
+        tmp.tmpfsSize = "50%";
+
         loader.systemd-boot.enable = true;
 
         # Had to brain these out from lspci -k and just hulk smashed every

@@ -32,15 +32,16 @@ let
     "hard"
     "rw"
     "vers=3"
-    "credentials=${config.age.secrets."secrets/cifs/plex".path}"
   ];
   fsUserMedia = [
     "uid=3000"
     "gid=3000"
+    "credentials=${config.age.secrets."secrets/cifs/plex".path}"
   ];
   fsUserMe = [
     "uid=1000"
     "gid=100"
+    "credentials=${config.age.secrets."secrets/cifs/mitch".path}"
   ];
 in
 {
@@ -105,6 +106,10 @@ in
       "secrets/cifs/plex" = {
         file = ../../secrets/cifs/plex.age;
         owner = "media";
+      };
+      "secrets/cifs/mitch" = {
+        file = ../../secrets/cifs/mitch.age;
+        owner = "mitch";
       };
     };
 
@@ -201,40 +206,11 @@ in
         fsType = "cifs";
         options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMedia;
       };
-      # "/nas/media" = {
-      #   device = "//s1.home.arpa/media";
-      #   fsType = "cifs";
-      #   options = [
-      #     "user"
-      #     "uid=3000"
-      #     "gid=3000"
-      #     "forceuid"
-      #     "forcegid"
-      #     "hard"
-      #     "rw"
-      #     "credentials=${config.age.secrets."cifs/plex".path}"
-      #   ];
-      # };
-      # "/nas/internets" = {
-      #   device = "//s1.home.arpa/internets";
-      #   fsType = "cifs";
-      #   options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMedia;
-      # };
-      # "/nas/mitch/bitbucket" = {
-      #   device = "//s1.home.arpa/bitbucket";
-      #   fsType = "cifs";
-      #   options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMe;
-      # };
-      # "/nas/mitch/media" = {
-      #   device = "//s1.home.arpa/media";
-      #   fsType = "cifs";
-      #   options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMe;
-      # };
-      # "/nas/mitch/backup" = {
-      #   device = "//s1.home.arpa/backup";
-      #   fsType = "cifs";
-      #   options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMe;
-      # };
+      "/nas/isos" = {
+        device = "//s1.home.arpa/isos";
+        fsType = "cifs";
+        options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMe;
+      };
     };
   };
 }

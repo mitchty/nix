@@ -36,6 +36,12 @@ in
           podman
           debug
         ])
+        ++ (with inputs.self.crossplatformModules; [
+          mosh
+          {
+            services.common.mosh.enable = true;
+          }
+        ])
         ++ [
           inputs.home-manager.nixosModules.home-manager
           {
@@ -59,7 +65,6 @@ in
                     git
                     age
                     debug
-                    misc
                   ]);
               };
             };

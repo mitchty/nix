@@ -59,8 +59,6 @@
           ytDlp = pkgs: pkgs.yt-dlp;
           ytDlpPlugins = pkgs: pkgs.yt-dlp-with-plugins;
           ytdlpgetpot = pkgs: pkgs.yt-dlp-get-pot;
-          # Ensure the dns blocklist package is working
-          dns = pkgs: pkgs.dns-blocklists;
           # Make sure this beast builds at least
           myEmacs = pkgs: pkgs.myEmacs;
           # TODO: need to get this stupid version working with default builtin

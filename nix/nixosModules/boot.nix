@@ -1,11 +1,11 @@
 # Common boot params, boot.tmp.tmpfsSize is a candidate for not being here
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   boot = {
     tmp = {
       cleanOnBoot = true;
       useTmpfs = true;
-      tmpfsSize = "10%";
+      tmpfsSize = lib.mkDefault "10%";
     };
 
     kernelPackages = pkgs.linuxPackages_latest;

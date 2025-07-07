@@ -30,7 +30,7 @@ curl() {
 
 post() {
   printf "post %s\n" "$*" >&2
-  ${CURL} -X POST --insecure --user $KVMUSER:$KVMPASS --progress-bar "$@"
+  ${CURL} -X POST --insecure --user $KVMUSER:$KVMPASS --progress-bar "$@" | cat
   printf "\n" >&2
 }
 
