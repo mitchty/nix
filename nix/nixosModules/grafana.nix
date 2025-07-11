@@ -9,10 +9,10 @@
 with lib;
 
 let
-  cfg = config.services.my.grafana;
+  cfg = config.services.mitchty.grafana;
 in
 {
-  options.services.my.grafana = {
+  options.services.mitchty.grafana = {
     enable = mkEnableOption "Setup as a grafana server";
     cname = mkOption {
       type = types.str;

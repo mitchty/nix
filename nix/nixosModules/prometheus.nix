@@ -9,10 +9,10 @@
 with lib;
 
 let
-  cfg = config.services.my.prometheus;
+  cfg = config.services.mitchty.prometheus;
 in
 {
-  options.services.my.prometheus = {
+  options.services.mitchty.prometheus = {
     enable = mkEnableOption "Setup as a prometheus server";
     cname = mkOption {
       type = types.str;
@@ -82,6 +82,14 @@ in
               ];
               labels = {
                 alias = "gw.home.arpa";
+              };
+            }
+            {
+              targets = [
+                "gw0.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              ];
+              labels = {
+                alias = "gw0.home.arpa";
               };
             }
             {

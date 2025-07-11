@@ -9,7 +9,7 @@
 with lib;
 
 let
-  cfg = config.services.my.media;
+  cfg = config.services.mitchty.media;
 
   fsAutomountOpts = [
     "x-systemd.automount"
@@ -45,7 +45,7 @@ let
   ];
 in
 {
-  options.services.my.media = {
+  options.services.mitchty.media = {
     enable = mkEnableOption "Designate if this system is a media server";
 
     services = mkOption {

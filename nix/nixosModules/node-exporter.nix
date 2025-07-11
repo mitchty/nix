@@ -9,14 +9,14 @@
 with lib;
 
 let
-  cfg = config.services.my.node-exporter;
+  cfg = config.services.mitchty.node-exporter;
 
   hasFileSystemType = fsType: { } != filterAttrs (n: v: v.fsType == fsType) config.fileSystems;
 
   #  iface = "enp2s0";
 in
 {
-  options.services.my.node-exporter = {
+  options.services.mitchty.node-exporter = {
     enable = mkEnableOption "Setup as a prometheus node-exporter";
 
     iface = lib.mkOption {

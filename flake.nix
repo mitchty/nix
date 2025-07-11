@@ -96,6 +96,12 @@
         magicRollback = true;
 
         nodes = {
+          "gw0" = {
+            hostname = "gw0.home.arpa";
+            profiles.system = {
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."gw0";
+            };
+          };
           "plx" = {
             hostname = "plx.home.arpa";
             profiles.system = {

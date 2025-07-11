@@ -1,7 +1,5 @@
 { inputs, lib, ... }:
 let
-  pubKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7";
-
   shortHost = "ark";
 in
 {
@@ -24,42 +22,48 @@ in
       imports =
         (with inputs.self.nixosModules; [
           common
-          user-root
           user-mitch
           user-mitch-compat
+          ssh-mitch
+          user-root
+          ssh-root
           podman
           #          nas TODO: fix this to work with media as well, will move the base for all media from /nas/media to /nas/srv/media for serving needs
           node-exporter
           {
-            services.my.node-exporter = {
+            services.mitchty.node-exporter = {
               enable = true;
               iface = "enp88s0"; # enp91s0 TODO: determine which of these enables the built in ilom ish thingy
             };
           }
+          promtail
+          {
+            services.mitchty.promtail.enable = true;
+          }
           loki
           {
-            services.my.loki = {
+            services.mitchty.loki = {
               enable = true;
               iface = "enp88s0";
             };
           }
           prometheus
           {
-            services.my.prometheus = {
+            services.mitchty.prometheus = {
               enable = true;
               iface = "enp88s0";
             };
           }
           grafana
           {
-            services.my.grafana = {
+            services.mitchty.grafana = {
               enable = true;
               iface = "enp88s0";
             };
           }
           media
           {
-            services.my.media = {
+            services.mitchty.media = {
               enable = true;
               services = true;
               iface = "enp88s0";
@@ -70,6 +74,7 @@ in
           power
           power-intel
           nix-offload
+          fw
         ])
         ++ (with inputs.self.crossplatformModules; [
           mosh
@@ -111,7 +116,7 @@ in
           common-pc-ssd
           common-cpu-intel
           common-gpu-intel
-          #          common-gpu-nvidia
+          common-gpu-nvidia-nonprime
         ])
         ++ [
           ./diskconfig.nix
@@ -136,6 +141,9 @@ in
         };
       };
 
+      # # Needed for nixos-hardware common-gpu-nvidia
+      hardware.nvidia.open = true;
+
       diskConfig.disks = [
         "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X707714B"
         "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X700496V"
@@ -148,7 +156,7 @@ in
         # kernel and some change at 48GiB of rams. The intel box isn't super
         # fast but I'm more abusing it to build iso images and copying stuff
         # directly to the nas over 10g.
-        tmp.tmpfsSize = "50%";
+        tmp.tmpfsSize = "80%";
 
         loader.systemd-boot.enable = true;
 

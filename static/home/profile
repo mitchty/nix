@@ -305,3 +305,9 @@ j() {
     jira "$@"
   fi
 }
+
+# simple wrapper for deploy
+d() {
+  host="${1?need a host name}"
+  deploy -ds -- ".#${host}" -L --show-trace
+}

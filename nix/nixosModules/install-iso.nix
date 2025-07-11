@@ -5,26 +5,6 @@
   modulesPath,
   ...
 }:
-let
-  sshPubKeys = [
-    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCl1r2eksJXO02QkuGbjVly38MhG9MpDfvQRPABWJLGfFIBQFNkCvvJffV1UEUpcRNNaAmle1DFS1CtvATZSr/UpTgzsAYu9X+gd0/5OB/WlWHJaC/j0H2LahtiUPKZ2d4/cLkKPQqP6HZdmOXrsHZR1I9bxjhqyNWhwxNLMCK/8995hKNWOYamMagJloHUTRLFQaor/WoFDqjfW8EKo09OxKnXtFFcj6CmXwsu1RWfFY/P/wsADL+8B2/P4CmqqwuLxQknbA0WZ2zWSj13tf24H7BORAkMAeK5249GuLd5SlnnvmHJLiF1OCIkSOZJMcyrNCCvBRavGLcPoKQbtHw7"
-  ];
-
-  # For max compression (takes way longer to build an image tho)
-  #
-  # Compression levels: https://github.com/facebook/zstd/blob/dev/lib/compress/clevels.h#L25
-  #
-  # Use 5 for testing, 19 for keeping iso size down on a chonky system
-  zstdCompressionLevel = "19";
-in
-#
-# Rough size diff with current test data:
-# level 5
-# 6.5G    /nix/store/j82paybcnppn5s9g9pc0pih6f3jknaxx-nixos-24.11.20250408.a62d20d-x86_64-linux.iso/iso/nixos-24.11.20250408.a62d20d-x86_64-linux.iso
-# level 19
-# 6.2G    /nix/store/66az8g3g98crb1zx7wnnkpcjvaanayfa-nixos-24.11.20250408.a62d20d-x86_64-linux.iso/iso/nixos-24.11.20250408.a62d20d-x86_64-linux.iso
-#
-# TODO: add timing tests (warm not cold)
 {
   imports =
     builtins.map (mod: inputs.${mod}.nixosModules.${mod}) [
@@ -33,7 +13,11 @@ in
     ]
     ++ [
       "${toString inputs.nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
-    ];
+    ]
+    ++ (with inputs.self.nixosModules; [
+      ssh-root
+      ssh-nixos
+    ]);
 
   # I don't want docs on the iso system derivation. Don't need em wasting space/time.
   documentation = {
@@ -42,11 +26,9 @@ in
     info.enable = false;
   };
 
-  isoImage.squashfsCompression = "zstd -Xcompression-level ${zstdCompressionLevel}";
-
-  # Whilst testing uncomment me (note this takes ages at the end for incremental
-  # changes so probably jut nuke this comment and this option entirely its ass)
-  #isoImage.squashfsCompression = "lz4";
+  # By default use lz4 compression, each image can customize the compression
+  # with module imports.
+  isoImage.squashfsCompression = lib.mkDefault "lz4";
 
   environment = {
     systemPackages = with pkgs; [
@@ -63,9 +45,6 @@ in
 
   users = {
     mutableUsers = false;
-    users.root = {
-      openssh.authorizedKeys.keys = sshPubKeys;
-    };
     users.nixos = {
       isNormalUser = true;
       description = "nixos install user";
@@ -73,7 +52,6 @@ in
         "wheel"
         "networkmanager"
       ];
-      openssh.authorizedKeys.keys = sshPubKeys;
       # This is a test vm only used to test out disk/install automation. Its not
       # getting out/exposed to the outside world ever.
       # echo nixos | openssl passwd -6 -stdin -salt vmtestsalt
@@ -191,6 +169,7 @@ in
       "/run/current-system/sw/"
       "/usr/bin/"
       "${systemd}/bin/"
+      "${e2fsprogs}/bin/"
     ];
 
     # If the disko-install worked reboot into the firmware setup so I can move
@@ -200,8 +179,8 @@ in
     script = ''
       set -eux
       autoinstall
-      #sudo systemctl reboot --firmware-setup
-      sudo systemctl reboot
+      sudo systemctl reboot --firmware-setup
+      # sudo systemctl reboot
     '';
 
     # This should only be ran when on the iso installer. So don't ever include

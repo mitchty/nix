@@ -9,11 +9,11 @@
 with lib;
 
 let
-  cfg = config.services.my.loki;
+  cfg = config.services.mitchty.loki;
   lokiDir = "/var/lib/loki";
 in
 {
-  options.services.my.loki = {
+  options.services.mitchty.loki = {
     enable = mkEnableOption "Setup as a loki ingestor";
     cname = mkOption {
       type = types.str;

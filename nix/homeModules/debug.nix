@@ -14,6 +14,7 @@
       bcc
       tcpdump
       hwatch
+      dig
     ];
   };
 

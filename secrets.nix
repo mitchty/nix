@@ -11,8 +11,10 @@ let
   srv = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsX6e+fhe/CxoGIbZ4auuk83H3sUK5XQhia8OWFz4pt";
   wm2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNzRSDjB8WJHSEepNu2GTrZIgFWprv+wMnX6xbeoD0U";
   rtx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBaFOFERMbg/d7DHrTBJ7pPKiJhwxFadQZlagalg51/";
+
   plx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK2IZnIu0StYczf9Z4iJNDpEZt+Wjo8LjqDrlmd2yX4l";
   ark = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDFFvNk88g2x8R5cK1K+iVGQT1Lu1IFKZwSp75s2xegB";
+  gw0 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOyjyOCeUEtKb7hLISbPzwkrrSDKQU5JGJ1R1Sw7MZga";
 
   # Test vm keys
   vm-simple = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOuH9BdXTgFflW0uDF1ytFdgHxIBx0NDrHB4jqCjKhQB";
@@ -23,8 +25,11 @@ let
     srv
     wm2
     gw
+
     plx
     ark
+    gw0
+
     vm-simple
     vm-mirror
   ];
@@ -58,8 +63,10 @@ let
     srv
     wm2
     rtx
+
     plx
     ark
+
     vm-simple
     vm-mirror
   ];
