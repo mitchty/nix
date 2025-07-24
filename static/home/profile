@@ -306,8 +306,30 @@ j() {
   fi
 }
 
-# simple wrapper for deploy
+# Stupid simple wrapper function for deploy/darwin-rebuild for macos rebuilds
+# (local only for the latter not tried deploy-rs with darwin nix)
+# TODO: figure out a way to default to the local node hostname to deploy by
+# parsing out the flakes attributes and iff there is a
+# (darwin,nixos)Configuration that matches use that by default otherwise fail
+# and tell the user they have to specify the hostname to deploy/rebuild.
+
 d() {
   host="${1?need a host name}"
-  deploy -ds -- ".#${host}" -L --show-trace
+  # darwin-rebuild need to run as root now
+
+  onmac sudo darwin-rebuild switch --flake ".#${host}" --show-trace
+  onlinux deploy -ds -- ".#${host}" -L --show-trace
+}
+
+NOM="${NOM:-$(command -v nom || echo nom)}"
+
+NOM=$HOME/.nix-profile/bin/nom
+
+nom() {
+  if [ $# -ge 2 ] && [ "$1" = "flake" ] && [ "$2" = "check" ]; then
+    shift 2
+    nix flake check --log-format internal-json -v "$@" 2>&1 | ${NOM} --json
+  else
+    ${NOM} "$@"
+  fi
 }

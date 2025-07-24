@@ -17,11 +17,11 @@
         hatools
         hyperfine
         idris2
+        nixfmt-rfc-style
         no-more-secrets
         nodePackages.bash-language-server
         open-webui-cli
         ripgrep
-        scripts # TODO: should pull this package apart and make scripts-macos scripts-blah future mitch problem
         shellcheck
         shellspec
         shfmt

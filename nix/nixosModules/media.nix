@@ -1,9 +1,8 @@
-{
-  config,
-  lib,
-  pkgs,
-  inputs,
-  ...
+{ config
+, lib
+, pkgs
+, inputs
+, ...
 }:
 
 with lib;
@@ -142,23 +141,23 @@ in
     services = mkIf cfg.services rec {
       plex = {
         enable = true;
-        package = pkgs.plex;
+        package = pkgs.unstable.plex;
         openFirewall = true;
         group = "media";
         user = "media";
-        # TODO get constant transcoder errors with stuff in here
         dataDir = "${cfg.localPrefix}/plex";
       };
       sonarr = {
         enable = true;
+        package = pkgs.unstable.sonarr;
         openFirewall = true;
         group = "media";
         user = "media";
         dataDir = "${cfg.localPrefix}/sonarr";
-        #          package = pkgs.unstable.sonarr;
       };
       radarr = {
         enable = true;
+        package = pkgs.unstable.radarr;
         openFirewall = true;
         group = "media";
         user = "media";
@@ -166,14 +165,16 @@ in
       };
       prowlarr = {
         enable = true;
+        package = pkgs.unstable.prowlarr;
         openFirewall = true;
       };
       # TODO Get a lot of sqlite3 lock errors with sabnzbd on samba,
       # so keep it local and keep the completed folder in samba
       # instead
       sabnzbd = {
-        openFirewall = true;
         enable = true;
+        package = pkgs.unstable.sabnzbd;
+        openFirewall = true;
         group = "media";
         user = "media";
         configFile = "${cfg.localPrefix}/sabnzbd/sabnzbd.ini";
@@ -208,6 +209,11 @@ in
       };
       "/nas/isos" = {
         device = "//s1.home.arpa/isos";
+        fsType = "cifs";
+        options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMe;
+      };
+      "/nas/bitbucket" = {
+        device = "//s1.home.arpa/bitbucket";
         fsType = "cifs";
         options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMe;
       };

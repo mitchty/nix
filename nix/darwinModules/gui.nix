@@ -102,7 +102,7 @@
           Sensors_sensors_position = 0;
           Sensors_state = true;
           Sensors_updateInterval = 30;
-          Sensors_widget = "sensors,bar_chart";
+          Sensors_widget = "sensors";
           runAtLoginInitialized = true;
           sensor_ID0R = true;
           sensor_PDTR = true;

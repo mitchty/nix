@@ -15,6 +15,8 @@
       tcpdump
       hwatch
       dig
+      fio
+      pv
     ];
   };
 

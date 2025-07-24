@@ -123,6 +123,9 @@ in
           "uas"
         ];
         kernelModules = [ "kvm-intel" ];
+        kernelParams = [
+          "console=tty0"
+        ];
       };
 
       nixpkgs.hostPlatform = "x86_64-linux";

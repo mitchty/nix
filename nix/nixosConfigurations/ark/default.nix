@@ -141,8 +141,8 @@ in
         };
       };
 
-      # # Needed for nixos-hardware common-gpu-nvidia
-      hardware.nvidia.open = true;
+      # Needed for nixos-hardware common-gpu-nvidia
+      #      hardware.nvidia.open = true;
 
       diskConfig.disks = [
         "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X707714B"
@@ -175,6 +175,9 @@ in
           "sr_mod"
         ];
         kernelModules = [ "kvm-intel" ];
+        kernelParams = [
+          "console=tty0"
+        ];
       };
 
       nixpkgs = {

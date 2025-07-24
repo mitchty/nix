@@ -16,7 +16,7 @@
 
     kernelParams = [
       "boot.shell_on_fail"
-      "console=ttyS0,115200n8"
+      #"console=ttyS0,115200n8"
       #              "console=tty0" # fallback somehow if serial no work somehow?
       "delayacct"
       "intel-spi.writeable=1"

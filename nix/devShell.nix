@@ -1,4 +1,9 @@
-{ stdenv, lib, ... }:
+{
+  stdenv,
+  lib,
+  inputs,
+  ...
+}:
 {
   # TODO: most of these really should be a check somehow
   #
@@ -23,6 +28,7 @@
       statix
       treefmt
       yq-go
+      #        inputs.deploy-rs.packages.x86_64-linux.deploy-rs
     ]
     # Only need these on linux or they don't build on macos...
     ++ lib.optionals stdenv.isLinux [

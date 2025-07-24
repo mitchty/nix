@@ -21,6 +21,7 @@
       less
       libqalculate
       moreutils
+      scripts # TODO: should pull this package apart and make scripts-macos scripts-blah future mitch problem
       ripgrep
       tree
       wget
