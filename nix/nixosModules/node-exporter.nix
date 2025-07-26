@@ -41,28 +41,27 @@ in
       exporters = {
         node = {
           enable = true;
-          enabledCollectors =
-            [
-              "conntrack"
-              "diskstats"
-              "entropy"
-              "filefd"
-              "filesystem"
-              "interrupts"
-              "ksmd"
-              "loadavg"
-              "logind"
-              "mdadm"
-              "meminfo"
-              "netdev"
-              "netstat"
-              "stat"
-              "systemd"
-              "time"
-              "vmstat"
-            ]
-            ++ (optionals (hasFileSystemType "btrfs") [ "btrfs" ])
-            ++ (optionals (hasFileSystemType "xfs") [ "xfs" ]);
+          enabledCollectors = [
+            "conntrack"
+            "diskstats"
+            "entropy"
+            "filefd"
+            "filesystem"
+            "interrupts"
+            "ksmd"
+            "loadavg"
+            "logind"
+            "mdadm"
+            "meminfo"
+            "netdev"
+            "netstat"
+            "stat"
+            "systemd"
+            "time"
+            "vmstat"
+          ]
+          ++ (optionals (hasFileSystemType "btrfs") [ "btrfs" ])
+          ++ (optionals (hasFileSystemType "xfs") [ "xfs" ]);
           port = 9002;
         };
       };

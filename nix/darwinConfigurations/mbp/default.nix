@@ -42,20 +42,21 @@
         users.mitch = {
           # ditto home manager state version generally
           home.stateVersion = "24.11";
-          imports =
-            [ inputs.agenix.homeManagerModules.default ]
-            ++ (with inputs.self.homeModules; [
-              development
-              gui
-              macos
-              mutagen
-              macos-mitch
-              age
-              sh
-              tmux
-              git
-              git-age
-            ]);
+          imports = [
+            inputs.agenix.homeManagerModules.default
+          ]
+          ++ (with inputs.self.homeModules; [
+            development
+            gui
+            macos
+            mutagen
+            macos-mitch
+            age
+            sh
+            tmux
+            git
+            git-age
+          ]);
         };
       };
     }

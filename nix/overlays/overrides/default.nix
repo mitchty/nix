@@ -49,7 +49,8 @@ self: super: {
         disabledTests = [
           "test_llm_caching"
           "test_llm_caching_async"
-        ] ++ old.disabledTests;
+        ]
+        ++ old.disabledTests;
       });
       open-webui = pyprev.open-webui.overridePythonAttrs (old: {
         dependencies =

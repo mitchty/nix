@@ -14,7 +14,8 @@ in
 {
   imports = [
     "${toString inputs.nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
-  ] ++ (with inputs.self.nixosModules; [ install-iso ]);
+  ]
+  ++ (with inputs.self.nixosModules; [ install-iso ]);
 
   environment = {
     systemPackages = [

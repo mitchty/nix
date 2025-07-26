@@ -70,16 +70,17 @@ in
                   homeDirectory = "/Users/mitch";
                   stateVersion = "25.05";
                 };
-                imports =
-                  [ inputs.agenix.homeManagerModules.default ]
-                  ++ (with inputs.self.homeModules; [
-                    common
-                    sh
-                    tmux
-                    git
-                    age
-                    debug
-                  ]);
+                imports = [
+                  inputs.agenix.homeManagerModules.default
+                ]
+                ++ (with inputs.self.homeModules; [
+                  common
+                  sh
+                  tmux
+                  git
+                  age
+                  debug
+                ]);
               };
             };
           }

@@ -12,18 +12,17 @@ let
 in
 {
   # Common imports for nixos
-  imports =
-    [
-      inputs.disko.nixosModules.disko
-      inputs.agenix.nixosModules.default
-    ]
-    ++ (with inputs.self.nixosModules; [
-      kernel
-      boot
-      ssh
-      sudo
-      nix-common
-      user-root
-      time
-    ]);
+  imports = [
+    inputs.disko.nixosModules.disko
+    inputs.agenix.nixosModules.default
+  ]
+  ++ (with inputs.self.nixosModules; [
+    kernel
+    boot
+    ssh
+    sudo
+    nix-common
+    user-root
+    time
+  ]);
 }

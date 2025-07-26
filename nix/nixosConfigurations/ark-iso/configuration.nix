@@ -18,7 +18,8 @@ let
     # https://github.com/NixOS/nixpkgs/blob/f2fd33a198a58c4f3d53213f01432e4d88474956/nixos/modules/system/activation/top-level.nix#L342
     inputs.self.nixosConfigurations."${hostName}".pkgs.perlPackages.ConfigIniFiles
     inputs.self.nixosConfigurations."${hostName}".pkgs.perlPackages.FileSlurp
-  ] ++ builtins.map (i: i.outPath) (builtins.attrValues inputs);
+  ]
+  ++ builtins.map (i: i.outPath) (builtins.attrValues inputs);
 
   # # TODO: this is what I originally used keep? Future mitch figure it out sucker.
   # #  closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
@@ -54,13 +55,12 @@ let
   '';
 in
 {
-  imports =
-    [
-      "${toString inputs.nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
-    ]
-    ++ (with inputs.self.nixosModules; [
-      install-iso
-    ]);
+  imports = [
+    "${toString inputs.nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+  ]
+  ++ (with inputs.self.nixosModules; [
+    install-iso
+  ]);
 
   environment = {
     etc."install-closure".source = "${closureInfo}/store-paths";

@@ -95,18 +95,19 @@ in
                   homeDirectory = "/Users/mitch";
                   stateVersion = "25.05";
                 };
-                imports =
-                  [ inputs.agenix.homeManagerModules.default ]
-                  ++ (with inputs.self.homeModules; [
-                    common
-                    sh
-                    tmux
-                    yt
-                    git
-                    age
-                    debug
-                    development
-                  ]);
+                imports = [
+                  inputs.agenix.homeManagerModules.default
+                ]
+                ++ (with inputs.self.homeModules; [
+                  common
+                  sh
+                  tmux
+                  yt
+                  git
+                  age
+                  debug
+                  development
+                ]);
               };
             };
           }
@@ -142,7 +143,7 @@ in
       };
 
       # Needed for nixos-hardware common-gpu-nvidia
-      hardware.nvidia.open = true;
+      hardware.nvidia.open = lib.mkDefault true;
 
       diskConfig.disks = [
         "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X707714B"

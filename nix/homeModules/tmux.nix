@@ -24,22 +24,21 @@ let
   mon = {
     window_name = "mon";
     layout = "even-vertical";
-    panes =
-      [
-        {
-          shell_command = [
-            "btop"
-          ];
-        }
-        # TODO: wat the hell works on macos too? yeet that in here.
-      ]
-      ++ lib.optional pkgs.hostPlatform.isLinux [
-        {
-          shell_command = [
-            "sudo powerjoular"
-          ];
-        }
-      ];
+    panes = [
+      {
+        shell_command = [
+          "btop"
+        ];
+      }
+      # TODO: wat the hell works on macos too? yeet that in here.
+    ]
+    ++ lib.optional pkgs.hostPlatform.isLinux [
+      {
+        shell_command = [
+          "sudo powerjoular"
+        ];
+      }
+    ];
   };
 
   nix = {
@@ -305,7 +304,7 @@ rec {
 
       ".config/tmuxp/mutagen.yml".text = lib.generators.toYAML { } {
         start_directory = "~";
-        session_name = "monitor";
+        session_name = "mutagen";
         windows = [
           mutagen
         ];
