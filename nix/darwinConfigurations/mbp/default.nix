@@ -11,22 +11,26 @@
           laptop
           mutagen
           age
+          ollama
         ]
         ++ (with inputs.self.crossplatformModules; [
           mosh
-          {
-            services.common.mosh.enable = true;
-          }
         ]);
 
-      services.shared.mutagen.enable = true;
+      services = {
+        common.mosh.enable = true;
+        mitchty.ollama.enable = true;
+        shared.mutagen.enable = true;
+      };
 
       networking.hostName = "mbp";
 
       users.users.mitch.home = "/Users/mitch";
 
       system = {
-        # Don't change nix-darwin stateversion from what things were installed with
+        # Don't change nix-darwin stateversion from what things were installed
+        # with (unless rebuilding I guess, then do whatever, doesn't matter have
+        # backups so nbd either way.
         stateVersion = 5;
         primaryUser = "mitch";
       };
