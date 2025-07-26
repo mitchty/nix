@@ -1,6 +1,10 @@
 { inputs, lib, ... }:
 let
   shortHost = "ark";
+  commonMonitoring = {
+    enable = true;
+    iface = "enp88s0";
+  };
 in
 {
   system = "x86_64-linux";
@@ -30,45 +34,12 @@ in
           podman
           #          nas TODO: fix this to work with media as well, will move the base for all media from /nas/media to /nas/srv/media for serving needs
           node-exporter
-          {
-            services.mitchty.node-exporter = {
-              enable = true;
-              iface = "enp88s0"; # enp91s0 TODO: determine which of these enables the built in ilom ish thingy
-            };
-          }
           promtail
-          {
-            services.mitchty.promtail.enable = true;
-          }
           loki
-          {
-            services.mitchty.loki = {
-              enable = true;
-              iface = "enp88s0";
-            };
-          }
           prometheus
-          {
-            services.mitchty.prometheus = {
-              enable = true;
-              iface = "enp88s0";
-            };
-          }
           grafana
-          {
-            services.mitchty.grafana = {
-              enable = true;
-              iface = "enp88s0";
-            };
-          }
           media
-          {
-            services.mitchty.media = {
-              enable = true;
-              services = true;
-              iface = "enp88s0";
-            };
-          }
+          ai
           debug
           virtualization
           power
@@ -78,9 +49,6 @@ in
         ])
         ++ (with inputs.self.crossplatformModules; [
           mosh
-          {
-            services.common.mosh.enable = true;
-          }
         ])
         ++ [
           inputs.home-manager.nixosModules.home-manager
@@ -122,6 +90,30 @@ in
         ++ [
           ./diskconfig.nix
         ];
+
+      # enp88s0/enp91s0 TODO: determine which of these has the built in ilom
+      # thing, can maybe use that instead of pikvm for this one node to not have
+      # so many pikvms and such.
+      services = {
+        common.mosh.enable = true;
+
+        mitchty = {
+          promtail.enable = true;
+          node-exporter = commonMonitoring;
+          loki = commonMonitoring;
+          prometheus = commonMonitoring;
+          grafana = commonMonitoring;
+          media = commonMonitoring // {
+            services = true;
+          };
+          ai = commonMonitoring // {
+            ollamaCname = "slow-ollama.home.arpa";
+            ollamaIp = "10.10.10.222";
+            owuiCname = "slow-open-webui.home.arpa";
+            owuiIp = "10.10.10.223";
+          };
+        };
+      };
 
       networking.interfaces = {
         enp88s0.useDHCP = true;
