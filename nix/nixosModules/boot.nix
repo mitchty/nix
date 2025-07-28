@@ -11,7 +11,7 @@
     kernelPackages = pkgs.linuxPackages_latest;
     # I want my magic sysrq triggers to work
     kernel.sysctl = {
-      "vm.overcommit_memory" = 1;
+      "vm.overcommit_memory" = lib.mkDefault "1";
     };
 
     kernelParams = [

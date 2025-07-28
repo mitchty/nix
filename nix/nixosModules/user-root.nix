@@ -18,6 +18,9 @@
     # Only users I define
     mutableUsers = false;
 
-    users.root.hashedPasswordFile = config.age.secrets."secrets/passwd/root".path;
+    users.root = {
+      hashedPassword = lib.mkForce null;
+      hashedPasswordFile = config.age.secrets."secrets/passwd/root".path;
+    };
   };
 }

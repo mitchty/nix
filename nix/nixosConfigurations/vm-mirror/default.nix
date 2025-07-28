@@ -15,6 +15,7 @@ in
           user-root
           ssh-mitch
           user-mitch-compat
+          console-vm
         ])
         ++ [
           inputs.home-manager.nixosModules.home-manager

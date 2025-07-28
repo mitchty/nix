@@ -27,7 +27,7 @@ nixpkgs=flake:nixpkgs:nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/per-user/root/
 
 * Testing via qemu/vm
 
-I have a truly hacky script/wrapper around qemu in the bin dir, [[file:bin/test-iso][test-iso]]. Its a hacky simple way to test out derivations.
+I have a truly hacky script/wrapper around qemu in the bin dir, [[file:src/sys.sh][sys]]. It just a temporary way to test out derivations interactively.
 
 For now it defaults to the vm setup in nix/nixosConfigurations/vm-simple
 

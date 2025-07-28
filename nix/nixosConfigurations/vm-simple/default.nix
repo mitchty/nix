@@ -10,11 +10,13 @@ in
       imports =
         (with inputs.self.nixosModules; [
           common
+          console-vm
           user-mitch
           ssh-mitch
           user-root
           ssh-mitch
           user-mitch-compat
+          #          gui
         ])
         ++ [
           inputs.home-manager.nixosModules.home-manager
@@ -52,6 +54,8 @@ in
         ++ [
           ./diskconfig.nix
         ];
+
+      # services.mitchty.gui.enable = true;
 
       diskConfig.disks = [ "/dev/disk/by-id/ata-QEMU_HARDDISK_QM00001" ];
       system.stateVersion = "25.05";

@@ -17,6 +17,7 @@
     ++ (with inputs.self.nixosModules; [
       ssh-root
       ssh-nixos
+      user-nixos
     ]);
 
   # I don't want docs on the iso system derivation. Don't need em wasting space/time.
@@ -40,22 +41,6 @@
 
       # if I need it...
       EDITOR = "vi";
-    };
-  };
-
-  users = {
-    mutableUsers = false;
-    users.nixos = {
-      isNormalUser = true;
-      description = "nixos install user";
-      extraGroups = [
-        "wheel"
-        "networkmanager"
-      ];
-      # This is a test vm only used to test out disk/install automation. Its not
-      # getting out/exposed to the outside world ever.
-      # echo nixos | openssl passwd -6 -stdin -salt vmtestsalt
-      hashedPassword = "$6$vmtestsalt$RU13pQq.NolDt0ZFHiLVzYNjIdTY1aj43jklM/6hrge1NAIosvc.W16.dLf5CwsSaSlbCg0pqupZdkLQdf0/z0";
     };
   };
 
@@ -106,7 +91,7 @@
     # I want my magic sysrq triggers to work
     kernel.sysctl = {
       "kernel.sysrq" = 1;
-      "vm.overcommit_memory" = lib.mkForce 1;
+      "vm.overcommit_memory" = lib.mkForce "1";
     };
     kernelParams = [
       "boot.shell_on_fail"
