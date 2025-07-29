@@ -22,6 +22,7 @@ in
       imports =
         (with inputs.self.nixosModules; [
           common
+          console-normal
           user-mitch
           ssh-mitch
           user-root
@@ -30,16 +31,7 @@ in
           podman
           #          nas TODO: fix this to work with media as well, will move the base for all media from /nas/media to /nas/srv/media for serving needs
           node-exporter
-          {
-            services.mitchty.node-exporter = {
-              enable = true;
-              iface = "enp3s0";
-            };
-          }
           promtail
-          {
-            services.mitchty.promtail.enable = true;
-          }
           debug
           virtualization
           power
@@ -47,15 +39,9 @@ in
           nix-offload
           fw
           blocklist
-          {
-            services.mitchty.blocklist.enable = true;
-          }
         ])
         ++ (with inputs.self.crossplatformModules; [
           mosh
-          {
-            services.common.mosh.enable = true;
-          }
         ])
         ++ [
           inputs.home-manager.nixosModules.home-manager
@@ -93,6 +79,19 @@ in
         ++ [
           ./diskconfig.nix
         ];
+
+      services = {
+        common.mosh.enable = true;
+
+        mitchty = {
+          blocklist.enable = true;
+          promtail.enable = true;
+          node-exporter = {
+            enable = true;
+            iface = "enp3s0";
+          };
+        };
+      };
 
       networking.interfaces = {
         enp3s0 = {

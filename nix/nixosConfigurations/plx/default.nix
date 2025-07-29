@@ -22,31 +22,20 @@ in
       imports =
         (with inputs.self.nixosModules; [
           common
+          console-normal
           user-mitch
           ssh-mitch
           user-root
           ssh-root
           nas
           node-exporter
-          {
-            services.mitchty.node-exporter = {
-              enable = true;
-              iface = "enp2s0";
-            };
-          }
           promtail
-          {
-            services.mitchty.promtail.enable = true;
-          }
           podman
           debug
           fw
         ])
         ++ (with inputs.self.crossplatformModules; [
           mosh
-          {
-            services.common.mosh.enable = true;
-          }
         ])
         ++ [
           inputs.home-manager.nixosModules.home-manager
@@ -86,6 +75,18 @@ in
         ++ [
           ./diskconfig.nix
         ];
+
+      services = {
+        common.mosh.enable = true;
+
+        mitchty = {
+          promtail.enable = true;
+          node-exporter = {
+            enable = true;
+            iface = "enp2s0";
+          };
+        };
+      };
 
       # The s100 doesn't have a disk link with a serial number sadly, all I see
       # as links to /dev/sda is:

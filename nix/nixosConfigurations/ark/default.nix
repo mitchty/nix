@@ -26,6 +26,7 @@ in
       imports =
         (with inputs.self.nixosModules; [
           common
+          console-normal
           user-mitch
           user-mitch-compat
           ssh-mitch
