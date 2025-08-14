@@ -59,7 +59,9 @@ find /tmp -maxdepth 1 -name "nix-build-*" -type d -ctime +1 -print -exec sudo rm
 
 # Find all result symlinks and nuke em
 for d in ~/src/prv ~/src/pub; do
-  find ${d} -type l -name result -lname "/nix/store/*" -print -exec rm {} \+
+  if [ -d "$d" ]; then
+    find ${d} -type l -name result -lname "/nix/store/*" -print -exec rm {} \+
+  fi
 done
 
 # Prep for specific type of system

@@ -83,15 +83,16 @@ update() {
   arch=$(double)
 
   # 2> /dev/null to nuke the stderr warning: messages
-  for pkg in $(nix flake show --json 2> /dev/null | jq -r '.packages."'"${arch}"'" | keys[]'); do
+  for pkg in $(pkgs); do
     if nix eval --raw ".#${pkg}.latest" 2> /dev/null; then
       evalstring=$(nix eval --raw ".#${pkg}.latest" 2> /dev/null)
-      latest=$(eval "${evalstring}")
-      ours=$(nix eval --raw ".#${pkg}.version" 2> /dev/null)
 
       # Doing it this way so I don't have to rerun things, so go away
       #shellcheck disable=SC2181
       if [ "$?" -eq 0 ]; then
+        latest=$(eval "${evalstring}")
+        ours=$(nix eval --raw ".#${pkg}.version" 2> /dev/null)
+
         if [ "${latest}" != "${ours}" ]; then
           printf "%s latest version out of date: ours=%s latest=%s\n" "${pkg}" "${ours}" "${latest}" >&2
           printf "nix-update --flake %s --version %s\n" "${pkg}" "${latest}"
@@ -105,20 +106,28 @@ update() {
   done
 }
 
+pkgs() {
+  arch=$(double)
+  nix flake show --json 2> /dev/null | jq -r ".packages.\"${arch}\" | keys[]"
+  #   nix flake show --json | jq -r ".packages.\"${arch}\" | keys[]"
+}
+
 latest() {
+  cd $_dir || exit 126
   arch=$(double)
   # 2> /dev/null to nuke the stderr warning: messages
-  for pkg in $(nix flake show --json 2> /dev/null | jq -r '.packages."'"${arch}"'" | keys[]'); do
-    evalstring=$(nix eval --raw ".#${pkg}.latest" 2> /dev/null)
-
-    # Doing it this way so I don't have to rerun things, so go away
-    #shellcheck disable=SC2181
-    if [ "$?" -eq 0 ]; then
-      latest=$(eval "${evalstring}")
-      ours=$(nix eval --raw ".#${pkg}.version" 2> /dev/null)
-
+  for pkg in $(pkgs); do
+    if nix eval --raw ".#${pkg}.latest" > /dev/null 2>&1; then
+      evalstring=$(nix eval --raw '.#'${pkg}'.latest' 2> /dev/null)
+      # Doing it this way so I don't have to rerun things, so go away
+      #shellcheck disable=SC2181
       if [ "$?" -eq 0 ]; then
-        cmp_versions "${latest}" "${ours}"
+        latest=$(eval ${evalstring})
+        ours=$(nix eval --raw ".#${pkg}.version" 2> /dev/null)
+
+        if [ "$?" -eq 0 ]; then
+          cmp_versions "${latest}" "${ours}"
+        fi
       fi
     fi
   done
@@ -128,15 +137,17 @@ latest() {
   # future me problem.
   #for pkg in $(nix eval ".#legacyPackages.\"${arch}\"" --apply builtins.attrNames --json 2> /dev/null | jq -r '.[]'); do
   for pkg in ipatool yt-dlp bgutil-ytdlp-pot-provider yt-dlp-get-pot; do
-    evalstring=$(nix eval --raw ".#.legacyPackages.\"${arch}\".${pkg}.latest" 2> /dev/null)
-    # Doing it this way so I don't have to rerun things, so go away
-    #shellcheck disable=SC2181
-    if [ "$?" -eq 0 ]; then
-      latest=$(eval "${evalstring}")
-      ours=$(nix eval --raw ".#${pkg}.version" 2> /dev/null)
-
+    if nix eval --raw ".#.legacyPackages.\"${arch}\".${pkg}.latest" > /dev/null 2>&1; then
+      evalstring=$(nix eval --raw ".#.legacyPackages.\"${arch}\".${pkg}.latest" 2> /dev/null)
+      # Doing it this way so I don't have to rerun things, so go away
+      #shellcheck disable=SC2181
       if [ "$?" -eq 0 ]; then
-        cmp_versions "${latest}" "${ours}"
+        latest=$(eval ${evalstring})
+        ours=$(nix eval --raw ".#.legacyPackages.\"${arch}\".${pkg}.version" 2> /dev/null)
+
+        if [ "$?" -eq 0 ]; then
+          cmp_versions "${latest}" "${ours}"
+        fi
       fi
     fi
   done
@@ -167,17 +178,20 @@ firmware() {
 
   latest=$(fw "${found}")
 
+  # whining about the \_ being _, duh thats the point
+  #shellcheck disable=SC1001
+  old=$(echo "${curr}" | awk -F\_v '{print $2}' | tr -d '.zip')
+  #shellcheck disable=SC1001
+  new=$(echo "${latest}" | awk -F\_v '{print $2}' | tr -d '.zip')
+
   if [ "${curr}" != "${latest}" ]; then
     ok=$((ok + 1))
-    # whining about the \_ being _, duh thats the point
-    #shellcheck disable=SC1001
-    old=$(echo "${curr}" | awk -F\_v '{print $2}' | tr -d '.zip')
-    #shellcheck disable=SC1001
-    new=$(echo "${latest}" | awk -F\_v '{print $2}' | tr -d '.zip')
-    printf "mixcast4 firmware skew current=%s found=%s\n" "${old}" "${new}"
+    printf "mixcast4 firmware skew current=%s have=%s\n" "${old}" "${new}"
     printf "change curr to: %s\n" "${latest}"
   else
-    printf "mixcast4 version %s already latest nothing to do \n" "${found}"
+    if [ "${VERBOSE:-}" != "" ]; then
+      printf "mixcast4 firmware latest current=%s have=%s\n" "${old}" "${new}"
+    fi
   fi
 
   # And the GW7664 firmware too cause for some crazy reason there is NO non
@@ -202,14 +216,17 @@ firmware() {
 
   latest=$(fw "${found}")
 
+  old=${have}
+  new=${found}
+
   if [ "${curr}" != "${latest}" ]; then
     ok=$((ok + 1))
-    old=${have}
-    new=${found}
-    printf "GWN7664 firmware skew current=%s found=%s\n" "${old}" "${new}"
+    printf "GWN7664 firmware skew current=%s have=%s\n" "${old}" "${new}"
     printf "change curr to: %s\n" "${latest}"
   else
-    printf "GWN7664 version %s already latest nothing to do \n" "${found}"
+    if [ "${VERBOSE:-}" != "" ]; then
+      printf "GWN7664 firmware latest current=%s have=%s\n" "${old}" "${new}"
+    fi
   fi
 }
 
@@ -233,6 +250,9 @@ case "${action}" in
     ;;
   update)
     update
+    ;;
+  pkgs)
+    pkgs
     ;;
   help)
     help

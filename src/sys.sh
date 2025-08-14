@@ -20,13 +20,14 @@ PREFIX="${PREFIX:-${HOME}/.cache/mitchty}"
 install -dm755 "${PREFIX}"
 
 base=$(TMPDIR=${PREFIX} mktemp -d XXXXXXXX -t)
-SYS=${1:-vm-mirror-iso}
+h=${1:-vm-mirror}
+sys_iso="${h}-iso"
 shift
 
 trap "rm -fr ${base}" EXIT TERM INT QUIT
 
 port() {
-  echo $((($(echo ${SYS} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
+  echo $((($(echo ${sys_iso} | sha1sum | awk '{print $1}' | tr -d '[a-z]' | head -c 19)) % 100 * 100 + 10022))
 }
 
 default() {
@@ -47,12 +48,12 @@ default() {
 iso() {
   # The rescue iso is special, its just the nixos installer iso with whatever the
   # hell I want on it so we don't use nixos-generate to build it.
-  if [ "${SYS}" = "rescue" ]; then
+  if [ "${h}" = "rescue" ]; then
     nix build .#nixosConfigurations.rescue.config.system.build.isoImage
     # result is just a bunch o symlinks
     iso=$(readlink -f $(find -L result -name "*.iso" -type f))
   else
-    iso=$(nixos-generate --flake ".#${SYS}" -f install-iso)
+    iso=$(nixos-generate --show-trace --flake ".#${sys_iso}" -f install-iso --cores 1)
   fi
   echo ${iso}
 }

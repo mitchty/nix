@@ -717,8 +717,10 @@ wtf() {
 #
 # Basically rm file.N mv file.N-1 file.N .... then for file -> file.0 copy but
 # then truncate file.
+#
+# I'm just abusing this in launchd scripts to rotate the log on restart.
 rotatelog() {
-  lim="${1:?Need a limit to support}"
+  lim="${1:?Need a limit of logs to keep}"
   shift
 
   for file in "$@"; do
