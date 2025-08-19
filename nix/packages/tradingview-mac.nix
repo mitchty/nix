@@ -8,11 +8,11 @@
 if (system == "aarch64-darwin") then
   stdenv.mkDerivation rec {
     pname = "tradingview-mac";
-    version = "2.11.0";
+    version = "2.12.0";
 
     src = fetchurl {
       url = "https://tvd-packages.tradingview.com/stable/${version}/darwin/TradingView.dmg";
-      sha256 = "sha256-kYNsVIO4EbtWbXNnWKOv6oACHhk0p6oaiV05+I+52zo=";
+      sha256 = "sha256-Wxiop8IGA0u65WZroduHbaCBmP4s2t82CqQ+n8QJf0c=";
     };
 
     sourceRoot = ".";
