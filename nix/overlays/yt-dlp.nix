@@ -40,11 +40,11 @@ rec {
   };
   yt-dlp = prev.yt-dlp.overrideAttrs (old: rec {
     latest = "curl --silent https://api.github.com/repos/yt-dlp/yt-dlp/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
-    version = "2025.8.22";
+    version = "2025.8.27";
     src = prev.fetchPypi {
       inherit version;
       pname = "yt_dlp";
-      hash = "sha256-0YRru37bzSoNSi12x6ISSGjenqOzlZqMuCGeP3y1wzU=";
+      hash = "sha256-7XR2jSqTspkzqxQJnaGUl+9XFjf3qjdRQN09iCucGFQ=";
     };
     postPatch = '':'';
     propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
