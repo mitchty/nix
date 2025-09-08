@@ -41,6 +41,7 @@
   begin = !git init && git commit --allow-empty -m 'Initial empty commit'
   up = !git pull --rebase && git push
   syn = !git stash && git pull --rebase && git stash pop
+  wsde = ! git wsd ':(exclude)*.lock'
   wsd = diff --color-words --ignore-space-at-eol --ignore-space-change --ignore-all-space --histogram
   wd = diff --color-words
   ds = diff --stat

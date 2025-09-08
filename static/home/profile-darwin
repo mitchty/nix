@@ -1,4 +1,9 @@
 # -*- mode: Shell-script; -*-
 
 # macos specific
-alias oe="open -a ~/Applications/Home\ Manager\ Apps/Emacs.app"
+alias oe="open -a $(which emacs)"
+
+# mnemonic: Open Nix (macos) App (bundle)
+function ona() {
+    open -a "/Applications/Nix\ Apps/${$1?need the app name to open}.app"
+}

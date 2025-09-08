@@ -16,6 +16,7 @@ in
           user-root
           ssh-mitch
           user-mitch-compat
+          debug
           #          gui
         ])
         ++ [

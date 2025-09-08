@@ -32,7 +32,7 @@ in
     };
     interval = mkOption {
       type = types.str;
-      default = "10s";
+      default = "5s";
       description = "scrape interval string";
     };
   };
@@ -59,6 +59,12 @@ in
         };
       };
     };
+
+    # prometheus seems to come up before dns works for some reason, this hacks
+    # OK. Trying to get this to start after network up is a failure idea too ye olde sleep works so whatever who cares.
+    systemd.services.prometheus.serviceConfig.ExecStartPre = lib.mkBefore [
+      "${pkgs.coreutils}/bin/sleep 5"
+    ];
 
     services.prometheus = {
       enable = true;
@@ -100,14 +106,16 @@ in
                 alias = "wm2.home.arpa";
               };
             }
-            {
-              targets = [
-                "srv.home.arpa:${toString config.services.prometheus.exporters.node.port}"
-              ];
-              labels = {
-                alias = "srv.home.arpa";
-              };
-            }
+            # Needs a rebuild, think I'll sell it not sure its that useful to
+            # keep around, it'll be powered off at best.
+            # {
+            #   targets = [
+            #     "srv.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+            #   ];
+            #   labels = {
+            #     alias = "srv.home.arpa";
+            #   };
+            # }
             {
               targets = [
                 "rtx.home.arpa:${toString config.services.prometheus.exporters.node.port}"
@@ -134,20 +142,21 @@ in
             }
           ];
         }
-        {
-          job_name = "macos";
-          scrape_interval = cfg.interval;
-          static_configs = [
-            {
-              targets = [
-                "mb.home.arpa:9100"
-              ];
-              labels = {
-                alias = "mb.home.arpa";
-              };
-            }
-          ];
-        }
+        # TODO: get scraping of the macbook pro working as well as the old one
+        # {
+        #   job_name = "macos";
+        #   scrape_interval = cfg.interval;
+        #   static_configs = [
+        #     {
+        #       targets = [
+        #         "mb.home.arpa:9100"
+        #       ];
+        #       labels = {
+        #         alias = "mb.home.arpa";
+        #       };
+        #     }
+        #   ];
+        # }
       ];
     };
   };

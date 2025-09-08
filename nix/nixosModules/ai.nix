@@ -52,7 +52,7 @@ in
     };
   };
 
-  config = mkIf cfg.enable rec {
+  config = mkIf cfg.enable {
     networking = {
       interfaces = {
         "${cfg.iface}" = {
@@ -140,7 +140,6 @@ in
         WEBUI_AUTH = "False";
         WEBUI_URL = "http://${cfg.owuiCname}";
         GLOBAL_LOG_LEVEL = "DEBUG";
-        NLTK_DATA = "${pkgs.python313Packages.nltk}";
       };
       package = pkgs.unstable.open-webui;
     };

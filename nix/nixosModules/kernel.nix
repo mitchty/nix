@@ -8,6 +8,7 @@
     kernelPatches = pkgs.lib.singleton {
       name = "I like to customize my kernel config and patch it at times if a CVE comes out.";
       patch = [
+        ../patches/max-args-increase.patch
         # TODO figure out a good way to keep this stuff working
         # (pkgs.fetchpatch {
         #   name = "add-tcp-collapse-sysctl";
@@ -49,6 +50,7 @@
         ZSWAP_COMPRESSOR_DEFAULT zstd
         ZSWAP_COMPRESSOR_DEFAULT_LZO n
         ZSWAP_COMPRESSOR_DEFAULT_ZSTD y
+        X86_MCELOG_LEGACY y
       '';
     };
 

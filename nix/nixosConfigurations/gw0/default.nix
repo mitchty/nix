@@ -39,8 +39,10 @@ in
           nix-offload
           fw
           blocklist
+          nix-cache
         ])
         ++ (with inputs.self.crossplatformModules; [
+          common
           mosh
         ])
         ++ [
@@ -88,13 +90,14 @@ in
           promtail.enable = true;
           node-exporter = {
             enable = true;
-            iface = "enp3s0";
+            iface = "enp4s0";
           };
+          nixcache.enable = true;
         };
       };
 
       networking.interfaces = {
-        enp3s0 = {
+        enp4s0 = {
           useDHCP = true;
           #macAddress = "0c:49:23:0c:0f:0e";
         };
@@ -116,14 +119,14 @@ in
       ];
 
       system.stateVersion = "25.05";
-      networking.hostName = "gw0";
+      networking.hostName = shortHost;
 
       boot = {
         # If this boi needs to build stuff let /tmp be sized enough to build the
         # kernel and some change at 48GiB of rams. The intel box isn't super
         # fast but I'm more abusing it to build iso images and copying stuff
         # directly to the nas over 10g.
-        #        tmp.tmpfsSize = "25%";
+        tmp.tmpfsSize = "25%";
 
         loader.systemd-boot.enable = true;
 

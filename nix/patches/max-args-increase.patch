@@ -1,0 +1,24 @@
+diff -ru a/include/linux/binfmts.h b/include/linux/binfmts.h
+--- a/include/linux/binfmts.h	2019-05-06 01:42:58.000000000 +0100
++++ b/include/linux/binfmts.h	2019-08-31 22:15:49.840243521 +0100
+@@ -20,7 +20,7 @@
+ 	struct vm_area_struct *vma;
+ 	unsigned long vma_pages;
+ #else
+-# define MAX_ARG_PAGES	32
++# define MAX_ARG_PAGES	64
+ 	struct page *page[MAX_ARG_PAGES];
+ #endif
+ 	struct mm_struct *mm;
+diff -ru a/include/uapi/linux/binfmts.h b/include/uapi/linux/binfmts.h
+--- a/include/uapi/linux/binfmts.h	2019-05-06 01:42:58.000000000 +0100
++++ b/include/uapi/linux/binfmts.h	2019-08-31 22:15:40.446039968 +0100
+@@ -12,5 +12,5 @@
+  * prevent the kernel from being unduly impacted by misaddressed pointers.
+  * MAX_ARG_STRINGS is chosen to fit in a signed 32-bit integer.
+  */
+-#define MAX_ARG_STRLEN (PAGE_SIZE * 32)
++#define MAX_ARG_STRLEN (PAGE_SIZE * 64)
+ #define MAX_ARG_STRINGS 0x7FFFFFFF
+
+ /* sizeof(linux_binprm->buf) */

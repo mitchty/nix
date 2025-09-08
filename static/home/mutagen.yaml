@@ -2,13 +2,10 @@ sync:
   defaults:
     ignore:
       paths:
-        - ".stversions"
         - ".zfs"
-        - ".direnv"
         - ".#*"
         - "*.desktop"
         - "result"
-        - "*.sync-conflict-*"
         - ".DS_Store"
         - ".directory"
         - "*.swp"
@@ -16,8 +13,7 @@ sync:
         - ".venv"
         - "tmp"
         - "cache"
-        - "src/**/target"
-        - "src/tmp/uniq"
+        - "**/.git/git-agecrypt"
         - ".Trashes"
         - ".fseventsd"
         - ".Spotlight-V100"

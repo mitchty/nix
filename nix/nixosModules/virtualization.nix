@@ -69,18 +69,16 @@
 
   programs.virt-manager.enable = true;
 
-  # Loopback device/kernel module config for obs
-  boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
   boot.kernelModules = with config.boot.kernelModules; [
-    "kvm_amd"
+    #    "kvm_amd"
     "kvm_intel"
   ];
 
   # Top is the video loopback device options
   # kvm_intel nested is set so we can nest vm's in kvm vm's
   boot.extraModprobeConfig = ''
-    options kvm_amd nested=1
-    options kvm_intel nested=1
+    #    options kvm_amd nested=1
+        options kvm_intel nested=1
   '';
 
   nixpkgs.config.packageOverrides = pkgs: {

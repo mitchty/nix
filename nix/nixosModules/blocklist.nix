@@ -31,6 +31,11 @@ in
       default = "";
       description = "interface to add vip to";
     };
+    dest = mkOption {
+      type = types.str;
+      default = "/var/tmp";
+      description = "Directory to store blocklist checkout";
+    };
   };
 
   config = mkIf cfg.enable rec {
@@ -48,7 +53,7 @@ in
     systemd.services.blocklist = {
       script = ''
         set -eu
-        d=/var/lib/blocklist
+        d=${cfg.dest}/blocklist
         if [ ! -d $d ]; then
           ${pkgs.git}/bin/git clone --depth 1 https://github.com/hagezi/dns-blocklists $d
         else

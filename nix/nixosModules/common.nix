@@ -21,7 +21,6 @@ in
     boot
     ssh
     sudo
-    nix-common
     user-root
     time
   ]);

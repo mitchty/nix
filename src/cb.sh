@@ -77,21 +77,22 @@ if [ -e "Cargo.toml" ] && [ -z "${NORUST}" ]; then
 
   env -u RUST_BACKTRACE cargo test ${bins+--bins }${libs+--lib }${tests+--tests }${examples+--examples}
 
-  singleton cargo build --workspace --all-targets
-
   # build release version
   if [ $release = "release" ]; then
     singleton cargo build --workspace --release --all-targets
+  else
+    singleton cargo build --workspace --all-targets
   fi
 fi
 
 # # Or if this is a nix flake use nix build
 if [ -e "flake.nix" ] && [ -z "${NONIX}" ]; then
   nix flake check
-  nix build -L
 
   # see if there is a release arg in the arguments
   if [ $release = "release" ]; then
     nix build -L .#release
+  else
+    nix build -L
   fi
 fi

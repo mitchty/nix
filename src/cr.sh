@@ -8,15 +8,37 @@ export _base _dir
 
 RELEASE="${RELEASE+true}"
 RUSTBUILD="${RUSTBUILD+true}"
+CARGO="${CARGO:-cargo}"
+GIT="${GIT:-git}"
+
+log() {
+  if [ "${VERBOSE:-false}" ]; then
+    # log is a trampoline around printf
+    #shellcheck disable=SC2059
+    printf "$@" >&2
+  fi
+}
+
+info() {
+  log "info: "
+  log "$@"
+}
+
+fatal() {
+  prime=$1
+  shift
+  log "fatal: $prime" "$@"
+  exit 2
+}
 
 # See if we're in a git clone, get the base workspace dir
-if git rev-parse --absolute-git-dir > /dev/null 2>&1; then
-  base=$(git rev-parse --absolute-git-dir | sed -e 's|/[.]git.*||')
-  printf "info: git worktree is %s\n" "${base}" >&2
+if ${GIT} rev-parse --absolute-git-dir > /dev/null 2>&1; then
+  base=$(${GIT} rev-parse --absolute-git-dir | sed -e 's|/[.]git.*||')
+  info "running from %s\n" "${base}"
   # cd to that dir as that is the base we should be in
   cd "${base}" || exit 126
 else
-  printf "note: not in a git clone\n" >&2
+  fatal "not in a git clone\n"
 fi
 
 # See if we are in a rust cargo build dir
@@ -25,9 +47,18 @@ if [ -e "Cargo.toml" ]; then
 fi
 
 if ${RUSTBUILD:-false}; then
-  if ${RELEASE:-false}; then
-    cargo run --release "$@"
-  else
-    cargo run "$@"
+  args=""
+  # TODO: keep this even tbh seems unnecessary maybe make a copy/symlink of
+  # like crr and test that $0 is that instead or just stick with cr --release?
+  # I might be overengineering this dum af script.
+
+  if [ "${1}" = "--release" ]; then
+    shift
+    args="--release"
   fi
+  args="${args} -- $*"
+
+  cmd="${CARGO} run ${args}"
+  info "${cmd}\n"
+  ${cmd}
 fi

@@ -1,12 +1,13 @@
 {
   system,
-  stdenv,
   lib,
   fetchurl,
   undmg,
+  pkgs,
+  ...
 }:
 if (system == "aarch64-darwin") then
-  stdenv.mkDerivation rec {
+  pkgs.stdenvNoCC.mkDerivation rec {
     pname = "tradingview-mac";
     version = "2.12.0";
 
@@ -39,7 +40,7 @@ if (system == "aarch64-darwin") then
     latest = "curl --silent https://tvd-packages.tradingview.com/stable/latest/darwin/stable-mac.yml | awk '/version[:]/ {print $2}'";
   }
 else
-  stdenv.mkDerivation {
+  pkgs.stdenvNoCC.mkDerivation {
     pname = "tradingview-mac";
     version = "0.0.0";
     src = ./.;

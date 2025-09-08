@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  inputs,
   ...
 }:
 
@@ -101,7 +100,7 @@ in
 
   };
 
-  config = mkIf cfg.enable rec {
+  config = mkIf cfg.enable {
     age.secrets = {
       "secrets/cifs/plex" = {
         file = ../../secrets/cifs/plex.age;
@@ -139,7 +138,7 @@ in
       groups.media.gid = 3000;
     };
 
-    services = mkIf cfg.services rec {
+    services = mkIf cfg.services {
       plex = {
         enable = true;
         package = pkgs.unstable.plex;
@@ -182,7 +181,7 @@ in
       };
     };
 
-    systemd.services.plex = mkIf cfg.services rec {
+    systemd.services.plex = mkIf cfg.services {
       requires = [
         "nas-media.mount"
         #          "nas-internets.mount"

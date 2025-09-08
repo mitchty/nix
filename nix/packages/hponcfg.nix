@@ -15,7 +15,6 @@
 # TODO: This is bogus but whatever, hacks for now future me can fix it when I
 # figure out how to constrain these package derivations just on one platform but do it outside of the
 if (system == "x86_64-linux") then
-
   stdenv.mkDerivation rec {
     pname = "hponcfg";
     version = "5.6.0-0";

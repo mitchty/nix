@@ -30,4 +30,6 @@
       systemd-boot.memtest86.enable = true;
     };
   };
+
+  hardware.mcelog.enable = true;
 }

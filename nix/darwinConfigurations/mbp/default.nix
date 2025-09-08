@@ -15,11 +15,12 @@
         ]
         ++ (with inputs.self.crossplatformModules; [
           mosh
+          nix
         ]);
 
       services = {
         common.mosh.enable = true;
-        mitchty.ollama.enable = true;
+        mitchty.ollama.enable = false;
         shared.mutagen.enable = true;
       };
 

@@ -5,6 +5,10 @@
   ...
 }:
 let
+  formats = with pkgs.formats; {
+    yaml = yaml { };
+  };
+
   # Cause stuff can be slow to warm up before a prompt shows up wait this long
   # first.
   sleepDefault = 3;
@@ -20,6 +24,11 @@ let
     focus = true;
   };
 
+  sh = {
+    window_name = "sh";
+    panes = [ "pane" ];
+  };
+
   # terminal monitoring stuffs
   mon = {
     window_name = "mon";
@@ -27,17 +36,24 @@ let
     panes = [
       {
         shell_command = [
-          "btop"
+          {
+            # Bit of a hack but its not a huge deal for this to fail/exit its a
+            # one time dealio so whatever. I was having super weird output with
+            # optionals here in the yaml that I got sick of debugging.
+            cmd = "onlinux sudo powerjoular ; exit";
+            enter = true;
+          }
+        ];
+      }
+      {
+        shell_command = [
+          {
+            cmd = "btop";
+            enter = true;
+          }
         ];
       }
       # TODO: wat the hell works on macos too? yeet that in here.
-    ]
-    ++ lib.optional pkgs.hostPlatform.isLinux [
-      {
-        shell_command = [
-          "sudo powerjoular"
-        ];
-      }
     ];
   };
 
@@ -49,8 +65,53 @@ let
         shell_command = [
           "gi mitchty/nix"
         ];
-        sleep_before = sleepDefault;
       }
+      {
+        shell_command = [
+          "gi mitchty/nix legacy"
+        ];
+      }
+    ];
+  };
+
+  yt = {
+    window_name = "yt/mon";
+    layout = "even-vertical";
+    panes = [
+      {
+        shell_command = [
+          "hwatch -t -d word -n 60 ./stats.sh"
+        ];
+      }
+      {
+        shell_command = [
+          {
+            cmd = "dev=enp2s0 ./ytlatest.sh subs/all.yaml | ts";
+          }
+        ];
+      }
+    ];
+  };
+
+  ytprime = {
+    layout = "even-vertical";
+    panes = [
+      {
+        shell_command = [
+          "sudo powerjoular"
+        ];
+      }
+      {
+        shell_command = [
+          "btop"
+        ];
+      }
+      {
+        shell_command = [
+          "journalctl -fu podman-bgutil-ytdlp-pot-provider.service"
+        ];
+      }
+      "pane"
     ];
   };
 
@@ -62,20 +123,7 @@ let
         shell_command = [
           "mt mitchty/org"
         ];
-        sleep_before = sleepDefault;
-      }
-    ];
-  };
-
-  refactor = {
-    window_name = "nixrefactor";
-    layout = "even-vertical";
-    panes = [
-      {
-        shell_command = [
-          "gi mitchty/nix refactor"
-        ];
-        sleep_before = sleepDefault;
+        #        sleep_before = sleepDefault;
       }
     ];
   };
@@ -96,7 +144,7 @@ let
             cmd = "mutagen sync monitor src-rtx -l";
           }
         ];
-        sleep_before = sleepDefault;
+        # sleep_before = sleepDefault;
       }
       {
         shell_command = [
@@ -105,7 +153,7 @@ let
             cmd = "mutagen sync monitor src-srv -l";
           }
         ];
-        sleep_before = sleepDefault;
+        # sleep_before = sleepDefault;
       }
       {
         shell_command = [
@@ -114,7 +162,7 @@ let
             cmd = "mutagen sync monitor src-wm2 -l";
           }
         ];
-        sleep_before = sleepDefault;
+        # sleep_before = sleepDefault;
       }
       {
         shell_command = [
@@ -123,43 +171,31 @@ let
             cmd = "mutagen sync monitor src-mb -l";
           }
         ];
-        sleep_before = sleepDefault;
+        # sleep_before = sleepDefault;
       }
     ];
   };
 
-  wip = {
-    window_name = "wip";
+  yeet = {
+    window_name = "yeet";
+    panes = [
+      {
+        shell_command = [
+          "gi mitchty/yeet"
+        ];
+      }
+    ];
+  };
+
+  ip = {
+    window_name = "ip";
     panes = [
       {
         focus = true;
         shell_command = [
-          {
-            enter = true;
-            cmd = "prg iocaine-powder";
-          }
+          "prg iocaine-powder"
         ];
-        sleep_before = sleepDefault;
       }
-      {
-        shell_command = [
-          {
-            enter = true;
-            cmd = "prg iocaine-powder";
-          }
-        ];
-        sleep_before = sleepDefault;
-      }
-      # Temp on ice for a while
-      # {
-      #   shell_command = [
-      #     {
-      #       enter = true;
-      #       cmd = "gi mitchty/yeet";
-      #     }
-      #   ];
-      #   sleep_before = sleepDefault;
-      # }
       # Need to think if I even want to bother with this anymore, if I do pick
       # it back up it'll probably just be in iocaine-powder as a bevy plugin I
       # build.
@@ -182,7 +218,7 @@ let
         enter = false;
       }
     ];
-    sleep_before = sleepDefault;
+    # sleep_before = sleepDefault;
   };
 
   shenanigans = {
@@ -193,7 +229,7 @@ let
         shell_command = [
           "nuke-libvirt.sh && pulumi up -yf"
         ];
-        sleep_before = sleepDefault;
+        # sleep_before = sleepDefault;
         enter = false;
       }
       {
@@ -232,7 +268,7 @@ let
         enter = false;
       }
     ];
-    sleep_before = sleepDefault;
+    # sleep_before = sleepDefault;
   };
 
   rebuildall = {
@@ -263,7 +299,7 @@ rec {
     packages =
       with pkgs;
       [
-        #        btop
+        btop
         tmuxp
       ]
       ++ lib.optionals pkgs.hostPlatform.isLinux [
@@ -272,37 +308,28 @@ rec {
 
     # tmuxp configs
     file = {
-      ".config/tmuxp/mon.yml".text = lib.generators.toYAML { } {
+      ".config/tmuxp/mon.yml".source = formats.yaml.generate "mon-config" {
         start_directory = "~";
         session_name = "mon";
         windows = [ mon ];
       };
 
-      # ".config/tmuxp/ai.yml".text = (
-      #   lib.generators.toYAML { } {
-      #     start_directory = "~/src/pub/github.com/mitchty/teketeke";
-      #     session_name = "ai";
-      #     windows = [ ai ];
-      #   }
-      # );
-
-      ".config/tmuxp/shenanigans.yml".text = lib.generators.toYAML { } {
+      ".config/tmuxp/shenanigans.yml".source = formats.yaml.generate "shenanigans-config" {
         start_directory = "~/src/pub/github.com/mitchty/shenanigans";
         session_name = "shenanigans";
         windows = [ shenanigans ];
       };
 
-      ".config/tmuxp/nix.yml".text = lib.generators.toYAML { } {
+      ".config/tmuxp/nix.yml".source = formats.yaml.generate "nix-config" {
         start_directory = "~/src/pub/github.com/mitchty/nix";
         session_name = "nix";
         windows = [
           initial
           rebuildlocal
-          refactor
         ];
       };
 
-      ".config/tmuxp/mutagen.yml".text = lib.generators.toYAML { } {
+      ".config/tmuxp/mutagen.yml".source = formats.yaml.generate "mutagen-config" {
         start_directory = "~";
         session_name = "mutagen";
         windows = [
@@ -310,13 +337,13 @@ rec {
         ];
       };
 
-      ".config/tmuxp/journal.yml".text = lib.generators.toYAML { } {
+      ".config/tmuxp/journal.yml".source = formats.yaml.generate "journal-config" {
         start_directory = "~/src/pub/git.mitchty.net/mitchty/org";
         session_name = "journal";
         windows = [ journal ];
       };
 
-      ".config/tmuxp/etc.yml".text = lib.generators.toYAML { } {
+      ".config/tmuxp/etc.yml".source = formats.yaml.generate "etc-config" {
         start_directory = "~/";
         session_name = "etc";
         windows = [
@@ -325,68 +352,82 @@ rec {
         ];
       };
 
-      ".config/tmuxp/wip.yml".text = lib.generators.toYAML { } {
+      ".config/tmuxp/wip.yml".source = formats.yaml.generate "wip-config" {
         start_directory = "~/";
         session_name = "wip";
-        windows = [ wip ];
-      };
-
-      ".config/tmuxp/mb.yml".text = lib.generators.toYAML { } {
-        start_directory = "~/";
-        session_name = "mb";
         windows = [
-          initial
-          rebuildall
-          journal
+          ip
+          yeet
         ];
       };
 
-      ".config/tmuxp/mbp.yml".text = lib.generators.toYAML { } {
+      ".config/tmuxp/yt.yml".source = formats.yaml.generate "yt-config" {
+        start_directory = "/nas/media/internets";
+        session_name = "yt";
+        windows = [
+          ytprime
+          yt
+        ];
+      };
+
+      # TODO: keep?
+      # ".config/tmuxp/mb.yml".source = formats.yaml.generate "mb-config" {
+      #   start_directory = "~/";
+      #   session_name = "mb";
+      #   windows = [
+      #     initial
+      #     rebuildall
+      #     journal
+      #   ];
+      # };
+
+      ".config/tmuxp/mbp.yml".source = formats.yaml.generate "mbp-config" {
         start_directory = "~/";
         session_name = "mbp";
         windows = [
           mon
           nix
-          wip
+          ip
+          yeet
           journal
+          sh
         ];
       };
 
-      ".config/tmuxp/wm2.yml".text = lib.generators.toYAML { } {
+      ".config/tmuxp/wm2.yml".source = formats.yaml.generate "wm2-config" {
         start_directory = "~/";
         session_name = "wm2";
         windows = [
           mon
           nix
-          wip
+          ip
+          yeet
+          sh
         ];
       };
 
-      ".config/tmuxp/rtx.yml".text = lib.generators.toYAML { } {
+      ".config/tmuxp/rtx.yml".source = formats.yaml.generate "rtx-config" {
         start_directory = "~/";
         session_name = "rtx";
         windows = [
           mon
           nix
-          wip
+          ip
+          yeet
+          journal
+          sh
         ];
       };
 
-      ".config/tmuxp/srv.yml".text = lib.generators.toYAML { } {
+      ".config/tmuxp/ark.yml".source = formats.yaml.generate "ark-config" {
         start_directory = "~/";
-        session_name = "srv";
+        session_name = "ark";
         windows = [
-          initial
           mon
-        ];
-      };
-
-      ".config/tmuxp/nexus.yml".text = lib.generators.toYAML { } {
-        start_directory = "~/";
-        session_name = "nexus";
-        windows = [
-          initial
-          mon
+          nix
+          ip
+          yeet
+          sh
         ];
       };
     };

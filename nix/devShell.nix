@@ -2,6 +2,7 @@
   stdenv,
   lib,
   inputs,
+  system,
   ...
 }:
 {
@@ -28,12 +29,16 @@
       statix
       treefmt
       yq-go
-      #        inputs.deploy-rs.packages.x86_64-linux.deploy-rs
+      # TODO: deploy-rs no worky here, why? Future mitch problem
+    ]
+    ++ [
+      inputs.deploy-rs.packages.${system}.deploy-rs
     ]
     # Only need these on linux or they don't build on macos...
     ++ lib.optionals stdenv.isLinux [
       puppeteer-cli
       poppler_utils
       qemu-uefi-wrapper
+      rust-analyzer-nightly
     ];
 }

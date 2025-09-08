@@ -35,10 +35,6 @@ ${whisper} -pc -f output.mp3 2> /dev/null > whisper.out
 
 sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g' < whisper.out | awk '/-->/ {gsub(/\\/, "", $0);$1=$2=$3=""; print}' | grep -Ev '\[(MUSIC|SOUND|BLANK_AUDIO)\]' | sed -e 's/^   //' > whisper.filtered
 
-# if [ -z ${TRANSCRIPT} ]; then
-#   cat whisper.filtered
-# fi
-
 {
   printf "summarize this transcript, only output the summary text don't add any other hints or helpful output about future interaction:\n"
   cat whisper.filtered
@@ -46,5 +42,7 @@ sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g' < whisper.out | awk '/-->/ {gsub(/\\/, "",
 } | ollama run "${model}" | sed -e '/<think>/,/<\/think>/d'
 
 # Iff needed uncomment as necessary.
-install -m444 whisper.out "/tmp/${vidname}.out"
-install -m444 whisper.filtered "/tmp/${vidname}.filtered"
+tmpd="/tmp/summaries"
+install -dm755 "${tmpd}"
+install -m444 whisper.out "${tmpd}/${vidname}.out"
+install -m444 whisper.filtered "${tmpd}/${vidname}.filtered"

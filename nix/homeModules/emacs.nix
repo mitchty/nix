@@ -5,7 +5,7 @@
 {
   programs.emacs = {
     enable = true;
-    package = pkgs.myEmacs;
+    package = pkgs.wrappedEmacs;
     # extraPackages = epkgs:
     #   with epkgs; [
     #     #        eglot-booster

@@ -33,8 +33,10 @@ let
     #rootPaths = { };
   };
 
-  disk0 = "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300325L";
-  disk1 = "/dev/disk/by-id/nvme-Samsung_SSD_950_PRO_256GB_S2GLNXAH300329W";
+  disk0 = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T918828M";
+  disk1 = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T920857X";
+  disk2 = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T918913H";
+  disk3 = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T924424L";
 
   # Badblocks is here to find out if the device might be bad or not, hardware will fail... try to find out at install time.
   autoinstall = pkgs.writeShellScriptBin "autoinstall" ''
@@ -44,7 +46,7 @@ let
      #   ${pkgs.e2fsprogs}/bin/badblocks -wsv $disk
      #   ${pkgs.e2fsprogs}/bin/badblocks -b 4096 -c 1024 -s $disk
      # done
-     ${pkgs.disko}/bin/disko-install --write-efi-boot-entries --disk prime ${disk0} --disk m0 ${disk1} --flake "${inputs.self}#${hostName}" "$@"
+     ${pkgs.disko}/bin/disko-install --write-efi-boot-entries --disk prime ${disk0} --disk m0 ${disk1} --disk m1 ${disk2} --disk m2 ${disk3} --flake "${inputs.self}#${hostName}" "$@"
 
     ${pkgs.disko}/bin/disko -m mount --flake "${inputs.self}#${hostName}"
      install -m600 ${../../../crypt/ssh/${hostName}/ssh_host_ed25519_key} /mnt/etc/ssh/ssh_host_ed25519_key

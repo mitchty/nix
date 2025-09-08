@@ -1,9 +1,8 @@
 {
-  stdenv,
   lib,
   pkgs,
 }:
-stdenv.mkDerivation rec {
+pkgs.stdenvNoCC.mkDerivation rec {
   pname = "paid-fonts";
   version = "0.1.0";
 

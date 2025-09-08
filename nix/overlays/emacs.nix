@@ -1,28 +1,42 @@
 self: super:
 let
   # These are the nixpkgs packages that I need to make sure are included with
-  # emacs for editing.
+  # emacs for editing rando source.
   #
   # The idea is we use wrapProgram to setup PATH for emacs itself versus make
   # sure that these are installed within the $HOME or system packages.
   editorPackages = with super.pkgs; [
+    (pkgs.hiPrio clang)
+    altshfmt
+    asm-lsp
+    clang-tools
     coreutils
     curl
-    gitFull
-    git-lfs
     deadnix
+    emacs-lsp-booster
     gcc11
+    git-lfs
+    gitFull
     gnumake
     ispell
+    nil
+    nixfmt-rfc-style
     nodePackages.bash-language-server
-    nixpkgs-fmt
     python3Full
     rage
     shellcheck
     shellspec
     shfmt
     yaml-language-server
-    emacs-lsp-booster
+    # fenix nixpkgs overlay stuff
+    (fenix.complete.withComponents [
+      "cargo"
+      "clippy"
+      "rust-src"
+      "rustc"
+      "rustfmt"
+    ])
+    rust-analyzer-nightly
   ];
 
 in

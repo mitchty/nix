@@ -18,9 +18,11 @@
       "ca-derivations"
     ];
     settings = {
+      # https://github.com/NixOS/nix/issues/11728
+      download-buffer-size = 64 * 024 * 1024; # 64MiB from 1MiB
       substituters = [
-        "https://nix-community.cachix.org/"
         "https://cache.nixos.org/"
+        "https://nix-community.cachix.org/"
       ];
       trusted-public-keys = [
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="

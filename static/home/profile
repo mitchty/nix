@@ -166,15 +166,20 @@ nixinputs() {
   nix flake metadata --json "${flakepath}" 2> /dev/null | jq -r '.locks.nodes.root.inputs | keys[]'
 }
 
-# function to search a local flakes inputs
+# function to search a flakes inputs
 nixisearch() {
   input="${1?need the input name to search ex: nixpkgs}"
   shift
   thing="${1?need the search string too ex: '.packagename$'}"
   shift
-  flakepath="${1:-.}"
+  flakedef="${1:-.}"
+  flakepath="${flakedef}"
 
-  printf "flake: %s input: %s\n" "${flakepath}" "${input}" >&2
+  if [ "${flakepath}" != "${flakedef}" ]; then
+    printf "flake: %s " "${flakepath}"
+  fi
+
+  printf "input: %s\n" "${input}" >&2
   nix search --inputs-from "${flakepath}" "${input}" "${thing}" 2> /dev/null | grep -Ev '(.*warning.*|evaluating)'
 }
 
@@ -307,18 +312,14 @@ j() {
 }
 
 # Stupid simple wrapper function for deploy/darwin-rebuild for macos rebuilds
-# (local only for the latter not tried deploy-rs with darwin nix)
-# TODO: figure out a way to default to the local node hostname to deploy by
-# parsing out the flakes attributes and iff there is a
-# (darwin,nixos)Configuration that matches use that by default otherwise fail
-# and tell the user they have to specify the hostname to deploy/rebuild.
-
+# (local only for the latter not tried deploy-rs with darwin nix to nixos)
 d() {
-  host="${1?need a host name}"
-  # darwin-rebuild need to run as root now
-
-  onmac sudo darwin-rebuild switch --flake ".#${host}" --show-trace
-  onlinux deploy -ds -- ".#${host}" -L --show-trace
+  host="${1:-${HOST?need a hostname to deploy to}}"
+  # NIXARGS is a runtime env witness and needs no quoting
+  #shellcheck disable=SC2086
+  onmac sudo darwin-rebuild switch --flake ".#${host}" ${NIXARGS:-}
+  #shellcheck disable=SC2086
+  onlinux deploy -ds -- ".#${host}" ${NIXARGS:-}
 }
 
 NOM="${NOM:-$(command -v nom || echo nom)}"

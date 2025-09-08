@@ -8,7 +8,6 @@
 {
   home = {
     packages = with pkgs; [
-      pkgs.unstable.btop
       htop
       du-dust
       bcc
@@ -17,6 +16,7 @@
       dig
       fio
       pv
+      stress
     ];
   };
 

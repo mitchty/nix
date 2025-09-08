@@ -19,6 +19,7 @@ let
   # Test vm keys
   vm-simple = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOuH9BdXTgFflW0uDF1ytFdgHxIBx0NDrHB4jqCjKhQB";
   vm-mirror = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKVbKj5m/pk2VKzIjX7/zM7MB5BG03kxTv22PowvtexS";
+  vm-raid = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINvmcCgF67R0DdVAZ+7iuww0dIejSYBNrmJH75AeKdwZ";
 
   allnixos = [
     rtx
@@ -32,6 +33,7 @@ let
 
     vm-simple
     vm-mirror
+    vm-raid
   ];
 
   allmacos = [
@@ -69,6 +71,7 @@ let
 
     vm-simple
     vm-mirror
+    vm-raid
   ];
 
   # wifi connections

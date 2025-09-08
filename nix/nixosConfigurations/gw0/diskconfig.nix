@@ -45,7 +45,7 @@
                 size = "100%";
                 content = {
                   type = "mdraid";
-                  name = "raid1";
+                  name = "raid5";
                 };
               };
             };
@@ -77,7 +77,71 @@
                 size = "100%";
                 content = {
                   type = "mdraid";
-                  name = "raid1";
+                  name = "raid5";
+                };
+              };
+            };
+          };
+        };
+        m1 = {
+          type = "disk";
+          device = builtins.elemAt config.diskConfig.disks 1;
+          content = {
+            type = "gpt";
+            partitions = {
+              ESP = {
+                priority = 1;
+                name = "ESP";
+                start = "1M";
+                end = "1024M";
+                type = "EF00";
+                content = {
+                  type = "filesystem";
+                  format = "vfat";
+                  mountpoint = "/boot2";
+                  mountOptions = [
+                    "umask=0077"
+                    "nofail"
+                  ];
+                };
+              };
+              mdadm = {
+                size = "100%";
+                content = {
+                  type = "mdraid";
+                  name = "raid5";
+                };
+              };
+            };
+          };
+        };
+        m2 = {
+          type = "disk";
+          device = builtins.elemAt config.diskConfig.disks 1;
+          content = {
+            type = "gpt";
+            partitions = {
+              ESP = {
+                priority = 1;
+                name = "ESP";
+                start = "1M";
+                end = "1024M";
+                type = "EF00";
+                content = {
+                  type = "filesystem";
+                  format = "vfat";
+                  mountpoint = "/boot3";
+                  mountOptions = [
+                    "umask=0077"
+                    "nofail"
+                  ];
+                };
+              };
+              mdadm = {
+                size = "100%";
+                content = {
+                  type = "mdraid";
+                  name = "raid5";
                 };
               };
             };
@@ -85,9 +149,9 @@
         };
       };
       mdadm = {
-        raid1 = {
+        raid5 = {
           type = "mdadm";
-          level = 1;
+          level = 5;
           content = {
             type = "gpt";
             partitions = {
@@ -123,12 +187,8 @@
                     };
 
                     # lib and log are their own volumes too
-                    "/var/lib" = {
-                      mountOptions = [
-                        "compress=zstd"
-                      ];
-                      mountpoint = "/var/lib";
-                    };
+                    "/var/lib" = { };
+                    "/var/log" = { };
 
                     # Subvolume name is the same as the mountpoint
                     "/Users" = {
@@ -147,34 +207,40 @@
                       ];
                       mountpoint = "/Users/mitch";
                     };
-                    # I keep a lot of source here
-                    # "/Users/mitch/src" = {
-                    #   mountOptions = [
-                    #     "compress=zstd"
-                    #     "users"
-                    #     "exec"
-                    #   ];
-                    #   mountpoint = "/Users/mitch/src";
-                    # };
-                    # # Steam gets its own subvolume
-                    # "/Users/mitch/.local/share/Steam" = {
-                    #   mountOptions = [
-                    #     "users"
-                    #     "noatime"
-                    #   ];
-                    #   mountpoint = "/Users/mitch/.local/share/Steam";
-                    # };
-
-                    # Subvolume for the swapfile
-                    "/swap" = {
-                      mountpoint = "/.swapvol";
-                      swap = {
-                        swapfile.size = "16G";
-                      };
+                    # # I keep a lot of source here
+                    "/Users/mitch/src" = {
+                      mountOptions = [
+                        "users"
+                        "exec"
+                      ];
+                      mountpoint = "/Users/mitch/src";
                     };
+                    # Steam gets its own subvolume
+                    "/Users/mitch/.local/share/Steam" = {
+                      mountOptions = [
+                        "users"
+                        "noatime"
+                      ];
+                      mountpoint = "/Users/mitch/.local/share/Steam";
+                    };
+
+                    # This subvolume will be created but not mounted
+                    "/test" = { };
+                    # # Subvolume for the swapfile
+                    # "/swap" = {
+                    #   mountpoint = "/.swapvol";
+                    #   swap = {
+                    #     swapfile.size = "64G";
+                    #   };
+                    # };
                   };
 
                   mountpoint = "/partition-root";
+                  swap = {
+                    swapfile = {
+                      size = "64G";
+                    };
+                  };
                 };
               };
             };

@@ -1,4 +1,8 @@
-{ inputs, lib, ... }:
+{
+  inputs,
+  lib,
+  ...
+}:
 let
   shortHost = "ark";
   commonMonitoring = {
@@ -47,8 +51,11 @@ in
           power-intel
           nix-offload
           fw
+          homer
+          nvidia-hack
         ])
         ++ (with inputs.self.crossplatformModules; [
+          common
           mosh
         ])
         ++ [
@@ -96,9 +103,31 @@ in
       # thing, can maybe use that instead of pikvm for this one node to not have
       # so many pikvms and such.
       services = {
+        karakeep = {
+          enable = true;
+          browser.enable = true;
+          extraEnvironment = {
+            NEXTAUTH_URL = "http://karakeep.home.arpa:3000";
+            HOSTNAME = "10.10.10.224";
+            DISABLE_SIGNUPS = "true";
+            DISABLE_NEW_RELEASE_CHECK = "true";
+            CRAWLER_FULL_PAGE_ARCHIVE = "true";
+            OLLAMA_BASE_URL = "http://ollama.home.arpa:11434";
+            INFERENCE_TEXT_MODEL = "gemma3";
+            INFERENCE_IMAGE_MODEL = "llava";
+            OCR_CACHE_DIR = "/tmp";
+            # CRAWLER_VIDEO_DOWNLOAD = "true";
+            # CRAWLER_VIDEO_DOWNLOAD_MAX_SIZE = "true";
+            # CRAWLER_VIDEO_DOWNLOAD_TIMEOUT_SEC = "3600";
+            # CRAWLER_YTDLP_ARGS = "-f%%bestvideo*+bestaudio/best";
+            CRAWLER_FULL_PAGE_SCREENSHOT = "true";
+          };
+        };
+
         common.mosh.enable = true;
 
         mitchty = {
+          homer.enable = true;
           promtail.enable = true;
           node-exporter = commonMonitoring;
           loki = commonMonitoring;
@@ -107,43 +136,64 @@ in
           media = commonMonitoring // {
             services = true;
           };
-          ai = commonMonitoring // {
-            ollamaCname = "slow-ollama.home.arpa";
-            ollamaIp = "10.10.10.222";
-            owuiCname = "slow-open-webui.home.arpa";
-            owuiIp = "10.10.10.223";
+          # ai = commonMonitoring // {
+          #   ollamaCname = "slow-ollama.home.arpa";
+          #   ollamaIp = "10.10.10.222";
+          #   owuiCname = "slow-open-webui.home.arpa";
+          #   owuiIp = "10.10.10.223";
+          # };
+        };
+      };
+
+      networking = {
+        interfaces = {
+          enp88s0 = {
+            useDHCP = true;
+            ipv4.addresses = [
+              {
+                address = "10.10.10.224";
+                prefixLength = 32;
+              }
+            ];
+          };
+          enp3s0f1np1.ipv4 = {
+            addresses = [
+              {
+                address = "10.10.10.242";
+                prefixLength = 32;
+              }
+            ];
+            routes = [
+              {
+                address = "10.10.10.9";
+                prefixLength = 32;
+                via = "10.10.10.242";
+              }
+            ];
+          };
+        };
+        firewall = {
+          interfaces = {
+            "enp88s0" = {
+              allowedTCPPorts = [ 3000 ];
+            };
           };
         };
       };
 
-      networking.interfaces = {
-        enp88s0.useDHCP = true;
-        enp3s0f1np1.ipv4 = {
-          addresses = [
-            {
-              address = "10.10.10.242";
-              prefixLength = 32;
-            }
-          ];
-          routes = [
-            {
-              address = "10.10.10.9";
-              prefixLength = 32;
-              via = "10.10.10.242";
-            }
-          ];
-        };
-      };
-
       # Needed for nixos-hardware common-gpu-nvidia
-      hardware.nvidia.open = lib.mkDefault true;
+      # Ref:
+      #  Failed assertions:
+      # - You must configure `hardware.nvidia.open` on NVIDIA driver versions >= 560.
+      # It is suggested to use the open source kernel modules on Turing or later GPUs (RTX series, GTX 16xx), and the closed source modules otherwise.
+      services.xserver.videoDrivers = [ "nvidia" ];
 
       diskConfig.disks = [
         "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X707714B"
         "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X700496V"
       ];
       system.stateVersion = "25.05";
-      networking.hostName = "ark";
+      networking.hostName = shortHost;
 
       boot = {
         # If this boi needs to build stuff let /tmp be sized enough to build the
@@ -174,19 +224,24 @@ in
         ];
       };
 
-      nixpkgs = {
-        hostPlatform = "x86_64-linux";
-        config.allowUnfreePredicate =
-          pkg:
-          builtins.elem (lib.getName pkg) [
-            # Both needed for plex
-            "plexmediaserver"
-            "unrar"
+      hardware.nvidia = {
+        open = lib.mkDefault true;
+        nvidiaSettings = true;
+        modesetting.enable = true;
+        powerManagement.enable = true;
 
-            "nvidia-x11"
-            "nvidia-settings"
-          ];
+        # This kinda craps in nvidia-hack now rest is "normal" settings
+        # package = pkgs.kernelPackages.nvidiaPackages.mkDriver {
+        #   version = "570.181";
+        #   sha256_64bit = "sha256-8G0lzj8YAupQetpLXcRrPCyLOFA9tvaPPvAWurjj3Pk=";
+        #   sha256_aarch64 = "sha256-1pUDdSm45uIhg0HEhfhak9XT/IE/XUVbdtrcpabZ3KU=";
+        #   openSha256 = "sha256-U/uqAhf83W/mns/7b2cU26B7JRMoBfQ3V6HiYEI5J48=";
+        #   settingsSha256 = "sha256-iBx/X3c+1NSNmG+11xvGyvxYSMbVprijpzySFeQVBzs=";
+        #   persistencedSha256 = "sha256-RoAcutBf5dTKdAfkxDPtMsktFVQt5uPIPtkAkboQwcQ=";
+        # };
       };
+
+      nixpkgs.hostPlatform = "x86_64-linux";
     }
   ];
 }

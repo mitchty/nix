@@ -57,7 +57,10 @@
                     };
                     # Specify the subvolume mountpoints so we can set mountOptions
                     "/home/mitch" = {
-                      mountOptions = [ "users" ];
+                      mountOptions = [
+                        "users"
+                        "exec"
+                      ];
                       mountpoint = "/home/mitch";
                     };
                     # I keep a lot of source here

@@ -35,6 +35,7 @@ in
           fw
         ])
         ++ (with inputs.self.crossplatformModules; [
+          common
           mosh
         ])
         ++ [
@@ -61,6 +62,7 @@ in
                   git
                   age
                   debug
+                  development
                 ]);
               };
             };
@@ -75,6 +77,18 @@ in
         ++ [
           ./diskconfig.nix
         ];
+
+      virtualisation.oci-containers = {
+        backend = "podman";
+        containers = {
+          bgutil-ytdlp-pot-provider = {
+            image = "docker.io/brainicism/bgutil-ytdlp-pot-provider:1.2.2";
+            autoStart = true;
+            ports = [ "127.0.0.1:4416:4416" ];
+            extraOptions = [ "--network=host" ];
+          };
+        };
+      };
 
       services = {
         common.mosh.enable = true;
@@ -99,9 +113,11 @@ in
       # So.... by-id it is I suppose...
       diskConfig.disks = [ "/dev/disk/by-id/scsi-2SAMSUNG" ];
       system.stateVersion = "25.05";
-      networking.hostName = "plx";
+      networking.hostName = shortHost;
 
       boot = {
+        tmp.tmpfsSize = "50%";
+
         loader.systemd-boot.enable = true;
 
         # Had to brain these out from lspci -k and just hulk smashed every
