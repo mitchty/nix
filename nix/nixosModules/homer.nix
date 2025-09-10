@@ -95,13 +95,6 @@ in
               target = "_blank";
             }
             {
-              # Until the dam plex app thingy works yeet this here
-              name = "plex";
-              icon = "fas fa-tv";
-              url = "http://media.home.arpa:32400";
-              target = "_blank";
-            }
-            {
               name = "pikvm";
               icon = "fas fa-tv";
               url = "http://pikvm.home.arpa";
@@ -141,6 +134,7 @@ in
                   url = "http://media.home.arpa:8080/";
                   target = "_blank";
                   legacyApi = true;
+                  apikey = "${builtins.readFile ../../crypt/tokens/sabnzbd}";
                   downloadInterval = 5000;
                 }
                 {
@@ -151,6 +145,7 @@ in
                   keywords = "self hosted radarr";
                   url = "http://media.home.arpa:7878/";
                   target = "_blank";
+                  apikey = "${builtins.readFile ../../crypt/tokens/radarr}";
                   checkInterval = 5000;
                 }
                 {
@@ -161,6 +156,7 @@ in
                   keywords = "self hosted sonarr";
                   url = "http://media.home.arpa:8989/";
                   target = "_blank";
+                  apikey = "${builtins.readFile ../../crypt/tokens/sonarr}";
                   checkInterval = 5000;
                 }
                 {
@@ -172,6 +168,7 @@ in
                   url = "http://media.home.arpa:9696/";
                   target = "_blank";
                   legacyApi = true;
+                  apikey = "${builtins.readFile ../../crypt/tokens/prowlarr}";
                   checkInterval = 5000;
                 }
               ];
@@ -214,7 +211,7 @@ in
             {
               # TODO: maybe patch in the plex support manually?
               # https://github.com/bastienwirtz/homer/compare/v25.04.1...v25.05.1#diff-fb788352a1825111a3094858a3bb9df873eeb05f761b3c3dff92be1a90b8fa51
-              name = "media (plex)/broken";
+              name = "media";
               icon = "fas fa-code-branch";
               items = [
                 {
@@ -224,6 +221,7 @@ in
                   url = "http://media.home.arpa:32400/web";
                   endpoint = "http://media.home.arpa:32400";
                   target = "_blank";
+                  token = "${builtins.readFile ../../crypt/tokens/plex}";
                 }
               ];
             }

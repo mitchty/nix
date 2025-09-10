@@ -9,7 +9,7 @@ set "${SETOPTS:--e}"
 
 printf '{"version": 1}\n[\n[]\n'
 
-. $HOME/src/pub/github.com/mitchty/nix/static/src/lib.sh
+. $HOME/src/pub/github.com/mitchty/nix/src/lib.sh
 
 prior=false
 

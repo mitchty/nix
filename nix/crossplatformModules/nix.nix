@@ -35,6 +35,7 @@
         # MOBILE_START
         "http://nixos.cache.home.arpa"
         # MOBILE_END
+        "nix-community.cachix.org"
         #        "http://cachix.cache.home.arpa"
         #        "http://nix-community.cachix.cache.home.arpa"
       ];

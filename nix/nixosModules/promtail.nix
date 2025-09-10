@@ -69,6 +69,8 @@ in
         RestartSec = "20s";
         SuccessExitStatus = 143;
         StateDirectory = "promtail";
+        # Kept hitting default of 90s on shutdown and it pissed me off for the last time
+        TimeoutStopSec = "5s";
         # DynamicUser = true;
         # User = "promtail";
         # Group = "promtail";

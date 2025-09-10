@@ -40,6 +40,7 @@ in
           uhk
           networkmanager-laptop
           gui
+          wiffy
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -68,15 +69,18 @@ in
                   git
                   age
                   debug
+                  linux-i3
                 ]);
               };
             };
           }
         ]
         ++ (with inputs.nixos-hardware.nixosModules; [
-          common-pc
-          common-pc-ssd
+          common-pc-laptop
+          common-pc-laptop-ssd
           common-cpu-amd
+          common-gpu-amd
+          gpd-win-max-2-2023
         ])
         ++ [
           ./diskconfig.nix
@@ -86,9 +90,8 @@ in
         common.mosh.enable = true;
 
         mitchty = {
-          gui = {
-            enable = true;
-          };
+          wiffy.enable = true;
+          gui.enable = true;
           promtail.enable = true;
           node-exporter = {
             enable = true;
@@ -97,9 +100,28 @@ in
         };
       };
 
-      networking.interfaces = {
-        iface = {
-          useDHCP = true;
+      networking = {
+        firewall = {
+          trustedInterfaces = [
+            "eth0"
+            "wlp2s0"
+          ];
+        };
+        wireless.enable = false;
+        networkmanager = {
+          enable = true;
+          wifi.powersave = false;
+          dns = "dnsmasq";
+        };
+        interfaces = {
+          # ???
+          ${iface} = {
+            useDHCP = true;
+          };
+          # This is the usb c thingy
+          eth0 = {
+            useDHCP = true;
+          };
         };
       };
 

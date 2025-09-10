@@ -3,13 +3,12 @@
   pkgs,
 }:
 pkgs.stdenvNoCC.mkDerivation rec {
-  pname = "paid-fonts";
+  pname = "comic-code";
   version = "0.1.0";
 
   nativeBuildInputs = [ pkgs.unzip ];
 
   srcs = [
-    ../../crypt/comic-code.zip
     ../../crypt/pragmata-pro.zip
   ];
 
@@ -22,8 +21,6 @@ pkgs.stdenvNoCC.mkDerivation rec {
   '';
 
   installPhase = ''
-    install -dm755 $out/share/fonts/opentype/ComicCode
-    find 'Comic Code Complete Family' -name \*.otf -exec mv {} $out/share/fonts/opentype/ComicCode \;
     install -dm755 $out/share/fonts/truetype/PragmataPro
     find 'Pragmata Pro Family' -name \*.ttf -exec mv {} $out/share/fonts/truetype/PragmataPro \;
   '';

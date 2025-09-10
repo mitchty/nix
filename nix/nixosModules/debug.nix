@@ -1,11 +1,10 @@
 {
-  config,
   pkgs,
-  lib,
   ...
 }:
 {
   environment.systemPackages = with pkgs; [
+    pciutils
     tcpdump
     mcelog
   ];

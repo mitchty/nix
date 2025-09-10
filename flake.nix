@@ -32,6 +32,9 @@
         ...
       }:
       {
+        nixpkgs.config = {
+          allowUnfree = true;
+        };
         inherit inputs;
         # All here and not in ./nix cause I don't feel like doing it better,
         # future mitch problem.
@@ -65,12 +68,6 @@
           # tools wrapped inside as well. That way I can lighten the development
           # module.
           myWrappedEmacs = pkgs: pkgs.wrappedEmacs;
-          # TODO: double check this check in disko is right, seems wrong
-          #wtf = inputs.nixpkgs.lib.versionAtLeast inputs.nixpkgs.lib.version "24.11.20240709";
-          # My paid font derivation (note this WILL fail for anyone that doesn't
-          # have the encryption key so... your problem not mine buy the fonts
-          # don't be stingy support font makers)
-          myFonts = pkgs: pkgs.paid-fonts;
           statix = pkgs: "${pkgs.statix}/bin/statix check";
           # }
           # # TODO: how this isn't working is beyond me for now wgaf I'm not using it yet future me problem.
@@ -114,7 +111,14 @@
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."ark";
             };
           };
+          "wm2" = {
+            hostname = "wm2.home.arpa";
+            profiles.system = {
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."wm2";
+            };
+          };
           "vm-simple" = {
+            sshUser = "mitch";
             hostname = "127.0.0.1";
             sshOpts = [
               "-p"
