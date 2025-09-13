@@ -105,6 +105,12 @@
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."plx";
             };
           };
+          "rtx" = {
+            hostname = "rtx.home.arpa";
+            profiles.system = {
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."rtx";
+            };
+          };
           "ark" = {
             hostname = "ark.home.arpa";
             profiles.system = {
@@ -231,6 +237,10 @@
     #agenix.url = "/Users/mitch/src/pub/github.com/ryantm/agenix";
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    omnix = {
+      url = "github:juspay/omnix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     cf-dns-update = {

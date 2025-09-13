@@ -29,6 +29,7 @@
       statix
       treefmt
       yq-go
+      omnix-cli
       # TODO: deploy-rs no worky here, why? Future mitch problem
     ]
     ++ [

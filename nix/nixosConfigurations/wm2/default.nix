@@ -70,6 +70,7 @@ in
                   age
                   debug
                   linux-i3
+                  firefox
                 ]);
               };
             };

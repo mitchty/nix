@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  inputs,
   ...
 }:
 
@@ -10,8 +9,6 @@ with lib;
 
 let
   cfg = config.services.mitchty.homer;
-
-  homerCfg = config.services.homer;
 in
 {
   options.services.mitchty.homer = {
@@ -34,12 +31,9 @@ in
     };
   };
 
-  config = mkIf cfg.enable rec {
+  config = mkIf cfg.enable {
     networking = {
-      firewall.allowedTCPPorts = [
-        80
-        443
-      ];
+      firewall.allowedTCPPorts = [ 80 ];
       interfaces = {
         "${cfg.iface}" = {
           ipv4.addresses = [

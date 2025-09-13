@@ -35,6 +35,11 @@ in
       default = "10.10.10.222";
       description = "ollama ip address";
     };
+    ollamaPackage = mkOption {
+      type = types.package;
+      default = pkgs.unstable.ollama;
+      description = "Default package derivation to use for ollama";
+    };
     owuiCname = mkOption {
       type = types.str;
       default = "slow-open-webui.home.arpa";
@@ -44,6 +49,11 @@ in
       type = types.str;
       default = "10.10.10.223";
       description = "open webui ip address";
+    };
+    owuiPackage = mkOption {
+      type = types.package;
+      default = pkgs.unstable.open-webui;
+      description = "Default package derivation to use for open-webui";
     };
     iface = mkOption {
       type = types.str;
@@ -119,8 +129,12 @@ in
     services.ollama = {
       enable = true;
       host = cfg.ollamaIp;
+      package = cfg.ollamaPackage;
       acceleration = "cuda";
-      package = pkgs.unstable.ollama-cuda;
+      # Just set the rocm/cuda options and pacakge not here.
+      # https://search.nixos.org/options?channel=25.05&show=services.ollama.acceleration&query=services.ollama
+      # nixpkgs.config.rocmSupport is enabled, uses "rocm"
+      # nixpkgs.config.cudaSupport is enabled, uses "cuda"
       environmentVariables = {
         # TODO what is the var to control how long ollama takes to purge a model? Future mitch fix it.
         OLLAMA_MAX_LOADED_MODELS = "1";
@@ -141,7 +155,7 @@ in
         WEBUI_URL = "http://${cfg.owuiCname}";
         GLOBAL_LOG_LEVEL = "DEBUG";
       };
-      package = pkgs.unstable.open-webui;
+      package = cfg.owuiPackage;
     };
   };
 }
