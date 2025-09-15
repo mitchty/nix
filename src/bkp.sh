@@ -14,7 +14,7 @@ ignorefile="${base}/.kopiaignore"
 genignore() {
   printf "finding stuff not worth backing up\n" >&2
   start=$(date +%s)
-  install -m644 "${_dir}/../backup/excludes" "${ignorefile}"
+  install -m644 "${_dir}/../static/backup/excludes" "${ignorefile}"
 
   {
     printf "\n"

@@ -1,3 +1,18 @@
+# For firefox.nix, this is dead wrong, I can't omit those statix but now I gotta
+# disable the entire check.
+#
+# error: builder for '/nix/store/xzbwaq9xngc7rjyq1ciq06cc468rrmfd-check-statix.drv' failed with exit code 1;
+#        last 8 log lines:
+#        > [W08] Warning: These parentheses can be omitted
+#        >     ╭─[./nix/homeModules/firefox.nix:65:29]
+#        >     │
+#        >  65 │ ╭─▶           hidetabstoolbar = (
+#        >  70 │ ├─▶           );
+#        >     · │
+#        >     · ╰────────────────── Useless parentheses around value in binding
+#        > ────╯
+#        For full logs, run:
+#          nix log /nix/store/xzbwaq9xngc7rjyq1ciq06cc468rrmfd-check-statix.drv
 disabled = ["useless_parens"]
 nix_version = '2.4'
 ignore = ['.direnv']

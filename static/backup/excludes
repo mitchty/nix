@@ -11,6 +11,9 @@ nix/img
 # up either.
 .kopiaignore
 
+# podman stuff
+.local/share/containers/storage
+
 # ssh control fifo's can't be backed up
 .ssh/.control
 

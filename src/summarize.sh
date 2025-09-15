@@ -29,6 +29,9 @@ fi
 
 # Extract the audio track and convert to mp3 192k for whisper to use, doesn't
 # seem to work with aac audio.
+if [ ! -f "${video}" ]; then
+  printf "fatal: couldn't find input video file %s, use a full path to the file not relative as well\n" "${video}" >&2
+fi
 ffmpeg -i "${video}" -vn -ar 44100 -ac 2 -b:a 192k output.mp3 > /dev/null 2>&1
 
 ${whisper} -pc -f output.mp3 2> /dev/null > whisper.out

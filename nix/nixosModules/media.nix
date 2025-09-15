@@ -1,4 +1,5 @@
 {
+  inputs,
   config,
   lib,
   pkgs,
@@ -9,6 +10,12 @@ with lib;
 
 let
   cfg = config.services.mitchty.media;
+
+  uid = "3000"; # media uid
+  gid = "3000"; # media gid
+  agePath = "secrets/cifs/plex";
+
+  creds = config.age.secrets."secrets/cifs/plex".path;
 
   fsAutomountOpts = [
     "x-systemd.automount"
@@ -184,7 +191,7 @@ in
     systemd.services.plex = mkIf cfg.services {
       requires = [
         "nas-media.mount"
-        #          "nas-internets.mount"
+        "srv-media.mount"
       ];
     };
 
@@ -217,6 +224,12 @@ in
         fsType = "cifs";
         options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMe;
       };
+    }
+    // inputs.self.lib.mkCifsMount rec {
+      prefix = "/srv";
+      mountpoint = "media";
+      share = "media";
+      inherit uid gid creds;
     };
   };
 }

@@ -22,6 +22,12 @@
       # link compared to 10g ...)
       download-buffer-size = 64 * 1024 * 1024;
 
+      # Keys I'm willing to accept as kosher
+      trusted-public-keys = [
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      ];
+
       substituters = [
         # Ok cause I go "mobile" with some systems (mbp/wm2) sometimes its nice to
         # not have to wait for stuff to fail.
@@ -35,7 +41,7 @@
         # MOBILE_START
         "http://nixos.cache.home.arpa"
         # MOBILE_END
-        "nix-community.cachix.org"
+        "http://nix-community.cachix.org"
         #        "http://cachix.cache.home.arpa"
         #        "http://nix-community.cachix.cache.home.arpa"
       ];

@@ -112,6 +112,18 @@ in
               url = "https://wifi.home.arpa/login";
               target = "_blank";
             }
+            {
+              name = "owui";
+              icon = "fas fa-tv";
+              url = "http://open-webui.home.arpa:8080";
+              target = "_blank";
+            }
+            {
+              name = "slowowui";
+              icon = "fas fa-tv";
+              url = "http://slow-open-webui.home.arpa:8080";
+              target = "_blank";
+            }
           ];
 
           services = [

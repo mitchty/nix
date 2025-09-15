@@ -34,7 +34,10 @@
         };
 
         # TODO: Think this needs to become a common module
-        fonts.packages = [ pkgs.paid-fonts ];
+        fonts.packages = [
+          pkgs.comic-code
+          pkgs.pragmata-pro
+        ];
         # fontDir.enable = true; # nixos needs this
 
         # Avoids a login/out cycle most of the time for settings changes.

@@ -37,6 +37,8 @@ in
           uhk
           gui
           nvidia-hack
+          steam
+          nas
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -60,15 +62,18 @@ in
                 ]
                 ++ (with inputs.self.homeModules; [
                   common
+                  development
                   sh
                   tmux
                   git
+                  git-age
                   age
                   debug
                   linux-i3
                   firefox
                   emacs
                   chrome
+                  kopia
                 ]);
               };
             };
@@ -128,13 +133,30 @@ in
       networking.hostName = shortHost;
 
       boot = {
+        loader = {
+          systemd-boot = {
+            enable = true;
+            memtest86.enable = true;
+          };
+        };
+        tmp = {
+          cleanOnBoot = true;
+          useTmpfs = true;
+          # Compiling the linux kernel takes at least 20GiB, so set it
+          # to 32GiB for when I'm mobile and compiling sized higher
+          # cause the effing rocm driver compilation takes like 34GiB,
+          # sigh... I need a laptop with 128GiB of rams apparently.
+          #
+          # Stupid ollama derivations and amd driver shenanigans BOO
+          # URNS I say.
+          tmpfsSize = "40%";
+        };
+
         # If this boi needs to build stuff let /tmp be sized enough to build the
         # kernel and some change at 48GiB of rams. The intel box isn't super
         # fast but I'm more abusing it to build iso images and copying stuff
         # directly to the nas over 10g.
         #        tmp.tmpfsSize = "25%";
-
-        loader.systemd-boot.enable = true;
 
         # Had to brain these out from lspci -k and just hulk smashed every
         # module in the chain in here.

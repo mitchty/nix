@@ -30,6 +30,7 @@
 
   home = {
     file = {
+      ".config/direnv/lib/mycrap.sh".source = ../../src/lib.sh;
       ".config/btop/btop.conf".source = ../../static/btop/btop.conf;
       ".canary".text = "ok";
     };
