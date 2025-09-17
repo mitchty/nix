@@ -205,7 +205,7 @@ firmware() {
 
   puppeteer print --no-sandbox https://www.grandstream.com/support/firmware gwnap.pdf > /dev/null 2>&1
 
-  have="1.0.25.38"
+  have="1.0.25.41"
   curr="$(fw ${have})"
 
   pdftotext gwnap.pdf gwnap.txt
