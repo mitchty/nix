@@ -1,46 +1,5 @@
 My home nixos/nix-darwin configuration rewrite in flakelight
 
-This is a work in progress. Don't abuse it yet. The legacy branch has all my old stuff, I'll be migrating setup to here as I'll be rebuilding systems with 25.05 when it is out.
-
-Its main raison d'etre is to do disk setup/partitioning via disko and autogeneration of stuff. As well as to get deploy-rs to do all the rest of the work so I can do deploys of things from one location out to remote systems over ssh.
-
-Todos:
-- ssh ca setup so I can use an ssh ca setup for all ssh internally
-- wireguard setup so I can setup my own overlay vpn for everything
-- need to figure out how to have nix-shell get rid of this dum message:
-
-https://github.com/NixOS/nix/issues/2982
-
-Its complaining about profiles, probably something simple I broke. Will fix as I get time.
-
-#+begin_src
-warning: Nix search path entry '/nix/var/nix/profiles/per-user/root/channels' does not exist, ignoring
-#+end_src
-
-Coming from here when using /usr/bin/nix-shell in a shebang line.
-
-#+begin_src
-echo $NIX_PATH
-nixpkgs=flake:nixpkgs:nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/per-user/root/channels
-#+end_src
-- https://github.com/Misterio77/nix-colors theming? veeeery future mitch task
-
-* Testing via qemu/vm
-
-I have a truly hacky script/wrapper around qemu in the bin dir, [[file:src/sys.sh][sys]]. It just a temporary way to test out derivations interactively.
-
-For now it defaults to the vm setup in nix/nixosConfigurations/vm-simple
-
-This is a temporary state for now, I hope, its mostly to bootstrap into a fully automated install again. I want to figure out how to replace this script with "normal" nixos testing infra in python like the nixos/nixpkgs repo has.
-
-For now quick hacks is fine. Also useful for testing "air-gap" use cases as I can just disable network on qemu.
-
-TODO: Now that I got everything working in *vm-simple* setup validte air gap install works
-
-https://github.com/compactcode/dot-files/blob/c10315a9559dceaa1fbc0b8beb81c9b83e712bcf/nix/darwinModules/desktop/default.nix
-
-https://nix-community.github.io/home-manager/index.xhtml#_how_do_i_install_packages_from_nixpkgs_unstable
-
 ** Layout
 
    Since I'm trying to document things a bit more a bit of this repos layout convention (note private is for now just a silly work in progress thing):
@@ -50,6 +9,7 @@ https://nix-community.github.io/home-manager/index.xhtml#_how_do_i_install_packa
    - [[file:spec/][spec]]    shellspec unit test dir.
    - [[file:crypt/][crypt]]   Data that is encrypted within the git repo itself using https://github.com/vlaci/git-agecrypt and ssh keys via age. Basically "private junk hiding in plain sight to be used at runtime". Note this is decrypted at boot time.
    - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use of its own volition.
+   - [[file:secrets/][secrets]]  Runtime secrets that are decrypted per host.
 
 * My home network nix flake setup
 
@@ -80,11 +40,46 @@ https://mipmip.github.io/home-manager-option-search/?query=
 
   A nice cli that searches both is https://github.com/mlvzk/manix
 
+** NixOS
+
 * General Todo's
 
 While this setup "works" for varying definitions of the word, its got more work to be done yet.
 
-** NixOS
+Todos:
+- ssh ca setup so I can use an ssh ca for all host/user setup
+- wireguard setup so I can setup my own overlay vpn for everything whilst out and about with macos or nixos laptop
+- need to figure out how to have nix-shell get rid of this dum message:
+
+https://github.com/NixOS/nix/issues/2982
+
+Its complaining about profiles, probably something simple I broke. Will fix as I get time.
+
+#+begin_src
+warning: Nix search path entry '/nix/var/nix/profiles/per-user/root/channels' does not exist, ignoring
+#+end_src
+
+Coming from here when using /usr/bin/nix-shell in a shebang line.
+
+#+begin_src
+echo $NIX_PATH
+nixpkgs=flake:nixpkgs:nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/per-user/root/channels
+#+end_src
+- https://github.com/Misterio77/nix-colors theming? veeeery future mitch task
+
+* Testing via qemu/vm
+
+TODO: Now that I got everything working in *vm-simple* setup validate air gap install works
+
+https://github.com/compactcode/dot-files/blob/c10315a9559dceaa1fbc0b8beb81c9b83e712bcf/nix/darwinModules/desktop/default.nix
+
+https://nix-community.github.io/home-manager/index.xhtml#_how_do_i_install_packages_from_nixpkgs_unstable
+
+I have a truly hacky script/wrapper around qemu in the bin dir, [[file:src/sys.sh][sys]]. It just a temporary way to test out derivations interactively.
+
+For now it defaults to the vm setup in nix/nixosConfigurations/vm-simple
+
+This is a temporary state for now, I hope, its mostly to bootstrap into a fully automated install again. I want to figure out how to replace this script with "normal" nixos testing infra in python like the nixos/nixpkgs repo has.
 
 *** Automated iso nixosConfiguration creation
 
