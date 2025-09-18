@@ -3,7 +3,7 @@
   pkgs,
 }:
 pkgs.stdenvNoCC.mkDerivation rec {
-  pname = "comic-code";
+  pname = "pragmata-pro";
   version = "0.1.0";
 
   nativeBuildInputs = [ pkgs.unzip ];
