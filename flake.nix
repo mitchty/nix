@@ -34,6 +34,9 @@
       {
         nixpkgs.config = {
           allowUnfree = true;
+          allowCuda = true;
+          cudaSupport = true;
+          rocmSupport = true;
         };
         inherit inputs;
         # All here and not in ./nix cause I don't feel like doing it better,
