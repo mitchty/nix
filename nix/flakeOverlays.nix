@@ -13,7 +13,13 @@
       inherit (prev) system;
       config = {
         allowUnfree = true;
+        allowCuda = true;
+        cudaSupport = true;
+        #        rocmSupport = true;
       };
+      overlays = [
+        inputs.self.overlays.overrides
+      ];
     };
 
     ai = import inputs.nixpkgs-ai {

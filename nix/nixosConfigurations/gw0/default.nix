@@ -33,13 +33,13 @@ in
           node-exporter
           promtail
           debug
-          virtualization
           power
           power-intel
           nix-offload
           fw
           blocklist
           nix-cache
+          router
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -87,29 +87,38 @@ in
 
         mitchty = {
           blocklist.enable = true;
+          router = {
+            enable = true;
+            wanIface = "enp4s0";
+            lanIface = "br0";
+          };
           promtail.enable = true;
           node-exporter = {
             enable = true;
-            iface = "enp4s0";
+            iface = "br0";
           };
-          nixcache.enable = true;
+          nixcache = {
+            enable = true;
+            iface = "br0";
+          };
         };
       };
 
-      networking.interfaces = {
-        enp4s0 = {
-          useDHCP = true;
-          #macAddress = "0c:49:23:0c:0f:0e";
-        };
-        # br0 = {
-        #   ipv4.addresses = [
-        #     {
-        #       address = "10.10.10.3";
-        #       prefixLength = 24;
-        #     }
-        #   ];
-        # };
-      };
+      # Everything here is now in router.nix
+      # networking.interfaces = {
+      #   enp4s0 = {
+      #     useDHCP = true;
+      #macAddress = "0c:49:23:0c:0f:0e";
+      # };
+      # br0 = {
+      #   ipv4.addresses = [
+      #     {
+      #       address = "10.10.10.3";
+      #       prefixLength = 24;
+      #     }
+      #   ];
+      # };
+      # };
 
       #      bridges.br0.interfaces = [ "enp4s0" "enp5s0" "enp6s0" ];
 

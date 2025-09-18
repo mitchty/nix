@@ -8,16 +8,6 @@ self: super: {
       ];
   });
 
-  transcrypt = super.transcrypt.overrideAttrs (old: {
-    patches = old.patches or [ ] ++ [
-      (super.fetchpatch {
-        name = "suppress-openssl-pbkdf2-warnings";
-        url = "https://github.com/elasticdog/transcrypt/compare/suppress-openssl-pbkdf2-warnings.diff";
-        sha256 = "sha256-wRMx/Kbkm/Xpl1aaX9jjk6xMXZf6seEg5BhkZ34WEpI=";
-      })
-    ];
-  });
-
   # Some wonky node.js bs seems to think it can mkdir anywhere apparently, no bueno cause the nix store's readonly
   # Aug 19 20:19:44 ark start-web[269884]:  ⨯ Failed to write image to cache FrdlaqhpdTaPM-DRuZSD5O-KySK7-9FHldWFIPzdR2w= Error: ENOENT: no such file or directory, mkdir '/nix/store/vmd7bl6qhvkndgp4bf37az9s26m0vw3g-karakeep-0.24.1/lib/karakeep/apps/web/.next/standalone/apps/web/.next/cache'
   # Aug 19 20:19:44 ark start-web[269884]:     at async Object.mkdir (node:internal/fs/promises:858:10)
@@ -40,51 +30,20 @@ self: super: {
       ln -sf /tmp $out/lib/karakeep/apps/web/.next/standalone/apps/web/.next/cache
     '';
   });
-  # rm -rf $out/lib/karakeep/node_modules/{@next,next,@swc,react-native,monaco-editor,faker,@typescript-eslint,@microsoft,@typescript-eslint,pdfjs-dist}
-  # mkdir '/nix/store/vmd7bl6qhvkndgp4bf37az9s26m0vw3g-karakeep-0.24.1/lib/karakeep/apps/web/.next/standalone/apps/web/.next/cache'
 
-  ipatool = super.ipatool.overrideAttrs (old: rec {
-    version = "2.2.0";
-    vendorHash = "sha256-f6mXTePiM5kZUdrYqvbN5pyNp1OGNMeJZMUJ3pvaRrc=";
-    src = super.fetchFromGitHub {
-      owner = "majd";
-      repo = "ipatool";
-      rev = "v${version}";
-      hash = "sha256-z6f5PNxAH+8mS2kWjhST0LFhwTR01m7rR5O95ee+p2E=";
-    };
+  # plex = super.plex.overrideAttrs (_: rec {
+  #   version = "1.42.1.10060-4e8b05daf";
 
-    # If I don't do this version here seems to be from old.version somehow...
-    # So cheat and just pass another -X into the build system.
-    ldflags = old.ldflags ++ [
-      "-X github.com/majd/ipatool/v2/cmd.version=${version}"
-    ];
-    latest = "curl --silent https://api.github.com/repos/majd/ipatool/tags | jq -r '.[] | .name' | grep -Ev rc | head -n 1 | tr -d v";
-  });
+  #   src = super.fetchurl {
+  #     url = "https://downloads.plex.tv/plex-media-server-new/${version}/debian/plexmediaserver_${version}_amd64.deb";
+  #     sha256 = "3a822dbc6d08a6050a959d099b30dcd96a8cb7266b94d085ecc0a750aa8197f4";
+  #   };
+  # });
 
   pythonPackagesExtensions = super.pythonPackagesExtensions ++ [
     (pyfinal: pyprev: {
-      # I keep getting errno 3 Temporary failure in name resolution on this for some reason now.
-      #
-      # Who does a POST to a webpage in a unit test though? Why is this data not
-      # in the repo ungh ai tooling is as bad as the llm responses they give.
-      langchain-community = pyprev.langchain-community.overridePythonAttrs (old: {
+      rapidocr-onnxruntime = pyprev.rapidocr-onnxruntime.overridePythonAttrs (old: {
         doCheck = false;
-        doInstallCheck = false;
-        dontCheck = true;
-        disabledTests = [
-          "test_llm_caching"
-          "test_llm_caching_async"
-        ]
-        ++ old.disabledTests;
-      });
-      open-webui = pyprev.open-webui.overridePythonAttrs (old: {
-        dependencies =
-          old.dependencies
-          ++ (with super.pkgs.python3Packages; [
-            emoji
-            iso-639
-            langdetect
-          ]);
       });
     })
   ];

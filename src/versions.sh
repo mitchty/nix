@@ -136,7 +136,7 @@ latest() {
   # just specifying things manually for now. If i start overlaying a lot more
   # future me problem.
   #for pkg in $(nix eval ".#legacyPackages.\"${arch}\"" --apply builtins.attrNames --json 2> /dev/null | jq -r '.[]'); do
-  for pkg in ipatool yt-dlp bgutil-ytdlp-pot-provider yt-dlp-get-pot; do
+  for pkg in yt-dlp bgutil-ytdlp-pot-provider yt-dlp-get-pot; do
     if nix eval --raw ".#.legacyPackages.\"${arch}\".${pkg}.latest" > /dev/null 2>&1; then
       evalstring=$(nix eval --raw ".#.legacyPackages.\"${arch}\".${pkg}.latest" 2> /dev/null)
       # Doing it this way so I don't have to rerun things, so go away

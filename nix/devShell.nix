@@ -8,7 +8,7 @@
 {
   # TODO: most of these really should be a check somehow
   #
-  # For now I'm just including them in the devshell so I can test local pacakge
+  # For now I'm just including them in the devshell so I can test local package
   # derivations.
   packages =
     pkgs:
@@ -31,6 +31,7 @@
       yq-go
       omnix-cli
       vim
+      wireguard-tools
       # TODO: deploy-rs no worky here, why? Future mitch problem
     ]
     ++ [

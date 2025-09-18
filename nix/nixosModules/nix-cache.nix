@@ -67,10 +67,6 @@ in
               prefixLength = 32;
             }
             {
-              address = "10.10.10.141";
-              prefixLength = 32;
-            }
-            {
               address = "10.10.10.142";
               prefixLength = 32;
             }

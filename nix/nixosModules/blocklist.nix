@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  inputs,
   ...
 }:
 
@@ -15,22 +14,6 @@ in
   options.services.mitchty.blocklist = {
     enable = mkEnableOption "Setup updates to a dns blocklist git repo for use by things like dnsmasq and have it periodically update at runtime to keep it up to date";
 
-    cname = mkOption {
-      type = types.str;
-      default = "grafana.home.arpa";
-      description = "Internal dns domain to use for the loki cname";
-    };
-    # TODO: Need to make ip config a single derivation/list to pass in
-    ip = mkOption {
-      type = types.str;
-      default = "10.10.10.129";
-      description = "ip address";
-    };
-    iface = mkOption {
-      type = types.str;
-      default = "";
-      description = "interface to add vip to";
-    };
     dest = mkOption {
       type = types.str;
       default = "/var/tmp";
@@ -38,7 +21,7 @@ in
     };
   };
 
-  config = mkIf cfg.enable rec {
+  config = mkIf cfg.enable {
     # Kick off the blocklist update service to keep the dns blocklist updated
     systemd.timers.blocklist = {
       wantedBy = [ "timers.target" ];

@@ -93,6 +93,7 @@ in
                   age
                   debug
                   development
+                  kopia
                 ]);
               };
             };

@@ -1,6 +1,12 @@
 # Common boot params, boot.tmp.tmpfsSize is a candidate for not being here
 { pkgs, lib, ... }:
 {
+  environment = {
+    systemPackages = [
+      pkgs.efibootmgr
+    ];
+  };
+
   boot = {
     tmp = {
       cleanOnBoot = true;

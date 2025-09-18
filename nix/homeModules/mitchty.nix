@@ -100,7 +100,6 @@ in
         strace
         tldr
         tmuxp
-        transcrypt
         tree
         unzip
         vim

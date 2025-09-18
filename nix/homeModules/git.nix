@@ -26,7 +26,6 @@
 
     home = {
       packages = with pkgs; [
-        transcrypt # TODO: nuke me once everythings converted to main branch until then leave it around like a human tail
         gist
         git-absorb
         git-extras

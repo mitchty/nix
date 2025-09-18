@@ -122,6 +122,18 @@ in
             useDHCP = true;
           };
         };
+        hosts = {
+          "10.200.200.254" = [
+            "vip.dev.home.arpa"
+          ];
+          "10.200.200.253" = [
+            "demo.dev.home.arpa"
+            "ai.dev.home.arpa"
+          ];
+          "10.200.200.252" = [
+            "nexus.dev.home.arpa"
+          ];
+        };
       };
 
       diskConfig.disks = [
