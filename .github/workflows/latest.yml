@@ -1,4 +1,4 @@
-name: Find latest versions of flake packages
+name: Find latest versions of stuff I use
 on:
   schedule:
     - cron: "15 1 * * 0"
@@ -19,4 +19,9 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
             experimental-features = nix-command flakes
-      - run: ./bin/latest-versions
+      - uses: aldoborrero/direnv-nix-action@v2
+        if: ${{ inputs.enable_direnv_nix_action }}
+        with:
+          use_nix_profile: false
+          nix_channel: nixpkgs
+      - run: ./bin/versions
