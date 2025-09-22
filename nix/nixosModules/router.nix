@@ -39,9 +39,6 @@ let
 
           10.10.10.90 wwin.home.arpa wwin
 
-          10.10.10.127 wifi.home.arpa wifi
-          10.10.10.250 wifi2.home.arpa wifi2
-          10.10.10.249 wifi3.home.arpa wifi3
 
           # Static ip's take up the last /16
           10.10.10.128 loki.home.arpa loki
@@ -83,6 +80,11 @@ let
           # This is for ark.home.arpa, its a 10 gig dac to the switch, using this to route traffic to/from the nas through this ip.
           10.10.10.242 ark-nas.home.arpa
 
+          # Wiffy ap's
+          10.10.10.243 wifi.home.arpa wifi
+          10.10.10.245 wifi2.home.arpa wifi2
+          10.10.10.247 wifi3.home.arpa wifi3
+
           # For testing dns works or not
           10.10.10.254 canary.home.arpa canary
     ''
@@ -114,7 +116,7 @@ in
     };
     wanIface = mkOption {
       type = types.str;
-      default = "";
+      default = "enp4s0";
       description = "interface (wan)";
     };
     lanIface = mkOption {
@@ -136,7 +138,7 @@ in
         "net.ipv6.conf.all.forwarding" = 1;
         "net.ipv6.conf.default.forwarding" = 1;
 
-        # Disable these globally
+        # Disable these globally for now
         "net.ipv6.conf.all.use_tempaddr" = 1;
 
         # If we don't disable forwarding for the wan interface, for some reason
@@ -144,6 +146,7 @@ in
         "net.ipv6.conf.br0.forwarding" = 1;
         "net.ipv6.conf.br0.accept_ra" = 1;
 
+        "net.ipv6.conf.${cfg.wanIface}.accept_ra" = 1;
         "net.ipv6.conf.${cfg.wanIface}.accept_ra_mtu" = 0;
       };
     };
@@ -170,7 +173,7 @@ in
       ];
 
       interfaces = {
-        wanIface = {
+        "${cfg.wanIface}" = {
           useDHCP = true;
           #          macAddress = "9c:c9:fc:0c:8f:2e";
         };
@@ -198,6 +201,7 @@ in
           ];
         };
       };
+
       nat = {
         enable = true;
         internalInterfaces = [
@@ -206,50 +210,90 @@ in
         externalInterface = "${cfg.wanIface}";
       };
 
-      # We're only using dhcpcd for the wan interface eno1
+      # We're only using dhcpcd for the wan interface eno1 to comcast
+      #
+      # There is a bunch of not interesting history behind all this setup. Most
+      # of it is gleaned from painful tcpdump debugging for ipv6 because comcast
+      # seems to goddamn love changing their ipv6 setup dam near every other
+      # year or more.
+      #
+      # Partial history of this config (roughly):
+      #
+      # For god knows why I seem to now only be able to get a /64 and can't prefix delegate? wtf
+      #
+      # Comcast seems to be advertising an mtu of 9192 for god knows why, seems
+      # like their internal network jumbo frame config is leaking.
+      #Sep 17 19:57:54 gw0 dhcpcd[1196]: enp4s0: advertised MTU 9192 is greater than link MTU 1500
+      #
+      # Comcast also at some point seems to only allow me to request a prefix of
+      # /60 at most vs even a /56 like you'd expect or the old /48. Stop
+      # changing prefix delegation already.
+      #
+      # I also can't seem to request a prefix lower than 3 where I'm at, god knows why.
       dhcpcd = {
         allowInterfaces = [ "${cfg.wanIface}" ];
         denyInterfaces = [ "${cfg.lanIface}" ];
         IPv6rs = true;
         extraConfig = ''
+          debug
           duid
           noarp
 
           interface ${cfg.wanIface}
+          nohook mtu
 
           ipv4
           ipv6
-          ipv6rs
 
           ia_na 0
+          ia_pd 0/::64 ${cfg.lanIface}/3/96
+        '';
+      };
 
-          # Why the hell prefix delegation only seems to work with prefix 3 is
-          # beyond me. Comcast ipv6 is wack. Also why can I only get a delegation
-          # of /60? Everything here determined through painful trial and error.
-          ia_pd 0/::/60 ${cfg.lanIface}/0/64
+      enableIPv6 = true;
+
+      nftables = {
+        enable = true;
+        ruleset = ''
+          table inet filter {
+            chain input {
+              type filter hook input priority 0;
+
+              # Allow DHCPv6 client from link-local
+              ip6 saddr fe80::/64 udp dport dhcpv6-client meta nftrace set 1 accept comment "ip6 dhcpv6 link-local in"
+
+              # Allow all IPv6 ICMP
+              ip6 nexthdr icmpv6 meta nftrace set 1 accept comment "ip6 icmp in"
+
+              # And ipv6 nd
+              ip6 nexthdr icmpv6 icmpv6 type { nd-neighbor-solicit, nd-router-advert, nd-neighbor-advert } nftrace set 1  accept comment "ip6 nd"
+
+              # Allow ESP (IPv4/IPv6, since table inet)
+              meta l4proto esp meta nftrace set 1 accept comment "ip4/6 esp"
+
+
+            }
+
+            chain output {
+              type filter hook output priority 0;
+
+              # Allow outbound IPv6 ICMP
+              ip6 nexthdr icmpv6 meta nftrace set 1 accept comment "ip6 icmp out"
+            }
+
+            chain forward {
+              type filter hook forward priority 0;
+
+              # Allow forwarded IPv6 ICMP
+              ip6 nexthdr icmpv6 meta nftrace set 1 accept comment "ip6 icmp forward"
+            }
+          }
         '';
       };
 
       firewall = {
         enable = true;
         allowPing = true;
-        # Needed for ipsec vpn traffic
-        extraCommands = ''
-          ${pkgs.iptables}/bin/ip6tables -A INPUT -p udp --dport dhcpv6-client -j nixos-fw-accept
-          ${pkgs.iptables}/bin/ip6tables -A INPUT -p ipv6-icmp -j nixos-fw-accept
-          ${pkgs.iptables}/bin/ip6tables -A OUTPUT -p ipv6-icmp -j nixos-fw-accept
-          ${pkgs.iptables}/bin/ip6tables -A FORWARD -p ipv6-icmp -j nixos-fw-accept
-          ${pkgs.iptables}/bin/iptables --insert INPUT --protocol ESP --jump nixos-fw-accept
-        '';
-        # ^^^ needs to be idempotent so we need to delete anything added and
-        # also handle if it may not exist.
-        extraStopCommands = ''
-          ${pkgs.iptables}/bin/ip6tables -D INPUT -p udp --dport dhcpv6-client -j nixos-fw-accept || :
-          ${pkgs.iptables}/bin/ip6tables -D INPUT -p ipv6-icmp -j nixos-fw-accept || :
-          ${pkgs.iptables}/bin/ip6tables -D OUTPUT -p ipv6-icmp -j nixos-fw-accept || :
-          ${pkgs.iptables}/bin/ip6tables -D FORWARD -p ipv6-icmp -j nixos-fw-accept || :
-          ${pkgs.iptables}/bin/iptables --delete INPUT --protocol ESP --jump nixos-fw-accept || :
-        '';
 
         allowedTCPPorts = [
           443
@@ -274,8 +318,27 @@ in
         };
       };
     };
-    services.vnstat = {
-      enable = true;
+    services = {
+      vnstat = {
+        enable = true;
+      };
+      fail2ban = {
+        enable = true;
+        bantime-increment = {
+          enable = true;
+          rndtime = "7m";
+          multipliers = "3 7 13 21";
+          maxtime = "24h";
+        };
+        maxretry = 7;
+
+        ignoreIP = [
+          "127.0.0.1/8"
+          "::1"
+          "192.168.1.0/24"
+          "10.10.10/24"
+        ];
+      };
     };
     systemd.services.dnsmasq = {
       path = (
@@ -287,28 +350,30 @@ in
       );
     };
 
-    # services.radvd = {
-    #   enable = true;
-    #   config = ''
-    #     interface br0 {
-    #     AdvSendAdvert on;
-    #     AdvHomeAgentFlag off;
-    #     MinRtrAdvInterval 30;
-    #     MaxRtrAdvInterval 100;
-    #     AdvDefaultPreference high;
-    #     prefix ::/64 {
-    #     AdvOnLink on;
-    #     AdvAutonomous on;
-    #     AdvRouterAddr on;
-    #     };
-    #     };
-    #   '';
-    # };
+    services.radvd = {
+      enable = true;
+      config = ''
+        interface br0 {
+        AdvSendAdvert on;
+        AdvHomeAgentFlag off;
+        MinRtrAdvInterval 30;
+        MaxRtrAdvInterval 100;
+        AdvDefaultPreference high;
+        prefix ::/64 {
+        AdvOnLink on;
+        AdvAutonomous on;
+        AdvRouterAddr on;
+        };
+        };
+      '';
+    };
+
     systemd.services.dnsmasq.requires = [ "br0-netdev.service" ];
     services.dnsmasq = {
       enable = true;
       servers = upstreamdns;
       settings = {
+        clear-on-reload = true;
         log-dhcp = true;
         local = "/${cfg.domain}/";
         inherit (cfg) domain;
@@ -352,10 +417,9 @@ in
           "dc:45:46:b3:5a:6a,winfx,10.10.10.50" # s100 win fx client
           "c4:e7:ae:0f:0c:2c,spkitchen,10.10.10.180"
         ];
-        #        conf-file = localblacklist;
-        #         }
-        #         // lib.optionals (cfg.blocklist != "") {
-        #           conf-file = cfg.blocklist;
+        #   conf-file = localblacklist;
+
+        #        conf-file = cfg.blocklist;
       };
     };
   };

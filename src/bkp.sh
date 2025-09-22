@@ -87,7 +87,8 @@ if ${regen}; then
   genignore
 fi
 
-# Always tag runs with script
+# Always tag runs with script. TODO check if this is a tty or not to filter
+# out/diff between automated and non automated runs.
 #
 # Additionally if we're in a tty tag that as well so I can filter out
 # manual backups from non.

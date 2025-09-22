@@ -1,46 +1,47 @@
-{ inputs, ... }:
+{
+  inputs,
+  lib,
+  ...
+}:
 [
-  inputs.self.overlays.overrides
-  inputs.self.overlays.yt-dlp
-  inputs.self.overlays.emacs
-
   (final: prev: rec {
     # Exposes each input as pkgs.name in the normal package set
     #
     # Not quite an "overlay" but a way to abuse different package inputs
     # or use all of em if I want in derivations here.
     unstable = import inputs.nixpkgs-unstable {
-      inherit (prev) system;
+      inherit (final) system;
       config = {
+        allowUnfree = true;
+      }
+      // lib.optionalAttrs (final.stdenv.isLinux) {
         allowUnfree = true;
         allowCuda = true;
         cudaSupport = true;
-        #        rocmSupport = true;
+        rocmSupport = true;
       };
       overlays = [
         inputs.self.overlays.overrides
       ];
     };
 
+    # For when/if I need to distinguish the ai unstable tracking from reg
+    # unstable nixpkgs. Also constrains cuda support for stuff. Maybe I setup
+    # two ai-nv and ai-amd for the wm2? Future mitch problem...
     ai = import inputs.nixpkgs-ai {
-      inherit (prev) system;
+      inherit (final) system;
       config = {
         allowUnfree = true;
+      }
+      // lib.optionalAttrs (final.stdenv.isLinux) {
+        allowUnfree = true;
+        allowCuda = true;
+        cudaSupport = true;
       };
+      overlays = [
+        inputs.self.overlays.overrides
+      ];
     };
-
-    # Ok for simplicity I'm going to define all the stuff I normally abuse from unstable here.
-    inherit (unstable.pkgs)
-      homer
-      plex
-      sonarr
-      radarr
-      prowlarr
-      sabnzbd
-      btop
-      ollama-cuda
-      open-webui
-      ;
 
     # TODO: Should I even keep this here? Also nix-hardware needs to get
     # in here at some point.
@@ -59,10 +60,16 @@
     #   })
     # ];
   })
+  inputs.eca.overlays.default
   inputs.emacs-overlay.overlay
-  inputs.self.overlays.emacs
   inputs.deploy-rs.overlays.default
   inputs.agenix.overlays.default
+  #  inputs.ragenix.overlays.default
   inputs.fenix.overlays.default
   inputs.nur.overlays.default
 ]
+++ (with inputs.self.overlays; [
+  overrides
+  yt-dlp
+  emacs
+])

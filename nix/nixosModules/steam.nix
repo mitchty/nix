@@ -3,6 +3,9 @@
   ...
 }:
 {
+  # Add the xbox one controller package
+  environment.systemPackages = [ pkgs.unstable.linuxPackages.xpadneo ];
+
   services = {
     xserver.videoDrivers = [ "nvidia" ];
     pulseaudio.support32Bit = true;

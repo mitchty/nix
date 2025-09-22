@@ -40,6 +40,7 @@ in
           blocklist
           nix-cache
           router
+          #          ip-hacks
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -108,12 +109,11 @@ in
       # networking.interfaces = {
       #   enp4s0 = {
       #     useDHCP = true;
-      #macAddress = "0c:49:23:0c:0f:0e";
       # };
       # br0 = {
       #   ipv4.addresses = [
       #     {
-      #       address = "10.10.10.3";
+      #       address = "10.10.10.2";
       #       prefixLength = 24;
       #     }
       #   ];

@@ -5,10 +5,8 @@ let
   ageadmins = [ mitch ];
 
   # Host keys
-  gw = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0EYJsNFz7dWxdRSID5E5Qq/l+i17nNYoJKLAv4jG06";
   mb = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINhaAD9U8kHtlMrFsy8vytWITHLe55DYy8kObDhoMqTO";
   mbp = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILaNLdykXNG7SbXyEFV3q1OVevNbIxSb8Of0AnSLxR11";
-  srv = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsX6e+fhe/CxoGIbZ4auuk83H3sUK5XQhia8OWFz4pt";
   wm2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNzRSDjB8WJHSEepNu2GTrZIgFWprv+wMnX6xbeoD0U";
   rtx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBaFOFERMbg/d7DHrTBJ7pPKiJhwxFadQZlagalg51/";
 
@@ -23,9 +21,7 @@ let
 
   allnixos = [
     rtx
-    srv
     wm2
-    gw
 
     plx
     ark
@@ -47,9 +43,10 @@ let
 
   git = homehosts ++ homeusers;
 
+  # TODO: Get backups automagically working at some point with kopia
   backup = allmacos ++ [
     rtx
-    srv
+    ark
     wm2
   ];
 
@@ -62,7 +59,6 @@ let
 
   # Cifs hosts
   cifs = [
-    srv
     wm2
     rtx
 
@@ -76,11 +72,31 @@ let
 
   # wifi connections
   wifi = [ wm2 ];
+
+  # Public wireguard keys, still sticking em here cause I only need to share
+  # amongst my nodes not the world.
+  wireguard = [
+    mbp
+    gw0
+  ];
 in
 {
   # Just a canary file to know if things are working or not, otherwise unused
   # TODO: yeet this into a git hook or something?
   "secrets/canary.age".publicKeys = everything;
+
+  # For updating cloudflare dns
+  "secrets/dns/home.mitchty.net.age".publicKeys = [ gw0 ] ++ ageadmins;
+
+  # Wireguard public keys, shared amongst all wireguard nodes.
+  "secrets/wireguard/pub/mbp.age".publicKeys = [ wireguard ] ++ ageadmins;
+  "secrets/wireguard/pub/rtx.age".publicKeys = [ wireguard ] ++ ageadmins;
+  "secrets/wireguard/pub/gw0.age".publicKeys = [ wireguard ] ++ ageadmins;
+
+  # Private is per host obvs
+  "secrets/wireguard/prv/mbp.age".publicKeys = [ mbp ] ++ ageadmins;
+  "secrets/wireguard/prv/rtx.age".publicKeys = [ rtx ] ++ ageadmins;
+  "secrets/wireguard/prv/gw0.age".publicKeys = [ gw0 ] ++ ageadmins;
 
   # For authenticated git push/pull mainly.
   "secrets/git/netrc.age".publicKeys = git ++ ageadmins;

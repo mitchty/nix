@@ -19,8 +19,8 @@ in
   ];
 
   imports = [
-    (inputs.nixpkgs-unstable + /nixos/modules/services/misc/open-webui.nix)
-    (inputs.nixpkgs-unstable + /nixos/modules/services/misc/ollama.nix)
+    (inputs.nixpkgs-ai + /nixos/modules/services/misc/open-webui.nix)
+    (inputs.nixpkgs-ai + /nixos/modules/services/misc/ollama.nix)
   ];
 
   options.services.mitchty.ai = {
@@ -37,7 +37,7 @@ in
     };
     ollamaPackage = mkOption {
       type = types.package;
-      default = pkgs.unstable.ollama;
+      default = pkgs.ai.ollama;
       description = "Default package derivation to use for ollama";
     };
     owuiCname = mkOption {
@@ -52,7 +52,7 @@ in
     };
     owuiPackage = mkOption {
       type = types.package;
-      default = pkgs.unstable.open-webui;
+      default = pkgs.ai.open-webui;
       description = "Default package derivation to use for open-webui";
     };
     iface = mkOption {
@@ -92,9 +92,9 @@ in
 
     environment = {
       systemPackages = [
-        pkgs.unstable.cudatoolkit
-        pkgs.unstable.autoAddDriverRunpath
-        pkgs.unstable.autoFixElfFiles
+        pkgs.ai.cudatoolkit
+        pkgs.ai.autoAddDriverRunpath
+        pkgs.ai.autoFixElfFiles
       ];
     };
 

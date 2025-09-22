@@ -79,6 +79,12 @@ in
       };
     };
 
+    # This too seems to suffer from dns resolution restart issues if the wan
+    # interface doesn't come up tout suite.
+    systemd.services.nginx.serviceConfig.ExecStartPre = lib.mkBefore [
+      "${pkgs.coreutils}/bin/sleep 5"
+    ];
+
     systemd.tmpfiles.rules = [
       "d ${cachePrefix} 0755 ${nginxCfg.user} ${nginxCfg.group}"
       "d ${cacheDir} 0755 ${nginxCfg.user} ${nginxCfg.group}"

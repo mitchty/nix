@@ -79,9 +79,8 @@
           #   openwebui = pkgs: pkgs.open-webui;
         };
 
-        formatters = pkgs: {
-          "*.sh" = "${pkgs.shfmt}/bin/shfmt -w .";
-        };
+        formatters = import ./nix/flakeFormatters.nix;
+
         legacyPackages = pkgs: pkgs;
         formatter = pkgs: pkgs.nixfmt-rfc-style;
       }
@@ -169,6 +168,9 @@
     # Release YY.MM branch name stuff kept close together for lazy.
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    # If/when open-webui breaks... again let me pin just that junk to last
+    # working version until fixed.
+    nixpkgs-ai.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     # Don't need this anymore.
     #nixpkgs-old.url = "github:NixOS/nixpkgs/nixos-24.11";
 
@@ -244,6 +246,10 @@
     };
     omnix = {
       url = "github:juspay/omnix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    eca = {
+      url = "github:editor-code-assistant/eca";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     cf-dns-update = {

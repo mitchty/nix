@@ -71,9 +71,17 @@ in
                   debug
                   linux-i3
                   firefox
-                  emacs
                   chrome
                   kopia
+                  # For some reason this is being derived when I wouldn't expect
+                  # it to be on nix-darwin. Guard against it being evaluated
+                  # when not on a linux host platform until I find a better way,
+                  # breaking nix flake check on darwin.
+                  #
+                  # … while realising the context of path '/nix/store/253k47y97jln0kqnf7yqslicj7d2m10y-mytestedemacsconfig-0.0.0/init.el'
+
+                  # error: a 'x86_64-linux' with features {} is required to build '/nix/store/5yd242axp4syplgdk9kiifpqh6fv22r9-native-comp-driver-options-30.patch.drv', but I am a 'aarch64-darwin' with features {apple-virt, benchmark, big-parallel, ca-derivations, nixos-test}
+                  emacs
                 ]);
               };
             };

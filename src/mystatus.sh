@@ -77,8 +77,26 @@ gyr() {
   fi
 }
 
+templast=0
+temp='?'
+
 while true; do
+  now=$(date +%s)
   printf ',['
+
+  # Only snag the temp every 1ish hours
+  if [ $((now - templast)) -ge 3600 ]; then
+    # TODO: how do I get this to figure out where I am on ye olde laptop?
+    if t=$(curl -s "wttr.in/~55101?format=%t&u"); then
+      temp=$(echo "$t" | tr -d '+°')
+      templast=${now}
+    else
+      temp="temp err"
+    fi
+  fi
+
+  block=temp
+  block "${temp}"
 
   bat='/sys/class/power_supply/BAT0'
 
@@ -148,14 +166,11 @@ while true; do
 
   free_b=$(free -blw)
   rams_tot=$(echo "${free_b}" | awk '/Mem:/ {print $2}')
-  rams_free=$(echo "${free_b}" | awk '/Mem:/ {print $4}')
-  rams_shared=$(echo "${free_b}" | awk '/Mem:/ {print $5}')
-  rams_buffers=$(echo "${free_b}" | awk '/Mem:/ {print $6}')
-  rams_cache=$(echo "${free_b}" | awk '/Mem:/ {print $7}')
+  rams_avail=$(echo "${free_b}" | awk '/Mem:/ {print $8}')
 
-  rams_used=$(echo "${rams_free} + ${rams_shared} + ${rams_buffers} + ${rams_cache}" | bc -l)
+  rams_used=$(echo "${rams_tot} - ${rams_avail}" | bc -l)
 
-  rams_pct=$(echo "((${rams_tot}.0 - ${rams_used}.0) / ${rams_tot}.0) * 100.0" | bc -l)
+  rams_pct=$(echo "((${rams_tot}.0 - ${rams_avail}.0) / ${rams_tot}.0) * 100.0" | bc -l)
 
   rams_ok=$(echo "${rams_used}.0/1024/1024/1024" | bc -l)
 
@@ -203,7 +218,7 @@ while true; do
     block "$(printf '%3.0f%%' ${vram_pct})" $(ryg $(printf "%0.0f" ${vram_pct}))
   fi
 
-  time=$(date +%Y-%m-%d\ %H:%M:%S)
+  time=$(date +%a\ %Y-%m-%d\ %H:%M:%S)
 
   block=time
   block "${time}"

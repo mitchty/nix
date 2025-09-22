@@ -1,0 +1,17 @@
+#-*-mode: Shell-script; coding: utf-8;-*-
+# SPDX-License-Identifier: BlueOak-1.0.0
+# Description: Dum dum wrapper to add a new wireguard private/public key
+_base=$(basename "$0")
+_dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
+export _base _dir
+set "${SETOPTS:--eu}"
+
+cd "${_dir}/.." || exit 126
+
+host="${1?need a hostname to add}"
+
+dest="crypt/wireguard/${host}"
+install -dm755 crypt crypt/wireguard "${dest}"
+
+cd "${dest}" || exit 126
+wg genkey | tee privatekey | wg pubkey > publickey

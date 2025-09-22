@@ -57,6 +57,88 @@ let
     ];
   };
 
+  # gateway terminal monitoring general
+  gwmon = {
+    window_name = "mon";
+    layout = "even-vertical";
+    panes = [
+      {
+        shell_command = [
+          {
+            cmd = "sudo powerjoular";
+            enter = true;
+          }
+        ];
+      }
+      {
+        shell_command = [
+          {
+            # keep track of how big the nginx reverse proxy is
+            cmd = "sudo hwatch -t -d word -n 60 du -hs /var/cache/nginx/cache/{nix,docker}";
+            enter = true;
+          }
+        ];
+      }
+      {
+        shell_command = [
+          {
+            cmd = "btop";
+            enter = true;
+          }
+        ];
+      }
+    ];
+  };
+
+  # gateway network monitoring pane
+  gwnmon = {
+    window_name = "netmon";
+    layout = "even-vertical";
+    panes = [
+      {
+        shell_command = [
+          {
+            cmd = "sudo hwatch -t -d word -n 5 ip -br a";
+            enter = true;
+          }
+        ];
+      }
+      {
+        shell_command = [
+          {
+            cmd = "sudo hwatch -t -d word -n 60 fail2ban-client banned";
+            enter = true;
+          }
+        ];
+      }
+      {
+        shell_command = [
+          {
+            # refused connection messages get puked out to dmesg
+            cmd = "sudo dmesg -wT";
+            enter = true;
+          }
+        ];
+      }
+      {
+        shell_command = [
+          {
+            cmd = "journalctl -f -u dhcpcd -u radvd";
+            enter = true;
+          }
+        ];
+      }
+      {
+        shell_command = [
+          {
+            cmd = "sudo nftrace monitor | ts | grep --color -E 'ip6'";
+            enter = true;
+          }
+        ];
+      }
+    ];
+  };
+
   nix = {
     window_name = "gh/nix";
     layout = "even-vertical";
@@ -68,7 +150,7 @@ let
       }
       {
         shell_command = [
-          "gi mitchty/nix legacy"
+          "gi mitchty/nix"
         ];
       }
     ];
@@ -144,16 +226,6 @@ let
             cmd = "mutagen sync monitor src-rtx -l";
           }
         ];
-        # sleep_before = sleepDefault;
-      }
-      {
-        shell_command = [
-          {
-            enter = true;
-            cmd = "mutagen sync monitor src-srv -l";
-          }
-        ];
-        # sleep_before = sleepDefault;
       }
       {
         shell_command = [
@@ -162,7 +234,6 @@ let
             cmd = "mutagen sync monitor src-wm2 -l";
           }
         ];
-        # sleep_before = sleepDefault;
       }
       {
         shell_command = [
@@ -171,7 +242,6 @@ let
             cmd = "mutagen sync monitor src-mb -l";
           }
         ];
-        # sleep_before = sleepDefault;
       }
     ];
   };
@@ -299,11 +369,14 @@ rec {
     packages =
       with pkgs;
       [
-        btop
+        # nixpkgs 25.05 release branch btop now causes llvm 19 to build on
+        # darwin and the dam thing fails one test out of like 60k ungh.
+        unstable.btop
         tmuxp
       ]
       ++ lib.optionals pkgs.hostPlatform.isLinux [
         powerjoular
+        nftrace
       ];
 
     # tmuxp configs
@@ -415,6 +488,16 @@ rec {
           ip
           yeet
           journal
+          sh
+        ];
+      };
+
+      ".config/tmuxp/gw0.yml".source = formats.yaml.generate "ark-config" {
+        start_directory = "~/";
+        session_name = "gw0";
+        windows = [
+          gwmon
+          gwnmon
           sh
         ];
       };

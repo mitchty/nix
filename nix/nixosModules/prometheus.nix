@@ -82,14 +82,14 @@ in
           job_name = "nixos";
           scrape_interval = cfg.interval;
           static_configs = [
-            {
-              targets = [
-                "gw.home.arpa:${toString config.services.prometheus.exporters.node.port}"
-              ];
-              labels = {
-                alias = "gw.home.arpa";
-              };
-            }
+            # {
+            #   targets = [
+            #     "gw.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+            #   ];
+            #   labels = {
+            #     alias = "gw.home.arpa";
+            #   };
+            # }
             {
               targets = [
                 "gw0.home.arpa:${toString config.services.prometheus.exporters.node.port}"

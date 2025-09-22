@@ -36,6 +36,7 @@
         # TODO: Think this needs to become a common module
         fonts.packages = [
           pkgs.comic-code
+
           pkgs.pragmata-pro
         ];
         # fontDir.enable = true; # nixos needs this

@@ -31,6 +31,7 @@
       yq-go
       omnix-cli
       vim
+      taplo
       wireguard-tools
       # TODO: deploy-rs no worky here, why? Future mitch problem
     ]

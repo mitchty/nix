@@ -48,8 +48,3 @@ case "${action}" in
 esac
 
 exit $ok
-
-# Comment just inserts a # between patterns no matter what (even if there)
-# Uncomment just gsubs out #'s between patterns no matter what/how many
-awk '/MOBILE_START/{flag=1;next}/MOBILE_END/{flag=0}flag' nix/crossplatformModules/nix.nix
-#awk '/MOBILE_START/{flag=1; print; next} /MOBILE_END/{flag=0; print; next} {print (flag?"#":"") $0}' your_file.txt
