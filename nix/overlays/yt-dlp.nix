@@ -4,6 +4,22 @@ let
   toPathWithSep = x: prev.pkgs.lib.concatStringsSep ":" (getDeps x);
 in
 rec {
+  # Up to to find easier.
+  yt-dlp = prev.yt-dlp.overrideAttrs (old: rec {
+    latest = "curl --silent https://api.github.com/repos/yt-dlp/yt-dlp/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
+    version = "2025.9.23";
+    src = prev.fetchPypi {
+      inherit version;
+      pname = "yt_dlp";
+      hash = "sha256-koKtHerbTJCy5tO8+fNgq/iMXy5LqDba17UTh7CG11c=";
+    };
+    postPatch = '':'';
+    propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
+      final.yt-dlp-get-pot
+      final.bgutil-ytdlp-pot-provider
+    ];
+  });
+
   # Add in the player object tokens as plugins to yt-dlp
   yt-dlp-get-pot = prev.python3Packages.buildPythonPackage rec {
     pname = "yt-dlp-get-pot";
@@ -38,20 +54,6 @@ rec {
     pythonImportsCheck = [ "yt_dlp_plugins" ];
     latest = "curl --silent https://api.github.com/repos/Brainicism/bgutil-ytdlp-pot-provider/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1";
   };
-  yt-dlp = prev.yt-dlp.overrideAttrs (old: rec {
-    latest = "curl --silent https://api.github.com/repos/yt-dlp/yt-dlp/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
-    version = "2025.9.5";
-    src = prev.fetchPypi {
-      inherit version;
-      pname = "yt_dlp";
-      hash = "sha256-nOCA+AsiWOhy/op19HB+osZE5pdHcYbiC5oE2anqN88=";
-    };
-    postPatch = '':'';
-    propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
-      final.yt-dlp-get-pot
-      final.bgutil-ytdlp-pot-provider
-    ];
-  });
 
   # yt-dlp but wrapped with the po token plugin(s)
   yt-dlp-with-plugins =
