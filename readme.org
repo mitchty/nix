@@ -7,7 +7,7 @@ My home nixos/nix-darwin configuration rewrite in flakelight
    - [[file:src/][src]]     Shell scripts for whatever
    - [[file:nix/][nix]]     Flakelight base directory for overlays, packages, nixos configurations, darwin configurations, home-manager etc...
    - [[file:spec/][spec]]    shellspec unit test dir.
-   - [[file:crypt/][crypt]]   Data that is encrypted within the git repo itself using https://github.com/vlaci/git-agecrypt and ssh keys via age. Basically "private junk hiding in plain sight to be used at runtime". Note this is decrypted at boot time.
+   - [[file:crypt/][crypt]]   Data that is encrypted within the git repo itself using https://github.com/vlaci/git-agecrypt and ssh keys via age. Basically "private junk hiding in plain sight to be used at runtime". Note this is decrypted at git clone/pull/etc... time.
    - [[file:static/][static]]  Bucket for any static files, which generally amounts to either fragments or full bits of files like say *.profile* that the rest of the flake will use of its own volition.
    - [[file:secrets/][secrets]]  Runtime secrets that are decrypted per host.
 
