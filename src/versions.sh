@@ -99,7 +99,7 @@ update() {
           nix-update --flake "${pkg}" --version "${latest}"
           nix build ".#${pkg}"
           git add -u
-          git commit -m "${pkg} ${latest}"
+          git commit -n -m "${pkg} ${latest}"
         fi
       fi
     fi
