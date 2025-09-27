@@ -48,10 +48,8 @@ let
           10.10.10.133 plex.home.arpa plex
 
           # Reverse proxy caches
-          10.10.10.140 nixos.cache.home.arpa
-          10.10.10.141 cachix.cache.home.arpa
-          10.10.10.142 nix-community.cachix.cache.home.arpa
-          10.10.10.143 docker.io.cache.home.arpa
+          10.10.10.140 nix.cache.home.arpa cache.nixos.org.cache.home.arpa
+          10.10.10.141 docker.io.cache.home.arpa
 
           # vm cluster ip address(es)
           10.10.10.160 rancher.home.arpa rancher
@@ -68,6 +66,10 @@ let
           10.10.10.208 gw.wg.home.arpa
           10.10.10.209 wm2.wg.home.arpa
           10.10.10.210 srv.wg.home.arpa
+
+          # Edge test
+          10.10.10.230 edge.home.arpa edge
+          10.10.10.231 edge-rancher.home.arpa edge-rancher
 
           # Rando services
           10.10.10.220 ollama.home.arpa ollama
@@ -89,6 +91,30 @@ let
           10.10.10.254 canary.home.arpa canary
     ''
   );
+  dhcpHosts = [
+    "a8:b8:e0:01:24:7f,gw0,10.10.10.2"
+    "50:65:f3:6b:01:2a,srv,10.10.10.5" # onboard lan1
+    "58:47:ca:7c:08:78,ark,10.10.10.6" # lan0?
+    #          "58:47:ca:7c:08:79,foo,10.10.10.6" # lan1?
+    "58:47:ca:7c:08:77,ark-nas,10.10.10.242" # 10g dac used to route straight to the nas to offload the inbound ethernet port traffic, speeds up a lot of things.
+    "cc:28:aa:54:4b:bb,rtx,10.10.10.11"
+    "90:09:d0:61:61:6a,s1,10.10.10.9"
+    "e4:5f:01:92:cc:1f,pikvm,10.10.10.10"
+    "e4:5f:01:b5:38:d2,pikvm2,10.10.10.13"
+    "58:47:ca:7b:13:c4,plx,10.10.10.14" # s100 plex client
+    "f0:18:98:0d:0e:64,mb,10.10.10.20"
+    "68:7a:64:48:f5:ad,wm2,10.10.10.21"
+    "84:2f:57:60:af:6e,mbp,10.10.10.22"
+    "3e:34:2b:0d:97:bc,iphone,10.10.10.30"
+    "16:25:9d:16:af:ba,ipad,10.10.10.31"
+    "c0:74:ad:f6:ba:54,wifi,10.10.10.248"
+    "c0:74:ad:f6:c0:90,wifi2,10.10.10.249"
+    "c0:74:ad:fc:45:58,wifi3,10.10.10.250"
+    "c0:a5:e8:c0:28:df,wwin,10.10.10.90" # work win laptop
+    "dc:45:46:b3:5a:6a,winfx,10.10.10.50" # s100 win fx client
+    "c4:e7:ae:0f:0c:2c,spkitchen,10.10.10.180"
+    "c0:ff:ee:ee:ff:0c,edge,10.10.10.231"
+  ];
   upstreamdns = [
     "1.1.1.1"
     "8.8.8.8"
@@ -116,7 +142,7 @@ in
     };
     wanIface = mkOption {
       type = types.str;
-      default = "enp4s0";
+      default = "";
       description = "interface (wan)";
     };
     lanIface = mkOption {
@@ -394,29 +420,7 @@ in
           "${cfg.lanIface},3,${cfg.wanIp}"
           "${cfg.lanIface},6,${cfg.wanIp}"
         ];
-        dhcp-host = [
-          "a8:b8:e0:01:24:7f,gw0,10.10.10.2"
-          "50:65:f3:6b:01:2a,srv,10.10.10.5" # onboard lan1
-          "58:47:ca:7c:08:78,ark,10.10.10.6" # lan0?
-          #          "58:47:ca:7c:08:79,foo,10.10.10.6" # lan1?
-          "58:47:ca:7c:08:77,ark-nas,10.10.10.242" # 10g dac used to route straight to the nas to offload the inbound ethernet port traffic, speeds up a lot of things.
-          "cc:28:aa:54:4b:bb,rtx,10.10.10.11"
-          "90:09:d0:61:61:6a,s1,10.10.10.9"
-          "e4:5f:01:92:cc:1f,pikvm,10.10.10.10"
-          "e4:5f:01:b5:38:d2,pikvm2,10.10.10.13"
-          "58:47:ca:7b:13:c4,plx,10.10.10.14" # s100 plex client
-          "f0:18:98:0d:0e:64,mb,10.10.10.20"
-          "68:7a:64:48:f5:ad,wm2,10.10.10.21"
-          "84:2f:57:60:af:6e,mbp,10.10.10.22"
-          "3e:34:2b:0d:97:bc,iphone,10.10.10.30"
-          "16:25:9d:16:af:ba,ipad,10.10.10.31"
-          "c0:74:ad:f6:ba:54,wifi,10.10.10.248"
-          "c0:74:ad:f6:c0:90,wifi2,10.10.10.249"
-          "c0:74:ad:fc:45:58,wifi3,10.10.10.250"
-          "c0:a5:e8:c0:28:df,wwin,10.10.10.90" # work win laptop
-          "dc:45:46:b3:5a:6a,winfx,10.10.10.50" # s100 win fx client
-          "c4:e7:ae:0f:0c:2c,spkitchen,10.10.10.180"
-        ];
+        dhcp-host = dhcpHosts;
         #   conf-file = localblacklist;
 
         #        conf-file = cfg.blocklist;
