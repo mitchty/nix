@@ -12,6 +12,7 @@ let
     clang-tools
     coreutils
     curl
+    ditaa
     deadnix
     emacs-lsp-booster
     gcc11
@@ -22,6 +23,7 @@ let
     nil
     nixfmt-rfc-style
     nodePackages.bash-language-server
+    plantuml
     python3Full
     rage
     shellcheck
@@ -37,8 +39,9 @@ let
       "rustfmt"
     ])
     rust-analyzer-nightly
+    # TESTING this abominable intelligence thingy
+    eca
   ];
-
 in
 # TODO Hack to make the "version" of this crap take on the mtime of the file
 # itself. Note, not working entirely for some reason grrr future me problem.
@@ -58,7 +61,7 @@ rec {
 
   # Shared config overrideattr'd in with other derivations not really useful on
   # its own, well not intended to be by me at least.
-  emacsShared = super.emacs30.override {
+  emacsShared = self.emacs30.override {
     withSQLite3 = true;
     withWebP = true;
     withImageMagick = true;
@@ -124,33 +127,6 @@ rec {
           ];
         });
 
-  # https://github.com/nix-community/emacs-overlay/issues/411
-  #
-  # Fix is only in nixpkgs-unstable
-  #
-  # TODO Figure out a way to not have to hack in the patch override for emacs-org
-  override2405OrgHack = final: prev: {
-    org = prev.org.overrideAttrs (old: {
-      patches = [ ];
-    });
-    # emacsWithPackages = epkgs: with epkgs; [
-    #   (treesit-grammars.with-all-grammars)
-    #   # (treesit-grammars.with-grammars (p: [
-    #   #   p.tree-sitter-bash
-    #   #   p.tree-sitter-c
-    #   #   p.tree-sitter-dockerfile
-    #   #   p.tree-sitter-elisp
-    #   #   p.tree-sitter-glsl
-    #   #   p.tree-sitter-haskell
-    #   #   p.tree-sitter-html
-    #   #   p.tree-sitter-http
-    #   #   p.tree-sitter-json
-    #   #   p.tree-sitter-latex
-    #   #   p.tree-sitter-
-    #   # ]))
-    # ];
-  };
-
   # Only used to validate the overlay
   myEmacsPrime = super.emacsWithPackagesFromUsePackage {
     #      override = override2405OrgHack;
@@ -172,7 +148,7 @@ rec {
     # abuse this derivation to munge org->el so we can use that for default init file
     # and then also use that to batch load it.
     buildPhase = ''
-      emacs -Q --batch --eval "
+      ${super.pkgs.emacs}/bin/emacs -Q --batch --eval "
           (progn
             (require 'ob-tangle)
             (dolist (file command-line-args-left)
@@ -208,7 +184,7 @@ rec {
     buildPhase = ''
       export HOME=$TMPDIR
       echo emacs batch load to make sure init.el is parseable >&2
-      emacs -nw --batch --debug-init --init-directory ${self.myInitEl}
+      ${super.pkgs.emacs}/bin/emacs -nw --batch --debug-init --init-directory ${self.myInitEl}
     '';
 
     installPhase = ''
@@ -230,11 +206,15 @@ rec {
     defaultInitFile = true;
     config = "${self.myTestedEmacsConfig}/init.el";
 
+    # override = epkgs: epkgs // { inherit ecaepkg; };
     # If for some reason I need to override an emacs package directly
-    #      override = epkgs: epkgs // {
-    #        inherit eglot-booster;
-    # ligature = epkgs.trivialBuild { pname = "ligature"; src = sources.emacs-ligature; };
-    #     };
+    # override =
+    #   epkgs:
+    #   epkgs
+    #   // {
+    #     inherit ecaepkg;
+    #     #    ligature = epkgs.trivialBuild { pname = "ligature"; src = sources.emacs-ligature; };
+    #   };
   };
 
   # use symlinkJoin instead of PATH for pkgs knowledge

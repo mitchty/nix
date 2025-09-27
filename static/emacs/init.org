@@ -161,9 +161,7 @@ The use-package emacs declaration for general configuration. Everything except ^
   (set-keyboard-coding-system 'utf-8)
   (set-selection-coding-system 'utf-8)
   (prefer-coding-system 'utf-8)
-  (tooltip-mode -1)
   :custom
-  (tooltip-use-echo-area t)
   (locale-coding-system 'utf-8)
   (frame-inhibit-implied-resize t)
   (inhibit-startup-echo-area-message t)
@@ -445,7 +443,128 @@ Setup the presets, by default troll with comic code sans cause its funny and not
 
 All the packages I abuse for shenanigans and whatnot.
 
-*** TODO TESTING: eyebrowse for layout shenanigans?
+*** TODO TESTING PACKAGES
+
+This section is only for testing crap. Though like anything temporary it can become permanent and I forget to move it on yonder out of here.
+
+Trying out eca for abominable intelligence integration.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package eca :ensure :defer)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package protobuf-mode :ensure :defer)
+#+END_SRC
+
+Not in use-package yet (ever?) https://github.com/steveyegge/efrit
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package efrit)
+#+END_SRC
+
+Stuff thats getting tested...
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package sideline
+  :ensure
+  :defer
+  :hook (flycheck-mode . sideline-mode)
+  :init
+  (setq sideline-backends-left '(sideline-flycheck)
+        sideline-backends-right '(sideline-lsp)
+        sideline-backends-left-skip-current-line t   ; don't display on current line (left)
+        sideline-backends-right-skip-current-line t  ; don't display on current line (right)
+        sideline-order-left 'down                    ; or 'up
+        sideline-order-right 'up                     ; or 'down
+        sideline-format-left "%s   "                 ; format for left aligment
+        sideline-format-right "   %s"                ; format for right aligment
+        sideline-priority 100                        ; overlays' priority
+        sideline-display-backend-name t))            ; display the backend name
+
+(use-package sideline-flycheck
+  :ensure
+  :defer
+  :after sideline
+  :hook (flycheck-mode . sideline-flycheck-setup))
+
+(use-package sideline-lsp
+  :ensure
+  :defer
+  :after sideline)
+#+END_SRC
+
+TODO: this shits not working with ollama for some reason, future mitch figure it out
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package chatgpt-shell
+  :ensure t
+  :defer t
+;;  :init
+;;  (chatgpt-shell-ollama-load-models)
+  :config
+  (setq chatgpt-shell-model-version "qwen2.5:latest")
+  (setq chatgpt-shell-ollama-api-url-base "http://10.10.10.220:11434")
+;;  (setq chatgpt-shell-api-url-base "http://10.10.10.220:11434")
+  (setq chatgpt-shell-openai-key "")
+;;  (setq chatgpt-shell-ollama-models
+;;      '("qwen2.5-coder:32b"
+;;        "deepseek-coder-v2:latest"
+;;        "deepseek-r1:32b"
+;;        "qwen2.5:32b"
+;;        ))
+  )
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package csv-mode
+  :ensure
+  :defer)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package no-littering :ensure :custom (create-lockfiles nil))
+#+END_SRC
+
+Giving this osx library a go, since I tend to only run gooey emacs on macos generally might as well make using the emacs on it a bit easier to use the say command and/or throw up notifications etc...
+url: https://github.com/raghavgautam/osx-lib
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package osx-lib
+  :if (memq window-system '(mac ns))
+  :ensure
+  :defer)
+#+END_SRC
+
+Iffy.... Does some jank ass wack stuff in fullscreen mode on cocoa emacs in macos. Need to find a way to clamp the max rows it can display or something.
+
+#+BEGIN_SRC emacs-lisp :tangle no
+(use-package mini-frame
+  :ensure
+  :config
+  (mini-frame-mode t)
+  :custom
+  (mini-frame-show-parameters
+   '((top . 10))))
+  ;;    (width . 0.7)
+  ;;    (left . 0.5))))
+#+END_SRC
+
+Ref:
+
+- https://github.com/jrosdahl/fancy-dabbrev
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package fancy-dabbrev
+  :diminish fancy-dabbrev-mode
+  :ensure
+  :defer
+  :bind (("TAB" . fancy-dabbrev-mode))
+  :config
+  (setq fancy-dabbrev-preview-delay 0.3)
+  (setq fancy-dabbrev-expansion-on-preview-only t)
+  (setq fancy-dabbrev-indent-command 'tab-to-tab-stop)
+  (setq fancy-dabbrev-no-expansion-for '(multiple-cursors-mode magit-mode org-mode)))
+#+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package eyebrowse
@@ -878,6 +997,7 @@ validate the agenda changes.
              (latex . t)
              (mermaid . t)
              (perl . t)
+             (plantuml . t)
              (python . t)
              (ruby  . t)
              (shell . t)
@@ -1164,7 +1284,7 @@ Saves buffers like with auto-save but on focus loss, when idle etc...
 
 Shows in the fringe the status of lines added/removed/modified. Seems a skosh slow.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package diff-hl
   :ensure
   :config
@@ -1245,15 +1365,16 @@ TODO eglot-booster/emacs-lsp-booster removal for 30.x+ allegedly its json parsin
                 '(rust-mode . ("rust-analyzer" :initializationOptions
                               ( :procMacro (:enable t)
                                 :cargo ( :buildScripts (:enable t)
-                                         :features "all"))))))
-;;    (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
-;;  (add-hook 'prog-mode-hook 'eglot-ensure)
-;;  (add-to-list 'eglot-stay-out-of 'eldoc))
+                                         :features "all")))))
+   (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
+ (add-hook 'prog-mode-hook 'eglot-ensure)
+ (add-to-list 'eglot-stay-out-of 'eldoc))
 
 (use-package lsp-mode
   :after (rustic)
   :ensure
   :defer
+  :hook (lsp-mode . sideline-mode)
   :custom
   (lsp-rust-analyzer-cargo-watch-command "clippy")
   (lsp-eldoc-render-all t)
@@ -1267,12 +1388,12 @@ TODO eglot-booster/emacs-lsp-booster removal for 30.x+ allegedly its json parsin
   (lsp-rust-analyzer-display-reborrow-hints nil)
   )
 
-;; (use-package lsp-ui
-;;   :after (lsp-mode)
-;;   :custom
-;;   (lsp-ui-peek-always-show t)
-;;   (lsp-ui-sideline-show-hover t)
-;;   (lsp-ui-doc-enable nil))
+(use-package lsp-ui
+  :after (lsp-mode)
+  :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover t)
+  (lsp-ui-doc-enable nil))
 
 (use-package flycheck-eglot
   :after (flycheck eglot)
@@ -1280,6 +1401,49 @@ TODO eglot-booster/emacs-lsp-booster removal for 30.x+ allegedly its json parsin
   :defer
   :config
   (global-flycheck-eglot-mode 1))
+
+(use-package sideline
+  :ensure
+  :defer
+  :after lsp-mode
+  :hook (flycheck-mode . sideline-mode)
+  :init
+  (setq sideline-backends-left '(sideline-flycheck)
+        sideline-backends-right '(sideline-lsp)
+        sideline-backends-left-skip-current-line t   ; don't display on current line (left)
+        sideline-backends-right-skip-current-line t  ; don't display on current line (right)
+        sideline-order-left 'down                    ; or 'up
+        sideline-order-right 'up                     ; or 'down
+        sideline-format-left "%s   "                 ; format for left aligment
+        sideline-format-right "   %s"                ; format for right aligment
+        sideline-priority 100                        ; overlays' priority
+        sideline-display-backend-name t))            ; display the backend name
+
+(use-package flycheck-posframe
+  :ensure
+  :after flycheck
+  :if (display-graphic-p)
+  :custom-face
+  (flycheck-posframe-face ((t (:foreground ,(face-foreground 'success)))))
+  (flycheck-posframe-info-face ((t (:foreground ,(face-foreground 'success)))))
+  (flycheck-posframe-background-face ((t (:inherit tooltip))))
+  (flycheck-posframe-border-face ((t (:inherit font-lock-comment-face))))
+  :custom
+  (flycheck-posframe-warning-prefix "omg! ")
+  (flycheck-posframe-border-width 1)
+  :config
+  (add-hook 'flycheck-mode-hook #'flycheck-posframe-mode))
+
+(use-package sideline-flycheck
+  :ensure
+  :defer
+  :after sideline
+  :hook (flycheck-mode . sideline-flycheck-setup))
+
+(use-package sideline-lsp
+  :ensure
+  :defer
+  :after sideline)
 #+END_SRC
 
 *** asm-mode
@@ -1496,7 +1660,11 @@ Instead of text might as well get a decent mode hook going here.
 **** nix-mode
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package nix-mode :ensure :defer)
+(use-package nix-mode
+  :after eglot
+  :ensure
+  :defer
+  :hook (nix-mode . eglot-ensure))
 #+END_SRC
 
 *** docker-mode
@@ -1535,7 +1703,7 @@ TODO: need to make this not auto format on _spec.sh buffers.
   :hook (prog-mode . apheleia-mode)
   :config
   (dolist (formatter '((shfmt-custom . ("altshfmt" "-ci" "-i" "2" "-bn" "-sr"))
-                       (nix-custom   . ("nixpkgs-fmt")))
+                       (nix-custom   . ("nixfmt")))
                        nil)
   (add-to-list #'apheleia-formatters formatter))
 
@@ -1651,80 +1819,4 @@ Probably need to check if this file exists first...
 
 #+BEGIN_SRC emacs-lisp :tangle no
 (load-file "~/.emacs.d/local.el")
-#+END_SRC
-
-* TESTING
-
-Stuff thats getting tested...
-
-TODO: this shits not working with ollama for some reason, future mitch figure it out
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package chatgpt-shell
-  :ensure t
-  :defer t
-;;  :init
-;;  (chatgpt-shell-ollama-load-models)
-  :config
-  (setq chatgpt-shell-model-version "qwen2.5:latest")
-  (setq chatgpt-shell-ollama-api-url-base "http://10.10.10.220:11434")
-;;  (setq chatgpt-shell-api-url-base "http://10.10.10.220:11434")
-  (setq chatgpt-shell-openai-key "")
-;;  (setq chatgpt-shell-ollama-models
-;;      '("qwen2.5-coder:32b"
-;;        "deepseek-coder-v2:latest"
-;;        "deepseek-r1:32b"
-;;        "qwen2.5:32b"
-;;        ))
-  )
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package csv-mode
-  :ensure
-  :defer)
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package no-littering :ensure :custom (create-lockfiles nil))
-#+END_SRC
-
-Giving this osx library a go, since I tend to only run gooey emacs on macos generally might as well make using the emacs on it a bit easier to use the say command and/or throw up notifications etc...
-url: https://github.com/raghavgautam/osx-lib
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package osx-lib
-  :if (memq window-system '(mac ns))
-  :ensure
-  :defer)
-#+END_SRC
-
-Iffy.... Does some jank ass wack stuff in fullscreen mode on cocoa emacs in macos. Need to find a way to clamp the max rows it can display or something.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package mini-frame
-  :ensure
-  :config
-  (mini-frame-mode t)
-  :custom
-  (mini-frame-show-parameters
-   '((top . 10))))
-  ;;    (width . 0.7)
-  ;;    (left . 0.5))))
-#+END_SRC
-
-Ref:
-
-- https://github.com/jrosdahl/fancy-dabbrev
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package fancy-dabbrev
-  :diminish fancy-dabbrev-mode
-  :ensure
-  :defer
-  :bind (("TAB" . fancy-dabbrev-mode))
-  :config
-  (setq fancy-dabbrev-preview-delay 0.3)
-  (setq fancy-dabbrev-expansion-on-preview-only t)
-  (setq fancy-dabbrev-indent-command 'tab-to-tab-stop)
-  (setq fancy-dabbrev-no-expansion-for '(multiple-cursors-mode magit-mode org-mode)))
 #+END_SRC
