@@ -3,7 +3,23 @@
 # macos specific
 alias oe="open -a $(which emacs)"
 
-# mnemonic: Open Nix (macos) App (bundle)
-function ona() {
-    open -a "/Applications/Nix\ Apps/${$1?need the app name to open}.app"
+# Kinda like which but for macos app bundles
+#
+# Was wondering where the hell open was opening stuff in nix, and my lord did I not expect every app bundle in /nix/store to show up...
+#
+# I don't know how to fix it though it seems like open -a picks the top entry so hell if I know the right way to fix this properly.
+whichapp() {
+  name="${1?need the app name}"
+  lspath="/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
+  ${lspath} -dump | grep "path[:].*/Applications/.*${name}.app " | sed -e 's/[.]app.*/.app/g' -e 's/path[:][[:blank:]]*//g' | uniq
+}
+
+# mnemonic: Nix (macos) App (bundle) Open
+# Aka no in portuguese, I couldn't remember ona to save my life.
+#
+# This nukes all the /nix/store entries recorded by launchservices and hopefully
+# ends up just with the trampoline in home manager or /Applications
+nao() {
+  name="${1?need the app name to open}"
+  open -a "$(whichapp ${name} | grep -v '/nix/store')"
 }
