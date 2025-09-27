@@ -1,6 +1,7 @@
 # Common settings for nix command itself between darwin/nixos
 {
   pkgs,
+  lib,
   ...
 }:
 {
@@ -16,11 +17,17 @@
       "ca-derivations"
     ];
     settings = {
+      # Fixes some weird channel related behavior
+      extra-nix-path = "nixpkgs=flake:nixpkgs";
+
       # https://github.com/NixOS/nix/issues/11728
-      # 64MiB from 1MiB default, increase further if the buffer fills up (again,
+      # 128MiB from 1MiB default, increase further if the buffer fills up (again,
       # with my nginx proxy cache things fill up fast even on the slower 2.5g
       # link compared to 10g ...)
-      download-buffer-size = 64 * 1024 * 1024;
+      #
+      # Had this fill up on another system so doubling it to 128MiB. How gihugic
+      # do I need this to be on a 10g/2.5g network?
+      download-buffer-size = 128 * 1024 * 1024;
 
       # Keys I'm willing to accept as kosher
       trusted-public-keys = [
@@ -28,23 +35,18 @@
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       ];
 
-      substituters = [
-        # Ok cause I go "mobile" with some systems (mbp/wm2) sometimes its nice to
-        # not have to wait for stuff to fail.
-        #
-        # The comment chunks are here to make it possible to comment/toggle the
-        # lines inside via sed, note the automation doesn't care about
-        # formatting, treefmt can fix that in post.
-        #
-        # Don't add #'s to these lines dumdum, it'll break the assumption that
-        # the (un)comment script can nuke #'s (SCRIPT IS STUPID SIMPLE)
-        # MOBILE_START
-        "http://nixos.cache.home.arpa"
-        # MOBILE_END
-        "http://nix-community.cachix.org"
-        #        "http://cachix.cache.home.arpa"
-        #        "http://nix-community.cachix.cache.home.arpa"
-      ];
+      # OK so I have a thought here... setup a ncps instance locally, point THAT
+      # here and let ncps handle if something is down or not.
+      #
+      # Then I can ignore this feature flag kinda crap and just let ncps cache
+      # to internal ncps when on local network and/or wireshark when I get that
+      # working but always through the local ncps daemon and I don't gotta do
+      # anything with editing files or whatever.
+      #
+      # TODO: future mitch winter task
+      # MOBILE_START
+      substituters = [ "http://nix.cache.home.arpa:8080" ];
+      # MOBILE_END
     };
   };
 }
