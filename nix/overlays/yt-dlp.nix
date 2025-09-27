@@ -17,6 +17,7 @@ rec {
     propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
       final.yt-dlp-get-pot
       final.bgutil-ytdlp-pot-provider
+      final.deno
     ];
   });
 
