@@ -251,6 +251,11 @@
       url = "github:juspay/omnix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # TESTING
+    nix-sweep = {
+      url = "github:jzbor/nix-sweep";
+      #      inputs.nixpkgs.follows = "nixpkgs";
+    };
     eca = {
       url = "github:editor-code-assistant/eca";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -266,6 +271,16 @@
     kairos = {
       url = "github:mitchty/kairos";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    # IP CIDR lists for nftable rule sets
+    geo = {
+      url = "github:ipverse/rir-ip";
+      flake = false;
+    };
+    # Dns blocklist data
+    dns = {
+      url = "github:hagezi/dns-blocklists";
+      flake = false;
     };
   };
 }

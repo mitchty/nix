@@ -67,6 +67,7 @@
     inherit (inputs.nixos-generators.packages.${prev.system}) nixos-generate;
     inherit (inputs.home-manager.packages.${prev.system}) home-manager;
     inherit (inputs.omnix.packages.${prev.system}) omnix-cli;
+    nix-sweep = inputs.nix-sweep.packages.${prev.system}.default;
 
     # For nixpkgs-unstable open-webui to build on 25.05
     # pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [

@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -278,44 +279,93 @@ in
 
       enableIPv6 = true;
 
-      nftables = {
-        enable = true;
-        ruleset = ''
-          table inet filter {
-            chain input {
-              type filter hook input priority 0;
+      nftables =
+        let
+          # This is a huge hack and not sure I want to keep it this way as a
+          # flake input or not but... it works.... so whatever.
+          #
+          # No more mass spam from Brazil, China, and Russia (amongst other
+          # countries) trying to probe my home ips.
+          #
+          # Its an improvement at least, way less dum spam in firewall logs, and
+          # if I need to go abroad I can expand this to a proper module that
+          # accepts country names as a list to allow. 99% of the time it'll be
+          # us only tho so future mitch problem.
+          ip4Allow = "${inputs.geo}/country/us/ipv4-aggregated.txt";
+          ip6Allow = "${inputs.geo}/country/us/ipv6-aggregated.txt";
 
-              # Allow DHCPv6 client from link-local
-              ip6 saddr fe80::/64 udp dport dhcpv6-client meta nftrace set 1 accept comment "ip6 dhcpv6 link-local in"
+          rawCidrs = file: lib.splitString "\n" (builtins.readFile file);
+          cidrs = file: lib.filter (line: line != "" && !(lib.hasPrefix "#" line)) (rawCidrs file);
 
-              # Allow all IPv6 ICMP
-              ip6 nexthdr icmpv6 meta nftrace set 1 accept comment "ip6 icmp in"
+          # Allow all private range ip traffic
+          rfc1918 = [
+            "10.0.0.0/8"
+            "172.16.0.0/12"
+            "192.168.0.0/16"
+          ];
 
-              # And ipv6 nd
-              ip6 nexthdr icmpv6 icmpv6 type { nd-neighbor-solicit, nd-router-advert, nd-neighbor-advert } nftrace set 1  accept comment "ip6 nd"
+          ip4Cidrs = (cidrs ip4Allow) ++ rfc1918;
+          ip6Cidrs = cidrs ip6Allow;
 
-              # Allow ESP (IPv4/IPv6, since table inet)
-              meta l4proto esp meta nftrace set 1 accept comment "ip4/6 esp"
-
-
+          mkSet = name: typ: elems: ''
+            set ${name} {
+              type ${typ}
+              flags interval
+              elements = { ${lib.concatStringsSep ", " elems} }
             }
+          '';
+        in
+        {
+          enable = true;
+          ruleset = ''
+            table inet filter {
+              # Geo allow only asn's from the usa, other countries can't initiate any connections to local
+              ${mkSet "asn_allow_v4" "ipv4_addr" ip4Cidrs}
+              ${mkSet "asn_allow_v6" "ipv6_addr" ip6Cidrs}
 
-            chain output {
-              type filter hook output priority 0;
+              chain input {
+                type filter hook input priority 0;
 
-              # Allow outbound IPv6 ICMP
-              ip6 nexthdr icmpv6 meta nftrace set 1 accept comment "ip6 icmp out"
+                # Loopback is fine
+                iifname lo accept
+
+                # Accept traffic for established and related connections.
+                ct state { established, related } accept
+
+                # Allow DHCPv6 client from link-local
+                ip6 saddr fe80::/64 udp dport dhcpv6-client meta nftrace set 1 accept comment "ip6 dhcpv6 link-local in"
+
+                # Allow all IPv6 ICMP
+                ip6 nexthdr icmpv6 meta nftrace set 1 accept comment "ip6 icmp in"
+
+                # And ipv6 nd
+                ip6 nexthdr icmpv6 icmpv6 type { nd-neighbor-solicit, nd-router-advert, nd-neighbor-advert } nftrace set 1  accept comment "ip6 nd"
+
+                # Allow ESP (IPv4/IPv6, since table inet)
+                meta l4proto esp meta nftrace set 1 accept comment "ip4/6 esp"
+
+                ip saddr @asn_allow_v4 accept
+                ip6 saddr @asn_allow_v6 accept
+
+                policy drop
+              }
+
+              chain output {
+                type filter hook output priority 0;
+
+                # Allow outbound IPv6 ICMP
+                ip6 nexthdr icmpv6 meta nftrace set 1 accept comment "ip6 icmp out"
+              }
+
+              chain forward {
+                type filter hook forward priority 0;
+
+                # Allow forwarded IPv6 ICMP
+                ip6 nexthdr icmpv6 meta nftrace set 1 accept comment "ip6 icmp forward"
+              }
             }
-
-            chain forward {
-              type filter hook forward priority 0;
-
-              # Allow forwarded IPv6 ICMP
-              ip6 nexthdr icmpv6 meta nftrace set 1 accept comment "ip6 icmp forward"
-            }
-          }
-        '';
-      };
+          '';
+        };
 
       firewall = {
         enable = true;
@@ -394,7 +444,8 @@ in
       '';
     };
 
-    systemd.services.dnsmasq.requires = [ "br0-netdev.service" ];
+    #    systemd.services.dnsmasq.requires = [ "br0-netdev.service" ];
+
     services.dnsmasq = {
       enable = true;
       servers = upstreamdns;
@@ -421,9 +472,7 @@ in
           "${cfg.lanIface},6,${cfg.wanIp}"
         ];
         dhcp-host = dhcpHosts;
-        #   conf-file = localblacklist;
-
-        #        conf-file = cfg.blocklist;
+        conf-file = "${inputs.dns}/dnsmasq/pro.plus.txt";
       };
     };
   };
