@@ -21,6 +21,8 @@
     ])
     ++ [
       inputs.home-manager.darwinModules.home-manager
+      inputs.mac-app-util.darwinModules.default
+
       {
         networking = {
           computerName = config.networking.hostName;

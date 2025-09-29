@@ -39,11 +39,14 @@ until [ "${ok}" -eq 0 ]; do
 
   # comcast seems to set things to 192.168 so if we find that rfc1918 range in the
   # ip, we need to retry getting an ip.
-  if wan_ip | grep -qE '192.168'; then
+  if wan_ip | grep -qE '(192.168|169.254)'; then
     printf "dhcp got an rfc1918 address" >&2
   else
     ok=0
   fi
+
+  # Don't spam restarts
+  sleep 30
 done
 
 rm -f /var/tmp/newip

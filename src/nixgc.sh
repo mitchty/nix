@@ -7,14 +7,24 @@ _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
 set "${SETOPTS:--eu}"
 
-# Don't gc a broken store
-nix-store --verify --check-contents --repair
+run() {
+  echo "$*"
+  "$@"
+}
+
+verify() {
+  # Don't gc a broken store
+  run nix-store --verify --check-contents --repair
+}
+
+# Only gc a store that isn't broken
+verify
 
 # Month should be good enough...
-nix-collect-garbage --delete-older-than 31d
+run nix-collect-garbage --delete-older-than 31d
 
-nix-store --gc
-nix-store --optimise
+run nix-store --gc
+run nix-store --optimise
 
-# And make sure nothing broke in gc/optimization
-nix-store --verify --check-contents --repair
+# And make sure nothing broke in gc/optimization along the way
+verify

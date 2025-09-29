@@ -73,8 +73,8 @@ let
       {
         shell_command = [
           {
-            # keep track of how big the nginx reverse proxy is
-            cmd = "sudo hwatch -t -d word -n 60 du -hs /var/cache/nginx/cache/{nix,docker}";
+            # keep track of how big reverse proxy crap is
+            cmd = "sudo hwatch -t -d word -n 60 du -hs /var/cache/nginx/cache/docker /var/lib/ncps";
             enter = true;
           }
         ];

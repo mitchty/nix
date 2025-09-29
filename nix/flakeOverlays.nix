@@ -28,7 +28,7 @@
     # For when/if I need to distinguish the ai unstable tracking from reg
     # unstable nixpkgs. Also constrains cuda support for stuff. Maybe I setup
     # two ai-nv and ai-amd for the wm2? Future mitch problem...
-    ai = import inputs.nixpkgs-ai {
+    ai-nvidia = import inputs.nixpkgs-ai {
       inherit (final) system;
       config = {
         allowUnfree = true;
@@ -37,6 +37,21 @@
         allowUnfree = true;
         allowCuda = true;
         cudaSupport = true;
+      };
+      overlays = [
+        inputs.self.overlays.overrides
+      ];
+    };
+
+    # Also going to test out abusing different derivations for amd/nvidia
+    ai-amd = import inputs.nixpkgs-ai {
+      inherit (final) system;
+      config = {
+        allowUnfree = true;
+      }
+      // lib.optionalAttrs (final.stdenv.isLinux) {
+        allowUnfree = true;
+        rocmSupport = true;
       };
       overlays = [
         inputs.self.overlays.overrides

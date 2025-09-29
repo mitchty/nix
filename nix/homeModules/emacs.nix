@@ -11,6 +11,7 @@
   # FUTURE MITCH REMOVE AT YOUR OWN DUM PERIL
   home.activation.cleanEmacsTmpDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD rm -rf $VERBOSE_ARG ~/.emacs.d/init.elc ~/.emacs.d/custom.el ~/.emacs.d/elpa ~/.emacs.d/eln-cache ~/.cache/org-persist ~/.emacs.d/tmp
+    $DRY_RUN_CMD install -dm755 ~/.emacs.d/tmp
   '';
 
   programs.emacs = {

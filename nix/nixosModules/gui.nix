@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  inputs,
   ...
 }:
 {
@@ -42,6 +41,7 @@
       polkit_gnome
       pulseaudioFull
       rofi
+      nvtopPackages.full
       #      google-chrome
       kdePackages.kmix
       #      libv4l

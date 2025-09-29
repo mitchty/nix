@@ -34,9 +34,12 @@
       {
         nixpkgs.config = {
           allowUnfree = true;
-          allowCuda = true;
-          cudaSupport = true;
-          rocmSupport = true;
+          # TODO Why come stdenv here isn't working when its an arg?
+          # }
+          # // lib.optionalAttrs (stdenv.isLinux) {
+          #   allowCuda = true;
+          #   cudaSupport = true;
+          #   rocmSupport = true;
         };
         inherit inputs;
         # All here and not in ./nix cause I don't feel like doing it better,
@@ -53,8 +56,10 @@
           "aarch64-darwin"
         ];
 
+        # Layer in my overlay changes to upstream
         withOverlays = import ./nix/flakeOverlays.nix moduleArgs;
 
+        # TODO need to convert things here over to nix tests
         checks = {
           altshfmt = pkgs: pkgs.altshfmt;
           # Make sure yt stuff builds at least (its got its own unit tests in the
@@ -171,8 +176,6 @@
     # If/when open-webui breaks... again let me pin just that junk to last
     # working version until fixed.
     nixpkgs-ai.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    # Don't need this anymore.
-    #nixpkgs-old.url = "github:NixOS/nixpkgs/nixos-24.11";
 
     home-manager = {
       url = "github:nix-community/home-manager/release-25.05";

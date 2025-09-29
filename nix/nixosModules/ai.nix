@@ -37,7 +37,7 @@ in
     };
     ollamaPackage = mkOption {
       type = types.package;
-      default = pkgs.ai.ollama;
+      default = pkgs.ai-nvidia.ollama;
       description = "Default package derivation to use for ollama";
     };
     owuiCname = mkOption {
@@ -52,7 +52,7 @@ in
     };
     owuiPackage = mkOption {
       type = types.package;
-      default = pkgs.ai.open-webui;
+      default = pkgs.ai-nvidia.open-webui;
       description = "Default package derivation to use for open-webui";
     };
     iface = mkOption {
@@ -92,9 +92,9 @@ in
 
     environment = {
       systemPackages = [
-        pkgs.ai.cudatoolkit
-        pkgs.ai.autoAddDriverRunpath
-        pkgs.ai.autoFixElfFiles
+        pkgs.ai-nvidia.cudatoolkit
+        pkgs.ai-nvidia.autoAddDriverRunpath
+        pkgs.ai-nvidia.autoFixElfFiles
       ];
     };
 

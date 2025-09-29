@@ -4,6 +4,7 @@ Host *
   ControlMaster auto
   ControlPath ~/.ssh/.control/%r@%h:%p
   ControlPersist 3600
+  SetEnv TERM=xterm-256color
 Host *.home.arpa
   Compression yes
 Host home

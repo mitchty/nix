@@ -29,7 +29,7 @@ in
         enable_audio_bell no
         visual_bell_duration 0.1
         tab_bar_style slant
-        term=xterm-color
+        term=xterm-256color
       '';
     };
   };

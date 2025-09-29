@@ -159,14 +159,10 @@ in
 
       networking = {
         # Set the 10g nic up to have a metric cost so this stuff behaves
-        # sane...er.
-        #
-        # Also setup a static route that has the lowest metric going to the nas
-        # from this interface to ensure only its traffic is sent through the 10g
-        # gbic.
+        # sane...er I hope.
         dhcpcd.extraConfig = ''
-          interface enp88s0
-          metric 5
+          interface enp3s0f1np1
+          metric 1000
         '';
         interfaces = {
           enp88s0 = {

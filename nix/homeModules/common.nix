@@ -21,8 +21,9 @@
       less
       libqalculate
       moreutils
-      scripts # TODO: should pull this package apart and make scripts-macos scripts-blah future mitch problem
       ripgrep
+      scripts # TODO: should pull this package apart and make scripts-macos scripts-blah future mitch problem
+      sshpass
       tree
       wget
     ];
@@ -33,6 +34,7 @@
       ".config/direnv/lib/mycrap.sh".source = ../../src/lib.sh;
       ".config/btop/btop.conf".source = ../../static/btop/btop.conf;
       ".canary".text = "ok";
+      ".ssh/config".source = ../../static/home/sshconfig;
     };
   };
 

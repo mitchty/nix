@@ -315,11 +315,14 @@ j() {
 # (local only for the latter not tried deploy-rs with darwin nix to nixos)
 d() {
   host="${1:-${HOST?need a hostname to deploy to}}"
-  # NIXARGS is a runtime env witness and needs no quoting
+  # NIXARGS/DARGS are runtime witnesses and need no quoting
+  # DARGS is a Way to pass in args to darwin-rebuild correctly prior to NIXARGS
+  # or deploy.
+  # NIXARGS is for stuff that the underlying tools would use
   #shellcheck disable=SC2086
-  onmac sudo darwin-rebuild switch --flake ".#${host}" ${NIXARGS:-}
+  onmac sudo darwin-rebuild switch ${DARGS:-} --flake ".#${host}" ${NIXARGS:-}
   #shellcheck disable=SC2086
-  onlinux deploy -ds -- ".#${host}" ${NIXARGS:-}
+  onlinux deploy -ds ${DARGS:-} -- ".#${host}" ${NIXARGS:-}
 }
 
 NOM="${NOM:-$(command -v nom || echo nom)}"

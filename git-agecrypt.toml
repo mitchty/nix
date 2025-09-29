@@ -1,4 +1,7 @@
 [config]
+"crypt/cf.env" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
 "crypt/comic-code.zip" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
