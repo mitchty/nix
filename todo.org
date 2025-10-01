@@ -1,0 +1,151 @@
+General Todo's
+
+While this setup "works" for varying definitions of the word, its got more work to be done yet.
+
+Todos:
+- ssh ca setup so I can use an ssh ca for all host/user setup
+- wireguard setup so I can setup my own overlay vpn for everything whilst out and about with macos or nixos laptop
+- need to figure out how to have nix-shell get rid of this dum message:
+
+https://github.com/NixOS/nix/issues/2982
+
+Its complaining about profiles, probably something simple I broke. Will fix as I get time.
+
+#+begin_src
+warning: Nix search path entry '/nix/var/nix/profiles/per-user/root/channels' does not exist, ignoring
+#+end_src
+
+Coming from here when using /usr/bin/nix-shell in a shebang line.
+
+#+begin_src
+echo $NIX_PATH
+nixpkgs=flake:nixpkgs:nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/per-user/root/channels
+#+end_src
+- https://github.com/Misterio77/nix-colors theming? veeeery future mitch task
+
+* Testing via qemu/vm
+
+TODO: Now that I got everything working in *vm-simple* setup validate air gap install works
+
+https://github.com/compactcode/dot-files/blob/c10315a9559dceaa1fbc0b8beb81c9b83e712bcf/nix/darwinModules/desktop/default.nix
+
+https://nix-community.github.io/home-manager/index.xhtml#_how_do_i_install_packages_from_nixpkgs_unstable
+
+I have a truly hacky script/wrapper around qemu in the bin dir, [[file:src/sys.sh][sys]]. It just a temporary way to test out derivations interactively.
+
+For now it defaults to the vm setup in nix/nixosConfigurations/vm-simple
+
+This is a temporary state for now, I hope, its mostly to bootstrap into a fully automated install again. I want to figure out how to replace this script with "normal" nixos testing infra in python like the nixos/nixpkgs repo has.
+
+** Nixos
+
+*** Automated iso nixosConfiguration creation
+
+Right now I'm manually creating a nixosConfiguration iso derivation in *nix/nixosConfigurations*, this really could be automated once I finish writing everything twice (or more).
+
+Thoughts as of writing:
+- I should be able to create an iso for testing a vm of the configuration itself like the vm- configurations.
+- I should also be able to create an iso for the setup itself.
+- ??? I'm sure I'm missing something else here.
+
+Thought is I make a lib.nix and create a function to handle this work and then just *// { for system in inputs.self.nixosConfigurations function .... }* somehow.... This is a future mitch winter problem to tackle
+
+*** Deploy-rs flakelight module
+
+I should make a deploy-rs flakelight module instead of the current hack. This is also a future mitch winter problem.
+
+*** Mirored EFI boot partitions
+
+I need to brain up how exactly I want to do mirrored systemd efi boot setups and add a test for it somehow into my vm test setups. Upstream nixos doesn't seem to want any part in this but I like having resiliency to my mirror setups to know I can boot off any of the */dev/diskN* partitions in the event of the primary disk failing without needing to rebuild.
+
+This is in spite of the entire setup being meant to make rebuilds easy. Sometimes I don't really have the time to invest to get that done and would rather get work done instead in the interim. Whats the point of mirroring/raid if I can't boot the damn thing if one disk fails anyway?
+
+My current setup that I abused with zfs is basically just rsync the data from the primary boot disk to the rest.
+
+This is hacky and it needs tests/proof to demonstrate it works like I think.
+
+#+begin_src
+    boot.loader.systemd-boot.extraInstallCommands = ''
+      set -e
+      ${pkgs.util-linux}/bin/mountpoint -q /efiboot/efi0 || ${pkgs.util-linux}/bin/mount -t vfat -o iocharset=iso8859-1 /dev/disk/by-partlabel/ESP0 /efiboot/efi0
+      ${pkgs.util-linux}/bin/mountpoint -q /efiboot/efi1 || ${pkgs.util-linux}/bin/mount -t vfat -o iocharset=iso8859-1 /dev/disk/by-partlabel/ESP1 /efiboot/efi1
+      ${pkgs.rsync}/bin/rsync -Havz --exclude .lost+found --delete --delete-before /efiboot/efi0/ /efiboot/efi1
+    '';
+#+end_src
+
+The upstream nixos pr to add it was this:
+https://github.com/NixOS/nixpkgs/pull/246897
+
+Of note:
+https://serverfault.com/questions/1101507/how-should-the-efi-system-partition-be-made-redundant-without-using-hardware-rai
+
+I am thinking I should just make my own nixosModule that does:
+- On systemd-boot updates do the rsyncs to the mirrored boot devices/partitions
+- efibootmgr install to the boot devices with an increment of 1 to specify the boot order for things
+- That should do it.
+
+Non goals:
+- I don't care about windows/other os's here. That is nixos is the only os
+- Not dealing with encryption related stuff for now, future mitch problem
+- Its not intended to be perfect
+
+Goals:
+- Just be able to boot a system without rebuilding if the primary disk fails
+- Thats it, its not meant to be forever, more than likely I will be rebuilding anyway just want to be able to have resiliency to hardware failures
+
+
+*  Macos
+
+Nice lists of open source stuff to poke at someday.
+https://github.com/serhii-londar/open-source-mac-os-apps
+https://github.com/jaywcjlove/awesome-mac
+
+** Macos Emacs
+
+Try out more patches from here? https://tdodge.consulting/blog/living-the-emacs-garbage-collection-dream
+
+https://github.com/tyler-dodge/emacs/commit/b386047f311af495963ad6a25ddda128acc1d461.patch
+
+Some interesting org packages here.
+https://github.com/chrisbarrett/nursery
+
+Some interesting macos integration ideas.
+https://xenodium.com/emacs-macos-sharing-dwim-style-improved/
+https://github.com/xenodium/dwim-shell-command/commit/20e782b4bf1ea01fecfce3cc8ac4c5a74518cd80
+
+Need to try out xwidget support and nov-xwidget on macos
+https://macowners.club/posts/using-xwidgets-on-macos/
+and
+https://github.com/chenyanming/nov-xwidget
+
+Also need to start abusing anki+org notes for cards
+https://yiufung.net/post/anki-org/
+
+And explore this for org notes to auto get graphviz images into docs.
+https://orgmode.org/worg/org-contrib/babel/languages/ob-doc-dot.html
+
+Set this up?
+https://en.liujiacai.net/2022/11/26/oh-my-github-1-0/
+
+** Fonts
+
+Add or try em?
+
+https://input.djr.com/info/
+https://www.fontget.com/font/among-us
+https://www.fontget.com/font/among-us-filled/
+https://www.monolisa.dev/
+https://github.com/intel/intel-one-mono
+https://www.fontbolt.com/font/barbie-2023-font/
+
+** Linode
+
+Need to get vps using nix as well now that 22.11 has image build support.
+
+https://github.com/Vanilla-s-Lab/linode-nix/tree/master
+
+** Network booting?
+
+  Might be fun to look into for a pi4 k8s cluster or something.
+
+  https://github.com/DeterminateSystems/nix-netboot-serve

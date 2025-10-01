@@ -61,7 +61,6 @@ in
           power-intel
           nix-offload
           fw
-          homer
           nvidia-hack
         ])
         ++ (with inputs.self.crossplatformModules; [
@@ -138,7 +137,6 @@ in
         common.mosh.enable = true;
 
         mitchty = {
-          homer.enable = true;
           promtail.enable = true;
           node-exporter = commonMonitoring;
           loki = commonMonitoring;
@@ -158,6 +156,14 @@ in
       };
 
       networking = {
+        nameservers = [
+          "10.10.10.1"
+          #          "1.1.1.1"
+        ];
+        defaultGateway = {
+          address = "10.10.10.1";
+          interface = "enp88s0";
+        };
         # Set the 10g nic up to have a metric cost so this stuff behaves
         # sane...er I hope.
         dhcpcd.extraConfig = ''
@@ -166,37 +172,45 @@ in
         '';
         interfaces = {
           enp88s0 = {
-            useDHCP = true;
+            useDHCP = false;
             ipv4.addresses = [
               {
+                address = "10.10.10.6";
+                prefixLength = 24;
+              }
+              {
+                address = "10.10.10.253";
+                prefixLength = 24;
+              }
+              {
                 address = "10.10.10.224";
-                prefixLength = 32;
+                prefixLength = 24;
               }
             ];
           };
           enp3s0f1np1.ipv4 = {
             addresses = [
               {
-                address = "10.10.10.242";
-                prefixLength = 32;
+                address = "10.10.10.252";
+                prefixLength = 24;
               }
             ];
             routes = [
               {
                 address = "10.10.10.9";
                 prefixLength = 32;
-                via = "10.10.10.242";
+                via = "10.10.10.252";
               }
             ];
           };
         };
-        firewall = {
-          interfaces = {
-            "enp88s0" = {
-              allowedTCPPorts = [ 3000 ];
-            };
-          };
-        };
+        # firewall = {
+        #   interfaces = {
+        #     "enp88s0" = {
+        #       allowedTCPPorts = [ 3000 ];
+        #     };
+        #   };
+        # };
       };
 
       # Needed for nixos-hardware common-gpu-nvidia
@@ -214,6 +228,11 @@ in
       networking.hostName = shortHost;
 
       boot = {
+        # Make sure this interface doesn't respond to arp and eff everything up
+        # that is on enp88s0
+        kernel.sysctl = {
+          "net.ipv4.conf.enp3s0f1np1.arp_ignore" = 1;
+        };
         # If this boi needs to build stuff let /tmp be sized enough to build the
         # kernel and some change at 48GiB of rams. The intel box isn't super
         # fast but I'm more abusing it to build iso images and copying stuff

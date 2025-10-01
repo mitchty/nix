@@ -26,7 +26,7 @@ in
     };
     iface = mkOption {
       type = types.str;
-      default = "enp88s0";
+      default = "br0";
       description = "interface to add vip to";
     };
   };
@@ -39,7 +39,7 @@ in
           ipv4.addresses = [
             {
               address = cfg.ip;
-              prefixLength = 32;
+              prefixLength = 24;
             }
           ];
         };

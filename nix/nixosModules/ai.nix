@@ -69,11 +69,11 @@ in
           ipv4.addresses = [
             {
               address = cfg.owuiIp;
-              prefixLength = 32;
+              prefixLength = 24;
             }
             {
               address = cfg.ollamaIp;
-              prefixLength = 32;
+              prefixLength = 24;
             }
           ];
         };

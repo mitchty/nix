@@ -13,90 +13,78 @@ let
 
   extrahosts = (
     pkgs.writeText "dns-hosts" ''
-          10.10.10.1 gw.home.arpa gw
-          10.10.10.2 gw0.home.arpa gw0
+      10.10.10.1 gw0.home.arpa gw0
 
-          10.10.10.5 srv.home.arpa srv
-          10.10.10.6 ark.home.arpa ark
-      #    10.10.10.6 cl1.home.arpa cl1
-      #    10.10.10.7 cl2.home.arpa cl2
-      #    10.10.10.8 cl3.home.arpa cl3
-          10.10.10.9 s1.home.arpa s1
+      10.10.10.9 s1.home.arpa s1
 
-          10.10.10.10 pikvm.home.arpa pikvm
-          10.10.10.11 rtx.home.arpa rtx
-      #    10.10.10.12 nexus.home.arpa nexus
-          10.10.10.13 pikvm2.home.arpa pikvm2
-          10.10.10.14 plx.home.arpa plx
+      10.10.10.10 pikvm.home.arpa pikvm
+      10.10.10.11 rtx.home.arpa rtx
+      10.10.10.13 pikvm2.home.arpa pikvm2
+      10.10.10.14 plx.home.arpa plx
 
-          10.10.10.20 mb.home.arpa mb
-          10.10.10.21 wm2.home.arpa wm2
-          10.10.10.22 mbp.home.arpa mbp
+      10.10.10.20 mb.home.arpa mb
+      10.10.10.21 wm2.home.arpa wm2
+      10.10.10.22 mbp.home.arpa mbp
 
-          10.10.10.30 iphone.home.arpa iphone
-          10.10.10.31 ipad.home.arpa ipad
+      10.10.10.50 winfx.home.arpa winfx
 
-          10.10.10.50 winfx.home.arpa winfx
-
-          10.10.10.90 wwin.home.arpa wwin
+      10.10.10.90 wwin.home.arpa wwin
 
 
-          # Static ip's take up the last /16
-          10.10.10.128 loki.home.arpa loki
-          10.10.10.129 grafana.home.arpa grafana
-          10.10.10.130 prometheus.home.arpa prometheus
-          10.10.10.132 media.home.arpa media
-          10.10.10.133 plex.home.arpa plex
+      # Static ip's take up the last /16
+      10.10.10.128 loki.home.arpa loki
+      10.10.10.129 grafana.home.arpa grafana
+      10.10.10.130 prometheus.home.arpa prometheus
+      10.10.10.132 media.home.arpa media
+      10.10.10.133 plex.home.arpa plex
 
-          # Reverse proxy caches
-          10.10.10.140 nix.cache.home.arpa cache.nixos.org.cache.home.arpa
-          10.10.10.141 docker.io.cache.home.arpa
+      # Reverse proxy caches
+      10.10.10.140 nix.cache.home.arpa cache.nixos.org.cache.home.arpa
+      10.10.10.141 docker.io.cache.home.arpa
 
-          # vm cluster ip address(es)
-          10.10.10.160 rancher.home.arpa rancher
+      # vm cluster ip address(es)
+      10.10.10.160 rancher.home.arpa rancher
 
-          # "smart" bullshit
-          10.10.10.180 spkitchen.home.arpa spkitchen
+      # "smart" bullshit
+      10.10.10.180 spkitchen.home.arpa spkitchen
 
-          # ha cluster ip address(es)
-          10.10.10.200 cluster.home.arpa cluster
-          10.10.10.201 cache.cluster.home.arpa
-          10.10.10.202 nas.cluster.home.arpa
+      # ha cluster ip address(es)
+      10.10.10.200 cluster.home.arpa cluster
+      10.10.10.201 cache.cluster.home.arpa
+      10.10.10.202 nas.cluster.home.arpa
 
-          # Wireguard block 10.10.10.208/28
-          10.10.10.208 gw.wg.home.arpa
-          10.10.10.209 wm2.wg.home.arpa
-          10.10.10.210 srv.wg.home.arpa
+      # Wireguard block 10.10.10.208/28
+      10.10.10.208 gw.wg.home.arpa
+      10.10.10.209 wm2.wg.home.arpa
+      10.10.10.210 srv.wg.home.arpa
 
-          # Edge test
-          10.10.10.230 edge.home.arpa edge
-          10.10.10.231 edge-rancher.home.arpa edge-rancher
+      # Edge test
+      10.10.10.230 edge.home.arpa edge
+      10.10.10.231 edge-rancher.home.arpa edge-rancher
 
-          # Rando services
-          10.10.10.220 ollama.home.arpa ollama
-          10.10.10.221 open-webui.home.arpa open-webui
-          10.10.10.222 slow-ollama.home.arpa ollama
-          10.10.10.223 slow-open-webui.home.arpa open-webui
-          10.10.10.224 karakeep.home.arpa karakeep
-          10.10.10.225 homer.home.arpa homer
+      # Rando services
+      10.10.10.220 ollama.home.arpa ollama
+      10.10.10.221 open-webui.home.arpa open-webui
+      10.10.10.222 slow-ollama.home.arpa ollama
+      10.10.10.223 slow-open-webui.home.arpa open-webui
+      10.10.10.224 karakeep.home.arpa karakeep
+      10.10.10.225 homer.home.arpa homer
 
-          # This is for ark.home.arpa, its a 10 gig dac to the switch, using this to route traffic to/from the nas through this ip.
-          10.10.10.242 ark-nas.home.arpa
+      10.10.10.242 ark-nas.home.arpa
 
-          # Wiffy ap's
-          10.10.10.243 wifi.home.arpa wifi
-          10.10.10.245 wifi2.home.arpa wifi2
-          10.10.10.247 wifi3.home.arpa wifi3
+      # Wiffy ap's
+      10.10.10.243 wifi.home.arpa wifi
+      10.10.10.245 wifi2.home.arpa wifi2
+      10.10.10.247 wifi3.home.arpa wifi3
 
-          # For testing dns works or not
-          10.10.10.254 canary.home.arpa canary
+      # This is for ark.home.arpa, its a 10 gig dac to the switch, using this to route traffic to/from the nas through this ip.
+      10.10.10.252 ark-nas.home.arpa ark-nas
+      10.10.10.253 ark.home.arpa ark
+      # For testing dns works or not
+      10.10.10.254 canary.home.arpa canary
     ''
   );
   dhcpHosts = [
-    "a8:b8:e0:01:24:7f,gw0,10.10.10.2"
-    "50:65:f3:6b:01:2a,srv,10.10.10.5" # onboard lan1
-    "58:47:ca:7c:08:78,ark,10.10.10.6" # lan0?
-    #          "58:47:ca:7c:08:79,foo,10.10.10.6" # lan1?
     "58:47:ca:7c:08:77,ark-nas,10.10.10.242" # 10g dac used to route straight to the nas to offload the inbound ethernet port traffic, speeds up a lot of things.
     "cc:28:aa:54:4b:bb,rtx,10.10.10.11"
     "90:09:d0:61:61:6a,s1,10.10.10.9"
@@ -106,8 +94,8 @@ let
     "f0:18:98:0d:0e:64,mb,10.10.10.20"
     "68:7a:64:48:f5:ad,wm2,10.10.10.21"
     "84:2f:57:60:af:6e,mbp,10.10.10.22"
-    "3e:34:2b:0d:97:bc,iphone,10.10.10.30"
-    "16:25:9d:16:af:ba,ipad,10.10.10.31"
+    "3e:34:2b:0d:97:bc,iphone"
+    "16:25:9d:16:af:ba,ipad"
     "c0:74:ad:f6:ba:54,wifi,10.10.10.248"
     "c0:74:ad:f6:c0:90,wifi2,10.10.10.249"
     "c0:74:ad:fc:45:58,wifi3,10.10.10.250"
@@ -326,28 +314,24 @@ in
               chain input {
                 type filter hook input priority 0;
 
-                # Loopback is fine
-                iifname lo accept
+                iifname lo accept comment "lo in"
 
-                # Accept traffic for established and related connections.
-                ct state { established, related } accept
+                ct state { established, related } counter accept comment "established in"
 
-                # Allow DHCPv6 client from link-local
+                iifname "br0" ether type arp counter accept comment "arp in"
+                iifname "br0" icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "allow limited ICMP"
+
                 ip6 saddr fe80::/64 udp dport dhcpv6-client meta nftrace set 1 accept comment "ip6 dhcpv6 link-local in"
 
-                # Allow all IPv6 ICMP
                 ip6 nexthdr icmpv6 meta nftrace set 1 accept comment "ip6 icmp in"
 
-                # And ipv6 nd
-                ip6 nexthdr icmpv6 icmpv6 type { nd-neighbor-solicit, nd-router-advert, nd-neighbor-advert } nftrace set 1  accept comment "ip6 nd"
+                ip6 nexthdr icmpv6 icmpv6 type { nd-neighbor-solicit, nd-router-advert, nd-neighbor-advert } nftrace set 1  accept comment "ip6 nd in"
 
                 # Allow ESP (IPv4/IPv6, since table inet)
-                meta l4proto esp meta nftrace set 1 accept comment "ip4/6 esp"
+                meta l4proto esp meta nftrace set 1 accept comment "ip4/6 esp in"
 
                 ip saddr @asn_allow_v4 accept
                 ip6 saddr @asn_allow_v6 accept
-
-                policy drop
               }
 
               chain output {

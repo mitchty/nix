@@ -10,3 +10,4 @@ set "${SETOPTS:--eu}"
 cd "${_dir}/.." || exit 126
 
 git-agecrypt config add -r "$(cat ~/.ssh/id_ed25519.pub)" -p $(find crypt -type f | sort)
+treefmt git-agecrypt.toml

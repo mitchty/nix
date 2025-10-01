@@ -39,7 +39,7 @@ in
           ipv4.addresses = [
             {
               address = cfg.ip;
-              prefixLength = 32;
+              prefixLength = 24;
             }
           ];
         };

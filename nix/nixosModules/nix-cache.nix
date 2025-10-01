@@ -75,11 +75,11 @@ in
           ipv4.addresses = [
             {
               address = cfg.nixIp;
-              prefixLength = 32;
+              prefixLength = 24;
             }
             {
               address = cfg.dockerIp;
-              prefixLength = 32;
+              prefixLength = 24;
             }
           ];
         };
@@ -121,7 +121,6 @@ in
           "https://cache.nixos.org"
           "https://nix-community.cachix.org"
           "https://cachix.cachix.org"
-          "https://deploy-rs.cachix.org"
         ];
         publicKeys = [
           "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="

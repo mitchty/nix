@@ -40,6 +40,7 @@ in
           blocklist
           nix-cache
           router
+          homer
           #          ip-hacks
         ])
         ++ (with inputs.self.crossplatformModules; [
@@ -87,6 +88,7 @@ in
         common.mosh.enable = true;
 
         mitchty = {
+          homer.enable = true;
           blocklist.enable = true;
           router = {
             enable = true;
@@ -137,65 +139,65 @@ in
           metric 10
         '';
         wireguard.enable = true;
-        networkmanager.unmanaged = [ "interface-name:wg0" ];
-        firewall = {
-          interfaces.wg0 = {
-            allowedTCPPortRanges = [
-              {
-                from = 0;
-                to = 65535;
-              }
-            ];
-          };
-          allowedUDPPorts = [ 51820 ];
-        };
-        interfaces.wg0 = {
-          useDHCP = false;
-        };
-        wg-quick.interfaces.wg0 =
-          let
-            intNet4 = "10.10.10.0/24";
-          in
-          {
-            address = [ "192.168.255.1/32" ];
-            # Use internal dns server for the adblock network blocking
-            dns = [ "10.10.10.1" ];
-            #dns = [ "1.1.1.1" ];
-            privateKey = "${builtins.readFile ../../../crypt/wireguard/gw0/privatekey}";
+        # networkmanager.unmanaged = [ "interface-name:wg0" ];
+        # firewall = {
+        #   interfaces.wg0 = {
+        #     allowedTCPPortRanges = [
+        #       {
+        #         from = 0;
+        #         to = 65535;
+        #       }
+        #     ];
+        #   };
+        #   allowedUDPPorts = [ 51820 ];
+        # };
+        # interfaces.wg0 = {
+        #   useDHCP = false;
+        # };
+        # wg-quick.interfaces.wg0 =
+        #   let
+        #     intNet4 = "10.10.10.0/24";
+        #   in
+        #   {
+        #     address = [ "192.168.255.1/32" ];
+        #     # Use internal dns server for the adblock network blocking
+        #     dns = [ "10.10.10.1" ];
+        #     #dns = [ "1.1.1.1" ];
+        #     privateKey = "${builtins.readFile ../../../crypt/wireguard/gw0/privatekey}";
 
-            listenPort = 51820;
+        #     listenPort = 51820;
 
-            peers = [
-              #       # Roaming capable peers
-              #       #
-              #       # m4max mbp
-              #       {
-              #         publicKey = "${builtins.readFile ../../../crypt/wireguard/mbp/publickey}";
-              #         allowedIPs = [
-              #           "0.0.0.0/0" # When mobile
-              #           "::/0" # When mobile
-              #           #                  intNet4
-              #         ];
-              #         # endpoint only whilst not roaming
-              #         #                endpoint = "home.mitchty.net:51820";
-              #         persistentKeepalive = 25;
-              #       }
-              #       # TODO winmax2 2023 wm2
-              # rtx desktop chungus
-              # {
-              #   publicKey = "${builtins.readFile ../../../crypt/wireguard/rtx/publickey}";
-              #   allowedIPs = [
-              #     #"10.10.10.11/32"
-              #     "0.0.0.0/0" # When mobile
-              #     #"::/0" # When mobile
-              #     #intNet4
-              #   ];
-              #   # endpoint only whilst not roaming
-              #   #                endpoint = "rtx.home.arpa:51820";
-              #   persistentKeepalive = 25;
-              # }
-            ];
-          };
+        #     peers = [
+        #       #       # Roaming capable peers
+        #       #       #
+        #       #       # m4max mbp
+        #       #       {
+        #       #         publicKey = "${builtins.readFile ../../../crypt/wireguard/mbp/publickey}";
+        #       #         allowedIPs = [
+        #       #           "0.0.0.0/0" # When mobile
+        #       #           "::/0" # When mobile
+        #       #           #                  intNet4
+        #       #         ];
+        #       #         # endpoint only whilst not roaming
+        #       #         #                endpoint = "home.mitchty.net:51820";
+        #       #         persistentKeepalive = 25;
+        #       #       }
+        #       #       # TODO winmax2 2023 wm2
+        #       # rtx desktop chungus
+        #       # {
+        #       #   publicKey = "${builtins.readFile ../../../crypt/wireguard/rtx/publickey}";
+        #       #   allowedIPs = [
+        #       #     #"10.10.10.11/32"
+        #       #     "0.0.0.0/0" # When mobile
+        #       #     #"::/0" # When mobile
+        #       #     #intNet4
+        #       #   ];
+        #       #   # endpoint only whilst not roaming
+        #       #   #                endpoint = "rtx.home.arpa:51820";
+        #       #   persistentKeepalive = 25;
+        #       # }
+        #     ];
+        #   };
       };
 
       boot = {
