@@ -1,6 +1,7 @@
 # -*- mode: Shell-script; -*-
 
 # macos specific
+#shellcheck disable=SC2139
 alias oe="open -a $(which emacs)"
 
 # Kinda like which but for macos app bundles
@@ -21,5 +22,6 @@ whichapp() {
 # ends up just with the trampoline in home manager or /Applications
 nao() {
   name="${1?need the app name to open}"
+  #shellcheck disable=SC2086
   open -a "$(whichapp ${name} | grep -v '/nix/store')"
 }
