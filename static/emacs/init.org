@@ -447,10 +447,30 @@ All the packages I abuse for shenanigans and whatnot.
 
 This section is only for testing crap. Though like anything temporary it can become permanent and I forget to move it on yonder out of here.
 
-Trying out eca for abominable intelligence integration.
+Abusing mermaid for diagrams test, note the hook at the end of config is a hack. Future mitch can fix it in post... I'm just wanting to see the tangled images inline, and for now mermaids the only thing that does it. I'm sure there is a better spot... somewhere for it.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package eca :ensure :defer)
+(use-package ob-mermaid
+  :ensure
+  :defer
+  :after org
+  :config
+  (add-to-list 'org-babel-load-languages '(mermaid . t))
+  (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
+  (add-hook 'org-babel-after-execute-hook 'org-display-inline-images))
+#+END_SRC
+
+Trying out eca for abominable intelligence integration. Promotable methinks as its working decently enough.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package lsp-ui
+  :ensure
+  :defer
+  :after lsp-mode)
+(use-package eca
+  :ensure
+  :defer
+  :after lsp-ui)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -494,7 +514,8 @@ Stuff thats getting tested...
   :after sideline)
 #+END_SRC
 
-TODO: this shits not working with ollama for some reason, future mitch figure it out
+TODO: this shits not working with ollama for some reason, future mitch figure it out, or just maybe hook eca up to ollama instead? This was ass to setup in general compared to eca.
+
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package chatgpt-shell
   :ensure t

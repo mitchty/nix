@@ -10,6 +10,7 @@ let
     altshfmt
     asm-lsp
     clang-tools
+    brave
     coreutils
     curl
     ditaa
@@ -20,6 +21,7 @@ let
     gitFull
     gnumake
     ispell
+    mermaid-cli
     nil
     nixfmt-rfc-style
     nodePackages.bash-language-server
@@ -223,8 +225,9 @@ rec {
     meta.mainProgram = "emacs";
     paths = [ myEmacs ];
     nativeBuildInputs = [ super.pkgs.makeWrapper ];
+    # puppeteer bs is for mermaid, so lame
     postBuild = ''
-      wrapProgram $out/bin/emacs --prefix PATH : "${super.lib.makeBinPath editorPackages}"
+      wrapProgram $out/bin/emacs --prefix PATH : "${super.lib.makeBinPath editorPackages}" --set PUPPETEER_EXECUTABLE_PATH ${super.pkgs.brave}/bin/brave
     '';
   };
 }
