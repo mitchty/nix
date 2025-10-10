@@ -175,6 +175,7 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     # If/when open-webui breaks... again let me pin just that junk to last
     # working version until fixed.
+    #    nixpkgs-ai.url = "github:NixOS/nixpkgs/bce5fe2bb998488d8e7e7856315f90496723793c";
     nixpkgs-ai.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     home-manager = {

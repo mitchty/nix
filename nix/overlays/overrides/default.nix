@@ -8,6 +8,18 @@ self: super: {
       ];
   });
 
+  # Until this stuff is fixed, add this patch to fix things for ctranslate2
+  # https://github.com/NixOS/nixpkgs/issues/445447
+  # https://github.com/NixOS/nixpkgs/pull/450313
+  ctranslate2 = super.ctranslate2.overrideAttrs (old: {
+    patches = [
+      (super.fetchurl {
+        url = "https://raw.githubusercontent.com/NixOS/nixpkgs/51640275eb64be2906a40efd78fbbff0f4e0030a/pkgs/by-name/ct/ctranslate2/cmake-3.10.patch";
+        sha256 = "sha256-eSxZf32AjFWuSIwXIZDS+5Jrj7E2dxFXFE7Hct4pTsQ=";
+      })
+    ];
+  });
+
   # Some wonky node.js bs seems to think it can mkdir anywhere apparently, no bueno cause the nix store's readonly
   # Aug 19 20:19:44 ark start-web[269884]:  ⨯ Failed to write image to cache FrdlaqhpdTaPM-DRuZSD5O-KySK7-9FHldWFIPzdR2w= Error: ENOENT: no such file or directory, mkdir '/nix/store/vmd7bl6qhvkndgp4bf37az9s26m0vw3g-karakeep-0.24.1/lib/karakeep/apps/web/.next/standalone/apps/web/.next/cache'
   # Aug 19 20:19:44 ark start-web[269884]:     at async Object.mkdir (node:internal/fs/promises:858:10)

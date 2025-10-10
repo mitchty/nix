@@ -210,11 +210,14 @@ firmware() {
 
   pdftotext gwnap.pdf gwnap.txt
 
+  cp gwnap.txt /tmp/gwnap.debug
+
   # idgaf about this
   #shellcheck disable=SC2002
-  found=$(cat gwnap.txt | grep -A2 -E 'GWN7664$' | tail -n1)
+  found=$(cat gwnap.txt | grep -A4 -E 'GWN7664$' | grep firmware | head -n1)
 
-  latest=$(fw "${found}")
+  #  latest=$(fw "${found}")
+  latest=${found}
 
   old=${have}
   new=${found}

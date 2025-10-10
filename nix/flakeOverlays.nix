@@ -4,11 +4,15 @@
   ...
 }:
 [
-  (final: prev: rec {
+  (final: prev: {
     # Exposes each input as pkgs.name in the normal package set
     #
     # Not quite an "overlay" but a way to abuse different package inputs
     # or use all of em if I want in derivations here.
+    #
+    # Note unstable is abused for things like btop that have cuda/rocm support
+    # and can display builtin gpus and non. Lots of stuff seems to be one or the
+    # other so the ai- things cover the nvidia/amd only cases.
     unstable = import inputs.nixpkgs-unstable {
       inherit (final) system;
       config = {

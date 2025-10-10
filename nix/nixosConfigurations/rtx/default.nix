@@ -1,8 +1,12 @@
-{ inputs, lib, ... }:
+{
+  inputs,
+  lib,
+  ...
+}:
 let
   shortHost = "rtx";
 in
-{
+rec {
   system = "x86_64-linux";
 
   modules = [
@@ -81,6 +85,7 @@ in
                   # … while realising the context of path '/nix/store/253k47y97jln0kqnf7yqslicj7d2m10y-mytestedemacsconfig-0.0.0/init.el'
 
                   # error: a 'x86_64-linux' with features {} is required to build '/nix/store/5yd242axp4syplgdk9kiifpqh6fv22r9-native-comp-driver-options-30.patch.drv', but I am a 'aarch64-darwin' with features {apple-virt, benchmark, big-parallel, ca-derivations, nixos-test}
+                  #                  (lib.mkIf inputs.nixpkgs.legacyPackages.${system}.hostPlatform.isLinux emacs)
                   emacs
                 ]);
               };
@@ -106,29 +111,43 @@ in
           promtail.enable = true;
           node-exporter = {
             enable = true;
-            iface = "eno1";
+            iface = "br0";
           };
         };
       };
 
       networking = {
+        nameservers = [
+          "10.10.10.1"
+        ];
+        defaultGateway = {
+          address = "10.10.10.1";
+          interface = "br0";
+        };
         firewall = {
           trustedInterfaces = [
-            "eno1"
-            "wlp8s0"
+            "br0"
           ];
         };
+        bridges.br0.interfaces = [ "eno1" ];
         wireless.enable = false;
         networkmanager = {
           enable = true;
           wifi.powersave = false;
-          dns = "dnsmasq";
+          #          dns = "dnsmasq";
         };
         interfaces = {
-          # This is the usb c thingy
-          eno1 = {
-            useDHCP = true;
+          br0 = {
+            useDHCP = false;
+            ipv4.addresses = [
+              {
+                address = "10.10.10.11";
+                prefixLength = 24;
+              }
+            ];
           };
+          eno1.useDHCP = false;
+          eno2.useDHCP = false;
         };
         hosts = {
           "10.200.200.254" = [
