@@ -5,9 +5,11 @@
 }:
 let
   shortHost = "ark";
+  iface = "eno1";
   commonMonitoring = {
     enable = true;
-    iface = "enp88s0";
+    #    iface = "enp88s0";
+    inherit iface;
   };
   system = "x86_64-linux";
 
@@ -54,12 +56,13 @@ in
           prometheus
           grafana
           media
-          ai
+          backup
+          #          ai
           debug
           virtualization
           power
           power-intel
-          nix-offload
+          #          nix-offload
           fw
           nvidia-hack
         ])
@@ -103,7 +106,7 @@ in
           common-pc-ssd
           common-cpu-intel
           common-gpu-intel
-          common-gpu-nvidia-nonprime
+          #          common-gpu-nvidia-nonprime
         ])
         ++ [
           ./diskconfig.nix
@@ -122,10 +125,10 @@ in
             DISABLE_SIGNUPS = "true";
             DISABLE_NEW_RELEASE_CHECK = "true";
             CRAWLER_FULL_PAGE_ARCHIVE = "true";
-            OLLAMA_BASE_URL = "http://slow-ollama.home.arpa:11434";
-            INFERENCE_TEXT_MODEL = "gemma3";
-            INFERENCE_IMAGE_MODEL = "llava";
-            OCR_CACHE_DIR = "/tmp";
+            # OLLAMA_BASE_URL = "http://slow-ollama.home.arpa:11434";
+            # INFERENCE_TEXT_MODEL = "gemma3";
+            # INFERENCE_IMAGE_MODEL = "llava";
+            # OCR_CACHE_DIR = "/tmp";
             # CRAWLER_VIDEO_DOWNLOAD = "true";
             # CRAWLER_VIDEO_DOWNLOAD_MAX_SIZE = "true";
             # CRAWLER_VIDEO_DOWNLOAD_TIMEOUT_SEC = "3600";
@@ -145,13 +148,14 @@ in
           media = commonMonitoring // {
             services = true;
           };
-          ai = commonMonitoring // {
-            ollamaCname = "slow-ollama.home.arpa";
-            ollamaIp = "10.10.10.222";
-            ollamaPackage = unstable-pkgs.ollama-cuda;
-            owuiCname = "slow-open-webui.home.arpa";
-            owuiIp = "10.10.10.223";
-          };
+          # ai = commonMonitoring // {
+          #   ollamaCname = "slow-ollama.home.arpa";
+          #   ollamaIp = "10.10.10.222";
+          #   #            ollamaPackage = unstable-pkgs.ollama-cuda;
+          #   ollamaPackage = unstable-pkgs.ollama;
+          #   owuiCname = "slow-open-webui.home.arpa";
+          #   owuiIp = "10.10.10.223";
+          # };
         };
       };
 
@@ -162,22 +166,18 @@ in
         ];
         defaultGateway = {
           address = "10.10.10.1";
-          interface = "enp88s0";
+          interface = "${iface}";
         };
         # Set the 10g nic up to have a metric cost so this stuff behaves
         # sane...er I hope.
-        dhcpcd.extraConfig = ''
-          interface enp3s0f1np1
-          metric 1000
-        '';
+        # dhcpcd.extraConfig = ''
+        #   interface enp3s0f1np1
+        #   metric 1000
+        # '';
         interfaces = {
-          enp88s0 = {
+          "${iface}" = {
             useDHCP = false;
             ipv4.addresses = [
-              {
-                address = "10.10.10.6";
-                prefixLength = 24;
-              }
               {
                 address = "10.10.10.253";
                 prefixLength = 24;
@@ -188,25 +188,25 @@ in
               }
             ];
           };
-          enp3s0f1np1.ipv4 = {
-            addresses = [
-              {
-                address = "10.10.10.252";
-                prefixLength = 24;
-              }
-            ];
-            routes = [
-              {
-                address = "10.10.10.9";
-                prefixLength = 32;
-                via = "10.10.10.252";
-              }
-            ];
-          };
+          # enp3s0f1np1.ipv4 = {
+          #   addresses = [
+          #     {
+          #       address = "10.10.10.252";
+          #       prefixLength = 24;
+          #     }
+          #   ];
+          #   routes = [
+          #     {
+          #       address = "10.10.10.9";
+          #       prefixLength = 32;
+          #       via = "10.10.10.252";
+          #     }
+          #   ];
+          # };
         };
         # firewall = {
         #   interfaces = {
-        #     "enp88s0" = {
+        #     "${iface}" = {
         #       allowedTCPPorts = [ 3000 ];
         #     };
         #   };
@@ -218,7 +218,7 @@ in
       #  Failed assertions:
       # - You must configure `hardware.nvidia.open` on NVIDIA driver versions >= 560.
       # It is suggested to use the open source kernel modules on Turing or later GPUs (RTX series, GTX 16xx), and the closed source modules otherwise.
-      services.xserver.videoDrivers = [ "nvidia" ];
+      #      services.xserver.videoDrivers = [ "nvidia" ];
 
       diskConfig.disks = [
         "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7KGNU0X707714B"
@@ -263,7 +263,7 @@ in
 
       hardware.nvidia = {
         open = lib.mkForce true;
-        nvidiaSettings = true;
+        #        nvidiaSettings = true;
         modesetting.enable = true;
         powerManagement.enable = true;
 
