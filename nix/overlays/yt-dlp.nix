@@ -7,11 +7,11 @@ rec {
   # Up to to find easier.
   yt-dlp = prev.yt-dlp.overrideAttrs (old: rec {
     latest = "curl --silent https://api.github.com/repos/yt-dlp/yt-dlp/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
-    version = "2025.9.26";
+    version = "2025.10.14";
     src = prev.fetchPypi {
       inherit version;
       pname = "yt_dlp";
-      hash = "sha256-wUiugjOsTObF+/b3D8w5DxOgD1naN3bTc8+IxTcL2oY=";
+      hash = "sha256-sYQ2qpu28ENU/XjTGtnuqujIG2qFnwcHKyXBjNbCWEQ=";
     };
     postPatch = '':'';
     propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
