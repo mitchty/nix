@@ -86,7 +86,6 @@ let
   );
   dhcpHosts = [
     "58:47:ca:7c:08:77,ark-nas,10.10.10.242" # 10g dac used to route straight to the nas to offload the inbound ethernet port traffic, speeds up a lot of things.
-    "cc:28:aa:54:4b:bb,rtx,10.10.10.11"
     "90:09:d0:61:61:6a,s1,10.10.10.9"
     "e4:5f:01:92:cc:1f,pikvm,10.10.10.10"
     "e4:5f:01:b5:38:d2,pikvm2,10.10.10.13"

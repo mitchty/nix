@@ -182,9 +182,9 @@ The use-package emacs declaration for general configuration. Everything except ^
   (savehist-mode 1)
   (save-place-mode 1)
 
-  ;; (global-auto-revert-mode t)
-  ;; (global-auto-revert-non-file-buffers t)
-  ;; (auto-revert-remote-files t)
+  (global-auto-revert-mode t)
+  (global-auto-revert-non-file-buffers t)
+  (auto-revert-remote-files t)
 
   (word-wrap t)
   (default-major-mode 'text-mode)

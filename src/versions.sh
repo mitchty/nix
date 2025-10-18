@@ -214,7 +214,7 @@ firmware() {
 
   # idgaf about this
   #shellcheck disable=SC2002
-  found=$(cat gwnap.txt | grep -A4 -E 'GWN7664$' | grep firmware | head -n1)
+  found=$(cat gwnap.txt | grep -A10 -E 'GWN7664$' | grep -E '[0-9]+.[0-9]+.[0-9]+.[0-9]+' | head -n1)
 
   #  latest=$(fw "${found}")
   latest=${found}
@@ -222,7 +222,7 @@ firmware() {
   old=${have}
   new=${found}
 
-  if [ "${curr}" != "${latest}" ]; then
+  if [ "${old}" != "${new}" ]; then
     ok=$((ok + 1))
     printf "GWN7664 firmware skew current=%s have=%s\n" "${old}" "${new}"
     printf "change curr to: %s\n" "${latest}"

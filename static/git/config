@@ -30,15 +30,10 @@
 
 # Stuff I really need to go through at some point.
 [alias]
-  # The git diff -u here is cause sometimes git stash pop fails and reflog was
-  # missing data and ungh so whatever just save a unified diff of changes just
-  # in case too to make future me's life sometimes easier if at work laptop
-  # where I can't depend on restic backups to save me.
-  nix = !git diff -u > b4.diff && git checkout flake.lock && git syn
   # remove uncommitted crap interactively
-  rmuc = !git clean -di
+  rmuc = !clean -di
   bage = for-each-ref --sort='authordate:iso8601' --format=' %(color:green)%(authordate:relative)%09%(color:white)%(refname:short)' refs/heads
-  begin = !git init && git commit --allow-empty -m 'Initial empty commit'
+  begin = !git init && git commit --allow-empty -m 'Initial commit'
   up = !git pull --rebase && git push
   syn = !git stash && git pull --rebase && git stash pop
   wsde = ! git wsd ':(exclude)*.lock'

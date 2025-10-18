@@ -109,6 +109,8 @@ in
   # cifs mount user/pass files
   "secrets/cifs/plex.age".publicKeys = cifs ++ ageadmins;
   "secrets/cifs/mitch.age".publicKeys = cifs ++ ageadmins;
+  # note the backup cifs data is "special" and not everywhere
+  "secrets/cifs/backup.age".publicKeys = backup ++ ageadmins;
 
   # Wifi networkmanager setup
   "secrets/wifi/lostfox.age".publicKeys = wifi ++ ageadmins;
