@@ -77,6 +77,7 @@ rec {
                   firefox
                   chrome
                   kopia
+                  finance
                   # For some reason this is being derived when I wouldn't expect
                   # it to be on nix-darwin. Guard against it being evaluated
                   # when not on a linux host platform until I find a better way,
