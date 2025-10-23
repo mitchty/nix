@@ -9,11 +9,11 @@
 if (system == "aarch64-darwin") then
   pkgs.stdenvNoCC.mkDerivation rec {
     pname = "tradingview-mac";
-    version = "2.13.0";
+    version = "2.14.0";
 
     src = fetchurl {
       url = "https://tvd-packages.tradingview.com/stable/${version}/darwin/TradingView.dmg";
-      sha256 = "sha256-/aWCfmaabybatPkbJaj1a9wPbVvYLfBEtTjJJbvD2eE=";
+      sha256 = "sha256-6SuE0WT0bdZVjsDYs4ttB6ReW1jar7qGqWiLvH/DfN8=";
     };
 
     sourceRoot = ".";
