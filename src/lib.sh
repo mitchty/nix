@@ -323,9 +323,9 @@ orgpub() {
 # Portably generate a random integer, can't depend on $RANDOM everywhere,
 # especially since I am not a fan of the bash.
 randint() {
-  local floor="${1:-1}"
-  shift > /dev/null 2>&1
   local ceil="${1:-10}"
+  shift > /dev/null 2>&1
+  local floor="${1:-1}"
   ${OD} -An -N2 -i /dev/urandom | ${AWK} -v f="${floor}" -v c="${ceil}" '{print (f + ($1 % (c - f)))}'
 }
 
