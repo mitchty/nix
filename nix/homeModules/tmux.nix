@@ -167,8 +167,14 @@ let
       }
       {
         shell_command = [
+          "hwatch -t -d word -n 180 $CARGO_TARGET_DIR/release/ythelper stats --subscription subs/all.yaml"
+        ];
+      }
+      {
+        shell_command = [
           {
             cmd = "dev=enp2s0 ./ytlatest.sh subs/all.yaml | ts";
+            enter = false;
           }
         ];
       }

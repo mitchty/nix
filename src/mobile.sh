@@ -1,10 +1,15 @@
 #!/usr/bin/env sh
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
-# Description: Script to "do crap" to my nix config at runtime.
+# Description: Script to insert strings in a file basically
 #
-# Mostly just here to (un)comment out lines as needed when my laptops not at
-# home so some stuff makes less sense like abusing my proxy nix caching setup.
+# Abusing this for "feature" detection kinda stuff so I can toggle stuff on/off
+# without trying to pass in params to a flake which is full of evil.
+#
+# This also lets me easily define default "features" for various things.
+#
+# Mostly used right now for turning off nix using internal caching substituters
+# or not.
 _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir

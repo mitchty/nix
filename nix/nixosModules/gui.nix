@@ -58,6 +58,7 @@
       rtkit
       kdePackages.sddm
       xorg.xauth
+      xclip
     ];
 
     # Loopback device/kernel module config for obs
