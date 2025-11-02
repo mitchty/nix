@@ -17,14 +17,14 @@ direnv_layout_dir() {
 # - based on path/$PWD
 # - Also uses the host to segregate paths
 #
-# The premise here is to get stuff out of /tmp and into ~/src/tmp so that I can
+# The premise here is to get stuff out of /tmp and into ~/.cache so that I can
 # sync things if needed and keep stuff like cargo build artifacts out of the
 # $PWD
 #
 # This function is intended to be portable and usable for other things too.
 uniq_cache() {
   local label="${1:-unknowncache-$$}"
-  local base="${TMPDIR:-${HOME}/.cache}"
+  local base="${HOME}/.cache"
   #shellcheck disable=SC2046,SC2155
   local hash=$(echo "${PWD}" | sha1sum | head -c40)
   # TODO portable-ize this to use sed prolly
