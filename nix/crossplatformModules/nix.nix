@@ -17,6 +17,20 @@
       "ca-derivations"
     ];
     settings = {
+      # Default is 0 which means 5 minutes before it declares a substituter DOA
+      connect-timeout = 10;
+
+      # If binary substition fails build from source is ok I guess
+      fallback = true;
+
+      # I'm sick of these messages I knowwwwwwww the checkout has changes. I did
+      # the changes.
+      warn-dirty = false;
+
+      # Saves on rebuilds a bit, can probably turn this off back to default if
+      # issues arise.
+      keep-outputs = true;
+
       # Fixes some weird channel related behavior
       extra-nix-path = "nixpkgs=flake:nixpkgs";
 
@@ -27,7 +41,7 @@
       #
       # Had this fill up on another system so doubling it to 128MiB. How gihugic
       # do I need this to be on a 10g/2.5g network?
-      download-buffer-size = 128 * 1024 * 1024;
+      download-buffer-size = 256 * 1024 * 1024;
 
       # Keys I'm willing to accept as kosher
       trusted-public-keys = [
