@@ -34,12 +34,6 @@
       {
         nixpkgs.config = {
           allowUnfree = true;
-          # TODO Why come stdenv here isn't working when its an arg?
-          # }
-          # // lib.optionalAttrs (stdenv.isLinux) {
-          #   allowCuda = true;
-          #   cudaSupport = true;
-          #   rocmSupport = true;
         };
         inherit inputs;
         # All here and not in ./nix cause I don't feel like doing it better,
@@ -257,9 +251,10 @@
       url = "github:jzbor/nix-sweep";
       #      inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixpkgs-eca.url = "github:NixOS/nixpkgs/8913c168d1c56dc49a7718685968f38752171c3b";
     eca = {
       url = "github:editor-code-assistant/eca";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-eca";
     };
     cf-dns-update = {
       url = "github:mitchty/cf-dns-update";
