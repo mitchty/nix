@@ -11,13 +11,13 @@ let
 in
 python3.pkgs.buildPythonApplication rec {
   pname = "ytdl-sub";
-  version = "2025.10.23";
+  version = "2025.11.09";
   format = "pyproject";
 
   src = fetchFromGitHub {
     inherit owner repo;
     rev = "refs/tags/${version}";
-    hash = "sha256-8BU0kTKPwCx/SFSONxGC3vXoBbcdX4ac+dlzoVpnkt0=";
+    hash = "sha256-LEnBj2pMGZp1QTlocpCRJQI6dI3o1S65Ml1ArV+c6S0=";
   };
 
   postPatch = ''
