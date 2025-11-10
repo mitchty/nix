@@ -4,6 +4,9 @@
   lib,
   ...
 }:
+let
+  enableHomeCache = import ../../hacks/home-nix-cache.nix;
+in
 {
   environment.systemPackages = with pkgs; [
     cachix
@@ -53,14 +56,10 @@
       # here and let ncps handle if something is down or not.
       #
       # Then I can ignore this feature flag kinda crap and just let ncps cache
-      # to internal ncps when on local network and/or wireshark when I get that
+      # to internal ncps when on local network and/or wireguard when I get that
       # working but always through the local ncps daemon and I don't gotta do
       # anything with editing files or whatever.
-      #
-      # TODO: future mitch winter task
-      # MOBILE_START
-      substituters = [ "http://nix.cache.home.arpa:8080" ];
-      # MOBILE_END
+      extra-substituters = [ "http://nix.cache.home.arpa:8080?priority=10" ];
     };
   };
 }

@@ -1,16 +1,9 @@
 {
-  config,
-  pkgs,
-  lib,
   inputs,
   ...
 }:
-let
-  inherit (builtins) mapAttrs;
-  inherit (inputs) self;
-in
 {
-  imports = with self.homeModules; [ common ];
+  imports = with inputs.self.homeModules; [ common ];
 
   home = {
     stateVersion = "24.11";

@@ -1,0 +1,21 @@
+* Hacks I haven't found a way to work around yet
+
+Because sometimes trying to do stuff the "right" way is... unpleasant or not possible.
+
+This dir started due to an incongruency when running `nix flake check` on macos. Due to my crazy symlinkjoining and other nonsense in my overlay for emacs, let bindings get triggered and evaluated at nix flake check time.
+
+But the "fun", if it can be called that is that stdenv.buildPlatform.system and stdenv.hostPlatform.system in those instances shows up as x86_64-linux even though nix flake check is running on macos.
+
+I tried to work around this by abusing builtins, but I would have to add --impure to make that work. So whatever old tricks are the best tricks.
+
+Essentially each .nix file in here is simplay a true/false value that controls other things so that I can run nix flake check on macos.
+
+This will get out of date as I'll forget to update the docs but currently that affects:
+- `nix/overlays/emacs.nix`
+- `nix/homeModules/emacs.nix`
+- `nix/homeModules/linux-i3.nix`
+- `nix/homeModules/gui.nix`
+
+The emacs stuff is to work around recently adding `eca` to the mix. There is something deep in the bowels of the clojure nix lib in use there that I'd rather not debug further. The rest is to work around odd issues due to home-manager fonts.fontconfig and kitty causing package derivations to try to build.
+
+A future mitch task might be for me to figure out some way to remove these hacks.

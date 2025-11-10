@@ -189,7 +189,10 @@ rec {
           #
           # Stupid ollama derivations and amd driver shenanigans BOO
           # URNS I say.
-          tmpfsSize = "40%";
+          #
+          # Ungh so if I get like two electron app builds at once poof 70G of
+          # /tmp gone away.
+          tmpfsSize = "70%";
         };
 
         # If this boi needs to build stuff let /tmp be sized enough to build the

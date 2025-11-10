@@ -8,10 +8,10 @@
   #
   # TODO: get this working on macos, this only works on linux
   #
-  # ALso problematic is this firefox module is 23.11 only, need to debug the hokey segfault in emacs with 23.11 setups with treesitter.
+  # Also problematic is this firefox module is 23.11 only, need to debug the hokey segfault in emacs with 23.11 setups with treesitter.
   programs.firefox = {
     enable = true;
-    package = pkgs.unstable.firefox;
+    package = pkgs.unstable-nogpu.firefox;
     policies = {
       CaptivePortal = true;
       DisableFirefoxStudies = true;

@@ -1,8 +1,11 @@
 {
   pkgs,
+  lib,
   ...
 }:
 let
+  enableFullBuild = import ../../hacks/flake-check.nix;
+
   # Default font size based off display size in role, basically big or else...
   #fontSize = if roles.gui-new.displaySize == "big" then 14 else 12;
   fontSize = 12;
@@ -14,9 +17,30 @@ let
       });
 in
 {
-  # Kitty only makes sense on i3.... for now?
-  programs = {
-    kitty = {
+  config = {
+    home = {
+      packages = with pkgs; [
+        mystatus
+        bc
+      ];
+
+      file.".config/i3/config" = {
+        text = pkgs.lib.strings.concatStringsSep "\n" (
+          [
+            (pkgs.lib.strings.fileContents ../../static/xorg/i3/config)
+          ]
+          ++ [
+            ''
+              # Font for window titles and bar.
+              font pango:${fontName} 12
+            ''
+          ]
+        );
+        force = true; # I can't get why I need to set force for ~/.config/i3* stuff
+      };
+    };
+
+    programs.kitty = lib.optionalAttrs enableFullBuild {
       enable = true;
       font = {
         name = fontName;
@@ -33,25 +57,11 @@ in
       '';
     };
   };
-
-  home = {
-    packages = with pkgs; [
-      mystatus
-      bc
-    ];
-    file.".config/i3/config" = {
-      text = pkgs.lib.strings.concatStringsSep "\n" (
-        [
-          (pkgs.lib.strings.fileContents ../../static/xorg/i3/config)
-        ]
-        ++ [
-          ''
-            # Font for window titles and bar.
-            font pango:${fontName} 12
-          ''
-        ]
-      );
-      force = true; # I can't get why I need to set force for ~/.config/i3* stuff
-    };
-  };
 }
+
+#   packages = with pkgs; [
+#     networkmanager-openconnect
+#     unstable.teams-for-linux
+#   ];
+# };
+# Kitty only makes sense on i3.... for now?

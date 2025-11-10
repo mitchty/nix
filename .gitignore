@@ -3,3 +3,4 @@ img/*
 result
 b4.diff
 #private
+hacks/*.nix

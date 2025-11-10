@@ -19,10 +19,19 @@
         allowUnfree = true;
       }
       // lib.optionalAttrs (final.stdenv.isLinux) {
-        allowUnfree = true;
         allowCuda = true;
         cudaSupport = true;
         rocmSupport = true;
+      };
+      overlays = [
+        inputs.self.overlays.overrides
+      ];
+    };
+
+    unstable-nogpu = import inputs.nixpkgs-unstable {
+      inherit (final) system;
+      config = {
+        allowUnfree = true;
       };
       overlays = [
         inputs.self.overlays.overrides
@@ -38,7 +47,6 @@
         allowUnfree = true;
       }
       // lib.optionalAttrs (final.stdenv.isLinux) {
-        allowUnfree = true;
         allowCuda = true;
         cudaSupport = true;
       };
@@ -54,7 +62,6 @@
         allowUnfree = true;
       }
       // lib.optionalAttrs (final.stdenv.isLinux) {
-        allowUnfree = true;
         rocmSupport = true;
       };
       overlays = [

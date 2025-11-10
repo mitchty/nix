@@ -5,7 +5,10 @@
   config,
   ...
 }:
+let
+  enableFullBuild = import ../../hacks/flake-check.nix;
+in
 {
-  # This should go in a gooey module
-  fonts.fontconfig.enable = true;
+
+  fonts.fontconfig.enable = enableFullBuild;
 }

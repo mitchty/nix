@@ -11,11 +11,6 @@ in
 {
   imports = with inputs.self.homeModules; [ emacs ];
 
-  options.nixGL.package = mkOption {
-    type = types.package;
-    default = pkgs.nixgl.nixGLMesa;
-  };
-
   # This is all the junk for my normal username I always want setup.
   #
   # Gooey stuff/macos/etc... go elsewhere.
@@ -29,8 +24,6 @@ in
   config = {
     home = {
       packages = with pkgs; [
-        (nixgl.nixGLCommon config.nixGL.package)
-        asm-lsp
         bind.dnsutils
         bonnie
         coreutils
@@ -55,7 +48,6 @@ in
         git-vendor
         gitFull
         glibcInfo
-        gnumake
         gnutar
         graphviz
         gron
@@ -110,8 +102,7 @@ in
       ];
     };
 
-    fonts.fontconfig.enable = true;
-
+    # Note, says xdg but works on macos too
     xdg.configFile."direnv/direnvrc".text = ''
       source ${pkgs.nix-direnv}/share/nix-direnv/direnvrc
       source ./../static/home/direnvrc

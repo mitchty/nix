@@ -43,6 +43,5 @@
       puppeteer-cli
       poppler_utils
       qemu-uefi-wrapper
-      rust-analyzer-nightly
     ];
 }
