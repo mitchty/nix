@@ -2,24 +2,35 @@ final: prev:
 let
   getDeps = x: map (p: "${p}/${p.pythonModule.sitePackages}") ([ x ] ++ x.propagatedBuildInputs);
   toPathWithSep = x: prev.pkgs.lib.concatStringsSep ":" (getDeps x);
+  ffmpegOpts = {
+    withUnfree = true;
+  }
+  // prev.lib.optionalAttrs prev.stdenv.hostPlatform.isLinux {
+    withMfx = false;
+    withVpl = true;
+  };
 in
 rec {
   # Up to to find easier.
-  yt-dlp = prev.yt-dlp.overrideAttrs (old: rec {
-    latest = "curl --silent https://api.github.com/repos/yt-dlp/yt-dlp/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
-    version = "2025.10.22";
-    src = prev.fetchPypi {
-      inherit version;
-      pname = "yt_dlp";
-      hash = "sha256-2y1IEzIisdlQjG3nV4WcJLXO+5Voz2jMrYXawgsH93s=";
-    };
-    postPatch = '':'';
-    propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
-      final.yt-dlp-get-pot
-      final.bgutil-ytdlp-pot-provider
-      final.deno
-    ];
-  });
+  yt-dlp =
+    (prev.yt-dlp.override {
+      ffmpeg-headless = prev.ffmpeg-headless.override ffmpegOpts;
+    }).overrideAttrs
+      (old: rec {
+        latest = "curl --silent https://api.github.com/repos/yt-dlp/yt-dlp/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
+        version = "2025.10.22";
+        src = prev.fetchPypi {
+          inherit version;
+          pname = "yt_dlp";
+          hash = "sha256-2y1IEzIisdlQjG3nV4WcJLXO+5Voz2jMrYXawgsH93s=";
+        };
+        postPatch = '':'';
+        propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
+          final.yt-dlp-get-pot
+          final.bgutil-ytdlp-pot-provider
+          final.deno
+        ];
+      });
 
   # Add in the player object tokens as plugins to yt-dlp
   yt-dlp-get-pot = prev.python3Packages.buildPythonPackage rec {
