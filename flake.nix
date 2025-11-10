@@ -82,6 +82,54 @@
 
         legacyPackages = pkgs: pkgs;
         formatter = pkgs: pkgs.nixfmt-rfc-style;
+
+        # Handles the work of wrapping nix flake check for me on macos and
+        # undoing that too on linux if I run things.
+        # nix run .#check && nix flake check -L ... now instead of nix flake check -L
+        apps = {
+          check = pkgs: {
+            type = "app";
+            program = "${
+              pkgs.writeShellApplication {
+                name = "check";
+                text = ''
+                  set -e
+                  hack=hacks/flake-check.nix
+                  git checkout $hack
+                  if [ "$(uname -s)" != "Linux" ]; then
+                    echo false > $hack
+                  fi
+                '';
+              }
+            }/bin/check";
+          };
+          # quick app script to just update the nix flake firewall related input deps
+          update-fw = pkgs: {
+            type = "app";
+            program = "${
+              pkgs.writeShellApplication {
+                name = "update-fw";
+                text = ''
+                  set -e
+                  nix flake update dns geo
+                '';
+              }
+            }/bin/update-fw";
+          };
+          # Update only deps that emacs derivations use
+          update-emacs = pkgs: {
+            type = "app";
+            program = "${
+              pkgs.writeShellApplication {
+                name = "update-emacs";
+                text = ''
+                  set -e
+                  nix flake update eca emacs-overlay
+                '';
+              }
+            }/bin/update-emacs";
+          };
+        };
       }
     )
     // {
@@ -225,10 +273,6 @@
     };
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nixgl = {
-      url = "github:nix-community/nixGL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     fenix = {
