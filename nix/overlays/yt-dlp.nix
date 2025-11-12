@@ -18,11 +18,11 @@ rec {
     }).overrideAttrs
       (old: rec {
         latest = "curl --silent https://api.github.com/repos/yt-dlp/yt-dlp/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
-        version = "2025.10.22";
+        version = "2025.11.12";
         src = prev.fetchPypi {
           inherit version;
           pname = "yt_dlp";
-          hash = "sha256-2y1IEzIisdlQjG3nV4WcJLXO+5Voz2jMrYXawgsH93s=";
+          hash = "sha256-XweVprj8V6XCMzLWfWxqz4GaC0a5GmMkuuKUFPqX8FI=";
         };
         postPatch = '':'';
         propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
