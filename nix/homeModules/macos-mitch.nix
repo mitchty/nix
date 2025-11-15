@@ -7,7 +7,6 @@
   imports = with inputs.self.homeModules; [
     common
     emacs
-    yt
   ];
 
   home = {
