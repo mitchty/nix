@@ -65,7 +65,7 @@
           ytDlpPlugins = pkgs: pkgs.yt-dlp-with-plugins;
           ytdlpgetpot = pkgs: pkgs.yt-dlp-get-pot;
           # Make sure this beast builds at least
-          myEmacs = pkgs: pkgs.myEmacs;
+          #myEmacs = pkgs: pkgs.myEmacs;
           # TODO: need to get this stupid version working with default builtin
           # tools wrapped inside as well. That way I can lighten the development
           # module.
@@ -215,6 +215,11 @@
     # Release YY.MM branch name stuff kept close together for lazy.
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    # Get yt-dlp working again with a cheap hack
+    # TODO: https://github.com/NixOS/nixpkgs/pull/460892/files
+    tmpyt.url = "github:Mynacol/nixpkgs/yt-dlp-js";
+
     # If/when open-webui breaks... again let me pin just that junk to last
     # working version until fixed.
     #    nixpkgs-ai.url = "github:NixOS/nixpkgs/bce5fe2bb998488d8e7e7856315f90496723793c";
@@ -281,7 +286,6 @@
       inputs.rust-analyzer-src.follows = "";
     };
     agenix.url = "github:ryantm/agenix";
-    #agenix.url = "/Users/mitch/src/pub/github.com/ryantm/agenix";
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";

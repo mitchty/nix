@@ -38,6 +38,18 @@
       ];
     };
 
+    tmpyt = import inputs.tmpyt {
+      inherit (final) system;
+      config = {
+        # For ffmpeg
+        allowUnfree = true;
+      };
+      overlays = [
+        inputs.self.overlays.overrides
+        inputs.self.overlays.yt-dlp
+      ];
+    };
+
     # For when/if I need to distinguish the ai unstable tracking from reg
     # unstable nixpkgs. Also constrains cuda support for stuff. Maybe I setup
     # two ai-nv and ai-amd for the wm2? Future mitch problem...

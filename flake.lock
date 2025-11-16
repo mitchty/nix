@@ -1340,6 +1340,7 @@
         "nur": "nur",
         "omnix": "omnix",
         "open-webui-cli": "open-webui-cli",
+        "tmpyt": "tmpyt",
         "treefmt-nix": "treefmt-nix_3"
       }
     },
@@ -1526,6 +1527,22 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "tmpyt": {
+      "locked": {
+        "lastModified": 1763039130,
+        "narHash": "sha256-Ckv6LV9Hc//Ge8riz0qErH/6p0r9mnZ4Y5m1AKe6RDE=",
+        "owner": "Mynacol",
+        "repo": "nixpkgs",
+        "rev": "9937d9102c46348e443d6b21bf75ce46856faa9f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Mynacol",
+        "ref": "yt-dlp-js",
+        "repo": "nixpkgs",
         "type": "github"
       }
     },

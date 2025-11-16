@@ -8,7 +8,7 @@
 {
   config = {
     home.packages =
-      with pkgs;
+      with pkgs.tmpyt;
       [
         yt-dlp-with-plugins
         ytdl-sub-with-plugins
