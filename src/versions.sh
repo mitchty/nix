@@ -254,6 +254,10 @@ case "${action}" in
   update)
     update
     ;;
+  # I constantly use the wrong word so make both do the same thing cause lazy
+  upgrade)
+    update
+    ;;
   pkgs)
     pkgs
     ;;
