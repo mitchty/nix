@@ -4,8 +4,9 @@
 }:
 {
   environment.systemPackages = with pkgs; [
-    pciutils
-    mcelog
     ethtool
+    mcelog
+    pciutils
+    strace
   ];
 }

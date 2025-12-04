@@ -25,6 +25,7 @@
       };
       overlays = [
         inputs.self.overlays.overrides
+        inputs.self.overlays.yt-dlp
       ];
     };
 
@@ -35,6 +36,7 @@
       };
       overlays = [
         inputs.self.overlays.overrides
+        inputs.self.overlays.yt-dlp
       ];
     };
 
@@ -64,6 +66,7 @@
       };
       overlays = [
         inputs.self.overlays.overrides
+        inputs.self.overlays.yt-dlp
       ];
     };
 
@@ -78,6 +81,7 @@
       };
       overlays = [
         inputs.self.overlays.overrides
+        inputs.self.overlays.yt-dlp
       ];
     };
 

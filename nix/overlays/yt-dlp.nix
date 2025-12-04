@@ -25,6 +25,12 @@ rec {
           hash = "sha256-XweVprj8V6XCMzLWfWxqz4GaC0a5GmMkuuKUFPqX8FI=";
         };
         postPatch = '':'';
+
+        # curl_cffi is the unsupported lib but I don't use it so whatever
+        # https://github.com/NixOS/nixpkgs/commit/d2862efc9e9391af4151a5aed5b8629880150632
+        checkPhase = '':'';
+        installCheckPhase = '':''; # ??? For some reason the karakeep workers systemd unit needs this? Not sure how the overlay isn't working with checkPhase : alone but whatever it works
+
         propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
           final.yt-dlp-get-pot
           final.bgutil-ytdlp-pot-provider

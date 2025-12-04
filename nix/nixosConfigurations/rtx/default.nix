@@ -43,6 +43,7 @@ rec {
           nvidia-hack
           steam
           nas
+          ai
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -68,16 +69,19 @@ rec {
                   common
                   development
                   sh
+                  yt
                   tmux
                   git
                   git-age
                   age
                   debug
-                  linux-i3
+                  #                  linux-i3
+                  linux-sway
                   firefox
                   chrome
                   kopia
                   finance
+                  eca
                   # For some reason this is being derived when I wouldn't expect
                   # it to be on nix-darwin. Guard against it being evaluated
                   # when not on a linux host platform until I find a better way,
@@ -108,12 +112,16 @@ rec {
         common.mosh.enable = true;
 
         mitchty = {
-          gui.enable = true;
+          gui = {
+            enable = true;
+            type = "wayland";
+          };
           promtail.enable = true;
           node-exporter = {
             enable = true;
             iface = "br0";
           };
+          ai.enable = true;
         };
       };
 
@@ -159,7 +167,7 @@ rec {
             "ai.dev.home.arpa"
           ];
           "10.200.200.252" = [
-            "nexus.dev.home.arpa"
+            "misc.dev.home.arpa"
           ];
         };
       };

@@ -1,13 +1,4 @@
 self: super: {
-  asm-lsp = super.asm-lsp.overrideAttrs (old: {
-    meta.platforms = self.lib.platforms.unix;
-    buildInputs =
-      old.buildInputs
-      ++ self.lib.optionals self.stdenv.isDarwin [
-        self.darwin.apple_sdk.frameworks.SystemConfiguration
-      ];
-  });
-
   # Until this stuff is fixed, add this patch to fix things for ctranslate2
   # https://github.com/NixOS/nixpkgs/issues/445447
   # https://github.com/NixOS/nixpkgs/pull/450313

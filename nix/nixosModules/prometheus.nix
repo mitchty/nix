@@ -140,6 +140,14 @@ in
                 alias = "ark.home.arpa";
               };
             }
+            {
+              targets = [
+                "tmp.home.arpa:${toString config.services.prometheus.exporters.node.port}"
+              ];
+              labels = {
+                alias = "tmp.home.arpa";
+              };
+            }
           ];
         }
         # TODO: get scraping of the macbook pro working as well as the old one

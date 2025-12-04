@@ -26,10 +26,7 @@
         enableGuest = true;
       };
 
-      qemu = {
-        ovmf.enable = true;
-        runAsRoot = false;
-      };
+      qemu.runAsRoot = false;
     };
   };
 

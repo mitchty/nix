@@ -83,22 +83,12 @@
                     "/swap" = {
                       mountpoint = "/.swapvol";
                       swap = {
-                        swapfile.size = "20M";
-                        swapfile2.size = "20M";
-                        swapfile2.path = "rel-path";
+                        swapfile.size = "8G";
                       };
                     };
                   };
 
                   mountpoint = "/partition-root";
-                  swap = {
-                    swapfile = {
-                      size = "20M";
-                    };
-                    swapfile1 = {
-                      size = "20M";
-                    };
-                  };
                 };
               };
             };

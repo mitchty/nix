@@ -8,15 +8,15 @@
 {
   home = {
     packages = with pkgs; [
-      htop
-      du-dust
       bcc
-      tcpdump
-      hwatch
       dig
       fio
+      htop
+      hwatch
       pv
-      stress
+      smem
+      stress-ng
+      tcpdump
     ];
   };
 

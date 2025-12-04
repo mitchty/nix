@@ -24,7 +24,6 @@ in
   config = {
     home = {
       packages = with pkgs; [
-        bind.dnsutils
         bonnie
         coreutils
         curl
@@ -32,7 +31,6 @@ in
         dateutils
         diffoscopeMinimal
         difftastic
-        du-dust
         entr
         fd
         file
@@ -47,7 +45,6 @@ in
         git-sizer
         git-vendor
         gitFull
-        glibcInfo
         gnutar
         graphviz
         gron
@@ -89,7 +86,6 @@ in
         sipcalc
         sqlite
         sshpass
-        strace
         tldr
         tmuxp
         tree

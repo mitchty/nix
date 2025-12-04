@@ -212,7 +212,7 @@ in
       "/nas/media" = {
         device = "//s1.home.arpa/media";
         fsType = "cifs";
-        options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMedia;
+        options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMe;
       };
       "/nas/isos" = {
         device = "//s1.home.arpa/isos";
@@ -224,8 +224,13 @@ in
         fsType = "cifs";
         options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMe;
       };
+      "/nas/backup" = {
+        device = "//s1.home.arpa/backup";
+        fsType = "cifs";
+        options = fsCifsDefaults ++ fsAutomountOpts ++ fsCifsPerfOpts ++ fsUserMe;
+      };
     }
-    // inputs.self.lib.mkCifsMount rec {
+    // inputs.self.lib.mkCifsMount {
       prefix = "/srv";
       mountpoint = "media";
       share = "media";

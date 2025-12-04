@@ -14,7 +14,7 @@ if enableFullBuild then
       with super.pkgs;
       super.lib.optionals enableFullBuild [ eca ]
       ++ [
-        (pkgs.hiPrio clang)
+        (super.lib.hiPrio clang)
         altshfmt
         asm-lsp
         brave
@@ -24,7 +24,7 @@ if enableFullBuild then
         deadnix
         ditaa
         emacs-lsp-booster
-        gcc11
+        gcc
         git-lfs
         gitFull
         gnumake
@@ -35,7 +35,7 @@ if enableFullBuild then
         nixfmt-rfc-style
         nodePackages.bash-language-server
         plantuml
-        python3Full
+        python3
         rage
         rust-analyzer-nightly
         shellcheck
@@ -70,10 +70,10 @@ if enableFullBuild then
         emacsShared.overrideAttrs (old: {
           # bit old mostly off this https://github.com/NixOS/nixpkgs/issues/12863 assume its been fixed but should find out.
           # TODO: still needed?
-          preConfigure = ''
-            sed -i -e 's/headerpad_extra=1000/headerpad_extra=2000/' configure.ac
-            autoreconf
-          '';
+          # preConfigure = ''
+          #   sed -i -e 's/headerpad_extra=1000/headerpad_extra=2000/' configure.ac
+          #   ${self.pkgs.autoconf}/bin/autoreconf
+          # '';
           configureFlags = old.configureFlags ++ [
             "--disable-build-details"
             "--with-modules"
@@ -219,7 +219,18 @@ if enableFullBuild then
       nativeBuildInputs = [ super.pkgs.makeWrapper ];
       # puppeteer bs is for mermaid, so lame
       postBuild = ''
-        wrapProgram $out/bin/emacs --prefix PATH : "${super.lib.makeBinPath editorPackages}" --set PUPPETEER_EXECUTABLE_PATH ${super.pkgs.brave}/bin/brave
+        bins=$out/bin/emacs
+      ''
+      # For some reason just wrapping bin/emacs isn't enough anymore, so just
+      # wrap the gui binary on macos too to be sure we deploy emacs with the
+      # stuff it needs to edit
+      + super.lib.optionalString super.hostPlatform.isDarwin ''
+        bins="$bins $out/Applications/Emacs.app/Contents/MacOS/Emacs"
+      ''
+      + ''
+        for b in $bins; do
+          wrapProgram $b --prefix PATH : "${super.lib.makeBinPath editorPackages}" --set PUPPETEER_EXECUTABLE_PATH ${super.pkgs.brave}/bin/brave
+        done
       '';
     };
   in

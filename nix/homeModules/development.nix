@@ -1,11 +1,12 @@
 {
   pkgs,
+  lib,
   ...
 }:
 {
   home = {
     packages = with pkgs; [
-      (pkgs.hiPrio clang)
+      (lib.hiPrio clang)
       clang-tools
       entr
       hatools

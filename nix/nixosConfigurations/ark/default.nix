@@ -5,7 +5,8 @@
 }:
 let
   shortHost = "ark";
-  iface = "eno1";
+  # iface = "eno1";
+  iface = "enp6s0";
   commonMonitoring = {
     enable = true;
     #    iface = "enp88s0";
@@ -57,14 +58,15 @@ in
           grafana
           media
           backup
-          #          ai
+          ai
           debug
           virtualization
           power
           power-intel
           #          nix-offload
           fw
-          nvidia-hack
+          # nvidia-hack
+          gpu-intel
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -125,15 +127,15 @@ in
             DISABLE_SIGNUPS = "true";
             DISABLE_NEW_RELEASE_CHECK = "true";
             CRAWLER_FULL_PAGE_ARCHIVE = "true";
-            # OLLAMA_BASE_URL = "http://slow-ollama.home.arpa:11434";
-            # INFERENCE_TEXT_MODEL = "gemma3";
-            # INFERENCE_IMAGE_MODEL = "llava";
-            # OCR_CACHE_DIR = "/tmp";
+            OCR_CACHE_DIR = "/tmp";
+            CRAWLER_FULL_PAGE_SCREENSHOT = "true";
+            OLLAMA_BASE_URL = "http://slow-ollama.home.arpa:11434";
+            INFERENCE_TEXT_MODEL = "gemma3";
+            INFERENCE_IMAGE_MODEL = "llava";
             # CRAWLER_VIDEO_DOWNLOAD = "true";
             # CRAWLER_VIDEO_DOWNLOAD_MAX_SIZE = "true";
             # CRAWLER_VIDEO_DOWNLOAD_TIMEOUT_SEC = "3600";
             # CRAWLER_YTDLP_ARGS = "-f%%bestvideo*+bestaudio/best";
-            CRAWLER_FULL_PAGE_SCREENSHOT = "true";
           };
         };
 
@@ -148,14 +150,15 @@ in
           media = commonMonitoring // {
             services = true;
           };
-          # ai = commonMonitoring // {
-          #   ollamaCname = "slow-ollama.home.arpa";
-          #   ollamaIp = "10.10.10.222";
-          #   #            ollamaPackage = unstable-pkgs.ollama-cuda;
-          #   ollamaPackage = unstable-pkgs.ollama;
-          #   owuiCname = "slow-open-webui.home.arpa";
-          #   owuiIp = "10.10.10.223";
-          # };
+          ai = commonMonitoring // {
+            enable = true;
+            iface = "enp6s0";
+            ollamaCname = "slow-ollama.home.arpa";
+            ollamaIp = "10.10.10.222";
+            ollamaPackage = unstable-pkgs.ollama;
+            owuiCname = "slow-open-webui.home.arpa";
+            owuiIp = "10.10.10.223";
+          };
         };
       };
 
@@ -204,13 +207,13 @@ in
           #   ];
           # };
         };
-        # firewall = {
-        #   interfaces = {
-        #     "${iface}" = {
-        #       allowedTCPPorts = [ 3000 ];
-        #     };
-        #   };
-        # };
+        firewall = {
+          interfaces = {
+            "${iface}" = {
+              allowedTCPPorts = [ 3000 ];
+            };
+          };
+        };
       };
 
       # Needed for nixos-hardware common-gpu-nvidia

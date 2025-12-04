@@ -7,7 +7,5 @@
 }:
 {
   # Intel specific power management
-  config = {
-    hardware.intel-gpu-tools.enable = true;
-  };
+  hardware.intel-gpu-tools.enable = true;
 }

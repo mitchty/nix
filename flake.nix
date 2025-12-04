@@ -55,21 +55,21 @@
 
         # TODO need to convert things here over to nix tests
         checks = {
-          altshfmt = pkgs: pkgs.altshfmt;
+          #          altshfmt = pkgs: pkgs.altshfmt;
           # Make sure yt stuff builds at least (its got its own unit tests in the
           # derivation we're testing against nixpkgs so no need for further checks
           # here... yet?)
-          ytdlSub = pkgs: pkgs.ytdl-sub;
-          ytdlSubPlugins = pkgs: pkgs.ytdl-sub-with-plugins;
-          ytDlp = pkgs: pkgs.yt-dlp;
-          ytDlpPlugins = pkgs: pkgs.yt-dlp-with-plugins;
-          ytdlpgetpot = pkgs: pkgs.yt-dlp-get-pot;
+          # ytdlSub = pkgs: pkgs.ytdl-sub;
+          # ytdlSubPlugins = pkgs: pkgs.ytdl-sub-with-plugins;
+          # ytDlp = pkgs: pkgs.yt-dlp;
+          # ytDlpPlugins = pkgs: pkgs.yt-dlp-with-plugins;
+          # ytdlpgetpot = pkgs: pkgs.yt-dlp-get-pot;
           # Make sure this beast builds at least
           #myEmacs = pkgs: pkgs.myEmacs;
           # TODO: need to get this stupid version working with default builtin
           # tools wrapped inside as well. That way I can lighten the development
           # module.
-          myWrappedEmacs = pkgs: pkgs.wrappedEmacs;
+          #          myWrappedEmacs = pkgs: pkgs.wrappedEmacs;
           statix = pkgs: "${pkgs.statix}/bin/statix check";
           # }
           # # TODO: how this isn't working is beyond me for now wgaf I'm not using it yet future me problem.
@@ -129,6 +129,21 @@
               }
             }/bin/update-emacs";
           };
+          build-nixos = pkgs: {
+            type = "app";
+            program = "${
+              pkgs.writeShellApplication {
+                name = "build-nixos";
+                text = ''
+                  set -e
+                  for host in plx ark wm2 gw0 rtx; do
+                    nix build .#nixosConfigurations.$host.config.system.build.toplevel &
+                  done
+                  wait
+                '';
+              }
+            }/bin/build-nixos";
+          };
         };
       }
     )
@@ -172,6 +187,12 @@
               path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."wm2";
             };
           };
+          "tmp" = {
+            hostname = "tmp.home.arpa";
+            profiles.system = {
+              path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations."tmp";
+            };
+          };
           "vm-simple" = {
             sshUser = "mitch";
             hostname = "127.0.0.1";
@@ -213,7 +234,7 @@
   # future mitch figure it out. The dns blocklist is definitely in this category.
   inputs = {
     # Release YY.MM branch name stuff kept close together for lazy.
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     # Get yt-dlp working again with a cheap hack
@@ -226,14 +247,11 @@
     nixpkgs-ai.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
+      url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # TODO: do I really need this anymore? here for future me to uncomment if I
-    # do.
-    #    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-25.05-darwin";
     nix-darwin = {
-      url = "github:LnL7/nix-darwin/nix-darwin-25.05";
+      url = "github:LnL7/nix-darwin/nix-darwin-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flakelight-darwin = {

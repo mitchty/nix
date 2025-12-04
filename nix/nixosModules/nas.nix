@@ -34,6 +34,11 @@ in
         inherit uid gid creds;
       }
       // inputs.self.lib.mkCifsMount rec {
+        mountpoint = "isos";
+        share = "isos";
+        inherit uid gid creds;
+      }
+      // inputs.self.lib.mkCifsMount rec {
         mountpoint = "bitbucket";
         share = "bitbucket";
         inherit uid gid creds;

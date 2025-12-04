@@ -14,18 +14,37 @@
 
   home = {
     packages = with pkgs; [
+      #bind.dnsutils
       curl
+      dasel
+      diffoscopeMinimal
+      difftastic
+      dust
       file
+      gist
       gron
       hwatch
+      hyperfine
+      ipcalc
+      ipinfo
+      jid
+      jless
       less
       libqalculate
+      mapcidr
       moreutils
-      ripgrep
-      scripts # TODO: should pull this package apart and make scripts-macos scripts-blah future mitch problem
+      passh # Use over sshpass generally ref: https://github.com/clarkwang/passh?tab=readme-ov-file#examples for times its not a great option over sshpass
       sshpass
+      pv
+      rclone
+      ripgrep
+      rq
+      scripts # TODO: should pull this package apart and make scripts-macos scripts-blah future mitch problem
+      sqlite
+      tldr
       tree
       wget
+      vim # cause well still comes in handy over ssh at times.
     ];
   };
 

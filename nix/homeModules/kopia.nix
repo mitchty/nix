@@ -26,7 +26,7 @@
           IOSchedulingClass = "idle"; # If anything else is doing i/o its probably a priority to this
           IOSchedulingPriority = 7; # Lowest i/o priority
           Type = "oneshot";
-          ExecStart = ../../src/bkp.sh;
+          ExecStart = "${../../src/bkp.sh}";
           # Why is home-manager systemd services like nixos and lets
           # me just do pkgs = [list]; sigh
           Environment = [

@@ -14,6 +14,8 @@ let
   ark = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDFFvNk88g2x8R5cK1K+iVGQT1Lu1IFKZwSp75s2xegB";
   gw0 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOyjyOCeUEtKb7hLISbPzwkrrSDKQU5JGJ1R1Sw7MZga";
 
+  tmp = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMl69rwxUorC9v5SE4sI6284redkS19M5eVS9Preu7W2";
+
   # Test vm keys
   vm-simple = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOuH9BdXTgFflW0uDF1ytFdgHxIBx0NDrHB4jqCjKhQB";
   vm-mirror = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKVbKj5m/pk2VKzIjX7/zM7MB5BG03kxTv22PowvtexS";
@@ -26,6 +28,8 @@ let
     plx
     ark
     gw0
+
+    tmp
 
     vm-simple
     vm-mirror

@@ -15,11 +15,14 @@
       type = lib.types.str;
     };
 
-    gui = lib.mkOption {
+    type = lib.mkOption {
       default = "X";
-      example = lib.literalExample "X"; # wayland at some point in future?
+      example = "wayland";
       description = "What kind of gui is this";
-      type = lib.types.str;
+      type = lib.types.enum [
+        "X"
+        "wayland"
+      ];
     };
   };
 
@@ -31,35 +34,46 @@
     #       "steam"
     #     ];
     # };
-    environment.systemPackages = with pkgs; [
-      dmenu
-      gnome-keyring
-      element-desktop
-      nitrogen
-      pasystray
-      picom
-      polkit_gnome
-      pulseaudioFull
-      rofi
-      nvtopPackages.full
-      #      google-chrome
-      kdePackages.kmix
-      #      libv4l
-      libvirt
-      networkmanager
-      networkmanager-openconnect
-      networkmanagerapplet
-      parcellite
-      pavucontrol
-      pipewire
-      kdePackages.plasma-desktop
-      kdePackages.plasma-integration
-      kdePackages.plasma-pa
-      rtkit
-      kdePackages.sddm
-      xorg.xauth
-      xclip
-    ];
+    environment.systemPackages =
+      with pkgs;
+      [
+        dmenu
+        gnome-keyring
+        element-desktop
+        nitrogen
+        pasystray
+        picom
+        polkit_gnome
+        pulseaudioFull
+        rofi
+        nvtopPackages.full
+        #      google-chrome
+        #      libv4l
+        libvirt
+        networkmanager
+        networkmanager-openconnect
+        networkmanagerapplet
+        pavucontrol
+        pipewire
+        rtkit
+      ]
+      ++ lib.optionals (config.services.mitchty.gui.type == "X") [
+        kdePackages.sddm
+        xorg.xauth
+        xclip
+        kdePackages.plasma-desktop
+        kdePackages.plasma-integration
+        kdePackages.plasma-pa
+        kdePackages.kmix
+      ]
+      ++ lib.optionals (config.services.mitchty.gui.type == "wayland") [
+        mako
+        wl-clipboard
+        slurp
+        grim
+        wdisplays
+        cliphist
+      ];
 
     # Loopback device/kernel module config for obs
     #    boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
@@ -92,10 +106,30 @@
     programs = {
       thunar.enable = true;
       dconf.enable = true;
+      #      sway.enable = true;
+      sway = lib.mkIf (config.services.mitchty.gui.type == "wayland") {
+        enable = true;
+        wrapperFeatures.gtk = true;
+        extraOptions = [
+          "--unsupported-gpu"
+          "--verbose"
+        ];
+      };
+      #      sway.enable =  {true;};
       #      steam.enable = true;
     };
 
+    environment.etc = lib.mkIf (config.services.mitchty.gui.type == "wayland") {
+      "greetd/environments".text =
+
+        ''
+          sway
+        '';
+    };
+
     services = {
+      gnome.gnome-keyring = lib.mkIf (config.services.mitchty.gui.type == "wayland") { enable = true; };
+
       pipewire = {
         enable = true;
         alsa.enable = true;
@@ -113,46 +147,92 @@
         };
       };
 
-      displayManager.defaultSession = "xfce+i3";
+      # greetd = lib.mkIf (config.services.mitchty.gui.type == "wayland") {
+      #   enable = true;
+      #   settings = {
+      #     default_session.command = ''
+      #       ${pkgs.greetd.tuigreet}/bin/tuigreet \
+      #         --time \
+      #         --asterisks \
+      #         --user-menu \
+      #         --cmd sway
+      #     '';
+      #   };
+      # };
 
-      xserver = {
-        enable = true;
+      displayManager.defaultSession = lib.mkIf (config.services.mitchty.gui.type == "X") "xfce+i3";
 
-        windowManager.i3 = {
+      # Note xserver is a bit of a misnomer in nixos its more "gui". Path
+      # dependence for when x was the only option. Will leave myself an out for
+      # xorg until I get things to good.
+      xserver = lib.mkMerge [
+        (lib.mkIf (config.services.mitchty.gui.type == "wayland") {
           enable = true;
-          extraPackages = [ pkgs.i3status ];
-        };
+          # displayManager.gdm.enable = true;
+          # desktopManager.gnome.enable = true;
+        })
 
-        desktopManager = {
-          xterm.enable = false;
-          xfce = {
+        (lib.mkIf (config.services.mitchty.gui.type == "X") {
+          enable = true;
+
+          windowManager.i3 = {
             enable = true;
-            noDesktop = true;
-            enableXfwm = false;
+            extraPackages = [ pkgs.i3status ];
           };
-        };
 
-        xkb = {
-          variant = "";
-          layout = "us";
+          desktopManager = {
+            xterm.enable = false;
+            xfce = {
+              enable = true;
+              noDesktop = true;
+              enableXfwm = false;
+            };
+          };
 
-          options = lib.concatStringsSep "," [
-            # Capslock is control, I'm not a heathen.
-            #          "ctrl:swapcaps"
-            "ctrl:nocaps"
-          ];
-        };
+          xkb = {
+            variant = "";
+            layout = "us";
 
-        # TODO is this and the services.libinput truly needed?
-        config = lib.mkAfter ''
-          Section "InputClass"
-            Identifier "NaturalScrollingScrolling for touchpads"
-            Driver "libinput"
-            MatchIsPointer "on"
-            Option "NaturalScrolling" "on"
-          EndSection
-        '';
-      };
+            options = lib.concatStringsSep "," [
+              # Capslock is control, I'm not a heathen.
+              #          "ctrl:swapcaps"
+              "ctrl:nocaps"
+            ];
+          };
+
+          # TODO is this and the services.libinput truly needed?
+          config = lib.mkAfter ''
+            Section "InputClass"
+              Identifier "NaturalScrollingScrolling for touchpads"
+              Driver "libinput"
+              MatchIsPointer "on"
+              Option "NaturalScrolling" "on"
+            EndSection
+          '';
+        })
+      ];
+
+      # wayland = lib.mkIf (config.services.mitchty.gui.type == "wayland") {
+      #   windowManagers.sway = {
+      #     enable = true;
+      #     config = rec {
+      #       modifier = "Mod4"; # Super key
+      #       terminal = "alacritty";
+      #       output = {
+      #         "Virtual-1" = {
+      #           mode = "1920x1080@60Hz";
+      #         };
+      #       };
+      #     };
+      #     extraConfig = ''
+      #       bindsym Print               exec shotman -c output
+      #       bindsym Print+Shift         exec shotman -c region
+      #       bindsym Print+Shift+Control exec shotman -c window
+
+      #       output "*" bg /etc/foggy_forest.jpg fill
+      #     '';
+      #   };
+      # };
     };
   };
 }

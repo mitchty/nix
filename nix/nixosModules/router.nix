@@ -21,6 +21,7 @@ let
       10.10.10.11 rtx.home.arpa rtx
       10.10.10.13 pikvm2.home.arpa pikvm2
       10.10.10.14 plx.home.arpa plx
+      10.10.10.15 tmp.home.arpa tmp
 
       10.10.10.20 mb.home.arpa mb
       10.10.10.21 wm2.home.arpa wm2
@@ -29,7 +30,6 @@ let
       10.10.10.50 winfx.home.arpa winfx
 
       10.10.10.90 wwin.home.arpa wwin
-
 
       # Static ip's take up the last /16
       10.10.10.128 loki.home.arpa loki
@@ -90,6 +90,7 @@ let
     "e4:5f:01:92:cc:1f,pikvm,10.10.10.10"
     "e4:5f:01:b5:38:d2,pikvm2,10.10.10.13"
     "58:47:ca:7b:13:c4,plx,10.10.10.14" # s100 plex client
+    "00:e2:69:a3:9f:ca,tmp,10.10.10.15"
     "f0:18:98:0d:0e:64,mb,10.10.10.20"
     "68:7a:64:48:f5:ad,wm2,10.10.10.21"
     "84:2f:57:60:af:6e,mbp,10.10.10.22"

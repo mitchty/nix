@@ -2,7 +2,7 @@
 {
   # General power management settings to reduce how many Joules are used
   services = {
-    auto-cpufreq.enable = true;
+    #    auto-cpufreq.enable = true;
     thermald.enable = true;
   };
 

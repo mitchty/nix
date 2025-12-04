@@ -1,10 +1,19 @@
-{ inputs, lib, ... }:
+{
+  inputs,
+  lib,
+  ...
+}:
 let
-  shortHost = "wm2";
-  iface = "wlp2s0";
+  shortHost = "tmp";
+  iface = "enp6s0";
+  commonMonitoring = {
+    enable = true;
+    inherit iface;
+  };
+  system = "x86_64-linux";
 in
 {
-  system = "x86_64-linux";
+  inherit system;
 
   modules = [
     {
@@ -23,24 +32,20 @@ in
       imports =
         (with inputs.self.nixosModules; [
           common
+          console-normal
           user-mitch
+          user-mitch-compat
           ssh-mitch
           user-root
           ssh-root
-          user-mitch-compat
           podman
-          #          nas TODO: fix this to work with media as well, will move the base for all media from /nas/media to /nas/srv/media for serving needs
           node-exporter
           promtail
           debug
           virtualization
           power
           power-intel
-          nix-offload
-          uhk
-          networkmanager-laptop
-          gui
-          wiffy
+          gpu-intel
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -66,76 +71,103 @@ in
                   common
                   sh
                   tmux
+                  yt
                   git
                   age
                   debug
-                  # linux-i3
-                  linux-sway
-                  firefox
-                  emacs
+                  development
                 ]);
               };
             };
           }
         ]
         ++ (with inputs.nixos-hardware.nixosModules; [
-          common-pc-laptop
-          common-pc-laptop-ssd
-          common-cpu-amd
-          common-gpu-amd
-          gpd-win-max-2-2023
+          common-pc
+          common-pc-ssd
+          common-cpu-intel
+          common-gpu-intel
         ])
         ++ [
           ./diskconfig.nix
         ];
 
+      # enp88s0/enp91s0 TODO: determine which of these has the built in ilom
+      # thing, can maybe use that instead of pikvm for this one node to not have
+      # so many pikvms and such.
       services = {
         common.mosh.enable = true;
 
         mitchty = {
-          wiffy.enable = true;
-          gui = {
-            enable = true;
-            type = "wayland";
-          };
           promtail.enable = true;
-          node-exporter = {
-            enable = true;
-            inherit iface;
-          };
+          node-exporter = commonMonitoring;
         };
       };
 
       networking = {
-        firewall = {
-          trustedInterfaces = [
-            "eth0"
-            "wlp2s0"
-          ];
+        nameservers = [
+          "10.10.10.1"
+          #          "1.1.1.1"
+        ];
+        defaultGateway = {
+          address = "10.10.10.1";
+          interface = "${iface}";
         };
-        wireless.enable = false;
-        networkmanager = {
-          enable = true;
-          wifi.powersave = false;
-          dns = "dnsmasq";
-        };
+        # Set the 10g nic up to have a metric cost so this stuff behaves
+        # sane...er I hope.
+        # dhcpcd.extraConfig = ''
+        #   interface enp3s0f1np1
+        #   metric 1000
+        # '';
         interfaces = {
-          # ???
-          ${iface} = {
+          "${iface}" = {
             useDHCP = true;
+            # ipv4.addresses = [
+            #   {
+            #     address = "10.10.10.253";
+            #     prefixLength = 24;
+            #   }
+            #   {
+            #     address = "10.10.10.224";
+            #     prefixLength = 24;
+            #   }
+            # ];
           };
-          # This is the usb c thingy
-          eth0 = {
-            useDHCP = true;
-          };
+          # enp3s0f1np1.ipv4 = {
+          #   addresses = [
+          #     {
+          #       address = "10.10.10.252";
+          #       prefixLength = 24;
+          #     }
+          #   ];
+          #   routes = [
+          #     {
+          #       address = "10.10.10.9";
+          #       prefixLength = 32;
+          #       via = "10.10.10.252";
+          #     }
+          #   ];
+          # };
         };
+        # firewall = {
+        #   interfaces = {
+        #     "${iface}" = {
+        #       allowedTCPPorts = [ 3000 ];
+        #     };
+        #   };
+        # };
       };
 
-      diskConfig.disks = [
-        "/dev/disk/by-id/nvme-CWESR02TBTLCZ-27J-2_511231016041001198"
-        "/dev/disk/by-id/nvme-Sabrent_Rocket_Q4_48821081708402"
-      ];
+      # Needed for nixos-hardware common-gpu-nvidia
+      # Ref:
+      #  Failed assertions:
+      # - You must configure `hardware.nvidia.open` on NVIDIA driver versions >= 560.
+      # It is suggested to use the open source kernel modules on Turing or later GPUs (RTX series, GTX 16xx), and the closed source modules otherwise.
+      #      services.xserver.videoDrivers = [ "nvidia" ];
 
+      diskConfig.disks = [
+        "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T801235B"
+        "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_S6S1NS0T814942M"
+      ];
       system.stateVersion = "25.05";
       networking.hostName = shortHost;
 
@@ -144,7 +176,7 @@ in
         # kernel and some change at 48GiB of rams. The intel box isn't super
         # fast but I'm more abusing it to build iso images and copying stuff
         # directly to the nas over 10g.
-        #        tmp.tmpfsSize = "25%";
+        tmp.tmpfsSize = "60%";
 
         loader.systemd-boot.enable = true;
 
@@ -155,19 +187,26 @@ in
         # this crap into a custom defconfig instead there and compile this in
         # not as a module at all?
         initrd.availableKernelModules = [
-          "nvme"
-          "sd_mod"
-          "sdhci_pci"
-          "sr_mod"
-          "thunderbolt"
-          "usb_storage"
-          "usbhid"
           "xhci_pci"
+          "thunderbolt"
+          "nvme"
+          "usbhid"
+          "usb_storage"
+          "sr_mod"
         ];
-        kernelModules = [ "kvm-amd" ];
+        kernelModules = [ "kvm-intel" ];
+        kernelParams = [
+          "console=tty0"
+        ];
       };
 
-      nixpkgs.hostPlatform = "x86_64-linux";
+      nixpkgs = {
+        config = {
+          allowUnfree = true;
+        };
+        #        config.cudaSupport = true;
+        hostPlatform = "x86_64-linux";
+      };
     }
   ];
 }
