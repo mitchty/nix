@@ -1,21 +1,6 @@
 {
   description = "my nix flake postantepenultimate configuration (this is the last rewrite honest yeah I don't buy it either)";
 
-  # This all gets prompted and crap at nix develop or with direnv+.envrc when you cd into the dir... I like it but... its a pita
-  # TODO: future sucker mitch see if there is another option?
-  # nixConfig = {
-  #   extra-experimental-features = "nix-command flakes";
-  #   extra-substituters = [
-  #     "https://cache.nixos.org/"
-  #     "https://nix-community.cachix.org"
-  #     "https://deploy-rs.cachix.org"
-  #   ];
-  #   extra-trusted-public-keys = [
-  #     "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-  #     "deploy-rs.cachix.org-1:xfNobmiwF/vzvK1gpfediPwpdIP0rpDV2rYqx40zdSI="
-  #   ];
-  # };
-
   outputs =
     {
       flakelight,
@@ -31,6 +16,9 @@
         moduleArgs,
         ...
       }:
+      let
+        mylib = import ./nix/lib.nix { inherit lib; };
+      in
       {
         nixpkgs.config = {
           allowUnfree = true;
@@ -54,29 +42,13 @@
         withOverlays = import ./nix/flakeOverlays.nix moduleArgs;
 
         # TODO need to convert things here over to nix tests
-        checks = {
-          #          altshfmt = pkgs: pkgs.altshfmt;
-          # Make sure yt stuff builds at least (its got its own unit tests in the
-          # derivation we're testing against nixpkgs so no need for further checks
-          # here... yet?)
-          # ytdlSub = pkgs: pkgs.ytdl-sub;
-          # ytdlSubPlugins = pkgs: pkgs.ytdl-sub-with-plugins;
-          # ytDlp = pkgs: pkgs.yt-dlp;
-          # ytDlpPlugins = pkgs: pkgs.yt-dlp-with-plugins;
-          # ytdlpgetpot = pkgs: pkgs.yt-dlp-get-pot;
-          # Make sure this beast builds at least
-          #myEmacs = pkgs: pkgs.myEmacs;
-          # TODO: need to get this stupid version working with default builtin
-          # tools wrapped inside as well. That way I can lighten the development
-          # module.
-          #          myWrappedEmacs = pkgs: pkgs.wrappedEmacs;
-          statix = pkgs: "${pkgs.statix}/bin/statix check";
-          # }
-          # # TODO: how this isn't working is beyond me for now wgaf I'm not using it yet future me problem.
-          # // lib.optionalAttrs lib.stdenv.hostPlatform.isLinux {
-          #   # Make sure my overlay for this thing works but only on linux
-          #   openwebui = pkgs: pkgs.open-webui;
-        };
+        checks =
+          pkgs:
+          {
+            statix = "${pkgs.statix}/bin/statix check";
+          }
+          # Automatically generate build checks for all packages in nix/packages
+          // mylib.mkPackageChecks ./nix/packages pkgs;
 
         formatters = import ./nix/flakeFormatters.nix;
 
@@ -87,63 +59,27 @@
         # undoing that too on linux if I run things.
         # nix run .#check && nix flake check -L ... now instead of nix flake check -L
         apps = {
-          check = pkgs: {
-            type = "app";
-            program = "${
-              pkgs.writeShellApplication {
-                name = "check";
-                text = ''
-                  set -e
-                  hack=hacks/flake-check.nix
-                  git checkout $hack
-                  if [ "$(uname -s)" != "Linux" ]; then
-                    echo false > $hack
-                  fi
-                '';
-              }
-            }/bin/check";
-          };
+          check = mylib.mkShellApp "check" ''
+            hack=hacks/flake-check.nix
+            git checkout $hack
+            if [ "$(uname -s)" != "Linux" ]; then
+              echo false > $hack
+            fi
+          '';
           # quick app script to just update the nix flake firewall related input deps
-          update-fw = pkgs: {
-            type = "app";
-            program = "${
-              pkgs.writeShellApplication {
-                name = "update-fw";
-                text = ''
-                  set -e
-                  nix flake update dns geo
-                '';
-              }
-            }/bin/update-fw";
-          };
+          update-fw = mylib.mkShellApp "update-fw" ''
+            nix flake update dns geo
+          '';
           # Update only deps that emacs derivations use
-          update-emacs = pkgs: {
-            type = "app";
-            program = "${
-              pkgs.writeShellApplication {
-                name = "update-emacs";
-                text = ''
-                  set -e
-                  nix flake update eca emacs-overlay
-                '';
-              }
-            }/bin/update-emacs";
-          };
-          build-nixos = pkgs: {
-            type = "app";
-            program = "${
-              pkgs.writeShellApplication {
-                name = "build-nixos";
-                text = ''
-                  set -e
-                  for host in plx ark wm2 gw0 rtx; do
-                    nix build .#nixosConfigurations.$host.config.system.build.toplevel &
-                  done
-                  wait
-                '';
-              }
-            }/bin/build-nixos";
-          };
+          update-emacs = mylib.mkShellApp "update-emacs" ''
+            nix flake update eca emacs-overlay
+          '';
+          build-nixos = mylib.mkShellApp "build-nixos" ''
+            for host in plx ark wm2 gw0 rtx; do
+              nix build .#nixosConfigurations.$host.config.system.build.toplevel &
+            done
+            wait
+          '';
         };
       }
     )
@@ -237,10 +173,6 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
-    # Get yt-dlp working again with a cheap hack
-    # TODO: https://github.com/NixOS/nixpkgs/pull/460892/files
-    tmpyt.url = "github:Mynacol/nixpkgs/yt-dlp-js";
-
     # If/when open-webui breaks... again let me pin just that junk to last
     # working version until fixed.
     #    nixpkgs-ai.url = "github:NixOS/nixpkgs/bce5fe2bb998488d8e7e7856315f90496723793c";
@@ -308,15 +240,8 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    omnix = {
-      url = "github:juspay/omnix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    # TESTING
-    nix-sweep = {
-      url = "github:jzbor/nix-sweep";
-      #      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    omnix.url = "github:juspay/omnix";
+    nix-sweep.url = "github:jzbor/nix-sweep";
     nixpkgs-eca.url = "github:NixOS/nixpkgs/8913c168d1c56dc49a7718685968f38752171c3b";
     eca = {
       url = "github:editor-code-assistant/eca";

@@ -15,9 +15,12 @@
     };
 
     kernelPackages = pkgs.linuxPackages_latest;
-    # I want my magic sysrq triggers to work
+
     kernel.sysctl = {
-      "vm.overcommit_memory" = lib.mkDefault "1";
+      # I want my magic sysrq triggers to work
+      "kernel.sysrq" = lib.mkDefault 1;
+      # Allow memory overcommit by default
+      "vm.overcommit_memory" = lib.mkDefault 1;
     };
 
     kernelParams = [
@@ -28,6 +31,7 @@
       "intel-spi.writeable=1"
       "iomem=relaxed"
     ];
+
     loader = {
       efi = {
         canTouchEfiVariables = true;

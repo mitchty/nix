@@ -6,6 +6,7 @@
 }:
 {
   environment.systemPackages = with pkgs; [
+    maccy
     stats
     tradingview-mac
   ];

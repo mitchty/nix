@@ -3,6 +3,12 @@
   lib,
   ...
 }:
+let
+  commonOverlays = [
+    inputs.self.overlays.overrides
+    inputs.self.overlays.yt-dlp
+  ];
+in
 [
   (final: prev: {
     # Exposes each input as pkgs.name in the normal package set
@@ -17,39 +23,8 @@
       inherit (final) system;
       config = {
         allowUnfree = true;
-      }
-      // lib.optionalAttrs (final.stdenv.isLinux) {
-        allowCuda = true;
-        cudaSupport = true;
-        rocmSupport = true;
       };
-      overlays = [
-        inputs.self.overlays.overrides
-        inputs.self.overlays.yt-dlp
-      ];
-    };
-
-    unstable-nogpu = import inputs.nixpkgs-unstable {
-      inherit (final) system;
-      config = {
-        allowUnfree = true;
-      };
-      overlays = [
-        inputs.self.overlays.overrides
-        inputs.self.overlays.yt-dlp
-      ];
-    };
-
-    tmpyt = import inputs.tmpyt {
-      inherit (final) system;
-      config = {
-        # For ffmpeg
-        allowUnfree = true;
-      };
-      overlays = [
-        inputs.self.overlays.overrides
-        inputs.self.overlays.yt-dlp
-      ];
+      overlays = commonOverlays;
     };
 
     # For when/if I need to distinguish the ai unstable tracking from reg
@@ -64,10 +39,7 @@
         allowCuda = true;
         cudaSupport = true;
       };
-      overlays = [
-        inputs.self.overlays.overrides
-        inputs.self.overlays.yt-dlp
-      ];
+      overlays = commonOverlays;
     };
 
     # Also going to test out abusing different derivations for amd/nvidia
@@ -79,10 +51,7 @@
       // lib.optionalAttrs (final.stdenv.isLinux) {
         rocmSupport = true;
       };
-      overlays = [
-        inputs.self.overlays.overrides
-        inputs.self.overlays.yt-dlp
-      ];
+      overlays = commonOverlays;
     };
 
     # TODO: Should I even keep this here? Also nix-hardware needs to get
@@ -95,13 +64,6 @@
     inherit (inputs.home-manager.packages.${prev.system}) home-manager;
     inherit (inputs.omnix.packages.${prev.system}) omnix-cli;
     nix-sweep = inputs.nix-sweep.packages.${prev.system}.default;
-
-    # For nixpkgs-unstable open-webui to build on 25.05
-    # pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-    #   (pyfinal: pyprev: {
-    #     ddgs = inputs.nixpkgs-unstable.legacyPackages.${prev.system}.pkgs.python312Packages.ddgs;
-    #   })
-    # ];
   })
   inputs.eca.overlays.default
   inputs.emacs-overlay.overlay

@@ -21,6 +21,7 @@
     systemPackages = [
       pkgs.disko
       pkgs.home-manager
+      pkgs.ethtool
     ];
     variables.EDITOR = "vi";
   };

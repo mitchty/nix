@@ -56,6 +56,7 @@
         pavucontrol
         pipewire
         rtkit
+        bitwarden-desktop
       ]
       ++ lib.optionals (config.services.mitchty.gui.type == "X") [
         kdePackages.sddm
@@ -73,6 +74,7 @@
         grim
         wdisplays
         cliphist
+        gscreenshot
       ];
 
     # Loopback device/kernel module config for obs

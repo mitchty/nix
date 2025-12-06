@@ -215,8 +215,6 @@ in
               ];
             }
             {
-              # TODO: maybe patch in the plex support manually?
-              # https://github.com/bastienwirtz/homer/compare/v25.04.1...v25.05.1#diff-fb788352a1825111a3094858a3bb9df873eeb05f761b3c3dff92be1a90b8fa51
               name = "media";
               icon = "fas fa-code-branch";
               items = [

@@ -6,10 +6,6 @@
   ...
 }:
 {
-  # TODO: most of these really should be a check somehow
-  #
-  # For now I'm just including them in the devshell so I can test local package
-  # derivations.
   packages =
     pkgs:
     with pkgs;
@@ -19,21 +15,21 @@
       cf-dns-update
       coreutils
       curl
+      hfdownloader
       home-manager
       htmlq
       jq
       nix-update
       nixfmt-rfc-style
       nixos-generate
+      omnix-cli
       ripgrep
       statix
-      treefmt
-      yq-go
-      omnix-cli
-      vim
       taplo
+      treefmt
+      vim
       wireguard-tools
-      # TODO: deploy-rs no worky here, why? Future mitch problem
+      yq-go
     ]
     ++ [
       inputs.deploy-rs.packages.${system}.deploy-rs
@@ -41,7 +37,7 @@
     # Only need these on linux or they don't build on macos...
     ++ lib.optionals stdenv.isLinux [
       puppeteer-cli
-      poppler_utils
+      poppler-utils
       qemu-uefi-wrapper
     ];
 }

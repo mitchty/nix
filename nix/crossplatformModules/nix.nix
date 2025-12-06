@@ -59,7 +59,7 @@ in
       # to internal ncps when on local network and/or wireguard when I get that
       # working but always through the local ncps daemon and I don't gotta do
       # anything with editing files or whatever.
-      extra-substituters = [ "http://nix.cache.home.arpa:8080?priority=10" ];
+      extra-substituters = lib.mkIf enableHomeCache [ "http://nix.cache.home.arpa:8080?priority=10" ];
     };
   };
 }

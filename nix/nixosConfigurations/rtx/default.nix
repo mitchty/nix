@@ -6,7 +6,7 @@
 let
   shortHost = "rtx";
 in
-rec {
+{
   system = "x86_64-linux";
 
   modules = [
@@ -228,29 +228,18 @@ rec {
         kernelModules = [ "kvm-amd" ];
       };
 
-      hardware.enableRedistributableFirmware = true;
-      hardware.nvidia = {
-        open = lib.mkForce true;
-        nvidiaSettings = true;
-        modesetting.enable = true;
-        powerManagement.enable = true;
-
-        # This kinda craps in nvidia-hack now rest is "normal" settings
-        # package = pkgs.kernelPackages.nvidiaPackages.mkDriver {
-        #   version = "570.181";
-        #   sha256_64bit = "sha256-8G0lzj8YAupQetpLXcRrPCyLOFA9tvaPPvAWurjj3Pk=";
-        #   sha256_aarch64 = "sha256-1pUDdSm45uIhg0HEhfhak9XT/IE/XUVbdtrcpabZ3KU=";
-        #   openSha256 = "sha256-U/uqAhf83W/mns/7b2cU26B7JRMoBfQ3V6HiYEI5J48=";
-        #   settingsSha256 = "sha256-iBx/X3c+1NSNmG+11xvGyvxYSMbVprijpzySFeQVBzs=";
-        #   persistencedSha256 = "sha256-RoAcutBf5dTKdAfkxDPtMsktFVQt5uPIPtkAkboQwcQ=";
-        # };
+      hardware = {
+        enableRedistributableFirmware = true;
+        nvidia = {
+          open = lib.mkForce true;
+          nvidiaSettings = true;
+          modesetting.enable = true;
+          powerManagement.enable = true;
+        };
       };
 
       nixpkgs = {
-        config = {
-          allowUnfree = true;
-        };
-        #        config.cudaSupport = true;
+        config.allowUnfree = true;
         hostPlatform = "x86_64-linux";
       };
     }
