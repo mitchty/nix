@@ -121,14 +121,6 @@
       #      steam.enable = true;
     };
 
-    environment.etc = lib.mkIf (config.services.mitchty.gui.type == "wayland") {
-      "greetd/environments".text =
-
-        ''
-          sway
-        '';
-    };
-
     services = {
       gnome.gnome-keyring = lib.mkIf (config.services.mitchty.gui.type == "wayland") { enable = true; };
 
@@ -148,19 +140,6 @@
           accelProfile = "adaptive";
         };
       };
-
-      # greetd = lib.mkIf (config.services.mitchty.gui.type == "wayland") {
-      #   enable = true;
-      #   settings = {
-      #     default_session.command = ''
-      #       ${pkgs.greetd.tuigreet}/bin/tuigreet \
-      #         --time \
-      #         --asterisks \
-      #         --user-menu \
-      #         --cmd sway
-      #     '';
-      #   };
-      # };
 
       displayManager.defaultSession = lib.mkIf (config.services.mitchty.gui.type == "X") "xfce+i3";
 

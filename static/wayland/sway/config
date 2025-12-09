@@ -16,9 +16,12 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
-exec --no-startup-id nm-applet
+exec --no-startup-id nm-applet --indicator
 
-# Use parcellite as a paste buffer system tray
+# For notifications to not take up an entire frame.
+exec mako
+
+# TODO: still need to figure the clipboard history situation.
 exec_always --no-startup-id cliphist store
 
 # Use pactl to adjust volume in PulseAudio.
@@ -170,7 +173,10 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
-bar {
-        position top
-        status_command mystatus
-}
+# WTF wayland is ass overlay windows need to have config?
+#for_window [title="Picture-in-Picture"]  floating enable
+# for_window [app_id="firefox" title="Picture-in-Picture"] floating enable, resize set width 600 px height 300 px, move position 830 px 565 px, sticky on
+
+for_window [app_id="firefox" title="Picture-in-Picture"] floating enable, sticky on
+
+output HDMI-A-2 resolution 7680x2160

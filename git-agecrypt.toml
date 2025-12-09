@@ -1,50 +1,151 @@
 [config]
-"crypt/comic-code.zip" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/tmp/ssh_host_rsa_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/tokens/prowlarr" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/wireguard/gw0/privatekey" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/ark/ssh_host_rsa_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/pragmata-pro.zip" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/tokens/plex" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/gw0/ssh_host_ed25519_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-simple/ssh_host_ed25519_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-simple/ssh_host_rsa_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-simple/ssh_host_rsa_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/wm2/ssh_host_rsa_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/wireguard/gw0/publickey" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/wireguard/rtx/publickey" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/ark/ssh_host_ed25519_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/tmp/ssh_host_ed25519_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/rtx/ssh_host_ed25519_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/tokens/radarr" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/wireguard/rtx/privatekey" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/tmp/ssh_host_rsa_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/wm2/ssh_host_ed25519_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/tokens/sonarr" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/work/ca.crt" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/ark/ssh_host_rsa_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/ark/ssh_host_ed25519_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/rtx/ssh_host_rsa_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-raid/ssh_host_ed25519_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-simple/ssh_host_ed25519_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/cf.env" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/wm2/ssh_host_ed25519_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/work/ta.key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/rtx/ssh_host_rsa_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/gw0/ssh_host_ed25519_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/wm2/ssh_host_rsa_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/gw0/ssh_host_rsa_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-raid/ssh_host_rsa_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/gw0/ssh_host_rsa_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/tokens/sabnzbd" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-raid/ssh_host_ed25519_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-raid/ssh_host_rsa_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/test" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/wireguard/mbp/publickey" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-mirror/ssh_host_ed25519_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/rtx/ssh_host_ed25519_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-mirror/ssh_host_ed25519_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/wireguard/mbp/privatekey" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/tmp/ssh_host_ed25519_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-mirror/ssh_host_rsa_key" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
-"crypt/ssh/vm-mirror/ssh_host_rsa_key.pub" = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb"]
+"crypt/cf.env" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/comic-code.zip" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/pragmata-pro.zip" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/ark/ssh_host_ed25519_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/ark/ssh_host_ed25519_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/ark/ssh_host_rsa_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/ark/ssh_host_rsa_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/gw0/ssh_host_ed25519_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/gw0/ssh_host_ed25519_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/gw0/ssh_host_rsa_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/gw0/ssh_host_rsa_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/rtx/ssh_host_ed25519_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/rtx/ssh_host_ed25519_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/rtx/ssh_host_rsa_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/rtx/ssh_host_rsa_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/tmp/ssh_host_ed25519_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/tmp/ssh_host_ed25519_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/tmp/ssh_host_rsa_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/tmp/ssh_host_rsa_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-mirror/ssh_host_ed25519_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-mirror/ssh_host_ed25519_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-mirror/ssh_host_rsa_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-mirror/ssh_host_rsa_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-raid/ssh_host_ed25519_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-raid/ssh_host_ed25519_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-raid/ssh_host_rsa_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-raid/ssh_host_rsa_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-simple/ssh_host_ed25519_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-simple/ssh_host_ed25519_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-simple/ssh_host_rsa_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/vm-simple/ssh_host_rsa_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/wm2/ssh_host_ed25519_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/wm2/ssh_host_ed25519_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/wm2/ssh_host_rsa_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/wm2/ssh_host_rsa_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/test" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/tokens/huggingface" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/tokens/plex" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/tokens/prowlarr" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/tokens/radarr" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/tokens/sabnzbd" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/tokens/sonarr" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/gw0/privatekey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/gw0/publickey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/mbp/privatekey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/mbp/publickey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/rtx/privatekey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/rtx/publickey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/work/ca.crt" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/work/ta.key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]

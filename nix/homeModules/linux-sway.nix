@@ -33,6 +33,11 @@ in
             ''
               # Font for window titles and bar.
               font pango:${fontName} 12
+
+              bar {
+                      position top
+                      status_command ${../../src/mystatus.sh}
+              }
             ''
           ]
         );
