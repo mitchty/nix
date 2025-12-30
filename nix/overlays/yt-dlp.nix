@@ -18,12 +18,12 @@ rec {
     }).overrideAttrs
       (old: rec {
         latest = "curl --silent https://api.github.com/repos/yt-dlp/yt-dlp/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
-        version = "2025.11.12";
-        src = prev.fetchPypi {
-          inherit version;
-          pname = "yt_dlp";
-          hash = "sha256-XweVprj8V6XCMzLWfWxqz4GaC0a5GmMkuuKUFPqX8FI=";
-        };
+        # version = "2025.12.8";
+        # src = prev.fetchPypi {
+        #   inherit version;
+        #   pname = "yt-dlp";
+        #   hash = "";
+        # };
         postPatch = '':'';
 
         # curl_cffi is the unsupported lib but I don't use it so whatever
