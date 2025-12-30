@@ -9,56 +9,39 @@
 with lib;
 
 let
-  cfg = config.services.mitchty.ai;
+  cfg = config.services.mitchty.ollama;
 in
 {
   # Use the versions from unstable and not the YY.MM channel
   disabledModules = [
     "services/misc/ollama.nix"
-    "services/misc/open-webui.nix"
   ];
 
   imports = [
-    (inputs.nixpkgs-ai + /nixos/modules/services/misc/open-webui.nix)
     (inputs.nixpkgs-ai + /nixos/modules/services/misc/ollama.nix)
   ];
 
-  options.services.mitchty.ai = {
-    enable = mkEnableOption "Setup as an ai llm thingy";
-    ollamaCname = mkOption {
+  options.services.mitchty.ollama = {
+    enable = mkEnableOption "Setup as an ollama server";
+    cname = mkOption {
       type = types.str;
-      default = "slow-ollama.home.arpa";
-      description = "Internal dns domain to use for the ollama cname";
+      default = "ollama.home.arpa";
+      description = "dns domain to use for the ollama service";
     };
-    ollamaIp = mkOption {
+    ip = mkOption {
       type = types.str;
       default = "10.10.10.220";
       description = "ollama ip address";
     };
-    ollamaPackage = mkOption {
+    pkg = mkOption {
       type = types.package;
-      default = pkgs.unstable.ollama;
+      default = pkgs.ai-nvidia.ollama;
       description = "Default package derivation to use for ollama";
-    };
-    owuiCname = mkOption {
-      type = types.str;
-      default = "slow-open-webui.home.arpa";
-      description = "Internal dns domain to use for the open webui cname";
-    };
-    owuiIp = mkOption {
-      type = types.str;
-      default = "10.10.10.221";
-      description = "open webui ip address";
-    };
-    owuiPackage = mkOption {
-      type = types.package;
-      default = pkgs.ai-nvidia.open-webui;
-      description = "Default package derivation to use for open-webui";
     };
     iface = mkOption {
       type = types.str;
       default = "br0";
-      description = "interface to add vip to";
+      description = "interface to add vip to for ip";
     };
   };
 
@@ -68,11 +51,7 @@ in
         "${cfg.iface}" = {
           ipv4.addresses = [
             {
-              address = cfg.owuiIp;
-              prefixLength = 24;
-            }
-            {
-              address = cfg.ollamaIp;
+              address = cfg.ip;
               prefixLength = 24;
             }
           ];
@@ -82,7 +61,6 @@ in
         interfaces = {
           "${cfg.iface}" = {
             allowedTCPPorts = [
-              8080
               11434
             ];
           };
@@ -128,8 +106,8 @@ in
 
     services.ollama = {
       enable = true;
-      host = cfg.ollamaIp;
-      package = cfg.ollamaPackage;
+      host = cfg.ip;
+      package = cfg.pkg;
       # acceleration = "cuda";
       # Just set the rocm/cuda options and pacakge not here.
       # https://search.nixos.org/options?channel=25.05&show=services.ollama.acceleration&query=services.ollama
@@ -140,22 +118,6 @@ in
         OLLAMA_MAX_LOADED_MODELS = "2";
         OLLAMA_NUM_PARALLEL = "2";
       };
-    };
-
-    services.open-webui = {
-      enable = false;
-      host = cfg.owuiIp;
-      port = 8080;
-      environment = {
-        SCARF_NO_ANALYTICS = "True";
-        DO_NOT_TRACK = "True";
-        ANONYMIZED_TELEMETRY = "False";
-        OLLAMA_API_BASE_URL = "http://${cfg.ollamaCname}:11434";
-        WEBUI_AUTH = "False";
-        WEBUI_URL = "http://${cfg.owuiCname}";
-        GLOBAL_LOG_LEVEL = "DEBUG";
-      };
-      package = cfg.owuiPackage;
     };
   };
 }

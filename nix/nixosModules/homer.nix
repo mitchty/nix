@@ -54,7 +54,6 @@ in
           title = "home.arpa dashboard";
           subtitle = "Homer dashboard";
           icon = "homer";
-          #              logo = "assets/icons/logo.png";
           header = false;
           footer = false;
           columns = "3";
@@ -65,71 +64,151 @@ in
             colorTheme = "auto";
           };
 
+          # default/neon/walkxcode apparently
+          # https://github.com/bastienwirtz/homer/tree/main/src/assets/themes
+          #
+          # tbh only defaults ok, neon is... eww, and the xcode thing has a background image that is meh
           theme = "default";
 
-          # message = {
-          #   style = "is-warning";
-          #   title = "dum dum reminder!";
-          #   icon = "fa fa-exclamation-triangle";
-          #   content = "DO NOT COMMIT THIS AS-IS FIGURE OUT ICONS AND API KEY SECRETS FIRST DUMASS";
-          # };
-
           # icon data/name/string is from here https://fontawesome.com/search?q=tv&o=r
+
           links = [
             {
-              name = "grafana";
-              icon = "fas fa-chart-line";
-              url = "http://grafana.home.arpa/d/rYdddlPWk/node-exporter-full";
+              name = "monthly";
+              icon = "fas fa-calendar";
+              url = "http://karakeep.home.arpa:3000/dashboard/lists/vb56yq5vkocrpu4hmed49zf0";
               target = "_blank";
             }
             {
-              name = "karakeep";
-              icon = "fas fa-book";
-              url = "http://karakeep.home.arpa:3000";
+              name = "github";
+              icon = "fas fa-code-branch";
+              url = "https://github.com/mitchty";
               target = "_blank";
             }
             {
-              name = "pikvm";
-              icon = "fas fa-tv";
-              url = "http://pikvm.home.arpa";
+              name = "leo";
+              icon = "fas fa-volume-high";
+              url = "https://dict.leo.org/german-english/";
               target = "_blank";
             }
             {
-              name = "pikvm2";
-              icon = "fas fa-tv";
-              url = "http://pikvm2.home.arpa";
+              name = "jisho";
+              icon = "fas fa-yen-sign";
+              url = "https://jisho.org/";
               target = "_blank";
             }
             {
-              name = "nas";
-              icon = "fas fa-tv";
-              url = "https://s1.home.arpa:5001/#/signin";
+              name = "en-pt";
+              icon = "fas fa-volume-high";
+              url = "https://www.linguee.com/english-portuguese";
               target = "_blank";
             }
             {
-              name = "wiffy";
-              icon = "fas fa-tv";
-              url = "https://wifi.home.arpa/login";
+              name = "en-fr";
+              icon = "fas fa-volume-high";
+              url = "https://www.linguee.com/english-french";
               target = "_blank";
             }
             {
-              name = "owui";
-              icon = "fas fa-tv";
-              url = "http://open-webui.home.arpa:8080";
+              name = "en-es";
+              icon = "fas fa-volume-high";
+              url = "https://www.linguee.com/english-spanish";
               target = "_blank";
             }
             {
-              name = "slowowui";
-              icon = "fas fa-tv";
-              url = "http://slow-open-webui.home.arpa:8080";
+              name = "chatgpt";
+              icon = "fas fa-head-side-virus";
+              url = "https://chatgpt.com";
+              target = "_blank";
+            }
+            {
+              name = "claude";
+              icon = "fas fa-head-side-virus";
+              url = "https://claude.ai/settings/usage";
               target = "_blank";
             }
           ];
 
           services = [
             {
+              name = "monitoring";
+              icon = "fas fa-magnifying-glass";
+              items = [
+                {
+                  name = "Grafana";
+                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/grafana.svg";
+                  url = "http://grafana.home.arpa/d/rYdddlPWk/node-exporter-full";
+                  target = "_blank";
+                }
+                {
+                  type = "Prometheus";
+                  name = "Prometheus";
+                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/prometheus.svg";
+                  url = "http://prometheus.home.arpa:9001";
+                  target = "_blank";
+                }
+              ];
+            }
+            {
+              name = "admin";
+              icon = "fas fa-radiation";
+              items = [
+                {
+                  name = "pikvm";
+                  logo = "https://raw.githubusercontent.com/pikvm/pikvm/refs/heads/master/docs/_assets/logo.png";
+                  url = "http://pikvm.home.arpa";
+                  target = "_blank";
+                }
+                {
+                  name = "nas";
+                  icon = "fas fa-server";
+                  url = "https://s1.home.arpa:5001/#/signin";
+                  target = "_blank";
+                }
+                {
+                  name = "wiffy";
+                  icon = "fas fa-wifi";
+                  url = "https://wifi.home.arpa/login";
+                  target = "_blank";
+                }
+              ];
+            }
+            {
+              name = "misc";
+              icon = "fas fa-bookmark";
+              items = [
+                {
+                  name = "karakeep";
+                  logo = "https://raw.githubusercontent.com/karakeep-app/karakeep/refs/heads/main/docs/static/img/logo.png";
+                  url = "http://karakeep.home.arpa:3000";
+                  target = "_blank";
+                }
+                {
+                  name = "llama-swap";
+                  logo = "https://raw.githubusercontent.com/mostlygeek/llama-swap/refs/heads/main/ui/public/favicon.svg";
+                  url = "http://llama.home.arpa:11343/ui/activity";
+                  target = "_blank";
+                }
+              ];
+            }
+            {
+              name = "media";
+              icon = "fas fa-tv";
+              items = [
+                {
+                  type = "Plex";
+                  name = "Plex";
+                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/plex.svg";
+                  url = "http://media.home.arpa:32400/web";
+                  endpoint = "http://media.home.arpa:32400";
+                  target = "_blank";
+                  token = "${builtins.readFile ../../crypt/tokens/plex}";
+                }
+              ];
+            }
+            {
               name = "utils";
-              icon = "fas fa-code-branch";
+              icon = "fas fa-hammer";
               items = [
                 {
                   type = "SABnzbd";
@@ -179,19 +258,18 @@ in
                 }
               ];
             }
-            #       {
-            #         name = "Bills";
-            #         icon = "fas fa-code-branch";
-            #         items = [
-            #           {
-            #             type = "Prometheus";
-            #             name = "Prometheus";
-            #             logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/prometheus.svg";
-            #             url = "http://prometheus.home.arpa:9001";
-            #             target = "_blank";
-            #           }
-            #         ];
-            #       }
+            {
+              name = "dev";
+              icon = "fas fa-code-branch";
+              items = [
+                {
+                  type = "Gitea";
+                  name = "Forgejo";
+                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/gitea.svg";
+                  url = "http://git.home.arpa:3000";
+                }
+              ];
+            }
             # - name: "Awesome app"
             #   logo: "assets/tools/sample.png"
             #   # Alternatively a fa icon can be provided:
@@ -201,34 +279,7 @@ in
             #   keywords: "self hosted reddit" # optional keyword used for searching purpose
             #   url: "https://www.reddit.com/r/selfhosted/"
             #   target: "_blank" # optional html tag target attribute
-            {
-              name = "monitoring";
-              icon = "fas fa-code-branch";
-              items = [
-                {
-                  type = "Prometheus";
-                  name = "Prometheus";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/prometheus.svg";
-                  url = "http://prometheus.home.arpa:9001";
-                  target = "_blank";
-                }
-              ];
-            }
-            {
-              name = "media";
-              icon = "fas fa-code-branch";
-              items = [
-                {
-                  type = "Plex";
-                  name = "Plex";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/plex.svg";
-                  url = "http://media.home.arpa:32400/web";
-                  endpoint = "http://media.home.arpa:32400";
-                  target = "_blank";
-                  token = "${builtins.readFile ../../crypt/tokens/plex}";
-                }
-              ];
-            }
+
           ];
         };
 

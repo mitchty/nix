@@ -58,7 +58,6 @@ in
           grafana
           media
           backup
-          ai
           debug
           virtualization
           power
@@ -67,6 +66,8 @@ in
           fw
           # nvidia-hack
           gpu-intel
+          # ai
+          llama-swap
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -129,9 +130,28 @@ in
             CRAWLER_FULL_PAGE_ARCHIVE = "true";
             OCR_CACHE_DIR = "/tmp";
             CRAWLER_FULL_PAGE_SCREENSHOT = "true";
-            OLLAMA_BASE_URL = "http://slow-ollama.home.arpa:11434";
+            KARAKEEP_PYTHON_API_VERBOSE = "true";
+            SEARCH_NUM_WORKERS = "4";
+            WEBHOOK_NUM_WORKERS = "1";
+            ASSET_PREPROCESSING_NUM_WORKERS = "1";
+            RULE_ENGINE_NUM_WORKERS = "1";
+            #            OLLAMA_BASE_URL = "http://slow-ollama.home.arpa:11343";
+            # OLLAMA_BASE_URL = "http://localhost:11343/openapi";
+            # OPENAI_BASE_URL = "http://localhost:11343/v1";
+            OPENAI_BASE_URL = "http://llama.home.arpa:11343/v1";
+            OPENAI_API_KEY = "no-key";
+            # OLLAMA_BASE_URL = "http://ollama.home.arpa:11434";
             INFERENCE_TEXT_MODEL = "gemma3";
             INFERENCE_IMAGE_MODEL = "llava";
+            # These seem to take 1-2ish minutes per bookmark when run against blas compiled llama-cpp
+            # Default I think is 30 seconds or whatever. Was getting 502's all the time in llama-swap till I fixed this higher.
+            #
+            # Slow... but for ai tagging on a system that draws like 10watts under load... not a problem really for this task.
+            #
+            # If I need to retag a lot super fast I can always use ollama/etc... on the 4090 box temporarily.
+            #
+            # Ai tags taking minutes isn't a huge loss to me.
+            INFERENCE_JOB_TIMEOUT_SEC = "600";
             # CRAWLER_VIDEO_DOWNLOAD = "true";
             # CRAWLER_VIDEO_DOWNLOAD_MAX_SIZE = "true";
             # CRAWLER_VIDEO_DOWNLOAD_TIMEOUT_SEC = "3600";
@@ -150,16 +170,45 @@ in
           media = commonMonitoring // {
             services = true;
           };
-          ai = commonMonitoring // {
+          # ai = commonMonitoring // {
+          #   enable = true;
+          #   iface = "enp6s0";
+          #   ollamaCname = "slow-ollama.home.arpa";
+          #   ollamaIp = "10.10.10.222";
+          #   ollamaPackage = unstable-pkgs.ollama;
+          #   owuiCname = "slow-open-webui.home.arpa";
+          #   owuiIp = "10.10.10.223";
+          # };
+          llama-swap = commonMonitoring // {
             enable = true;
-            iface = "enp6s0";
-            ollamaCname = "slow-ollama.home.arpa";
-            ollamaIp = "10.10.10.222";
-            ollamaPackage = unstable-pkgs.ollama;
-            owuiCname = "slow-open-webui.home.arpa";
-            owuiIp = "10.10.10.223";
           };
         };
+
+        # TODO: setup forgejo runners to build stuff for me
+        forgejo = {
+          enable = true;
+          database.type = "sqlite3";
+          lfs.enable = true;
+          settings = {
+            server = rec {
+              DOMAIN = "git.home.arpa";
+              ROOT_URL = "http://${DOMAIN}:3000";
+              #              HTTP_PORT = 80;
+              HTTP_ADDR = "10.10.10.227";
+
+              # To use ssh to send/receive git repos
+              START_SSH_SERVER = true;
+              SSH_PORT = 2222;
+              SSH_LISTEN_HOST = "10.10.10.227";
+              SSH_LISTEN_PORT = 2222;
+            };
+            # Comment out if first run or to setup another user
+            service.DISABLE_REGISTRATION = true;
+            session.COOKIE_SECURE = true;
+          };
+        };
+
+        openssh.settings.AcceptEnv = "GIT_PROTOCOL";
       };
 
       networking = {
@@ -189,28 +238,21 @@ in
                 address = "10.10.10.224";
                 prefixLength = 24;
               }
+              {
+                address = "10.10.10.227";
+                prefixLength = 24;
+              }
             ];
           };
-          # enp3s0f1np1.ipv4 = {
-          #   addresses = [
-          #     {
-          #       address = "10.10.10.252";
-          #       prefixLength = 24;
-          #     }
-          #   ];
-          #   routes = [
-          #     {
-          #       address = "10.10.10.9";
-          #       prefixLength = 32;
-          #       via = "10.10.10.252";
-          #     }
-          #   ];
-          # };
         };
+
         firewall = {
           interfaces = {
             "${iface}" = {
-              allowedTCPPorts = [ 3000 ];
+              allowedTCPPorts = [
+                2222
+                3000
+              ];
             };
           };
         };

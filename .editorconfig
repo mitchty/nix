@@ -24,8 +24,6 @@ charset = Windows-1252
 charset = Windows-1252
 [secrets/cifs/mitch.age]
 charset = Windows-1252
-[secrets/git/netrc.age]
-charset = Windows-1252
 [secrets/passwd/mitch.age]
 charset = Windows-1252
 [secrets/wifi/newerhotness.age]
@@ -34,5 +32,7 @@ charset = Windows-1252
 charset = Windows-1252
 [secrets/wireguard/prv/mbp.age]
 charset = Windows-1252
+[secrets/git/netrc.age]
+charset = Windows-1253
 [secrets/git/gh-cli-pub.age]
-charset = Windows-1253 #????
+charset = binary

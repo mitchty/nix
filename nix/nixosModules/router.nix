@@ -69,6 +69,8 @@ let
       10.10.10.223 slow-open-webui.home.arpa open-webui
       10.10.10.224 karakeep.home.arpa karakeep
       10.10.10.225 homer.home.arpa homer
+      10.10.10.226 llama.home.arpa llama
+      10.10.10.227 git.home.arpa git
 
       10.10.10.242 ark-nas.home.arpa
 

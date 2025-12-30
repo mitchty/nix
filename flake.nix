@@ -269,5 +269,6 @@
       url = "github:hagezi/dns-blocklists";
       flake = false;
     };
+    nix-net-lib.url = "github:0xCCF4/nix-net-lib";
   };
 }
