@@ -30,6 +30,7 @@
           # Why is home-manager systemd services like nixos and lets
           # me just do pkgs = [list]; sigh
           Environment = [
+            "EXCLUDES=${../../static/backup/excludes}"
             "PATH=${
               pkgs.lib.makeBinPath [
                 pkgs.bash
@@ -73,9 +74,7 @@
   #
   # Also need to figure out if I want to share linux and macos nix backup job
   # derivations in the same file like before or not.
-  home = {
-    packages = with pkgs; [
-      kopia
-    ];
-  };
+  home.packages = with pkgs; [
+    kopia
+  ];
 }

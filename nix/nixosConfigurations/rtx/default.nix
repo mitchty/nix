@@ -5,6 +5,7 @@
 }:
 let
   shortHost = "rtx";
+  iface = "br0";
 in
 {
   system = "x86_64-linux";
@@ -43,7 +44,7 @@ in
           nvidia-hack
           steam
           nas
-          ai
+          ollama
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -118,10 +119,15 @@ in
           };
           promtail.enable = true;
           node-exporter = {
+            inherit iface;
             enable = true;
-            iface = "br0";
           };
-          ai.enable = true;
+          ollama = {
+            inherit iface;
+            enable = true;
+            ip = "10.10.10.220";
+            cname = "ollama.home.arpa";
+          };
         };
       };
 
@@ -131,11 +137,11 @@ in
         ];
         defaultGateway = {
           address = "10.10.10.1";
-          interface = "br0";
+          interface = iface;
         };
         firewall = {
           trustedInterfaces = [
-            "br0"
+            iface
           ];
         };
         bridges.br0.interfaces = [ "eno1" ];
@@ -181,10 +187,36 @@ in
       networking.hostName = shortHost;
 
       boot = {
+        kernelParams = [
+          "usbcore.autosuspend=-1"
+        ];
         loader = {
           systemd-boot = {
             enable = true;
             memtest86.enable = true;
+
+            # efi = {
+            #   canTouchEfiVariables = true;
+            #   efiSysMountPoint = "/boot";
+            # };
+
+            # TODO: make a systemd-boot mirroring module for nixos
+            # configurationLimit = 20;
+            #          generationsDir.copyKernels = true;
+            # Loop through all the /bootN vfat filesystems after kernels are
+            # installed to the primary efi system mountpoint and rsync em over
+            # to the rest of the /boot mounts
+            #
+            # Then voila, we can boot off the other devices magically. Its a
+            # hack but its... fine. I give up on trying to convince an md mirror
+            # of this crap to work.
+
+            # extraInstallCommands = ''
+            #   set -e
+            #   for mnt in $(df -t vfat | awk '/\/boot[0-9]+/ {print $6}'); do
+            #     ${pkgs.rsync}/bin/rsync -Havzn --checksum --exclude .lost+found --delete --delete-before /boot $mnt
+            #   done
+            # '';
           };
         };
         tmp = {

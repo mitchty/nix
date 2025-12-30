@@ -11,10 +11,12 @@ set "${SETOPTS:--eu}"
 base="${base:-$HOME}"
 ignorefile="${base}/.kopiaignore"
 
+EXCLUDES="${EXCLUDES:-${_dir}/../static/backup/excludes}"
+
 genignore() {
   printf "finding stuff not worth backing up\n" >&2
   start=$(date +%s)
-  install -m644 "${_dir}/../static/backup/excludes" "${ignorefile}"
+  install -m644 "${EXCLUDES}" "${ignorefile}"
 
   {
     printf "\n"

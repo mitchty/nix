@@ -42,8 +42,7 @@ in
     serviceConfig = {
       Type = "oneshot";
       User = "root";
-      # Abuse nproc from coreutils to set the parallel to num procs on system. Shortens backup time slightly vs 1 or 4/8.
-      ExecStart = "${pkgs.kopia}/bin/kopia snapshot create --tags script:true --tags gihugic:true /var/lib/grafana /var/lib/karakeep /var/lib/prometheus2 /var/lib/loki /var/lib/private /var/lib/media --parallel=$(${pkgs.coreutils}/bin/nproc)";
+      ExecStart = "${pkgs.kopia}/bin/kopia snapshot create --tags script:true --tags gihugic:true /var/lib/forgejo /var/lib/karakeep /var/lib/prometheus2 /var/lib/grafana /var/lib/loki /var/lib/private /var/lib/media";
     };
     requires = [
       "srv-backup.mount"
