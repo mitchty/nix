@@ -108,7 +108,6 @@
     programs = {
       thunar.enable = true;
       dconf.enable = true;
-      #      sway.enable = true;
       sway = lib.mkIf (config.services.mitchty.gui.type == "wayland") {
         enable = true;
         wrapperFeatures.gtk = true;
@@ -117,7 +116,6 @@
           "--verbose"
         ];
       };
-      #      sway.enable =  {true;};
       #      steam.enable = true;
     };
 
