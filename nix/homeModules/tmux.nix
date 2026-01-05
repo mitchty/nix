@@ -8,14 +8,18 @@ let
   formats = with pkgs.formats; {
     yaml = yaml { };
   };
-
-  # Cause stuff can be slow to warm up before a prompt shows up wait this long
-  # first.
-  sleepDefault = 3;
-
   # TODO: Learn how to unit test this stuff
   base = {
     start_directory = "~/";
+  };
+
+  clear = {
+    shell_command = [
+      {
+        cmd = "clear";
+        enter = true;
+      }
+    ];
   };
 
   initial = {
@@ -26,7 +30,7 @@ let
 
   sh = {
     window_name = "sh";
-    panes = [ "pane" ];
+    panes = [ clear ];
   };
 
   # terminal monitoring stuffs
@@ -74,7 +78,7 @@ let
         shell_command = [
           {
             # keep track of how big reverse proxy crap is
-            cmd = "sudo hwatch -t -d word -n 60 du -hs /var/cache/nginx/cache/docker /var/lib/ncps";
+            cmd = "sudo ${pkgs.hwatch}/bin/hwatch -t -d word -n 60 du -hs /var/cache/nginx/cache/docker /var/lib/ncps";
             enter = true;
           }
         ];
@@ -98,7 +102,7 @@ let
       {
         shell_command = [
           {
-            cmd = "sudo hwatch -t -d word -n 5 ip -br a";
+            cmd = "sudo ${pkgs.hwatch}/bin/hwatch -t -d word -n 5 ip -br a";
             enter = true;
           }
         ];
@@ -106,7 +110,7 @@ let
       {
         shell_command = [
           {
-            cmd = "sudo hwatch -t -d word -n 60 fail2ban-client banned";
+            cmd = "sudo ${pkgs.hwatch}/bin/hwatch -t -d word -n 60 fail2ban-client banned";
             enter = true;
           }
         ];
@@ -142,40 +146,36 @@ let
   nix = {
     window_name = "gh/nix";
     layout = "even-vertical";
+    start_directory = "~/src/pub/github.com/mitchty/nix";
     panes = [
-      {
-        shell_command = [
-          "gi mitchty/nix"
-        ];
-      }
-      {
-        shell_command = [
-          "gi mitchty/nix"
-        ];
-      }
+      clear
+      clear
     ];
   };
 
   yt = {
     window_name = "yt/mon";
-    layout = "even-vertical";
+    layout = "tiled";
+    start_directory = "/nas/media/internetse";
     panes = [
       {
         shell_command = [
-          "hwatch -t -d word -n 60 ./stats.sh"
+          "$CARGO_TARGET_DIR/release/ythelper dl --subscription subs/all.yaml"
         ];
       }
       {
         shell_command = [
-          "hwatch -t -d word -n 180 $CARGO_TARGET_DIR/release/ythelper stats --subscription subs/all.yaml"
+          "${pkgs.hwatch}/bin/hwatch -t -d word -n 180 $CARGO_TARGET_DIR/release/ythelper dl --subscription subs/all.yaml"
         ];
       }
       {
         shell_command = [
-          {
-            cmd = "dev=enp2s0 ./ytlatest.sh subs/all.yaml | ts";
-            enter = false;
-          }
+          "${pkgs.hwatch}/bin/hwatch -t -d word -n 180 $CARGO_TARGET_DIR/release/ythelper stats --subscription subs/all.yaml --limit 15"
+        ];
+      }
+      {
+        shell_command = [
+          "${pkgs.hwatch}/bin/hwatch -t -d word -n 180 $CARGO_TARGET_DIR/release/ythelper info --subscription subs/all.yaml"
         ];
       }
     ];
@@ -199,21 +199,15 @@ let
           "journalctl -fu podman-bgutil-ytdlp-pot-provider.service"
         ];
       }
-      "pane"
+      clear
     ];
   };
 
   journal = {
-    window_name = "mt/org";
+    window_name = "h/org";
     layout = "even-vertical";
-    panes = [
-      {
-        shell_command = [
-          "mt mitchty/org"
-        ];
-        #        sleep_before = sleepDefault;
-      }
-    ];
+    start_directory = "~/src/prv/git.home.arpa/mitch/org";
+    panes = [ clear ];
   };
 
   mutagen = {
@@ -222,7 +216,7 @@ let
     panes = [
       {
         shell_command = [
-          "hwatch -n 10 -t -d word -o stdout mutmon"
+          "${pkgs.hwatch}/bin/hwatch -n 10 -t -d word -o stdout mutmon"
         ];
       }
       {
@@ -254,47 +248,20 @@ let
 
   yeet = {
     window_name = "yeet";
-    panes = [
-      {
-        shell_command = [
-          "gi mitchty/yeet"
-        ];
-      }
-    ];
+    start_directory = "~/src/pub/github.com/mitchty/yeet";
+    panes = [ clear ];
+  };
+
+  ghpage = {
+    window_name = "ghpage";
+    start_directory = "~/src/pub/github.com/mitchty/mitchty.github.io";
+    panes = [ clear ];
   };
 
   ip = {
     window_name = "ip";
-    panes = [
-      {
-        focus = true;
-        shell_command = [
-          "prg iocaine-powder"
-        ];
-      }
-      # Need to think if I even want to bother with this anymore, if I do pick
-      # it back up it'll probably just be in iocaine-powder as a bevy plugin I
-      # build.
-      # {
-      #   shell_command = [
-      #     {
-      #       enter = true;
-      #       cmd = "gi mitchty/moresus";
-      #     }
-      #   ];
-      #   sleep_before = sleepDefault;
-      # }
-    ];
-  };
-
-  rebuild = {
-    shell_command = [
-      {
-        cmd = "update && mobiledeploy deploytestedhost \$HOST && notify deploy \$HOST done";
-        enter = false;
-      }
-    ];
-    # sleep_before = sleepDefault;
+    start_directory = "~/src/prv/git.home.arpa/mitch/iocainepowder";
+    panes = [ clear ];
   };
 
   shenanigans = {
@@ -329,36 +296,12 @@ let
   #     }
   #     {
   #       shell_command = [
-  #         "gi mitchty/open-webui-cli"
+  #         "cd ~/src/pub/github.com/mitchty/open-webui-cli"
   #       ];
   #       enter = false;
   #     }
   #   ];
   # };
-
-  site-update = {
-    shell_command = [
-      "gi mitchty/nix"
-      {
-        cmd = "wtf site-update";
-        enter = false;
-      }
-    ];
-    # sleep_before = sleepDefault;
-  };
-
-  rebuildall = {
-    window_name = "rebuild";
-    panes = [
-      site-update
-      rebuild
-    ];
-  };
-
-  rebuildlocal = {
-    window_name = "rebuild";
-    panes = [ rebuild ];
-  };
 in
 rec {
   # Look at pkgs.tmuxPlugins
@@ -404,7 +347,6 @@ rec {
         session_name = "nix";
         windows = [
           initial
-          rebuildlocal
         ];
       };
 
@@ -437,6 +379,7 @@ rec {
         windows = [
           ip
           yeet
+          ghpage
         ];
       };
 
@@ -468,6 +411,7 @@ rec {
           nix
           ip
           yeet
+          ghpage
           journal
           sh
         ];
@@ -481,6 +425,7 @@ rec {
           nix
           ip
           yeet
+          ghpage
           sh
         ];
       };
@@ -493,6 +438,7 @@ rec {
           nix
           ip
           yeet
+          ghpage
           journal
           sh
         ];

@@ -232,8 +232,15 @@ da() {
   direnv allow
 }
 
+# internal home.arpa forgejo instance
+prh() {
+  prv try_git "ssh://forgejo@git.home.arpa:2222/${1}" "${2:-}"
+}
+
 # Private localhost work that I don't trust being in "da klowd", this is all
 # backed up and synced across computers so watevs.
+#
+# I'll probably ditch this for ^^^ keeping it for now
 prg() {
   prv try_git localhost/"$*"
 }
@@ -322,7 +329,7 @@ d() {
   #shellcheck disable=SC2086
   onmac sudo darwin-rebuild switch ${DARGS:-} --flake ".#${host}" ${NIXARGS:-}
   #shellcheck disable=SC2086
-  onlinux deploy -ds ${DARGS:-} -- ".#${host}" ${NIXARGS:-}
+  onlinux deploy -ds ${DARGS:-} ".#${host}" -- ${NIXARGS:-}
 }
 
 NOM="${NOM:-$(command -v nom || echo nom)}"
