@@ -54,7 +54,7 @@ in
 
   config = mkIf cfg.enable (mkMerge [
     (optionalAttrs (options ? launchd.user.agents) (
-      mkIf pkgs.hostPlatform.isDarwin {
+      mkIf pkgs.stdenv.hostPlatform.isDarwin {
         environment.systemPackages = [ cfg.package ];
         launchd.user.agents.${name} = {
           path = [ config.environment.systemPath ];

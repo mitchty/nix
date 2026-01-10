@@ -14,6 +14,6 @@
         ytdl-sub-with-plugins
         yq-go
       ]
-      ++ (lib.optionals pkgs.hostPlatform.isLinux [ libcgroup ]);
+      ++ (lib.optionals pkgs.stdenv.hostPlatform.isLinux [ libcgroup ]);
   };
 }

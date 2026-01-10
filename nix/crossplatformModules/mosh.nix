@@ -28,12 +28,12 @@ in
 
   config = mkIf cfg.enable (mkMerge [
     (optionalAttrs (options ? launchd.user.agents) (
-      mkIf pkgs.hostPlatform.isDarwin {
+      mkIf pkgs.stdenv.hostPlatform.isDarwin {
         # darwin firewall setup? TODO figure it out future mitch if its needed
       }
     ))
     (optionalAttrs (options ? systemd.services) (
-      mkIf pkgs.hostPlatform.isLinux {
+      mkIf pkgs.stdenv.hostPlatform.isLinux {
         networking.firewall.allowedUDPPortRanges = [
           {
             from = 60000;

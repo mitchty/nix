@@ -108,7 +108,7 @@
               user-agent-string-switcher
               karakeep
             ]
-            ++ lib.optionals pkgs.hostPlatform.isLinux [
+            ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
               plasma-integration
             ];
           settings = {
