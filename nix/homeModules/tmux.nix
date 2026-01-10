@@ -156,7 +156,7 @@ let
   yt = {
     window_name = "yt/mon";
     layout = "tiled";
-    start_directory = "/nas/media/internetse";
+    start_directory = "/nas/media/internets";
     panes = [
       {
         shell_command = [
@@ -165,7 +165,7 @@ let
       }
       {
         shell_command = [
-          "${pkgs.hwatch}/bin/hwatch -t -d word -n 180 $CARGO_TARGET_DIR/release/ythelper dl --subscription subs/all.yaml"
+          "hwatch -t -d word -n 60 /nas/media/internets/stats.sh"
         ];
       }
       {
@@ -323,7 +323,7 @@ rec {
         unstable.btop
         tmuxp
       ]
-      ++ lib.optionals pkgs.hostPlatform.isLinux [
+      ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         powerjoular
         nftrace
       ];
