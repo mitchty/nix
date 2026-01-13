@@ -42,6 +42,7 @@ in
           router
           homer
           #          ip-hacks
+          ociregistry
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -103,6 +104,11 @@ in
           nixcache = {
             enable = true;
             iface = "br0";
+          };
+          ociregistry = {
+            enable = true;
+            port = 12345;
+            bindAddress = "10.10.10.140";
           };
         };
       };

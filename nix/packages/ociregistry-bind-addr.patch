@@ -1,0 +1,17 @@
+diff --git a/cmd/subcmd/serve.go b/cmd/subcmd/serve.go
+index 1111111..2222222 100644
+--- a/cmd/subcmd/serve.go
++++ b/cmd/subcmd/serve.go
+@@ -106,7 +106,11 @@ func Serve(ver, dtm string) error {
+ 
+ 	// start the API server
+ 	go func() {
+-		addr := net.JoinHostPort("0.0.0.0", strconv.Itoa(int(config.GetPort())))
++		bindAddr := os.Getenv("OCIREGISTRY_BIND_ADDR")
++		if bindAddr == "" {
++			bindAddr = "0.0.0.0"
++		}
++		addr := net.JoinHostPort(bindAddr, strconv.Itoa(int(config.GetPort())))
+ 		if tlsCfg != nil {
+ 			s := http.Server{
+ 				Addr:      addr,
