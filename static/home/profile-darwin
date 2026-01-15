@@ -1,8 +1,54 @@
 # -*- mode: Shell-script; -*-
 
-# macos specific
-#shellcheck disable=SC2139
-alias oe="open -a $(which emacs)"
+# Ok so something seems to have changed in how the final emacs wrapped binary
+# gets built in 25.11 nixpkgs...
+#
+# What used to work:
+# - open -a /path/to/wrapped/bin
+#
+# What seems to need to happen now is I need to use the -wrapped version on
+# macos vs the mainProgram binary, that is:
+# - open -a /path/to/wrapped/.bin-wrapped
+#
+# Sooooo.... we need to go from "what does which think from $PATH emacs is
+# located at" all the way down to the final binary /nix/store symlink chain
+# shenanigans and then swap that binary to the .emacs-wrapped binary instead
+# now.
+#
+# Given i'm running nix I can use gnu realpath which recursively does the
+# symlink resolution until file nonsense.
+#
+# Also, why is all of computing lately so damn brittle, I love updates and all
+# but getting sick of treadmill debugging all the time. Pick a lane and stick
+# with it until you can't. Consistency isn't a 4 letter word.
+#
+# Should probably figure out a way to make a check for this in nix flake
+# check... so that I can prove my symlink wrapped emacs shenanigans is worth a
+# spit to catch this stuff more quickly on updates.
+oe() {
+  # There is zero reason to quote this shellcheck no spaces will be present and
+  # even if there end up being some thats a future me problem cause I'm doing
+  # something wicked weird like using /some path/nix/store etc...
+  #shellcheck disable=SC2046
+  bin=$(realpath $(which emacs))
+
+  [ -n $bin ] && return 1
+
+  if [ -x "${bin}" ]; then
+    dir=$(dirname "${bin}")
+    f="${dir}/.emacs-wrapped"
+    if [ -x "${f}" ]; then
+      printf "open -a %s\n" "${f}" >&2
+      open -a "${f}"
+    else
+      printf "couldn't find a .emacs-wrapped binary alongside .emacs\n" >&2
+      return 2
+    fi
+  else
+    printf "couldn't determine the final binary path for emacs\n" >&2
+    return 1
+  fi
+}
 
 # Kinda like which but for macos app bundles
 #
