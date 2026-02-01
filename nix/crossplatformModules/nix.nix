@@ -20,6 +20,11 @@ in
       "ca-derivations"
     ];
     settings = {
+      # Default is 0 which means unlimited, set this to a smaller number to
+      # prevent GOAWAY/429 errors from cachix through ncps. Cargo packages are
+      # the biggest offender here.
+      http-connections = 4;
+
       # Default is 0 which means 5 minutes before it declares a substituter DOA
       connect-timeout = 10;
 

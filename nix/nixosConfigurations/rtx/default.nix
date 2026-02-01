@@ -12,6 +12,16 @@ in
 
   modules = [
     {
+      # Host metadata for secrets generation
+      mitchty.secrets = {
+        hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBaFOFERMbg/d7DHrTBJ7pPKiJhwxFadQZlagalg51/";
+        tags = [
+          "wireguard"
+          "cifs"
+          "backup"
+          "nixos"
+        ];
+      };
       # TODO: Ok so to make sure I don't get infinite recursion around these
       # here parts.
       #
@@ -41,10 +51,13 @@ in
           power
           uhk
           gui
+          powerjoular
           nvidia-hack
           steam
           nas
           ollama
+          gaming
+          wireguard
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -76,6 +89,7 @@ in
                   git-age
                   age
                   debug
+                  gui
                   #                  linux-i3
                   linux-sway
                   firefox
@@ -128,6 +142,45 @@ in
             ip = "10.10.10.220";
             cname = "ollama.home.arpa";
           };
+          wireguard = {
+            enable = true;
+            role = "client";
+            address = [ "192.168.255.5/24" ];
+            listenPort = 51820; # Required for peer-to-peer mesh
+            privateKeyFile = "secrets/wireguard/prv/rtx";
+            dns = [ "10.10.10.1" ];
+            peers = [
+              # gw0 gateway/router - routes roaming clients through gw0
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/gw0/publickey}";
+                allowedIPs = [
+                  "192.168.255.1/32" # gw0
+                  "192.168.255.6/32" # mbp (roaming)
+                  "192.168.255.2/32" # wm2 (roaming)
+                ];
+                endpoint = "10.10.10.1:51820"; # Always local
+                persistentKeepalive = 25;
+              }
+              # plx (stationary) - direct peer
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/plx/publickey}";
+                allowedIPs = [
+                  "192.168.255.3/32" # plx
+                ];
+                endpoint = "10.10.10.14:51820";
+                persistentKeepalive = 25;
+              }
+              # ark (stationary) - direct peer
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/ark/publickey}";
+                allowedIPs = [
+                  "192.168.255.4/32" # ark
+                ];
+                endpoint = "10.10.10.253:51820";
+                persistentKeepalive = 25;
+              }
+            ];
+          };
         };
       };
 
@@ -164,18 +217,6 @@ in
           eno1.useDHCP = false;
           eno2.useDHCP = false;
         };
-        hosts = {
-          "10.200.200.254" = [
-            "vip.dev.home.arpa"
-          ];
-          "10.200.200.253" = [
-            "demo.dev.home.arpa"
-            "ai.dev.home.arpa"
-          ];
-          "10.200.200.252" = [
-            "misc.dev.home.arpa"
-          ];
-        };
       };
 
       diskConfig.disks = [
@@ -194,6 +235,11 @@ in
           systemd-boot = {
             enable = true;
             memtest86.enable = true;
+
+            # /boots only a gig, too many copied initrd/etc.. kernels leads to
+            # full fs... maybe I shouldn't always follow the latest kernels so
+            # much..
+            configurationLimit = 10;
 
             # efi = {
             #   canTouchEfiVariables = true;
@@ -273,6 +319,10 @@ in
       nixpkgs = {
         config.allowUnfree = true;
         hostPlatform = "x86_64-linux";
+        overlays = [
+          # Override the default emacs overlay with Wayland support
+          (import ../../overlays/emacs.nix { withWayland = true; })
+        ];
       };
     }
   ];

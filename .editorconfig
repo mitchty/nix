@@ -17,22 +17,11 @@ indent_size = 2
 [*.age]
 charset = binary
 
-# God knows why these are diff charset
-[secrets/canary.age]
-charset = Windows-1252
-[secrets/cifs/backup.age]
-charset = Windows-1252
-[secrets/cifs/mitch.age]
-charset = Windows-1252
-[secrets/passwd/mitch.age]
-charset = Windows-1252
-[secrets/wifi/newerhotness.age]
-charset = Windows-1252
-[secrets/wifi/passphrase.age]
-charset = Windows-1252
-[secrets/wireguard/prv/mbp.age]
-charset = Windows-1252
-[secrets/git/netrc.age]
-charset = Windows-1253
-[secrets/git/gh-cli-pub.age]
-charset = binary
+# Editorconfig really wants to do stupid crap here
+[/secrets/**]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+indent_style = unset
+indent_size = unset

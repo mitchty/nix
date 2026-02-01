@@ -7,6 +7,15 @@ in
 
   modules = [
     {
+      # Host metadata for secrets generation
+      mitchty.secrets = {
+        hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK2IZnIu0StYczf9Z4iJNDpEZt+Wjo8LjqDrlmd2yX4l";
+        tags = [
+          "wireguard"
+          "cifs"
+          "nixos"
+        ];
+      };
       # TODO: Ok so to make sure I don't get infinite recursion around these
       # here parts.
       #
@@ -24,6 +33,7 @@ in
           common
           console-normal
           user-mitch
+          user-mitch-compat
           ssh-mitch
           user-root
           ssh-root
@@ -33,6 +43,7 @@ in
           podman
           debug
           fw
+          wireguard
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -48,7 +59,7 @@ in
               users.mitch = {
                 home = {
                   username = "mitch";
-                  homeDirectory = "/home/mitch";
+                  homeDirectory = "/Users/mitch";
                   stateVersion = "25.05";
                 };
                 imports = [
@@ -97,6 +108,45 @@ in
           node-exporter = {
             enable = true;
             iface = "enp2s0";
+          };
+          wireguard = {
+            enable = true;
+            role = "client";
+            address = [ "192.168.255.3/24" ];
+            listenPort = 51820;
+            privateKeyFile = "secrets/wireguard/prv/plx";
+            dns = [ "10.10.10.1" ];
+            peers = [
+              # gw0 gateway/router
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/gw0/publickey}";
+                allowedIPs = [
+                  "192.168.255.1/32"
+                  "192.168.255.6/32"
+                  "192.168.255.2/32"
+                ];
+                endpoint = "10.10.10.1:51820"; # Always local, plx never leaves home
+                persistentKeepalive = 25;
+              }
+              # ark - wired
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/ark/publickey}";
+                allowedIPs = [
+                  "192.168.255.4/32"
+                ];
+                endpoint = "10.10.10.253:51820";
+                persistentKeepalive = 25;
+              }
+              # rtx - wired
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/rtx/publickey}";
+                allowedIPs = [
+                  "192.168.255.5/32"
+                ];
+                endpoint = "10.10.10.11:51820";
+                persistentKeepalive = 25;
+              }
+            ];
           };
         };
       };

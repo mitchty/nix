@@ -16,3 +16,4 @@
 disabled = ["useless_parens"]
 ignore = ['.direnv']
 nix_version = '2.4'
+warn_as_error = true

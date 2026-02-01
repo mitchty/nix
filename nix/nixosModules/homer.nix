@@ -80,6 +80,12 @@ in
               target = "_blank";
             }
             {
+              name = "watch";
+              icon = "fas fa-calendar";
+              url = "http://karakeep.home.arpa:3000/dashboard/lists/dt342dfhsj3jxvkgvr67mrv0";
+              target = "_blank";
+            }
+            {
               name = "github";
               icon = "fas fa-code-branch";
               url = "https://github.com/mitchty";
@@ -141,6 +147,12 @@ in
                   target = "_blank";
                 }
                 {
+                  name = "Loki";
+                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/loki.svg";
+                  url = "http://grafana.home.arpa/a/grafana-lokiexplore-app/explore?patterns=%5B%5D&from=now-15m&to=now&timezone=browser&var-lineFormat=&var-ds=851Z746nz&var-filters=&var-fields=&var-levels=&var-metadata=&var-jsonFields=&var-all-fields=&var-patterns=&var-lineFilterV2=&var-lineFilters=&var-primary_label=service_name%7C%3D~%7C.%2B";
+                  target = "_blank";
+                }
+                {
                   type = "Prometheus";
                   name = "Prometheus";
                   logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/prometheus.svg";
@@ -149,6 +161,7 @@ in
                 }
               ];
             }
+
             {
               name = "admin";
               icon = "fas fa-radiation";
@@ -171,6 +184,13 @@ in
                   url = "https://wifi.home.arpa/login";
                   target = "_blank";
                 }
+                {
+                  name = "vaultwarden";
+                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/bitwarden.svg";
+                  url = "https://bw.mitchty.net/#/login";
+                  target = "_blank";
+                }
+
               ];
             }
             {
@@ -202,7 +222,7 @@ in
                   url = "http://media.home.arpa:32400/web";
                   endpoint = "http://media.home.arpa:32400";
                   target = "_blank";
-                  token = "${builtins.readFile ../../crypt/tokens/plex}";
+                  token = "${lib.strings.trim (builtins.readFile ../../crypt/tokens/plex)}";
                 }
               ];
             }
@@ -219,7 +239,7 @@ in
                   url = "http://media.home.arpa:8080/";
                   target = "_blank";
                   legacyApi = true;
-                  apikey = "${builtins.readFile ../../crypt/tokens/sabnzbd}";
+                  apikey = "${lib.strings.trim (builtins.readFile ../../crypt/tokens/sabnzbd)}";
                   downloadInterval = 5000;
                 }
                 {
@@ -230,7 +250,7 @@ in
                   keywords = "self hosted radarr";
                   url = "http://media.home.arpa:7878/";
                   target = "_blank";
-                  apikey = "${builtins.readFile ../../crypt/tokens/radarr}";
+                  apikey = "${lib.strings.trim (builtins.readFile ../../crypt/tokens/radarr)}";
                   checkInterval = 5000;
                 }
                 {
@@ -241,7 +261,7 @@ in
                   keywords = "self hosted sonarr";
                   url = "http://media.home.arpa:8989/";
                   target = "_blank";
-                  apikey = "${builtins.readFile ../../crypt/tokens/sonarr}";
+                  apikey = "${lib.strings.trim (builtins.readFile ../../crypt/tokens/sonarr)}";
                   checkInterval = 5000;
                 }
                 {
@@ -253,7 +273,7 @@ in
                   url = "http://media.home.arpa:9696/";
                   target = "_blank";
                   legacyApi = true;
-                  apikey = "${builtins.readFile ../../crypt/tokens/prowlarr}";
+                  apikey = "${lib.strings.trim (builtins.readFile ../../crypt/tokens/prowlarr)}";
                   checkInterval = 5000;
                 }
               ];

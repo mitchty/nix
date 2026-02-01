@@ -40,9 +40,27 @@ let
     #rootPaths = { };
   };
 
+  disk0 = "/dev/disk/by-id/scsi-2SAMSUNG";
+  # Badblocks is here to find out if the device might be bad or not, hardware will fail... try to find out at install time.
   autoinstall = pkgs.writeShellScriptBin "autoinstall" ''
     set -eux
-    ${pkgs.disko}/bin/disko-install --write-efi-boot-entries --disk prime /dev/disk/by-id/scsi-2SAMSUNG --flake "${inputs.self}#${hostName}" "$@"
+
+    # for disk in ${disk0}; do
+    #   ${pkgs.e2fsprogs}/bin/badblocks -wsv $disk
+    #   ${pkgs.e2fsprogs}/bin/badblocks -b 4096 -c 1024 -s $disk
+    # done
+    ${pkgs.disko}/bin/disko-install --write-efi-boot-entries --disk prime ${disk0} --flake "${inputs.self}#${hostName}" "$@"
+
+    ${pkgs.disko}/bin/disko -m mount --flake "${inputs.self}#${hostName}"
+    install -m600 ${../../../crypt/ssh/${hostName}/ssh_host_ed25519_key} /mnt/etc/ssh/ssh_host_ed25519_key
+    install -m644 ${../../../crypt/ssh/${hostName}}/ssh_host_ed25519_key.pub /mnt/etc/ssh/ssh_host_ed25519_key.pub
+    install -m600 ${../../../crypt/ssh/${hostName}/ssh_host_rsa_key} /mnt/etc/ssh/ssh_host_rsa_key
+    install -m644 ${../../../crypt/ssh/${hostName}}/ssh_host_rsa_key.pub /mnt/etc/ssh/ssh_host_rsa_key.pub
+    find /mnt/Users/mitch -type d \( ! -user 1000 -o ! -group 100 \) -exec chown 1000:100 {} \+
+    btrfs quota enable /mnt
+    btrfs quota enable /mnt/var
+    btrfs quota enable /mnt/Users
+    ${pkgs.disko}/bin/disko -m unmount --flake "${inputs.self}#${hostName}"
   '';
 in
 {

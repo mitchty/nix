@@ -32,6 +32,18 @@
 "crypt/ssh/gw0/ssh_host_rsa_key.pub" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
+"crypt/ssh/plx/ssh_host_ed25519_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/plx/ssh_host_ed25519_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/plx/ssh_host_rsa_key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/plx/ssh_host_rsa_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
 "crypt/ssh/rtx/ssh_host_ed25519_key" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
@@ -125,6 +137,12 @@
 "crypt/tokens/sonarr" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
+"crypt/wireguard/ark/privatekey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/ark/publickey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
 "crypt/wireguard/gw0/privatekey" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
@@ -137,10 +155,22 @@
 "crypt/wireguard/mbp/publickey" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
+"crypt/wireguard/plx/privatekey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/plx/publickey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
 "crypt/wireguard/rtx/privatekey" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
 "crypt/wireguard/rtx/publickey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/wm2/privatekey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/wm2/publickey" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
 "crypt/work/ca.crt" = [

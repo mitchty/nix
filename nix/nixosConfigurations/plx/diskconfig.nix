@@ -38,6 +38,7 @@
                     "/rootfs" = {
                       mountpoint = "/";
                     };
+
                     # Parent is not mounted so the mountpoint must be set
                     "/nix" = {
                       mountOptions = [
@@ -47,38 +48,50 @@
                       mountpoint = "/nix";
                     };
 
+                    # Want to have /var separate
+                    "/var" = {
+                      mountOptions = [
+                        "compress=zstd"
+                        "noatime"
+                      ];
+                      mountpoint = "/var";
+                    };
+
+                    # lib and log are their own volumes too
+                    "/var/lib" = {
+                      mountOptions = [
+                        "compress=zstd"
+                      ];
+                      mountpoint = "/var/lib";
+                    };
+
                     # Subvolume name is the same as the mountpoint
-                    "/home" = {
+                    "/Users" = {
                       mountOptions = [
                         "compress=zstd"
                         "users"
                       ];
-                      mountpoint = "/home";
+                      mountpoint = "/Users";
                     };
+
                     # Specify the subvolume mountpoints so we can set mountOptions
-                    "/home/mitch" = {
+                    "/Users/mitch" = {
                       mountOptions = [
                         "users"
                         "exec"
                       ];
-                      mountpoint = "/home/mitch";
+                      mountpoint = "/Users/mitch";
                     };
                     # I keep a lot of source here
-                    "/home/mitch/src" = {
-                      mountOptions = [ "users" ];
-                      mountpoint = "/home/mitch/src";
-                    };
-                    # Steam gets its own subvolume
-                    "/home/mitch/.local/share/Steam" = {
+                    "/Users/mitch/src" = {
                       mountOptions = [
+                        "compress=zstd"
                         "users"
-                        "noatime"
+                        "exec"
                       ];
-                      mountpoint = "/home/mitch/.local/share/Steam";
+                      mountpoint = "/Users/mitch/src";
                     };
 
-                    # This subvolume will be created but not mounted
-                    "/test" = { };
                     # Subvolume for the swapfile
                     "/swap" = {
                       mountpoint = "/.swapvol";

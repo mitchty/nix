@@ -35,7 +35,7 @@ in
       wantedBy = [ "multi-user.target" ];
       path = with pkgs; [
         linuxPackages.nvidia_x11 # nvidia-smi for NVIDIA GPUs
-        rocmPackages.rocm-smi # rocm-smi for AMD GPUs
+        # rocmPackages.rocm-smi # rocm-smi for AMD GPUs (TODO: when powerjoular can use it uncomment me for the amd lappy)
       ];
       serviceConfig = {
         Type = "simple";

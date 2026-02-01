@@ -26,13 +26,7 @@
 # check... so that I can prove my symlink wrapped emacs shenanigans is worth a
 # spit to catch this stuff more quickly on updates.
 oe() {
-  # There is zero reason to quote this shellcheck no spaces will be present and
-  # even if there end up being some thats a future me problem cause I'm doing
-  # something wicked weird like using /some path/nix/store etc...
-  #shellcheck disable=SC2046
   bin=$(realpath $(which emacs))
-
-  [ -n $bin ] && return 1
 
   if [ -x "${bin}" ]; then
     dir=$(dirname "${bin}")

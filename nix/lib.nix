@@ -1,7 +1,72 @@
 { lib, ... }:
-{
-  # Detect if we're evaluating a Linux config on macOS (e.g., during nix flake check on macOS)
-  # This happens when the host platform appears to be Linux but we're actually running on macOS
+rec {
+  # Admin user SSH key for secrets decryption, the private key backing this is not stored anywhere
+  adminKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV";
+
+  # Generate secrets.nix entries from host configuration data for mitchty.secrets
+  mkSecretsFromConfigs =
+    {
+      nixosConfigs ? { },
+      darwinConfigs ? { },
+    }:
+    let
+      # Extract host metadata from a configuration
+      # Fail-open if mitchty.secrets isn't defined or is incomplete, return null
+      # cause apparently I forgot to add something OR didn't want a system to use this crap
+      extractHostMeta =
+        name: cfg:
+        let
+          meta = cfg.config.mitchty.secrets or null;
+          hasKey = meta != null && meta ? hostKey && meta.hostKey != null && meta.hostKey != "";
+        in
+        if hasKey then
+          {
+            inherit name;
+            key = meta.hostKey;
+            tags = meta.tags or [ ];
+          }
+        else
+          null;
+
+      # Get all hosts from both NixOS and Darwin configurations
+      allHosts = builtins.filter (x: x != null) (
+        (lib.mapAttrsToList extractHostMeta nixosConfigs)
+        ++ (lib.mapAttrsToList extractHostMeta darwinConfigs)
+      );
+
+      # Get hosts by tag strings
+      hostsByTag = tag: map (h: h.key) (builtins.filter (h: builtins.elem tag h.tags) allHosts);
+
+      # All host keys for that kindo o ting
+      allHostKeys = map (h: h.key) allHosts;
+    in
+    {
+      inherit allHosts allHostKeys;
+
+      #      getTag = tag: hostsByTag tag;
+      getTag = hostsByTag;
+
+      # Generate publicKeys list for a secret, my admin ssh key gets yeeted on
+      # here so I can change stuff around
+      mkKeys =
+        {
+          tags ? [ ],
+          hosts ? [ ],
+        }:
+        let
+          taggedKeys = lib.flatten (map hostsByTag tags);
+
+          # Keys from specific host names
+          namedHosts = builtins.filter (h: builtins.elem h.name hosts) allHosts;
+          namedKeys = map (h: h.key) namedHosts;
+
+          # Combine and dedup
+          combined = lib.unique (taggedKeys ++ namedKeys ++ [ adminKey ]);
+        in
+        combined;
+    };
+
+  # This is a HUGE hack to work around nix flake check on macos nix and my emacs derivation of DOOOM
   isCrossPlatformEval = pkgs: pkgs.stdenv.hostPlatform.isLinux && builtins.pathExists /System/Library;
 
   # Reduce line count a bit to make flake.nix less yappy

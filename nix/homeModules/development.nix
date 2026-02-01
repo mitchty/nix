@@ -12,6 +12,8 @@
       hatools
       hyperfine
       idris2
+      #      git
+      nix-fast-build
       no-more-secrets
       open-webui-cli
       ripgrep

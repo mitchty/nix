@@ -4,7 +4,7 @@
   ...
 }:
 let
-  enableFullBuild = import ../../hacks/flake-check.nix;
+  enableFullBuild = import ../../hacks/flake-check.nix pkgs.stdenv.hostPlatform.system;
   # TODO: keep? Its useful but not used...
   mkIfElse =
     p: yes: no:

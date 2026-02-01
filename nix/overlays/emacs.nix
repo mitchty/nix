@@ -1,6 +1,11 @@
+{
+  withX ? false,
+  withWayland ? false,
+  withNs ? false,
+}:
 self: super:
 let
-  enableFullBuild = import ../../hacks/flake-check.nix;
+  enableFullBuild = import ../../hacks/flake-check.nix super.stdenv.hostPlatform.system;
 in
 if enableFullBuild then
   # Full complex emacs build - only evaluate when enableFullBuild is true
@@ -34,6 +39,7 @@ if enableFullBuild then
         nil
         nixfmt-rfc-style
         nodePackages.bash-language-server
+        pandoc
         plantuml
         python3
         rage
@@ -66,7 +72,7 @@ if enableFullBuild then
     emacsPatched =
       # I yeet a lot of patches at the nextstep darwin build of emacs cause the
       # defaults kinda ass so we want to improve it slightly.
-      if super.hostPlatform.isDarwin then
+      if withNs then
         emacsShared.overrideAttrs (old: {
           # bit old mostly off this https://github.com/NixOS/nixpkgs/issues/12863 assume its been fixed but should find out.
           # TODO: still needed?
@@ -103,21 +109,29 @@ if enableFullBuild then
       # basically everything else, for now this means linux
       else
         (emacsShared.override {
-          withX = true;
-          withGTK3 = true;
-          withXinput2 = true;
+          inherit withX;
+          withGTK3 = withX || withWayland;
+          withXinput2 = withX;
+          withPgtk = withWayland;
+          # ImageMagick requires X11 support in Emacs
+          withImageMagick = withX;
         }).overrideAttrs
           (_: {
             configureFlags = [
               "--disable-build-details"
               "--with-modules"
+              "--with-native-compilation"
+            ]
+            ++ super.lib.optionals withX [
+              "--with-imagemagick"
               "--with-x-toolkit=gtk3"
               "--with-xft"
               "--with-cairo"
               "--with-xaw3d"
-              "--with-native-compilation"
-              "--with-imagemagick"
               "--with-xinput2"
+            ]
+            ++ super.lib.optionals withWayland [
+              "--with-pgtk"
             ];
           });
 
@@ -224,7 +238,7 @@ if enableFullBuild then
       # For some reason just wrapping bin/emacs isn't enough anymore, so just
       # wrap the gui binary on macos too to be sure we deploy emacs with the
       # stuff it needs to edit
-      + super.lib.optionalString super.hostPlatform.isDarwin ''
+      + super.lib.optionalString super.stdenv.hostPlatform.isDarwin ''
         bins="$bins $out/Applications/Emacs.app/Contents/MacOS/Emacs"
       ''
       + ''

@@ -27,6 +27,8 @@
   };
 
   config = lib.mkIf config.services.mitchty.gui.enable {
+    services.mitchty.powerjoular.enable = lib.mkIf (config.services.mitchty.gui.type == "wayland") true;
+
     # nixpkgs = {
     #   config.allowUnfreePredicate =
     #     pkg:
@@ -34,6 +36,12 @@
     #       "steam"
     #     ];
     # };
+
+    environment.pathsToLink = lib.mkIf (config.services.mitchty.gui.type == "wayland") [
+      "/share/applications"
+      "/share/xdg-desktop-portal"
+    ];
+
     environment.systemPackages =
       with pkgs;
       [
@@ -57,6 +65,7 @@
         pipewire
         rtkit
         bitwarden-desktop
+        noto-fonts
       ]
       ++ lib.optionals (config.services.mitchty.gui.type == "X") [
         kdePackages.sddm
@@ -68,6 +77,7 @@
         kdePackages.kmix
       ]
       ++ lib.optionals (config.services.mitchty.gui.type == "wayland") [
+        wlroots
         mako
         wl-clipboard
         slurp
@@ -75,6 +85,7 @@
         wdisplays
         cliphist
         gscreenshot
+        kooha
       ];
 
     # Loopback device/kernel module config for obs
@@ -116,10 +127,60 @@
           "--verbose"
         ];
       };
-      #      steam.enable = true;
+    };
+
+    xdg = {
+      menus.enable = true;
+      icons.enable = true;
+
+      portal = {
+        enable = true;
+        config = {
+          common = {
+            default = [ "gtk" ];
+          };
+          niri = {
+            default = [
+              "gtk"
+              "gnome"
+            ];
+            "org.freedesktop.impl.portal.ScreenCast" = [ "gnome" ];
+            "org.freedesktop.impl.portal.Screenshot" = [ "gnome" ];
+          };
+        };
+
+        extraPortals = [
+          pkgs.xdg-desktop-portal-gtk
+          pkgs.xdg-desktop-portal-gnome
+        ];
+        xdgOpenUsePortal = true;
+
+        # https://github.com/lovesegfault/nix-config/blob/3e4d869fa801c8221a4d3829a64153261d64580c/modules/home/graphical/sway/sway.nix#L70
+        # So thats why, xdg-destkop-portal-wlr and sway for current releases
+        # don't allow for individual window selection
+        # https://github.com/emersion/xdg-desktop-portal-wlr/issues/107#issuecomment-3444983174
+        # wayland is AS FREAKING OLD AS X11 WAS WHEN IT WAS CONCEIVED and I
+        # can't reliably share windows? WTF software is getting progressively
+        # worse.
+        wlr = {
+          enable = true;
+          settings = {
+            screencast = {
+              max_fps = 60;
+              output_name = "HDMI-A-2";
+              chooser_type = "simple";
+              chooser_cmd = "${pkgs.slurp}/bin/slurp -f %o -or";
+            };
+          };
+        };
+      };
     };
 
     services = {
+      pipewire.wireplumber.enable = true;
+
+      dbus.enable = true;
+
       gnome.gnome-keyring = lib.mkIf (config.services.mitchty.gui.type == "wayland") { enable = true; };
 
       pipewire = {

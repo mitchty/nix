@@ -10,8 +10,8 @@
     home.packages =
       with pkgs;
       [
-        yt-dlp-with-plugins
-        ytdl-sub-with-plugins
+        pkgs.unstable.yt-dlp-with-plugins
+        pkgs.unstable.ytdl-sub-with-plugins
         yq-go
       ]
       ++ (lib.optionals pkgs.stdenv.hostPlatform.isLinux [ libcgroup ]);

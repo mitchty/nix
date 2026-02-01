@@ -7,6 +7,15 @@ in
 
   modules = [
     {
+      # Host metadata for secrets generation
+      mitchty.secrets = {
+        hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKVbKj5m/pk2VKzIjX7/zM7MB5BG03kxTv22PowvtexS";
+        tags = [
+          "cifs"
+          "nixos"
+        ];
+      };
+
       imports =
         (with inputs.self.nixosModules; [
           common

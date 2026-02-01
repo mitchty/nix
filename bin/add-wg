@@ -1,6 +1,6 @@
 #-*-mode: Shell-script; coding: utf-8;-*-
 # SPDX-License-Identifier: BlueOak-1.0.0
-# Description: Dum dum wrapper to add a new wireguard private/public key
+# Description: Generate WireGuard keys and encrypt them with agenix
 _base=$(basename "$0")
 _dir=$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P || exit 126)
 export _base _dir
@@ -10,8 +10,24 @@ cd "${_dir}/.." || exit 126
 
 host="${1?need a hostname to add}"
 
-dest="crypt/wireguard/${host}"
-install -dm755 crypt crypt/wireguard "${dest}"
+echo "Generating WireGuard keys for ${host}..."
 
+dest="crypt/wireguard/${host}"
+install -dm700 crypt crypt/wireguard "${dest}"
+
+wgdest="secrets/wireguard"
+# Create directories for encrypted secrets
+install -dm755 secrets "${wgdest}" "${wgdest}/prv" "${wgdest}/pub"
+
+# Generate WireGuard keys
 cd "${dest}" || exit 126
 wg genkey | tee privatekey | wg pubkey > publickey
+
+cd ../../.. || exit 126
+
+# Use agenix to encrypt the private/public keypairs using the cp /dev/stdin hack
+# (doesn't seem to work on macos for some reason)
+#
+# Technically there's no reason to encrypt the public side but whatever...
+cat "${dest}/privatekey" | EDITOR='cp /dev/stdin' agenix -e "${wgdest}/prv/${host}.age"
+cat "${dest}/publickey" | EDITOR='cp /dev/stdin' agenix -e "${wgdest}/pub/${host}.age"

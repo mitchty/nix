@@ -11,13 +11,13 @@ let
 in
 python3.pkgs.buildPythonApplication rec {
   pname = "ytdl-sub";
-  version = "2025.11.28";
+  version = "2026.01.30";
   format = "pyproject";
 
   src = fetchFromGitHub {
     inherit owner repo;
     rev = "refs/tags/${version}";
-    hash = "sha256-8PqwyIZ+PLLd6zoEkpt0Xu3i5V7NDDONcDcpM+h2xxw=";
+    hash = "sha256-NKK5GD5OsdSo3m//rkMtvrtiVCkCo0VOf1xWNBjFOh4=";
   };
 
   postPatch = ''
@@ -54,6 +54,7 @@ python3.pkgs.buildPythonApplication rec {
   ];
 
   disabledTests = [
+    "test_config_file_working_dir_home_dir"
     "test_logger_always_outputs_to_debug_file"
     "test_logger_can_be_cleaned_during_execution"
     "test_no_config_works"

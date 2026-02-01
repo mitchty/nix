@@ -18,6 +18,8 @@
       }:
       let
         mylib = import ./nix/lib.nix { inherit lib; };
+        allNixosHosts = builtins.attrNames (inputs.self.nixosConfigurations or { });
+        allDarwinHosts = builtins.attrNames (inputs.self.darwinConfigurations or { });
       in
       {
         nixpkgs.config = {
@@ -58,29 +60,63 @@
         # Handles the work of wrapping nix flake check for me on macos and
         # undoing that too on linux if I run things.
         # nix run .#check && nix flake check -L ... now instead of nix flake check -L
-        apps = {
-          check = mylib.mkShellApp "check" ''
-            hack=hacks/flake-check.nix
-            git checkout $hack
-            if [ "$(uname -s)" != "Linux" ]; then
-              echo false > $hack
-            fi
-          '';
-          # quick app script to just update the nix flake firewall related input deps
-          update-fw = mylib.mkShellApp "update-fw" ''
-            nix flake update dns geo
-          '';
-          # Update only deps that emacs derivations use
-          update-emacs = mylib.mkShellApp "update-emacs" ''
-            nix flake update eca emacs-overlay
-          '';
-          build-nixos = mylib.mkShellApp "build-nixos" ''
-            for host in plx ark wm2 gw0 rtx; do
-              nix build .#nixosConfigurations.$host.config.system.build.toplevel &
-            done
-            wait
-          '';
-        };
+        apps =
+          pkgs:
+          let
+            withCache = "echo home cache; echo true > hacks/home-nix-cache.nix";
+            noCache = "echo no home cache; echo false > hacks/home-nix-cache.nix";
+            withHack = "echo with flake check hack; echo true > hacks/flake-check.nix";
+            noHack = "echo no flake check hack; echo false > hacks/flake-check.nix";
+            # Need this for the nixosConfigurations to eval on macos
+            # Need to brain up a way to not have the kitty config not evaluate
+            # when it does, this hacks getting annoying af.
+            hacks = if pkgs.stdenv.hostPlatform.isDarwin then noHack else withHack;
+          in
+          {
+            # Name is bs, I couldn't come up with a better option so just
+            # picked a dum word.
+            #
+            # Essence is just run this when on mac laptop to set what needs
+            # setting, and then when back home on desktop again. I'll make it
+            # better later/in post.
+            routine = mylib.mkShellApp "routine" ''
+              ssid=$(system_profiler SPAirPortDataType -json | ${pkgs.jq}/bin/jq -r '.SPAirPortDataType[].spairport_airport_interfaces[].spairport_current_network_information | select(._name != null) | ._name' || :)
+
+              athome=$(ip -br a | grep -q 10.10.10 || :)
+              # Home 5g ssid, handles if we abuse my nix cache or not
+              # also if there is any indication i'm actuall at home aka see a 10.10.10 ip
+              if [ "$ssid" = "newerhotness" ] || $athome; then
+                ${withCache}
+              else
+                ${noCache}
+              fi
+
+              ${hacks}
+            '';
+            # quick app script to just update the nix flake firewall related input deps
+            update-fw = mylib.mkShellApp "update-fw" ''
+              ${pkgs.nix}/bin/nix flake update dns geo
+            '';
+            # Update only deps that emacs derivations use
+            update-emacs = mylib.mkShellApp "update-emacs" ''
+              ${pkgs.nix}/bin/nix flake update eca emacs-overlay
+            '';
+            local-ci =
+              let
+                configType =
+                  if pkgs.stdenv.hostPlatform.isDarwin then "darwinConfigurations" else "nixosConfigurations";
+                hosts = if pkgs.stdenv.hostPlatform.isDarwin then allDarwinHosts else allNixosHosts;
+              in
+              mylib.mkShellApp "local-ci" ''
+                # Iff there is only one host shellcheck complains WHO CARES its not a problem just weird
+                #shellcheck disable=SC2043
+                for host in ${lib.concatStringsSep " " hosts}; do
+                  ${pkgs.nix}/bin/nix build .#${configType}.$host.config.system.build.toplevel &
+                done
+                ${pkgs.nix}/bin/nix flake check -L &
+                wait
+              '';
+          };
       }
     )
     // {
@@ -162,6 +198,34 @@
           };
         };
       };
+
+      # Expose secrets metadata for helper scripts and secrets.nix generation duty
+      secrets =
+        let
+          inherit (inputs.nixpkgs) lib;
+          mylib = import ./nix/lib.nix { inherit lib; };
+          helper = mylib.mkSecretsFromConfigs {
+            nixosConfigs = inputs.self.nixosConfigurations;
+            darwinConfigs = inputs.self.darwinConfigurations or { };
+          };
+        in
+        {
+          inherit (mylib) adminKey;
+          inherit (helper)
+            allHosts
+            allHostKeys
+            getTag
+            mkKeys
+            ;
+
+          # Convenience: get a specific host's key by name
+          getHostKey =
+            name:
+            let
+              host = builtins.head (builtins.filter (h: h.name == name) helper.allHosts);
+            in
+            host.key;
+        };
     };
 
   nixConfig.commit-lockfile-summary = "flake: Update inputs";
@@ -181,6 +245,10 @@
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixpkgs-wayland = {
+      url = "github:nix-community/nixpkgs-wayland/1584f3330cc277a44adb95d8c66238bfd18f3041";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
     nix-darwin = {
       url = "github:LnL7/nix-darwin/nix-darwin-25.11";
@@ -240,7 +308,6 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    omnix.url = "github:juspay/omnix";
     nix-sweep.url = "github:jzbor/nix-sweep";
     nixpkgs-eca.url = "github:NixOS/nixpkgs/8913c168d1c56dc49a7718685968f38752171c3b";
     eca = {
@@ -270,5 +337,10 @@
       flake = false;
     };
     nix-net-lib.url = "github:0xCCF4/nix-net-lib";
+    # slightly faster way to parallel build multiple derivations at once
+    nix-fast-build = {
+      url = "github:Mic92/nix-fast-build";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 }

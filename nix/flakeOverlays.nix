@@ -8,6 +8,11 @@ let
     inputs.self.overlays.overrides
     inputs.self.overlays.yt-dlp
   ];
+
+  # TODO: This overlay works on amd gpus dies on the nvidia, need to debug y later
+  # unstableOverlays = commonOverlays ++ [
+  #   inputs.nixpkgs-wayland.overlay
+  # ];
 in
 [
   (final: prev: {
@@ -24,6 +29,7 @@ in
       config = {
         allowUnfree = true;
       };
+      #      overlays = unstableOverlays;
       overlays = commonOverlays;
     };
 
@@ -62,8 +68,8 @@ in
     inherit (inputs.nix-update.packages.${prev.system}) nix-update;
     inherit (inputs.nixos-generators.packages.${prev.system}) nixos-generate;
     inherit (inputs.home-manager.packages.${prev.system}) home-manager;
-    inherit (inputs.omnix.packages.${prev.system}) omnix-cli;
     nix-sweep = inputs.nix-sweep.packages.${prev.system}.default;
+    inherit (inputs.nix-fast-build.packages.${prev.system}) nix-fast-build;
   })
   inputs.eca.overlays.default
   inputs.emacs-overlay.overlay
@@ -72,9 +78,9 @@ in
   #  inputs.ragenix.overlays.default
   inputs.fenix.overlays.default
   inputs.nur.overlays.default
+  inputs.nix-net-lib.overlays.default
 ]
 ++ (with inputs.self.overlays; [
   overrides
-  yt-dlp
-  emacs
+  # emacs overlay is applied per-host with specific parameters
 ])

@@ -7,6 +7,14 @@ in
 
   modules = [
     {
+      # Host metadata for secrets generation
+      mitchty.secrets = {
+        hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOyjyOCeUEtKb7hLISbPzwkrrSDKQU5JGJ1R1Sw7MZga";
+        tags = [
+          "wireguard"
+          "nixos"
+        ];
+      };
       # TODO: Ok so to make sure I don't get infinite recursion around these
       # here parts.
       #
@@ -43,6 +51,7 @@ in
           homer
           #          ip-hacks
           ociregistry
+          wireguard
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -109,6 +118,58 @@ in
             enable = true;
             port = 12345;
             bindAddress = "10.10.10.140";
+          };
+          wireguard = {
+            enable = true;
+            role = "server";
+            address = [ "192.168.255.1/24" ];
+            listenPort = 51820;
+            privateKeyFile = "secrets/wireguard/prv/gw0";
+            dns = [ "10.10.10.1" ];
+            enableNat = true;
+            natInterface = "br0";
+            natSubnet = "192.168.255.0/24";
+            peers = [
+              # mbp laptop
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/mbp/publickey}";
+                allowedIPs = [
+                  "192.168.255.6/32"
+                ];
+                # Roaming crap sends their own keepalives, we don't send one to them obvs
+              }
+              # wm2 laptop
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/wm2/publickey}";
+                allowedIPs = [
+                  "192.168.255.2/32"
+                ];
+              }
+              # plx - wired
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/plx/publickey}";
+                allowedIPs = [
+                  "192.168.255.3/32"
+                ];
+                persistentKeepalive = 25;
+              }
+              # ark  - wired
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/ark/publickey}";
+                allowedIPs = [
+                  "192.168.255.4/32"
+                ];
+                persistentKeepalive = 25;
+              }
+              # rtx - wired
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/rtx/publickey}";
+                allowedIPs = [
+                  "192.168.255.5/32"
+                ];
+                persistentKeepalive = 25;
+              }
+            ];
           };
         };
       };

@@ -15,6 +15,7 @@
       cf-dns-update
       coreutils
       curl
+      etcd
       hfdownloader
       home-manager
       htmlq
@@ -22,7 +23,6 @@
       nix-update
       nixfmt-rfc-style
       nixos-generate
-      omnix-cli
       ripgrep
       statix
       taplo

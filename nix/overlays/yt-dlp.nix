@@ -11,6 +11,22 @@ let
   };
 in
 rec {
+  # Override yt-dlp-ejs version to latest for all python.. should probably do
+  # this too for yt-dlp... maybe?
+  pythonPackagesExtensions = prev.pythonPackagesExtensions or [ ] ++ [
+    (python-final: python-prev: {
+      yt-dlp-ejs = python-prev.yt-dlp-ejs.overrideAttrs (old: rec {
+        latest = "curl --silent https://api.github.com/repos/yt-dlp/ejs/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
+        version = "0.4.0";
+        src = prev.fetchPypi {
+          inherit version;
+          pname = "yt_dlp_ejs";
+          hash = "sha256-PGfgvrb582A/vLVvQl6rqjfFIkPZDSDMvM4d2UHPvQc=";
+        };
+      });
+    })
+  ];
+
   # Up to to find easier.
   yt-dlp =
     (prev.yt-dlp.override {
@@ -18,24 +34,32 @@ rec {
     }).overrideAttrs
       (old: rec {
         latest = "curl --silent https://api.github.com/repos/yt-dlp/yt-dlp/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
-        # version = "2025.12.8";
-        # src = prev.fetchPypi {
-        #   inherit version;
-        #   pname = "yt-dlp";
-        #   hash = "";
-        # };
-        postPatch = '':'';
+        version = "2026.1.29";
+        src = prev.fetchPypi {
+          inherit version;
+          pname = "yt_dlp";
+          hash = "sha256-ErSJ6xaCjMP/8XI/JEmS666KW/Gtdcjp8B1ymuI367k=";
+        };
+        postPatch = ":";
 
         # curl_cffi is the unsupported lib but I don't use it so whatever
         # https://github.com/NixOS/nixpkgs/commit/d2862efc9e9391af4151a5aed5b8629880150632
-        checkPhase = '':'';
-        installCheckPhase = '':''; # ??? For some reason the karakeep workers systemd unit needs this? Not sure how the overlay isn't working with checkPhase : alone but whatever it works
+        checkPhase = ":";
+        installCheckPhase = ":"; # ??? For some reason the karakeep workers systemd unit needs this? Not sure how the overlay isn't working with checkPhase : alone but whatever it works
 
         propogatedBuildInputs = (prev.yt-dlp.propogatedBuildInputs or [ ]) ++ [
           final.yt-dlp-get-pot
+          final.yt-dlp-ejs
           final.bgutil-ytdlp-pot-provider
         ];
       });
+
+  # Reference the overridden version from the default python3Packages
+  inherit (final.python3Packages) yt-dlp-ejs;
+
+  # Use our custom ytdl-sub package (defined in nix/packages/ytdl-sub.nix)
+  # This ensures our version is used even when accessed via pkgs.unstable
+  ytdl-sub = final.callPackage ../packages/ytdl-sub.nix { };
 
   # Add in the player object tokens as plugins to yt-dlp
   yt-dlp-get-pot = prev.python3Packages.buildPythonPackage rec {
@@ -53,6 +77,7 @@ rec {
     pythonImportsCheck = [ "yt_dlp_plugins" ];
     latest = "curl --silent https://api.github.com/repos/coletdjnz/yt-dlp-get-pot/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | tr -d v";
   };
+
   bgutil-ytdlp-pot-provider = prev.python3Packages.buildPythonPackage rec {
     pname = "bgutil-ytdlp-pot-provider";
     version = "1.2.2";

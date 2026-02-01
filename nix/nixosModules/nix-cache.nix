@@ -112,12 +112,10 @@ in
     # with.
     services.ncps = {
       enable = true;
-      package = pkgs.unstable.ncps;
+      package = pkgs.ncps;
       cache = {
         hostName = cfg.nixCname;
-        # 1 TiB should be enough space methinks/hopes
-
-        maxSize = "1024G";
+        maxSize = "512G";
         # Clean cache every week tops
         lru.schedule = "1 7 * * 1";
       };

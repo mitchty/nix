@@ -1,124 +1,53 @@
 let
-  # User keys
-  mitch = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV";
+  # Get the secrets metadata from the flake
+  flake = builtins.getFlake (toString ./.);
+  secrets = flake.mitchtysecrets;
 
-  ageadmins = [ mitch ];
-
-  # Host keys
-  mb = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINhaAD9U8kHtlMrFsy8vytWITHLe55DYy8kObDhoMqTO";
-  mbp = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILaNLdykXNG7SbXyEFV3q1OVevNbIxSb8Of0AnSLxR11";
-  wm2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNzRSDjB8WJHSEepNu2GTrZIgFWprv+wMnX6xbeoD0U";
-  rtx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBaFOFERMbg/d7DHrTBJ7pPKiJhwxFadQZlagalg51/";
-
-  plx = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK2IZnIu0StYczf9Z4iJNDpEZt+Wjo8LjqDrlmd2yX4l";
-  ark = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDFFvNk88g2x8R5cK1K+iVGQT1Lu1IFKZwSp75s2xegB";
-  gw0 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOyjyOCeUEtKb7hLISbPzwkrrSDKQU5JGJ1R1Sw7MZga";
-
-  tmp = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMl69rwxUorC9v5SE4sI6284redkS19M5eVS9Preu7W2";
-
-  # Test vm keys
-  vm-simple = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOuH9BdXTgFflW0uDF1ytFdgHxIBx0NDrHB4jqCjKhQB";
-  vm-mirror = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKVbKj5m/pk2VKzIjX7/zM7MB5BG03kxTv22PowvtexS";
-  vm-raid = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINvmcCgF67R0DdVAZ+7iuww0dIejSYBNrmJH75AeKdwZ";
-
-  allnixos = [
-    rtx
-    wm2
-
-    plx
-    ark
-    gw0
-
-    tmp
-
-    vm-simple
-    vm-mirror
-    vm-raid
-  ];
-
-  allmacos = [
-    mb
-    mbp
-  ];
-
-  # To make the following a skosh simpler/easier
-  homeusers = [ mitch ];
-  homehosts = allmacos ++ allnixos;
-
-  git = homehosts ++ homeusers;
-
-  # TODO: Get backups automagically working at some point with kopia
-  backup = allmacos ++ [
-    rtx
-    ark
-    wm2
-  ];
-
-  # Some secrets should be usable everywhere
-  allusers = homeusers;
-  allhosts = homehosts;
-
-  # Mostly for the canary secret for testing
-  everything = allusers ++ allhosts;
-
-  # Cifs hosts
-  cifs = [
-    wm2
-    rtx
-
-    plx
-    ark
-
-    vm-simple
-    vm-mirror
-    vm-raid
-  ];
-
-  # wifi connections
-  wifi = [ wm2 ];
-
-  # Public wireguard keys, still sticking em here cause I only need to share
-  # amongst my nodes not the world.
-  wireguard = [
-    mbp
-    gw0
-  ];
+  # Helper to get keys for specific hostnames
+  # Helper to get keys by tag? Needed anymore? My prior thing kinda used it but
+  # not sure it matters with this automagic setup
+  inherit (secrets) mkKeys getTag; # TODO: getTag needed anymore?
 in
 {
   # Just a canary file to know if things are working or not, otherwise unused
-  # TODO: yeet this into a git hook or something?
-  "secrets/canary.age".publicKeys = everything;
+  "secrets/canary.age".publicKeys = secrets.allHostKeys ++ [ secrets.adminKey ];
 
   # For updating cloudflare dns
-  "secrets/dns/home.mitchty.net.age".publicKeys = [ gw0 ] ++ ageadmins;
+  "secrets/dns/home.mitchty.net.age".publicKeys = mkKeys { hosts = [ "gw0" ]; };
 
-  # Wireguard public keys, shared amongst all wireguard nodes.
-  "secrets/wireguard/pub/mbp.age".publicKeys = [ wireguard ] ++ ageadmins;
-  "secrets/wireguard/pub/rtx.age".publicKeys = [ wireguard ] ++ ageadmins;
-  "secrets/wireguard/pub/gw0.age".publicKeys = [ wireguard ] ++ ageadmins;
+  # Wireguard public keys, shared amongst all wireguard tagged nodes cause duh
+  "secrets/wireguard/pub/mbp.age".publicKeys = mkKeys { tags = [ "wireguard" ]; };
+  "secrets/wireguard/pub/rtx.age".publicKeys = mkKeys { tags = [ "wireguard" ]; };
+  "secrets/wireguard/pub/gw0.age".publicKeys = mkKeys { tags = [ "wireguard" ]; };
+  "secrets/wireguard/pub/wm2.age".publicKeys = mkKeys { tags = [ "wireguard" ]; };
+  "secrets/wireguard/pub/plx.age".publicKeys = mkKeys { tags = [ "wireguard" ]; };
+  "secrets/wireguard/pub/ark.age".publicKeys = mkKeys { tags = [ "wireguard" ]; };
 
-  # Private is per host obvs
-  "secrets/wireguard/prv/mbp.age".publicKeys = [ mbp ] ++ ageadmins;
-  "secrets/wireguard/prv/rtx.age".publicKeys = [ rtx ] ++ ageadmins;
-  "secrets/wireguard/prv/gw0.age".publicKeys = [ gw0 ] ++ ageadmins;
+  # Private is per host
+  "secrets/wireguard/prv/mbp.age".publicKeys = mkKeys { hosts = [ "mbp" ]; };
+  "secrets/wireguard/prv/rtx.age".publicKeys = mkKeys { hosts = [ "rtx" ]; };
+  "secrets/wireguard/prv/gw0.age".publicKeys = mkKeys { hosts = [ "gw0" ]; };
+  "secrets/wireguard/prv/wm2.age".publicKeys = mkKeys { hosts = [ "wm2" ]; };
+  "secrets/wireguard/prv/plx.age".publicKeys = mkKeys { hosts = [ "plx" ]; };
+  "secrets/wireguard/prv/ark.age".publicKeys = mkKeys { hosts = [ "ark" ]; };
 
-  # For authenticated git push/pull mainly.
-  "secrets/git/netrc.age".publicKeys = git ++ ageadmins;
-  "secrets/git/gh-cli-pub.age".publicKeys = git ++ ageadmins;
+  # For authenticated git push/pull mainly - all hosts get these for now... I
+  # should make a git tag.
+  "secrets/git/netrc.age".publicKeys = secrets.allHostKeys ++ [ secrets.adminKey ];
+  "secrets/git/gh-cli-pub.age".publicKeys = secrets.allHostKeys ++ [ secrets.adminKey ];
 
-  # nixos specific
-  "secrets/passwd/root.age".publicKeys = allnixos ++ ageadmins;
-  "secrets/passwd/mitch.age".publicKeys = allnixos ++ ageadmins;
+  # All nixos tagged node secrets
+  "secrets/passwd/root.age".publicKeys = mkKeys { tags = [ "nixos" ]; };
+  "secrets/passwd/mitch.age".publicKeys = mkKeys { tags = [ "nixos" ]; };
 
-  # cifs mount user/pass files
-  "secrets/cifs/plex.age".publicKeys = cifs ++ ageadmins;
-  "secrets/cifs/mitch.age".publicKeys = cifs ++ ageadmins;
-  # note the backup cifs data is "special" and not everywhere
-  "secrets/cifs/backup.age".publicKeys = backup ++ ageadmins;
+  # And for cifs/backup related junk cifs mount user/pass files
+  "secrets/cifs/plex.age".publicKeys = mkKeys { tags = [ "cifs" ]; };
+  "secrets/cifs/mitch.age".publicKeys = mkKeys { tags = [ "cifs" ]; };
+  "secrets/cifs/backup.age".publicKeys = mkKeys { tags = [ "backup" ]; };
 
-  # Wifi networkmanager setup
-  "secrets/wifi/lostfox.age".publicKeys = wifi ++ ageadmins;
-  "secrets/wifi/newerhotness.age".publicKeys = wifi ++ ageadmins;
-  "secrets/wifi/gambit.age".publicKeys = wifi ++ ageadmins;
-  "secrets/wifi/pp.age".publicKeys = wifi ++ ageadmins;
+  # This is really just wm2 atm but Wifi networkmanager file data
+  "secrets/wifi/lostfox.age".publicKeys = mkKeys { tags = [ "wifi" ]; };
+  "secrets/wifi/newerhotness.age".publicKeys = mkKeys { tags = [ "wifi" ]; };
+  "secrets/wifi/gambit.age".publicKeys = mkKeys { tags = [ "wifi" ]; };
+  "secrets/wifi/pp.age".publicKeys = mkKeys { tags = [ "wifi" ]; };
 }

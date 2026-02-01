@@ -14,20 +14,25 @@ let
   };
   system = "x86_64-linux";
 
-  unstable = import inputs.nixpkgs-unstable {
-    inherit system;
-    config = {
-      allowUnfree = true;
-    };
+  # Host metadata for secrets generation
+  hostSecrets = {
+    hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDFFvNk88g2x8R5cK1K+iVGQT1Lu1IFKZwSp75s2xegB";
+    tags = [
+      "wireguard"
+      "cifs"
+      "backup"
+      "nixos"
+    ];
   };
-  unstable-pkgs = unstable.pkgs;
-  #  unstable = inputs.nixpkgs-unstable.legacyPackages.${system}.pkgs;
 in
 {
   inherit system;
 
   modules = [
     {
+      # Host metadata for secrets generation
+      mitchty.secrets = hostSecrets;
+
       # TODO: Ok so to make sure I don't get infinite recursion around these
       # here parts.
       #
@@ -68,6 +73,7 @@ in
           gpu-intel
           # ai
           llama-swap
+          wireguard
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -182,9 +188,48 @@ in
           llama-swap = commonMonitoring // {
             enable = true;
           };
+          wireguard = {
+            enable = true;
+            role = "client";
+            address = [ "192.168.255.4/24" ];
+            listenPort = 51820; # Required for peer-to-peer mesh
+            privateKeyFile = "secrets/wireguard/prv/ark";
+            dns = [ "10.10.10.1" ];
+            peers = [
+              # gw0 gateway/router
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/gw0/publickey}";
+                allowedIPs = [
+                  "192.168.255.1/32"
+                  "192.168.255.6/32"
+                  "192.168.255.2/32"
+                ];
+                endpoint = "10.10.10.1:51820";
+                persistentKeepalive = 25;
+              }
+              # plx - wired
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/plx/publickey}";
+                allowedIPs = [
+                  "192.168.255.3/32"
+                ];
+                endpoint = "10.10.10.14:51820";
+                persistentKeepalive = 25;
+              }
+              # rtx - wired
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/rtx/publickey}";
+                allowedIPs = [
+                  "192.168.255.5/32"
+                ];
+                endpoint = "10.10.10.11:51820";
+                persistentKeepalive = 25;
+              }
+            ];
+          };
         };
 
-        # TODO: setup forgejo runners to build stuff for me
+        # TODO: setup forgejo runners to build stuff for me?
         forgejo = {
           enable = true;
           database.type = "sqlite3";
@@ -204,7 +249,8 @@ in
             };
             # Comment out if first run or to setup another user
             service.DISABLE_REGISTRATION = true;
-            session.COOKIE_SECURE = true;
+            # Turn me on once I get home.arpa acme working again
+            session.COOKIE_SECURE = false;
           };
         };
 

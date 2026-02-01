@@ -23,5 +23,6 @@ in
     sudo
     user-root
     time
+    mitchty-secrets
   ]);
 }

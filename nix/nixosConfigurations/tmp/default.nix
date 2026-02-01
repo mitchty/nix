@@ -45,7 +45,7 @@ in
           virtualization
           power
           power-intel
-          gpu-intel
+          #          nix-offload
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -86,6 +86,7 @@ in
           common-pc-ssd
           common-cpu-intel
           common-gpu-intel
+          #          common-gpu-nvidia-nonprime
         ])
         ++ [
           ./diskconfig.nix

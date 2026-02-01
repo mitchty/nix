@@ -5,8 +5,15 @@
   ...
 }:
 let
-  update-ip = pkgs.writeShellScriptBin "update-ip" ''$SHELL ${../../src/randmacaddr.sh} enp4s0'';
-  update-dns = pkgs.writeShellScriptBin "update-dns" ''dns-update --record home.mitchty.net --ip $(cat /var/tmp/wanip)'';
+  update-mac = pkgs.writeShellScriptBin "update-mac" "$SHELL ${../../src/update-mac.sh} enp4s0";
+  update-ip = pkgs.writeShellScriptBin "update-ip" "$SHELL ${../../src/randmacaddr.sh} enp4s0";
+  update-dns = pkgs.writeShellScriptBin "update-dns" "dns-update --record home.mitchty.net --ip $(cat /var/tmp/wanip)";
+
+  # Not a great name but eh
+  stateDir = "/var/state";
+  macFile = "${stateDir}/mac";
+  ipFile = "${stateDir}/ip";
+  triggerFile = "${stateDir}/newip";
 in
 {
   age.secrets = {
@@ -14,6 +21,10 @@ in
       file = ../../secrets/dns/home.mitchty.net.age;
     };
   };
+
+  systemd.tmpfiles.rules = [
+    "d ${stateDir} 0755 root root"
+  ];
 
   # THIS NEEDS SOME MORE THINKIN
   #
@@ -23,7 +34,7 @@ in
   systemd = {
     services = {
       "random-mac" = {
-        description = "Update wan dhcp ip";
+        description = "Update wan macaddr";
         serviceConfig = {
           Type = "oneshot";
           ExecStart =
@@ -36,17 +47,17 @@ in
                   pkgs.coreutils
                   pkgs.iproute2
                   pkgs.systemd
-                  update-ip
+                  update-mac
                 ];
                 nativeBuildInputs = [
                   pkgs.makeWrapper
                 ];
                 postBuild = ''
-                  wrapProgram $out/bin/update-ip --prefix PATH : "${lib.makeBinPath paths}"
+                  wrapProgram $out/bin/update-mac --prefix PATH : "${lib.makeBinPath paths}"
                 '';
               };
             in
-            "${script}/bin/update-ip";
+            "${script}/bin/update-mac";
         };
         wantedBy = [ "multi-user.target" ];
         before = [ "dhcpcd.service" ];
@@ -107,18 +118,26 @@ in
         };
       };
       paths = {
-        "update-ip" = {
-          description = "/var/tmp/newip update-ip trigger";
+        "update-mac" = {
+          description = "update-mac path trigger";
           pathConfig = {
-            PathExists = "/var/tmp/newip";
+            PathExists = macFile;
+          };
+          wantedBy = [ "multi-user.target" ];
+          after = [ "dhcpcd.service" ];
+        };
+        "update-ip" = {
+          description = "update-ip path trigger";
+          pathConfig = {
+            PathExists = triggerFile;
           };
           wantedBy = [ "multi-user.target" ];
           after = [ "dhcpcd.service" ];
         };
         "update-dns" = {
-          description = "update cloudflare dns path";
+          description = "update cloudflare dns path trigger";
           pathConfig = {
-            PathModified = "/var/tmp/wanip";
+            PathModified = ipFile;
           };
         };
       };

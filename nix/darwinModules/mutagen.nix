@@ -70,6 +70,8 @@ in
                 ${pkgs.coreutils}/bin/install -Ddm755 ${cfg.logDir}/${label}/${name};
                 . ${../../src/lib.sh};
                 rotatelog 5 ${cfg.logDir}/${label}/${name}/stderr.log ${cfg.logDir}/${label}/${name}/stdout.log
+                cd /Users/mitch
+                pkill ${name}
                 exec ${cfg.package}/bin/${name} daemon run
               ''
             ];

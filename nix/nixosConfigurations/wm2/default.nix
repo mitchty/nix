@@ -8,6 +8,17 @@ in
 
   modules = [
     {
+      # Host metadata for secrets generation
+      mitchty.secrets = {
+        hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNzRSDjB8WJHSEepNu2GTrZIgFWprv+wMnX6xbeoD0U";
+        tags = [
+          "wireguard"
+          "wifi"
+          "cifs"
+          "backup"
+          "nixos"
+        ];
+      };
       # TODO: Ok so to make sure I don't get infinite recursion around these
       # here parts.
       #
@@ -29,7 +40,6 @@ in
           ssh-root
           user-mitch-compat
           podman
-          #          nas TODO: fix this to work with media as well, will move the base for all media from /nas/media to /nas/srv/media for serving needs
           node-exporter
           promtail
           debug
@@ -40,7 +50,10 @@ in
           uhk
           networkmanager-laptop
           gui
+          powerjoular
           wiffy
+          #          steam
+          wireguard
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -102,6 +115,35 @@ in
           node-exporter = {
             enable = true;
             inherit iface;
+          };
+          wireguard = {
+            enable = false;
+            role = "client";
+            address = [ "192.168.255.2/24" ];
+            privateKeyFile = "secrets/wireguard/prv/wm2";
+            dns = [ "10.10.10.1" ];
+            peers = [
+              # gw0 gateway/router
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/gw0/publickey}";
+                allowedIPs = [
+                  "10.10.10.0/24" # Home network
+                  "192.168.255.0/24" # WireGuard network
+                ];
+                # Start with remote endpoint, roaming service will switch to local if at home
+                endpoint = "home.mitchty.net:51820";
+                persistentKeepalive = 25;
+              }
+            ];
+            # Enable roaming - automatically switch between local and remote endpoints
+            roaming = {
+              localEndpoint = "10.10.10.1:51820"; # Direct LAN when at home
+              remoteEndpoint = "home.mitchty.net:51820"; # Through internet when away
+              detectNetwork = "10.10.10.1"; # Ping gw0 to detect if we're home
+              peerPublicKey = builtins.replaceStrings [ "\n" ] [ "" ] (
+                builtins.readFile ../../../crypt/wireguard/gw0/publickey
+              );
+            };
           };
         };
       };
@@ -167,7 +209,17 @@ in
         kernelModules = [ "kvm-amd" ];
       };
 
-      nixpkgs.hostPlatform = "x86_64-linux";
+      nixpkgs = {
+        hostPlatform = "x86_64-linux";
+        overlays = [
+          # Override the default emacs overlay with Wayland support
+          (import ../../overlays/emacs.nix { withWayland = true; })
+          # Override xdg-desktop-portal-wlr with bleeding-edge version for window sharing
+          (final: prev: {
+            inherit (final.unstable) xdg-desktop-portal-wlr;
+          })
+        ];
+      };
     }
   ];
 }

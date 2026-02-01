@@ -5,9 +5,10 @@
 let
   owner = "aceeric";
   repo = "ociregistry";
+  mainProgram = "ociregistry";
 in
 pkgs.buildGoModule rec {
-  pname = "ociregistry";
+  pname = mainProgram;
   version = "1.11.1"; # TODO: better way to get this?
   vendorHash = "sha256-YBFm7eWAUvRH3sxD8t65fSmH2WWMukEoJXlG0EvVUHo=";
 
@@ -32,7 +33,7 @@ pkgs.buildGoModule rec {
   doCheck = false;
 
   postInstall = ''
-    mv $out/bin/cmd $out/bin/ociregistry
+    mv $out/bin/cmd $out/bin/${mainProgram}
   '';
 
   meta = with lib; {
@@ -40,7 +41,7 @@ pkgs.buildGoModule rec {
     homepage = "https://github.com/aceeric/ociregistry";
     license = licenses.asl20;
     maintainers = with lib.maintainers; [ mitchty ];
-    mainProgram = "ociregistry";
+    inherit mainProgram;
   };
 
   # TODO: not sure how I want to tackle this yet

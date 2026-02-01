@@ -27,9 +27,18 @@ let
       10.10.10.21 wm2.home.arpa wm2
       10.10.10.22 mbp.home.arpa mbp
 
+      # WireGuard VPN addresses
+      192.168.255.1 gw0.wg.home.arpa gw0.wg
+      192.168.255.2 wm2.wg.home.arpa wm2.wg
+      192.168.255.3 plx.wg.home.arpa plx.wg
+      192.168.255.4 ark.wg.home.arpa ark.wg
+      192.168.255.5 rtx.wg.home.arpa rtx.wg
+      192.168.255.6 mbp.wg.home.arpa mbp.wg
+
       10.10.10.50 winfx.home.arpa winfx
 
       10.10.10.90 wwin.home.arpa wwin
+      10.10.10.91 h1.home.arpa h1
 
       # Static ip's take up the last /16
       10.10.10.128 loki.home.arpa loki
@@ -39,11 +48,7 @@ let
       10.10.10.133 plex.home.arpa plex
 
       # Reverse proxy caches
-      10.10.10.140 nix.cache.home.arpa cache.nixos.org.cache.home.arpa
-      10.10.10.141 docker.io.cache.home.arpa
-
-      # vm cluster ip address(es)
-      10.10.10.160 rancher.home.arpa rancher
+      10.10.10.140 nix.cache.home.arpa oci.cache.home.arpa
 
       # "smart" bullshit
       10.10.10.180 spkitchen.home.arpa spkitchen
@@ -52,11 +57,6 @@ let
       10.10.10.200 cluster.home.arpa cluster
       10.10.10.201 cache.cluster.home.arpa
       10.10.10.202 nas.cluster.home.arpa
-
-      # Wireguard block 10.10.10.208/28
-      10.10.10.208 gw.wg.home.arpa
-      10.10.10.209 wm2.wg.home.arpa
-      10.10.10.210 srv.wg.home.arpa
 
       # Edge test
       10.10.10.230 edge.home.arpa edge
@@ -78,6 +78,9 @@ let
       10.10.10.243 wifi.home.arpa wifi
       10.10.10.245 wifi2.home.arpa wifi2
       10.10.10.247 wifi3.home.arpa wifi3
+
+      # Coredns for this subdomain/zone
+      10.10.10.251 dev.home.arpa
 
       # This is for ark.home.arpa, its a 10 gig dac to the switch, using this to route traffic to/from the nas through this ip.
       10.10.10.252 ark-nas.home.arpa ark-nas
@@ -102,6 +105,7 @@ let
     "c0:74:ad:f6:c0:90,wifi2,10.10.10.249"
     "c0:74:ad:fc:45:58,wifi3,10.10.10.250"
     "c0:a5:e8:c0:28:df,wwin,10.10.10.90" # work win laptop
+    "1e:19:04:4a:94:4c,h1,10.10.10.91"
     "dc:45:46:b3:5a:6a,winfx,10.10.10.50" # s100 win fx client
     "c4:e7:ae:0f:0c:2c,spkitchen,10.10.10.180"
     "c0:ff:ee:ee:ff:0c,edge,10.10.10.231"
@@ -111,7 +115,58 @@ let
     "8.8.8.8"
   ];
   # TODO: keep?
-  localblacklist = (pkgs.writeText "localblocks" '''');
+  localblacklist = (pkgs.writeText "localblocks" "");
+
+  # CoreDNS configuration files
+  corednsCorefile = pkgs.writeText "Corefile" ''
+    dev.home.arpa:53 {
+        bind 10.10.10.251
+
+        # etcd backend for external-dns dynamic updates
+        # Uses localhost since CoreDNS runs on same host as etcd
+        etcd {
+            path /skydns
+            endpoint http://127.0.0.1:2379
+        }
+
+        # Fallback to static file for base records (ns1, etc)
+        # With fallthrough so etcd can answer if file doesn't have the record
+        file /var/lib/coredns/zones/dev.home.arpa.zone {
+            fallthrough
+        }
+
+        transfer {
+            to *
+        }
+        reload
+
+        log {
+            class all
+        }
+        errors
+    }
+  '';
+
+  corednsZoneTemplate = pkgs.writeText "dev.home.arpa.zone.template" ''
+    $ORIGIN dev.home.arpa.
+    $TTL 300
+
+    @   IN SOA ns1.dev.home.arpa. hostmaster.dev.home.arpa. (
+            SERIAL_PLACEHOLDER ; serial
+            7200       ; refresh (2 hours)
+            3600       ; retry (1 hour)
+            1209600    ; expire (2 weeks)
+            300        ; minimum (5 minutes)
+    )
+
+    @   IN NS ns1.dev.home.arpa.
+    ns1 IN A  10.10.10.251
+
+    ; Dynamic entries will be added here by external-dns or other tools
+    ; Allowed IP range: 10.10.10.144-159 (10.10.10.150/28)
+    ; Example entries (remove or modify as needed):
+    ; test IN A 10.10.10.150
+  '';
 in
 {
   options.services.mitchty.router = {
@@ -128,7 +183,7 @@ in
     };
     wanIp = mkOption {
       type = types.str;
-      default = "10.10.10.2";
+      default = "10.10.10.1";
       description = "Ip address that defines the router as a gateway";
     };
     wanIface = mkOption {
@@ -209,6 +264,10 @@ in
             }
             {
               address = "10.10.10.2";
+              prefixLength = 24;
+            }
+            {
+              address = "10.10.10.251";
               prefixLength = 24;
             }
             {
@@ -365,6 +424,7 @@ in
           546
           547
           4500
+          51820
         ];
 
         trustedInterfaces = [ cfg.lanIface ];
@@ -376,6 +436,13 @@ in
               546
               547
             ];
+          };
+          "${cfg.lanIface}" = {
+            allowedTCPPorts = [
+              53 # CoreDNS
+              2379 # etcd client port (for external-dns)
+            ];
+            allowedUDPPorts = [ 53 ]; # CoreDNS
           };
         };
       };
@@ -401,15 +468,37 @@ in
           "10.10.10/24"
         ];
       };
+
+      # etcd for CoreDNS backend (used by external-dns)
+      etcd = {
+        enable = true;
+        name = "gw0"; # Must match the name in initialCluster
+        # Listen on both localhost and the dev.home.arpa IP so external-dns can reach it
+        listenClientUrls = [
+          "http://127.0.0.1:2379"
+          "http://10.10.10.251:2379"
+        ];
+        advertiseClientUrls = [ "http://10.10.10.251:2379" ];
+        # Single node cluster for this use case
+        initialCluster = [ "gw0=http://127.0.0.1:2380" ];
+        initialAdvertisePeerUrls = [ "http://127.0.0.1:2380" ];
+        listenPeerUrls = [ "http://127.0.0.1:2380" ];
+      };
     };
-    systemd.services.dnsmasq = {
-      path = (
-        lib.attrVals [
-          "dnsmasq"
-          "bash"
-          "curl"
-        ] pkgs
-      );
+    systemd.services = {
+      dnsmasq = {
+        path = (
+          lib.attrVals [
+            "dnsmasq"
+            "bash"
+            "curl"
+          ] pkgs
+        );
+      };
+      # ncps = {
+      #   # Getting failures from this for some reason
+      #   preStart = lib.mkForce '''';
+      # };
     };
 
     services.radvd = {
@@ -434,8 +523,8 @@ in
 
     services.dnsmasq = {
       enable = true;
-      servers = upstreamdns;
       settings = {
+        server = upstreamdns ++ [ "/dev.home.arpa/10.10.10.251" ];
         clear-on-reload = true;
         log-dhcp = true;
         local = "/${cfg.domain}/";
@@ -445,13 +534,14 @@ in
         bogus-priv = true;
         no-hosts = true;
         addn-hosts = "${extrahosts}";
-        interface = cfg.lanIface;
-        min-cache-ttl = 36000;
+        # Bind only to specific addresses for DNS
+        bind-interfaces = true;
         enable-ra = true;
         listen-address = "127.0.0.1,${cfg.wanIp}";
+        # Don't use global interface - DHCP range already specifies the interface
         dhcp-range = [
           "${cfg.lanIface},10.10.10.3,10.10.10.127,24h"
-          "tag:${cfg.wanIface},::1,constructor:${cfg.wanIface},ra-names,12h"
+          "tag:${cfg.wanIface},::1,constructor:${cfg.wanIface},ra-names,1h"
         ];
         dhcp-option = [
           "${cfg.lanIface},3,${cfg.wanIp}"
@@ -461,5 +551,73 @@ in
         conf-file = "${inputs.dns}/dnsmasq/pro.plus.txt";
       };
     };
+
+    # CoreDNS for dev.home.arpa zone mostly here for k8s external dns
+    environment.systemPackages = [ pkgs.coredns ];
+
+    users.users.coredns = {
+      isSystemUser = true;
+      group = "coredns";
+      description = "CoreDNS service user";
+    };
+    users.groups.coredns = { };
+
+    systemd.services.coredns =
+      let
+        corednsPath = "/var/lib/coredns";
+      in
+      {
+        description = "CoreDNS authoritative DNS for dev.home.arpa";
+        wantedBy = [ "multi-user.target" ];
+        after = [
+          "network-online.target"
+          "sys-subsystem-net-devices-br0.device"
+          "etcd.service"
+        ];
+        wants = [
+          "network-online.target"
+          "etcd.service"
+        ];
+        before = [ "dnsmasq.service" ];
+
+        preStart = ''
+          mkdir -p ${corednsPath}/zones
+
+          cp ${corednsCorefile} ${corednsPath}/Corefile
+          chmod 644 ${corednsPath}/Corefile
+
+          if [ ! -f ${corednsPath}/zones/dev.home.arpa.zone ]; then
+            SERIAL=$(date +%Y%m%d01)
+            sed "s/SERIAL_PLACEHOLDER/$SERIAL/" ${corednsZoneTemplate} > ${corednsPath}/zones/dev.home.arpa.zone
+            chmod 644 ${corednsPath}/zones/dev.home.arpa.zone
+          fi
+
+          chmod 755 ${corednsPath}/zones
+        '';
+
+        serviceConfig = {
+          Type = "simple";
+          ExecStart = "${pkgs.coredns}/bin/coredns -conf ${corednsPath}/Corefile";
+          ExecReload = "${pkgs.coreutils}/bin/kill -SIGUSR1 $MAINPID";
+          User = "coredns";
+          Group = "coredns";
+          Restart = "always";
+          RestartSec = "5s";
+
+          # Systemd owns /var/lib/coredns
+          StateDirectory = "coredns";
+          StateDirectoryMode = "0755";
+
+          # Prevent systemd from killing the service generally? Needed anymore I was testing? FUTURE MITCH PROBLEM
+          SendSIGKILL = false;
+
+          # Let this bind() to port 53 as non root
+          AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+          CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
+
+          # Same here might not be needed, hell might break updates dunno...
+          StopWhenUnneeded = false;
+        };
+      };
   };
 }
