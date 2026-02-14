@@ -32,6 +32,7 @@
       services = {
         common.mosh.enable = true;
         mitchty = {
+          age.enable = true;
           ollama.enable = false;
           wireguard = {
             enable = true;
@@ -85,6 +86,8 @@
 
       nixpkgs = {
         overlays = [
+          # Expose eca to the package set for emacs
+          (import ../../overlays/eca.nix { inherit inputs; })
           # Override the default emacs overlay with macOS support
           (import ../../overlays/emacs.nix { withNs = true; })
         ];
@@ -113,6 +116,8 @@
             git
             git-age
           ]);
+
+          mitchty.sh.historyBackend = "atuin";
         };
       };
     }

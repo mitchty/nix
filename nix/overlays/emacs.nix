@@ -5,7 +5,9 @@
 }:
 self: super:
 let
-  enableFullBuild = import ../../hacks/flake-check.nix super.stdenv.hostPlatform.system;
+  mylib = import ../lib.nix { inherit (super) lib; };
+  #enableFullBuild = mylib.enableFullBuild super.stdenv.hostPlatform.system;
+  enableFullBuild = true;
 in
 if enableFullBuild then
   # Full complex emacs build - only evaluate when enableFullBuild is true
@@ -17,7 +19,11 @@ if enableFullBuild then
     # sure that these are installed within the $HOME or system packages.
     editorPackages =
       with super.pkgs;
-      super.lib.optionals enableFullBuild [ eca ]
+      # eca needs unzip now apparently
+      super.lib.optionals enableFullBuild [
+        eca
+        unzip
+      ]
       ++ [
         (super.lib.hiPrio clang)
         altshfmt

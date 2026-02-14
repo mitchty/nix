@@ -34,6 +34,7 @@ let
       192.168.255.4 ark.wg.home.arpa ark.wg
       192.168.255.5 rtx.wg.home.arpa rtx.wg
       192.168.255.6 mbp.wg.home.arpa mbp.wg
+      192.168.255.7 ip.wg.home.arpa ip.wg
 
       10.10.10.50 winfx.home.arpa winfx
 
@@ -46,6 +47,7 @@ let
       10.10.10.130 prometheus.home.arpa prometheus
       10.10.10.132 media.home.arpa media
       10.10.10.133 plex.home.arpa plex
+      10.10.10.135 atuin.home.arpa atuin
 
       # Reverse proxy caches
       10.10.10.140 nix.cache.home.arpa oci.cache.home.arpa
@@ -71,6 +73,9 @@ let
       10.10.10.225 homer.home.arpa homer
       10.10.10.226 llama.home.arpa llama
       10.10.10.227 git.home.arpa git
+
+      # bridge stuff
+      10.10.10.230 rancher.home.arpa rancher
 
       10.10.10.242 ark-nas.home.arpa
 
@@ -201,6 +206,24 @@ in
     #   default = "wlp0s21f0u2";
     #   description = "interface (wlan)";
     # };
+    dnsUpdate = {
+      enable = mkEnableOption "Cloudflare DNS updates for WAN IP";
+      record = mkOption {
+        type = types.str;
+        default = "";
+        description = "DNS record to update (e.g., home.mitchty.net)";
+      };
+      interval = mkOption {
+        type = types.str;
+        default = "15min";
+        description = "How often to check and update DNS (systemd time format)";
+      };
+      pkg = mkOption {
+        type = types.package;
+        description = "Package containing dns-update binary";
+        default = pkgs.cf-dns-update;
+      };
+    };
   };
 
   config = mkIf cfg.enable {
@@ -435,14 +458,15 @@ in
             allowedUDPPorts = [
               546
               547
+              51820
             ];
           };
           "${cfg.lanIface}" = {
             allowedTCPPorts = [
-              53 # CoreDNS
-              2379 # etcd client port (for external-dns)
+              53
+              2379
             ];
-            allowedUDPPorts = [ 53 ]; # CoreDNS
+            allowedUDPPorts = [ 53 ];
           };
         };
       };
@@ -485,20 +509,130 @@ in
         listenPeerUrls = [ "http://127.0.0.1:2380" ];
       };
     };
-    systemd.services = {
-      dnsmasq = {
-        path = (
-          lib.attrVals [
-            "dnsmasq"
-            "bash"
-            "curl"
-          ] pkgs
-        );
+
+    # CoreDNS for dev.home.arpa zone mostly here for k8s external dns
+    environment.systemPackages = [ pkgs.coredns ];
+
+    users.users.coredns = {
+      isSystemUser = true;
+      group = "coredns";
+      description = "CoreDNS service user";
+    };
+    users.groups.coredns = { };
+
+    age.secrets."dns-${cfg.dnsUpdate.record}" = mkIf cfg.dnsUpdate.enable {
+      file = ../../secrets/dns + "/${cfg.dnsUpdate.record}.age";
+      owner = "root";
+      mode = "0400";
+    };
+
+    systemd = {
+      services = {
+        dnsmasq = {
+          path = (
+            lib.attrVals [
+              "dnsmasq"
+              "bash"
+              "curl"
+            ] pkgs
+          );
+        };
+        # ncps = {
+        #   # Getting failures from this for some reason
+        #   preStart = lib.mkForce '''';
+        # };
+
+        coredns =
+          let
+            corednsPath = "/var/lib/coredns";
+          in
+          {
+            description = "CoreDNS authoritative DNS for dev.home.arpa";
+            wantedBy = [ "multi-user.target" ];
+            after = [
+              "network-online.target"
+              "sys-subsystem-net-devices-br0.device"
+              "etcd.service"
+            ];
+            wants = [
+              "network-online.target"
+              "etcd.service"
+            ];
+            before = [ "dnsmasq.service" ];
+
+            preStart = ''
+              mkdir -p ${corednsPath}/zones
+
+              cp ${corednsCorefile} ${corednsPath}/Corefile
+              chmod 644 ${corednsPath}/Corefile
+
+              if [ ! -f ${corednsPath}/zones/dev.home.arpa.zone ]; then
+                SERIAL=$(date +%Y%m%d01)
+                sed "s/SERIAL_PLACEHOLDER/$SERIAL/" ${corednsZoneTemplate} > ${corednsPath}/zones/dev.home.arpa.zone
+                chmod 644 ${corednsPath}/zones/dev.home.arpa.zone
+              fi
+
+              chmod 755 ${corednsPath}/zones
+            '';
+
+            serviceConfig = {
+              Type = "simple";
+              ExecStart = "${pkgs.coredns}/bin/coredns -conf ${corednsPath}/Corefile";
+              ExecReload = "${pkgs.coreutils}/bin/kill -SIGUSR1 $MAINPID";
+              User = "coredns";
+              Group = "coredns";
+              Restart = "always";
+              RestartSec = "5s";
+
+              # Systemd owns /var/lib/coredns
+              StateDirectory = "coredns";
+              StateDirectoryMode = "0755";
+
+              # Prevent systemd from killing the service generally? Needed anymore I was testing? FUTURE MITCH PROBLEM
+              SendSIGKILL = false;
+
+              # Let this bind() to port 53 as non root
+              AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+              CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
+
+              # Same here might not be needed, hell might break updates dunno...
+              StopWhenUnneeded = false;
+            };
+          };
+        cloudflare-dns-update = mkIf cfg.dnsUpdate.enable {
+          description = "Update Cloudflare DNS record with current WAN IP";
+          after = [ "network-online.target" ];
+          wants = [ "network-online.target" ];
+
+          serviceConfig = {
+            Type = "oneshot";
+            EnvironmentFile = config.age.secrets."dns-${cfg.dnsUpdate.record}".path;
+            ExecStart = pkgs.writeShellScript "cloudflare-dns-update" ''
+              set -euo pipefail
+
+              # FUTURE MITCH TODO: better way to get the ip for the wan interface
+              IP=$(${pkgs.iproute2}/bin/ip -br addr show ${cfg.wanIface} | ${pkgs.gawk}/bin/awk '{print $3}' | ${pkgs.gnused}/bin/sed -e 's|/.*||g')
+
+              if [ -z "$IP" ]; then
+                printf "fatal: didn't get an ip for %s\n" "${cfg.wanIface}" >&2
+                exit 1
+              fi
+
+              ${cfg.dnsUpdate.pkg}/bin/dns-update --record ${cfg.dnsUpdate.record} --ip "$IP"
+            '';
+          };
+        };
       };
-      # ncps = {
-      #   # Getting failures from this for some reason
-      #   preStart = lib.mkForce '''';
-      # };
+      timers.cloudflare-dns-update = mkIf cfg.dnsUpdate.enable {
+        description = "Timer for periodic Cloudflare DNS updates";
+        wantedBy = [ "timers.target" ];
+
+        timerConfig = {
+          OnBootSec = "5min";
+          OnUnitActiveSec = cfg.dnsUpdate.interval;
+          Unit = "cloudflare-dns-update.service";
+        };
+      };
     };
 
     services.radvd = {
@@ -551,73 +685,5 @@ in
         conf-file = "${inputs.dns}/dnsmasq/pro.plus.txt";
       };
     };
-
-    # CoreDNS for dev.home.arpa zone mostly here for k8s external dns
-    environment.systemPackages = [ pkgs.coredns ];
-
-    users.users.coredns = {
-      isSystemUser = true;
-      group = "coredns";
-      description = "CoreDNS service user";
-    };
-    users.groups.coredns = { };
-
-    systemd.services.coredns =
-      let
-        corednsPath = "/var/lib/coredns";
-      in
-      {
-        description = "CoreDNS authoritative DNS for dev.home.arpa";
-        wantedBy = [ "multi-user.target" ];
-        after = [
-          "network-online.target"
-          "sys-subsystem-net-devices-br0.device"
-          "etcd.service"
-        ];
-        wants = [
-          "network-online.target"
-          "etcd.service"
-        ];
-        before = [ "dnsmasq.service" ];
-
-        preStart = ''
-          mkdir -p ${corednsPath}/zones
-
-          cp ${corednsCorefile} ${corednsPath}/Corefile
-          chmod 644 ${corednsPath}/Corefile
-
-          if [ ! -f ${corednsPath}/zones/dev.home.arpa.zone ]; then
-            SERIAL=$(date +%Y%m%d01)
-            sed "s/SERIAL_PLACEHOLDER/$SERIAL/" ${corednsZoneTemplate} > ${corednsPath}/zones/dev.home.arpa.zone
-            chmod 644 ${corednsPath}/zones/dev.home.arpa.zone
-          fi
-
-          chmod 755 ${corednsPath}/zones
-        '';
-
-        serviceConfig = {
-          Type = "simple";
-          ExecStart = "${pkgs.coredns}/bin/coredns -conf ${corednsPath}/Corefile";
-          ExecReload = "${pkgs.coreutils}/bin/kill -SIGUSR1 $MAINPID";
-          User = "coredns";
-          Group = "coredns";
-          Restart = "always";
-          RestartSec = "5s";
-
-          # Systemd owns /var/lib/coredns
-          StateDirectory = "coredns";
-          StateDirectoryMode = "0755";
-
-          # Prevent systemd from killing the service generally? Needed anymore I was testing? FUTURE MITCH PROBLEM
-          SendSIGKILL = false;
-
-          # Let this bind() to port 53 as non root
-          AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
-          CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
-
-          # Same here might not be needed, hell might break updates dunno...
-          StopWhenUnneeded = false;
-        };
-      };
   };
 }

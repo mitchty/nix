@@ -46,12 +46,14 @@ in
           nix-offload
           fw
           blocklist
-          nix-cache
+          ncps
           router
           homer
           #          ip-hacks
           ociregistry
           wireguard
+          atuin
+          age
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -81,6 +83,8 @@ in
                   age
                   debug
                 ]);
+
+                mitchty.sh.historyBackend = "atuin";
               };
             };
           }
@@ -98,19 +102,25 @@ in
         common.mosh.enable = true;
 
         mitchty = {
+          age.enable = true;
           homer.enable = true;
           blocklist.enable = true;
           router = {
             enable = true;
             wanIface = "enp4s0";
             lanIface = "br0";
+            dnsUpdate = {
+              enable = true;
+              record = "home.mitchty.net";
+              interval = "1h";
+            };
           };
           promtail.enable = true;
           node-exporter = {
             enable = true;
             iface = "br0";
           };
-          nixcache = {
+          ncps = {
             enable = true;
             iface = "br0";
           };
@@ -118,6 +128,10 @@ in
             enable = true;
             port = 12345;
             bindAddress = "10.10.10.140";
+          };
+          atuin = {
+            enable = true;
+            iface = "br0";
           };
           wireguard = {
             enable = true;
@@ -130,6 +144,14 @@ in
             natInterface = "br0";
             natSubnet = "192.168.255.0/24";
             peers = [
+              # iphone
+              {
+                publicKey = "${builtins.readFile ../../../crypt/wireguard/ip/publickey}";
+                allowedIPs = [
+                  "192.168.255.7/32"
+                ];
+                # Roaming crap sends their own keepalives, we don't send one to them obvs
+              }
               # mbp laptop
               {
                 publicKey = "${builtins.readFile ../../../crypt/wireguard/mbp/publickey}";

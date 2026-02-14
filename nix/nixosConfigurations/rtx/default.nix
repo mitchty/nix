@@ -58,6 +58,8 @@ in
           ollama
           gaming
           wireguard
+          harmonia
+          age
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -90,8 +92,11 @@ in
                   age
                   debug
                   gui
-                  #                  linux-i3
-                  linux-sway
+                  linux-i3
+                  #                  linux-sway
+                  # linux-wayland
+                  # linux-plasma
+                  # linux-hyprland
                   firefox
                   chrome
                   kopia
@@ -108,6 +113,8 @@ in
                   #                  (lib.mkIf inputs.nixpkgs.legacyPackages.${system}.hostPlatform.isLinux emacs)
                   emacs
                 ]);
+
+                mitchty.sh.historyBackend = "atuin";
               };
             };
           }
@@ -127,14 +134,21 @@ in
         common.mosh.enable = true;
 
         mitchty = {
+          age.enable = true;
           gui = {
             enable = true;
-            type = "wayland";
+            type = "both";
+            user = "mitch";
           };
           promtail.enable = true;
           node-exporter = {
             inherit iface;
             enable = true;
+          };
+          harmonia = {
+            enable = true;
+            port = 5000;
+            signKeyPath = builtins.toString ../../../crypt/nix/privatekey;
           };
           ollama = {
             inherit iface;
@@ -320,8 +334,11 @@ in
         config.allowUnfree = true;
         hostPlatform = "x86_64-linux";
         overlays = [
+          # Expose eca to the package set for emacs
+          (import ../../overlays/eca.nix { inherit inputs; })
           # Override the default emacs overlay with Wayland support
-          (import ../../overlays/emacs.nix { withWayland = true; })
+          # (import ../../overlays/emacs.nix { withWayland = true; })
+          (import ../../overlays/emacs.nix { withX = true; })
         ];
       };
     }

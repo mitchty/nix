@@ -23,6 +23,7 @@
       nix-update
       nixfmt-rfc-style
       nixos-generate
+      qrencode
       ripgrep
       statix
       taplo

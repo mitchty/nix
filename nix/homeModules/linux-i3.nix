@@ -4,7 +4,8 @@
   ...
 }:
 let
-  enableFullBuild = import ../../hacks/flake-check.nix pkgs.stdenv.hostPlatform.system;
+  mylib = import ../lib.nix { inherit lib; };
+  enableFullBuild = mylib.enableFullBuild pkgs.stdenv.hostPlatform.system;
 
   # Default font size based off display size in role, basically big or else...
   #fontSize = if roles.gui-new.displaySize == "big" then 14 else 12;

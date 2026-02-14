@@ -2,6 +2,7 @@
 rec {
   # Admin user SSH key for secrets decryption, the private key backing this is not stored anywhere
   adminKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV";
+  hmKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGimTE2+hCBsFIAOxFUO3+hmTMfXb2e8iSObBNnUr/af";
 
   # Generate secrets.nix entries from host configuration data for mitchty.secrets
   mkSecretsFromConfigs =
@@ -66,8 +67,40 @@ rec {
         combined;
     };
 
-  # This is a HUGE hack to work around nix flake check on macos nix and my emacs derivation of DOOOM
-  isCrossPlatformEval = pkgs: pkgs.stdenv.hostPlatform.isLinux && builtins.pathExists /System/Library;
+  # Detect if we're cross-evaluating (e.g., macOS evaluating Linux configs or vice versa)
+  # Returns true if we should skip full builds to avoid cross-platform evaluation issues
+  isCrossEvaluation =
+    targetSystem:
+    let
+      # What platform are we evaluating on?
+      onMacos = builtins.pathExists "/System/Library";
+      onLinux = builtins.pathExists "/proc/kcore";
+
+      # What platform is the target?
+      targetIsDarwin = builtins.elem targetSystem [
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
+      targetIsLinux = builtins.elem targetSystem [
+        "x86_64-linux"
+        "aarch64-linux"
+        "i686-linux"
+      ];
+
+      # Helper functions for native evaluation detection
+      evaluatingOnMacos = onMacos && targetIsDarwin;
+      evaluatingOnLinux = onLinux && targetIsLinux;
+
+      # Test positive: are we doing a native evaluation?
+      nativeEval = evaluatingOnMacos || evaluatingOnLinux;
+
+      # Invert: cross-evaluation is when we're NOT doing native eval
+      crossing = !nativeEval;
+    in
+    crossing;
+
+  # Helper to determine if we should do full builds (inverse of isCrossEvaluation)
+  enableFullBuild = targetSystem: !(isCrossEvaluation targetSystem);
 
   # Reduce line count a bit to make flake.nix less yappy
   mkShellApp = name: scriptText: pkgs: {

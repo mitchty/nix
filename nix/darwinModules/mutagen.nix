@@ -16,6 +16,9 @@ let
   # Only used for launchd
   label = "net.mitchty.shared";
   fulllabel = "${label}.${name}";
+
+  # Path to the mutagen config in the repo
+  mutagenConfig = ../../static/home/mutagen.yaml;
 in
 {
   options = {
@@ -27,6 +30,13 @@ in
         default = "/Users/mitch/Library/Logs";
         example = "~/Library/Logs";
         description = "For launchd, log directory.";
+      };
+
+      homeDir = mkOption {
+        type = types.path;
+        default = "/Users/mitch/Library/Application Support/mutagen";
+        example = "/Users/mitch/Library/Application Support/mutagen";
+        description = "Writable HOME directory for mutagen daemon";
       };
 
       package = mkOption {
@@ -62,20 +72,26 @@ in
           # For this to save on security shenanigans in the gooey, abuse /bin/bash
           # for doing work along with ProgramArguments instead of script.
           serviceConfig = {
-            EnvironmentVariables.MUTAGEN_LOG_LEVEL = "trace";
+            EnvironmentVariables = {
+              MUTAGEN_LOG_LEVEL = "trace";
+              HOME = cfg.homeDir;
+            };
             ProgramArguments = [
               "/bin/bash"
               "-c"
               ''
                 ${pkgs.coreutils}/bin/install -Ddm755 ${cfg.logDir}/${label}/${name};
+                ${pkgs.coreutils}/bin/install -Ddm755 ${cfg.homeDir};
+                ${pkgs.coreutils}/bin/ln -sf ${mutagenConfig} ${cfg.homeDir}/.mutagen.yml;
                 . ${../../src/lib.sh};
                 rotatelog 5 ${cfg.logDir}/${label}/${name}/stderr.log ${cfg.logDir}/${label}/${name}/stdout.log
-                cd /Users/mitch
+                cd ${cfg.homeDir}
                 pkill ${name}
                 exec ${cfg.package}/bin/${name} daemon run
               ''
             ];
             Label = fulllabel;
+            WatchPaths = [ (toString mutagenConfig) ];
 
             # low priority io cause the sync doesn't need priority i/o wise generally
             LowPriorityIO = true;

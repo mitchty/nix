@@ -1,4 +1,5 @@
 {
+  inputs,
   config,
   lib,
   pkgs,
@@ -22,12 +23,22 @@
       type = lib.types.enum [
         "X"
         "wayland"
+        "both"
       ];
+    };
+
+    user = lib.mkOption {
+      default = "mitch";
+      example = "mitch";
+      description = "User to configure home-manager GUI settings for";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf config.services.mitchty.gui.enable {
-    services.mitchty.powerjoular.enable = lib.mkIf (config.services.mitchty.gui.type == "wayland") true;
+    services.mitchty.powerjoular.enable = lib.mkIf (
+      config.services.mitchty.gui.type == "wayland" || config.services.mitchty.gui.type == "both"
+    ) true;
 
     # nixpkgs = {
     #   config.allowUnfreePredicate =
@@ -37,10 +48,13 @@
     #     ];
     # };
 
-    environment.pathsToLink = lib.mkIf (config.services.mitchty.gui.type == "wayland") [
-      "/share/applications"
-      "/share/xdg-desktop-portal"
-    ];
+    environment.pathsToLink =
+      lib.mkIf
+        (config.services.mitchty.gui.type == "wayland" || config.services.mitchty.gui.type == "both")
+        [
+          "/share/applications"
+          "/share/xdg-desktop-portal"
+        ];
 
     environment.systemPackages =
       with pkgs;
@@ -67,26 +81,32 @@
         bitwarden-desktop
         noto-fonts
       ]
-      ++ lib.optionals (config.services.mitchty.gui.type == "X") [
-        kdePackages.sddm
-        xorg.xauth
-        xclip
-        kdePackages.plasma-desktop
-        kdePackages.plasma-integration
-        kdePackages.plasma-pa
-        kdePackages.kmix
-      ]
-      ++ lib.optionals (config.services.mitchty.gui.type == "wayland") [
-        wlroots
-        mako
-        wl-clipboard
-        slurp
-        grim
-        wdisplays
-        cliphist
-        gscreenshot
-        kooha
-      ];
+      ++
+        lib.optionals
+          (config.services.mitchty.gui.type == "X" || config.services.mitchty.gui.type == "both")
+          [
+            kdePackages.sddm
+            xorg.xauth
+            xclip
+            kdePackages.plasma-desktop
+            kdePackages.plasma-integration
+            kdePackages.plasma-pa
+            kdePackages.kmix
+          ]
+      ++
+        lib.optionals
+          (config.services.mitchty.gui.type == "wayland" || config.services.mitchty.gui.type == "both")
+          [
+            wlroots
+            mako
+            wl-clipboard
+            slurp
+            grim
+            wdisplays
+            cliphist
+            gscreenshot
+            kooha
+          ];
 
     # Loopback device/kernel module config for obs
     #    boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
@@ -119,61 +139,77 @@
     programs = {
       thunar.enable = true;
       dconf.enable = true;
-      sway = lib.mkIf (config.services.mitchty.gui.type == "wayland") {
-        enable = true;
-        wrapperFeatures.gtk = true;
-        extraOptions = [
-          "--unsupported-gpu"
-          "--verbose"
-        ];
-      };
+
+      hyprland =
+        lib.mkIf
+          (config.services.mitchty.gui.type == "wayland" || config.services.mitchty.gui.type == "both")
+          {
+            enable = true;
+            xwayland.enable = true;
+          };
+
+      sway =
+        lib.mkIf
+          (config.services.mitchty.gui.type == "wayland" || config.services.mitchty.gui.type == "both")
+          {
+            enable = true;
+            wrapperFeatures.gtk = true;
+            package = pkgs.unstable.sway;
+            extraOptions = [
+              "--unsupported-gpu"
+              "--verbose"
+            ];
+          };
     };
 
     xdg = {
       menus.enable = true;
       icons.enable = true;
 
-      portal = {
-        enable = true;
-        config = {
-          common = {
-            default = [ "gtk" ];
-          };
-          niri = {
-            default = [
-              "gtk"
-              "gnome"
-            ];
-            "org.freedesktop.impl.portal.ScreenCast" = [ "gnome" ];
-            "org.freedesktop.impl.portal.Screenshot" = [ "gnome" ];
-          };
-        };
+      portal =
+        lib.mkIf
+          (config.services.mitchty.gui.type == "wayland" || config.services.mitchty.gui.type == "both")
+          {
+            enable = true;
+            # config = {
+            #   common = {
+            #     default = [ "gtk" ];
+            #   };
+            #   niri = {
+            #     default = [
+            #       "gtk"
+            #       "gnome"
+            #     ];
+            #     "org.freedesktop.impl.portal.ScreenCast" = [ "gnome" ];
+            #     "org.freedesktop.impl.portal.Screenshot" = [ "gnome" ];
+            #   };
+            # };
 
-        extraPortals = [
-          pkgs.xdg-desktop-portal-gtk
-          pkgs.xdg-desktop-portal-gnome
-        ];
-        xdgOpenUsePortal = true;
+            # extraPortals = [
+            #   pkgs.xdg-desktop-portal-gtk
+            #   pkgs.xdg-desktop-portal-gnome
+            # ];
+            # xdgOpenUsePortal = true;
 
-        # https://github.com/lovesegfault/nix-config/blob/3e4d869fa801c8221a4d3829a64153261d64580c/modules/home/graphical/sway/sway.nix#L70
-        # So thats why, xdg-destkop-portal-wlr and sway for current releases
-        # don't allow for individual window selection
-        # https://github.com/emersion/xdg-desktop-portal-wlr/issues/107#issuecomment-3444983174
-        # wayland is AS FREAKING OLD AS X11 WAS WHEN IT WAS CONCEIVED and I
-        # can't reliably share windows? WTF software is getting progressively
-        # worse.
-        wlr = {
-          enable = true;
-          settings = {
-            screencast = {
-              max_fps = 60;
-              output_name = "HDMI-A-2";
-              chooser_type = "simple";
-              chooser_cmd = "${pkgs.slurp}/bin/slurp -f %o -or";
-            };
+            # https://github.com/lovesegfault/nix-config/blob/3e4d869fa801c8221a4d3829a64153261d64580c/modules/home/graphical/sway/sway.nix#L70
+            # So thats why, xdg-destkop-portal-wlr and sway for current releases
+            # don't allow for individual window selection
+            # https://github.com/emersion/xdg-desktop-portal-wlr/issues/107#issuecomment-3444983174
+            # wayland is AS FREAKING OLD AS X11 WAS WHEN IT WAS CONCEIVED and I
+            # can't reliably share windows? WTF software is getting progressively
+            # worse.
+            # wlr = {
+            #   enable = true;
+            #   settings = {
+            #     screencast = {
+            #       max_fps = 60;
+            #       output_name = "HDMI-A-2";
+            #       chooser_type = "simple";
+            #       chooser_cmd = "${pkgs.slurp}/bin/slurp -f %o -or";
+            #     };
+            #   };
+            # };
           };
-        };
-      };
     };
 
     services = {
@@ -181,7 +217,7 @@
 
       dbus.enable = true;
 
-      gnome.gnome-keyring = lib.mkIf (config.services.mitchty.gui.type == "wayland") { enable = true; };
+      gnome.gnome-keyring.enable = true;
 
       pipewire = {
         enable = true;
@@ -200,21 +236,36 @@
         };
       };
 
-      displayManager.defaultSession = lib.mkIf (config.services.mitchty.gui.type == "X") "xfce+i3";
+      displayManager = {
+        defaultSession = lib.mkIf (config.services.mitchty.gui.type == "X") "xfce+i3";
+
+        gdm =
+          lib.mkIf
+            (config.services.mitchty.gui.type == "wayland" || config.services.mitchty.gui.type == "both")
+            {
+              enable = true;
+              wayland = true;
+            };
+      };
 
       # Note xserver is a bit of a misnomer in nixos its more "gui". Path
       # dependence for when x was the only option. Will leave myself an out for
       # xorg until I get things to good.
+      desktopManager.plasma6 =
+        lib.mkIf
+          (config.services.mitchty.gui.type == "wayland" || config.services.mitchty.gui.type == "both")
+          {
+            enable = true;
+          };
+
       xserver = lib.mkMerge [
-        (lib.mkIf (config.services.mitchty.gui.type == "wayland") {
+        # Enable X server for both wayland (needed for xwayland) and X11
+        {
           enable = true;
-          # displayManager.gdm.enable = true;
-          # desktopManager.gnome.enable = true;
-        })
+        }
 
-        (lib.mkIf (config.services.mitchty.gui.type == "X") {
-          enable = true;
-
+        # Enable i3 window manager for X11 sessions
+        (lib.mkIf (config.services.mitchty.gui.type == "X" || config.services.mitchty.gui.type == "both") {
           windowManager.i3 = {
             enable = true;
             extraPackages = [ pkgs.i3status ];
@@ -274,5 +325,28 @@
       #   };
       # };
     };
+
+    # Configure home-manager for GUI window managers
+    # Wayland sessions: Sway, Hyprland, Plasma (Wayland)
+    home-manager.users.${config.services.mitchty.gui.user} = lib.mkMerge [
+      (lib.mkIf
+        (config.services.mitchty.gui.type == "wayland" || config.services.mitchty.gui.type == "both")
+        {
+          imports = [
+            inputs.self.homeModules.linux-wayland
+            inputs.self.homeModules.linux-sway
+            inputs.self.homeModules.linux-hyprland
+            inputs.self.homeModules.linux-plasma
+          ];
+        }
+      )
+
+      # X11 sessions: i3, Plasma (X11)
+      (lib.mkIf (config.services.mitchty.gui.type == "X" || config.services.mitchty.gui.type == "both") {
+        imports = [
+          inputs.self.homeModules.linux-i3
+        ];
+      })
+    ];
   };
 }

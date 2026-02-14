@@ -44,6 +44,7 @@ in
           debug
           fw
           wireguard
+          age
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -75,6 +76,8 @@ in
                   debug
                   development
                 ]);
+
+                mitchty.sh.historyBackend = "atuin";
               };
             };
           }
@@ -104,6 +107,7 @@ in
         common.mosh.enable = true;
 
         mitchty = {
+          age.enable = true;
           promtail.enable = true;
           node-exporter = {
             enable = true;

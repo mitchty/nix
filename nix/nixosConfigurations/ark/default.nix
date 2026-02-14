@@ -74,6 +74,7 @@ in
           # ai
           llama-swap
           wireguard
+          age
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -106,6 +107,8 @@ in
                   development
                   kopia
                 ]);
+
+                mitchty.sh.historyBackend = "atuin";
               };
             };
           }
@@ -168,6 +171,7 @@ in
         common.mosh.enable = true;
 
         mitchty = {
+          age.enable = true;
           promtail.enable = true;
           node-exporter = commonMonitoring;
           loki = commonMonitoring;

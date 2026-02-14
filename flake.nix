@@ -210,7 +210,7 @@
           };
         in
         {
-          inherit (mylib) adminKey;
+          inherit (mylib) adminKey hmKey;
           inherit (helper)
             allHosts
             allHostKeys
@@ -246,9 +246,9 @@
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixpkgs-wayland = {
-      url = "github:nix-community/nixpkgs-wayland/1584f3330cc277a44adb95d8c66238bfd18f3041";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    hyprland = {
+      url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-darwin = {
       url = "github:LnL7/nix-darwin/nix-darwin-25.11";

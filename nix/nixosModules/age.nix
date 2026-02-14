@@ -17,7 +17,7 @@ in
 
     user = mkOption {
       type = types.str;
-      default = config.system.primaryUser or "mitch";
+      default = "mitch";
       description = "User to create SSH identity for, for now this is just for me to sync atuin shell history";
     };
 
@@ -64,17 +64,15 @@ in
         };
       };
 
-      # Creates $HOME/.ssh dir for agenix to decrypt keys in home-manager
-      # agenix. This is like a 2 phase db commit nixos/darwinModules deal with
-      # decrypting this for home-manager then that deals with anything needed
-      # used within my $HOME/user
-      system.activationScripts.preActivation.text = mkAfter ''
-        install -dm700 -o ${cfg.user} "${userHome}/.ssh"
+      # Creates $HOME/.ssh dir for agenix to decrypt keys in home-manager agenix
+      # note we let home-manager bitch if a file exists already.
+      system.activationScripts.agenix-home-manager = mkAfter ''
+        install -dm700 -o ${cfg.user} -g users "${userHome}/.ssh"
 
         ln -sf "${config.age.secrets.${cfg.identityFile}.path}" "${userHome}/${cfg.linkDest}"
-        chown -h ${cfg.user} "${userHome}/${cfg.linkDest}"
+        chown -h ${cfg.user}:users "${userHome}/${cfg.linkDest}"
         ln -sf "${config.age.secrets.${cfg.identityFilePub}.path}" "${userHome}/${cfg.linkDestPub}"
-        chown -h ${cfg.user} "${userHome}/${cfg.linkDestPub}"
+        chown -h ${cfg.user}:users "${userHome}/${cfg.linkDestPub}"
       '';
     }
   );

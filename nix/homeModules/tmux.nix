@@ -78,7 +78,7 @@ let
         shell_command = [
           {
             # keep track of how big reverse proxy crap is
-            cmd = "sudo ${pkgs.hwatch}/bin/hwatch -t -d word -n 60 du -hs /var/cache/nginx/cache/docker /var/lib/ncps";
+            cmd = "sudo ${pkgs.hwatch}/bin/hwatch -t -d word -n 60 du -hs /var/lib/private/ociregistry /var/lib/ncps";
             enter = true;
           }
         ];
@@ -160,12 +160,10 @@ let
     panes = [
       {
         shell_command = [
-          "$CARGO_TARGET_DIR/release/ythelper dl --subscription subs/all.yaml"
-        ];
-      }
-      {
-        shell_command = [
-          "hwatch -t -d word -n 60 /nas/media/internets/stats.sh"
+          {
+            cmd = "$CARGO_TARGET_DIR/release/ythelper dl --subscription subs/all.yaml";
+            enter = false;
+          }
         ];
       }
       {
@@ -239,7 +237,7 @@ let
         shell_command = [
           {
             enter = true;
-            cmd = "mutagen sync monitor src-mb -l";
+            cmd = "mutagen sync monitor src-ark -l";
           }
         ];
       }

@@ -1,8 +1,17 @@
 [config]
+"crypt/atuin/key" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
 "crypt/cf.env" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
 "crypt/comic-code.zip" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/nix/privatekey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/nix/publickey" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
 "crypt/pragmata-pro.zip" = [
@@ -30,6 +39,12 @@
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
 "crypt/ssh/gw0/ssh_host_rsa_key.pub" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/id_ed25519-home-manager" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/ssh/id_ed25519-home-manager.pub" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
 "crypt/ssh/plx/ssh_host_ed25519_key" = [
@@ -147,6 +162,15 @@
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
 "crypt/wireguard/gw0/publickey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/ip/mobile.conf" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/ip/privatekey" = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
+]
+"crypt/wireguard/ip/publickey" = [
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV mitch@mb",
 ]
 "crypt/wireguard/mbp/privatekey" = [

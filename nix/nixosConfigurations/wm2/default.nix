@@ -52,8 +52,10 @@ in
           gui
           powerjoular
           wiffy
-          #          steam
+          steam
+          gaming
           wireguard
+          age
         ])
         ++ (with inputs.self.crossplatformModules; [
           common
@@ -83,10 +85,12 @@ in
                   age
                   debug
                   # linux-i3
-                  linux-sway
+                  # linux-sway - now configured via services.mitchty.gui.windowManager
                   firefox
                   emacs
                 ]);
+
+                mitchty.sh.historyBackend = "atuin";
               };
             };
           }
@@ -106,10 +110,12 @@ in
         common.mosh.enable = true;
 
         mitchty = {
+          age.enable = true;
           wiffy.enable = true;
           gui = {
             enable = true;
-            type = "wayland";
+            type = "both"; # Enable both X11 and Wayland sessions
+            user = "mitch";
           };
           promtail.enable = true;
           node-exporter = {
@@ -212,6 +218,8 @@ in
       nixpkgs = {
         hostPlatform = "x86_64-linux";
         overlays = [
+          # Expose eca to the package set for emacs
+          (import ../../overlays/eca.nix { inherit inputs; })
           # Override the default emacs overlay with Wayland support
           (import ../../overlays/emacs.nix { withWayland = true; })
           # Override xdg-desktop-portal-wlr with bleeding-edge version for window sharing

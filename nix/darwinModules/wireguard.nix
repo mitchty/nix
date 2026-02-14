@@ -241,13 +241,13 @@ in
         fi
 
         # Check if we can reach the local network
-        if ping -c 1 -W 2 ${cfg.roaming.detectNetwork} > /dev/null 2>&1; then
-          echo "On local network, using local endpoint: ${cfg.roaming.localEndpoint}"
-          ${pkgs.wireguard-tools}/bin/wg set "$iface" peer ${cfg.roaming.peerPublicKey} endpoint ${cfg.roaming.localEndpoint}
-        else
+        # if ping -c 1 -W 2 ${cfg.roaming.detectNetwork} > /dev/null 2>&1; then
+        #   echo "On local network, using local endpoint: ${cfg.roaming.localEndpoint}"
+        #   ${pkgs.wireguard-tools}/bin/wg set "$iface" peer ${cfg.roaming.peerPublicKey} endpoint ${cfg.roaming.localEndpoint}
+        # else
           echo "Away from local network, using remote endpoint: ${cfg.roaming.remoteEndpoint}"
           ${pkgs.wireguard-tools}/bin/wg set "$iface" peer ${cfg.roaming.peerPublicKey} endpoint ${cfg.roaming.remoteEndpoint}
-        fi
+        # fi
       '';
     in
     {

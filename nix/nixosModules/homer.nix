@@ -9,6 +9,9 @@ with lib;
 
 let
   cfg = config.services.mitchty.homer;
+  homerLogos = pkgs.callPackage ../packages/homer-logos.nix { };
+  # Helper function to generate logo URL path
+  logoUrl = filename: "/logos/${filename}";
 in
 {
   options.services.mitchty.homer = {
@@ -142,20 +145,20 @@ in
               items = [
                 {
                   name = "Grafana";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/grafana.svg";
+                  logo = logoUrl "grafana.svg";
                   url = "http://grafana.home.arpa/d/rYdddlPWk/node-exporter-full";
                   target = "_blank";
                 }
                 {
                   name = "Loki";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/loki.svg";
+                  logo = logoUrl "loki.svg";
                   url = "http://grafana.home.arpa/a/grafana-lokiexplore-app/explore?patterns=%5B%5D&from=now-15m&to=now&timezone=browser&var-lineFormat=&var-ds=851Z746nz&var-filters=&var-fields=&var-levels=&var-metadata=&var-jsonFields=&var-all-fields=&var-patterns=&var-lineFilterV2=&var-lineFilters=&var-primary_label=service_name%7C%3D~%7C.%2B";
                   target = "_blank";
                 }
                 {
                   type = "Prometheus";
                   name = "Prometheus";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/prometheus.svg";
+                  logo = logoUrl "prometheus.svg";
                   url = "http://prometheus.home.arpa:9001";
                   target = "_blank";
                 }
@@ -168,7 +171,7 @@ in
               items = [
                 {
                   name = "pikvm";
-                  logo = "https://raw.githubusercontent.com/pikvm/pikvm/refs/heads/master/docs/_assets/logo.png";
+                  logo = logoUrl "pikvm.png";
                   url = "http://pikvm.home.arpa";
                   target = "_blank";
                 }
@@ -186,7 +189,7 @@ in
                 }
                 {
                   name = "vaultwarden";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/bitwarden.svg";
+                  logo = logoUrl "bitwarden.svg";
                   url = "https://bw.mitchty.net/#/login";
                   target = "_blank";
                 }
@@ -199,13 +202,13 @@ in
               items = [
                 {
                   name = "karakeep";
-                  logo = "https://raw.githubusercontent.com/karakeep-app/karakeep/refs/heads/main/docs/static/img/logo.png";
+                  logo = logoUrl "karakeep.png";
                   url = "http://karakeep.home.arpa:3000";
                   target = "_blank";
                 }
                 {
                   name = "llama-swap";
-                  logo = "https://raw.githubusercontent.com/mostlygeek/llama-swap/refs/heads/main/ui/public/favicon.svg";
+                  logo = logoUrl "llama-swap.svg";
                   url = "http://llama.home.arpa:11343/ui/activity";
                   target = "_blank";
                 }
@@ -218,7 +221,7 @@ in
                 {
                   type = "Plex";
                   name = "Plex";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/plex.svg";
+                  logo = logoUrl "plex.svg";
                   url = "http://media.home.arpa:32400/web";
                   endpoint = "http://media.home.arpa:32400";
                   target = "_blank";
@@ -233,7 +236,7 @@ in
                 {
                   type = "SABnzbd";
                   name = "SABnzbd";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/sabnzbd.svg";
+                  logo = logoUrl "sabnzbd.svg";
                   tag = "utils";
                   keywords = "self hosted SABnzbd";
                   url = "http://media.home.arpa:8080/";
@@ -245,7 +248,7 @@ in
                 {
                   type = "Radarr";
                   name = "Radarr";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/radarr.svg";
+                  logo = logoUrl "radarr.svg";
                   tag = "utils";
                   keywords = "self hosted radarr";
                   url = "http://media.home.arpa:7878/";
@@ -256,7 +259,7 @@ in
                 {
                   type = "Sonarr";
                   name = "Sonarr";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/sonarr.svg";
+                  logo = logoUrl "sonarr.svg";
                   tag = "utils";
                   keywords = "self hosted sonarr";
                   url = "http://media.home.arpa:8989/";
@@ -267,7 +270,7 @@ in
                 {
                   type = "Prowlarr";
                   name = "Prowlarr";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/prowlarr.svg";
+                  logo = logoUrl "prowlarr.svg";
                   tag = "utils";
                   keywords = "self hosted prowlarr";
                   url = "http://media.home.arpa:9696/";
@@ -285,7 +288,7 @@ in
                 {
                   type = "Gitea";
                   name = "Forgejo";
-                  logo = "https://raw.githubusercontent.com/NX211/homer-icons/refs/heads/master/svg/gitea.svg";
+                  logo = logoUrl "gitea.svg";
                   url = "http://git.home.arpa:3000";
                 }
               ];
@@ -310,12 +313,22 @@ in
       };
       # The listen setup by services.homer is 0.0.0.0:80 which can fail if
       # anything is bound to port 80 anywhere so constrain it just to that ip.
-      nginx.virtualHosts."homer.home.arpa".listen = [
-        {
-          addr = "10.10.10.225";
-          port = 80;
-        }
-      ];
+      nginx.virtualHosts."homer.home.arpa" = {
+        listen = [
+          {
+            addr = "10.10.10.225";
+            port = 80;
+          }
+        ];
+        # Serve the logos from the nix store
+        locations."/logos/" = {
+          alias = "${homerLogos}/";
+          extraConfig = ''
+            expires 7d;
+            add_header Cache-Control "public, immutable";
+          '';
+        };
+      };
     };
   };
 }

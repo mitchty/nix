@@ -4,7 +4,8 @@
   ...
 }:
 let
-  enableFullBuild = import ../../hacks/flake-check.nix pkgs.stdenv.hostPlatform.system;
+  mylib = import ../lib.nix { inherit lib; };
+  enableFullBuild = mylib.enableFullBuild pkgs.stdenv.hostPlatform.system;
   # TODO: keep? Its useful but not used...
   mkIfElse =
     p: yes: no:
@@ -25,7 +26,7 @@ in
     $DRY_RUN_CMD install -dm755 ~/.emacs.d/tmp
   '';
 
-  programs.emacs = lib.optionalAttrs enableFullBuild {
+  programs.emacs = {
     enable = true;
     package = pkgs.wrappedEmacs;
     #    package = pkgs.myEmacs;

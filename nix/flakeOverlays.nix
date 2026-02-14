@@ -8,11 +8,6 @@ let
     inputs.self.overlays.overrides
     inputs.self.overlays.yt-dlp
   ];
-
-  # TODO: This overlay works on amd gpus dies on the nvidia, need to debug y later
-  # unstableOverlays = commonOverlays ++ [
-  #   inputs.nixpkgs-wayland.overlay
-  # ];
 in
 [
   (final: prev: {
@@ -29,7 +24,6 @@ in
       config = {
         allowUnfree = true;
       };
-      #      overlays = unstableOverlays;
       overlays = commonOverlays;
     };
 
@@ -71,7 +65,7 @@ in
     nix-sweep = inputs.nix-sweep.packages.${prev.system}.default;
     inherit (inputs.nix-fast-build.packages.${prev.system}) nix-fast-build;
   })
-  inputs.eca.overlays.default
+  # inputs.eca.overlays.default  # Removed: causes cross-evaluation issues, reference directly where needed
   inputs.emacs-overlay.overlay
   inputs.deploy-rs.overlays.default
   inputs.agenix.overlays.default
