@@ -46,13 +46,43 @@ oe() {
 
 # Kinda like which but for macos app bundles
 #
-# Was wondering where the hell open was opening stuff in nix, and my lord did I not expect every app bundle in /nix/store to show up...
+# Was wondering where the hell open was opening stuff in nix, and my lord did I
+# not expect every app bundle in /nix/store to show up...
 #
-# I don't know how to fix it though it seems like open -a picks the top entry so hell if I know the right way to fix this properly.
+# This is encroaching the limit of what should ever be in shell. But basically
+# dump out all entries and sort by date descending, then find the first .app
+# path in existence. Note no longer filtering /nix/store paths in lieu of "who
+# is newest".
 whichapp() {
   name="${1?need the app name}"
+  domain="${2:-local}"
   lspath="/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
-  ${lspath} -dump | grep "path[:].*/Applications/.*${name}.app " | sed -e 's/[.]app.*/.app/g' -e 's/path[:][[:blank:]]*//g' | uniq
+
+  ${lspath} -apps "${domain}" -dump | awk -v name="$name" '
+    /^-{40,}$/ {
+      if (date != "" && path != "") entries[date] = path
+      date = ""; path = ""
+    }
+    /reg date:/ { date = $3 " " $4 }
+    $0 ~ "path:.*/" name "\\.app" {
+      p = $0
+      sub(/^[^:]+:[[:space:]]+/, "", p)   # strip "path:   "
+      sub(/ \(0x[0-9a-f]+\)$/, "", p)     # strip trailing (0xabcd)
+      if (p ~ ("/" name "\\.app$")) path = p
+    }
+    END {
+      if (date != "" && path != "") entries[date] = path
+      n = 0
+      for (d in entries) dates[++n] = d
+      for (i = 1; i <= n; i++)
+        for (j = i+1; j <= n; j++)
+          if (dates[j] > dates[i]) { tmp = dates[i]; dates[i] = dates[j]; dates[j] = tmp }
+      for (i = 1; i <= n; i++) {
+        p = entries[dates[i]]
+        if (system("test -d \"" p "\"") == 0) { print p; exit }
+      }
+    }
+  '
 }
 
 # mnemonic: Nix (macos) App (bundle) Open
@@ -61,7 +91,15 @@ whichapp() {
 # This nukes all the /nix/store entries recorded by launchservices and hopefully
 # ends up just with the trampoline in home manager or /Applications
 nao() {
-  name="${1?need the app name to open}"
-  #shellcheck disable=SC2086
-  open -a "$(whichapp ${name} | grep -v '/nix/store')"
+  name="${1?need the app name to open, sans .app suffix}"
+
+  open -a "$(whichapp ${name})"
+}
+
+# Reload wireguard vpn, seems to fix random weirdness I don't feel like
+# debugging just right now.
+restart-wg() {
+  for action in unload load; do
+    sudo launchctl ${action} /Library/LaunchDaemons/org.nixos.wireguard-utun99.plist
+  done
 }

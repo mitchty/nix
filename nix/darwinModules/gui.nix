@@ -14,6 +14,9 @@
   system = {
     defaults = {
       CustomUserPreferences = {
+        "com.apple.controlcenter" = {
+          WiFi = 8; # 8=hide, 18=show, 24=controlcenteronly
+        };
         "eu.exelban.Stats" = {
           "sensor_Average System Total" = false;
           "sensor_Fastest Fan" = true;
@@ -48,16 +51,29 @@
           CPU_updateInterval = 10;
           CPU_updateTopInterval = 10;
           CPU_widget = "line_chart";
-          Disk_state = false;
+          Disk_barChart_position = 2;
+          Disk_disk = "Macintosh HD";
+          Disk_label_position = 1;
+          Disk_memory_position = 6;
+          Disk_mini_position = 4;
+          Disk_networkChart_position = 3;
+          Disk_pieChart_position = 5;
+          Disk_processes = 10;
+          Disk_speed_iconColor = "transparent";
+          Disk_speed_position = 0;
+          Disk_state = 0;
+          Disk_text_position = 7;
           Disk_updateInterval = 30;
+          Disk_widget = "speed";
           GPU_barChart_position = 3;
+          GPU_gpu = "automatic";
           GPU_label_position = 1;
           GPU_lineChart_position = 0;
-          GPU_line_chart_box = false;
-          GPU_line_chart_frame = false;
+          GPU_line_chart_box = 0;
+          GPU_line_chart_frame = 0;
           GPU_line_chart_historyCount = 30;
           GPU_mini_position = 2;
-          GPU_state = false;
+          GPU_state = 1;
           GPU_tachometer_position = 4;
           GPU_updateInterval = 10;
           GPU_widget = "line_chart";

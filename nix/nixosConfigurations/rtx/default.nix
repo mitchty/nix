@@ -6,10 +6,11 @@
 let
   shortHost = "rtx";
   iface = "br0";
-in
-{
   system = "x86_64-linux";
 
+in
+{
+  inherit system;
   modules = [
     {
       # Host metadata for secrets generation
@@ -20,6 +21,7 @@ in
           "cifs"
           "backup"
           "nixos"
+          "iscsi"
         ];
       };
       # TODO: Ok so to make sure I don't get infinite recursion around these
@@ -48,6 +50,7 @@ in
           promtail
           debug
           virtualization
+          iscsi
           power
           uhk
           gui
@@ -55,7 +58,8 @@ in
           nvidia-hack
           steam
           nas
-          ollama
+          # ollama
+          llama-swap
           gaming
           wireguard
           harmonia
@@ -71,6 +75,7 @@ in
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
+              backupFileExtension = "bak";
 
               users.mitch = {
                 home = {
@@ -130,6 +135,27 @@ in
           ./diskconfig.nix
         ];
 
+      mitchty.iscsi = {
+        enable = true;
+        portal = "s1.home.arpa:3260";
+        auth = {
+          username = "mitch";
+          passwordAgeFile = ../../../secrets/iscsi/password.age;
+        };
+        mounts = [
+          {
+            target = "iqn.2000-01.com.synology:steam";
+            device = "/dev/disk/by-path/ip-10.10.10.9:3260-iscsi-iqn.2000-01.com.synology:steam-lun-1";
+            mountPoint = "/Users/mitch/.local/share/Steam";
+            fsType = "xfs";
+            options = [
+              "_netdev"
+              "nofail"
+            ];
+          }
+        ];
+      };
+
       services = {
         common.mosh.enable = true;
 
@@ -150,11 +176,17 @@ in
             port = 5000;
             signKeyPath = builtins.toString ../../../crypt/nix/privatekey;
           };
-          ollama = {
-            inherit iface;
+          # ollama = {
+          #   inherit iface;
+          #   enable = true;
+          #   ip = "10.10.10.220";
+          #   cname = "ollama.home.arpa";
+          # };
+          llama-swap = {
             enable = true;
-            ip = "10.10.10.220";
-            cname = "ollama.home.arpa";
+            ip = "127.0.0.1";
+            iface = "br0";
+            llamaCpppkg = inputs.self.legacyPackages.${system}.ai-nvidia.llama-cpp;
           };
           wireguard = {
             enable = true;
@@ -337,8 +369,11 @@ in
           # Expose eca to the package set for emacs
           (import ../../overlays/eca.nix { inherit inputs; })
           # Override the default emacs overlay with Wayland support
-          # (import ../../overlays/emacs.nix { withWayland = true; })
-          (import ../../overlays/emacs.nix { withX = true; })
+          (import ../../overlays/emacs.nix {
+            withWayland = true;
+            withX = false;
+          })
+          # (import ../../overlays/emacs.nix { withX = true; })
         ];
       };
     }

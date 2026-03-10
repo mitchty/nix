@@ -16,7 +16,7 @@
       coreutils
       curl
       etcd
-      hfdownloader
+      # #      hfdownloader
       home-manager
       htmlq
       jq

@@ -8,6 +8,14 @@ let
     inputs.self.overlays.overrides
     inputs.self.overlays.yt-dlp
   ];
+
+  #unstableOverlays = [ ];
+  unstableOverlays = [
+    inputs.self.overlays.inetutils
+    inputs.self.overlays.llama-cpp
+    inputs.self.overlays.llama-cpp-blas
+    inputs.self.overlays.llama-swap
+  ];
 in
 [
   (final: prev: {
@@ -24,7 +32,7 @@ in
       config = {
         allowUnfree = true;
       };
-      overlays = commonOverlays;
+      overlays = commonOverlays ++ unstableOverlays;
     };
 
     # For when/if I need to distinguish the ai unstable tracking from reg
@@ -39,7 +47,7 @@ in
         allowCuda = true;
         cudaSupport = true;
       };
-      overlays = commonOverlays;
+      overlays = commonOverlays ++ unstableOverlays;
     };
 
     # Also going to test out abusing different derivations for amd/nvidia
@@ -51,14 +59,14 @@ in
       // lib.optionalAttrs (final.stdenv.isLinux) {
         rocmSupport = true;
       };
-      overlays = commonOverlays;
+      overlays = commonOverlays ++ unstableOverlays;
     };
 
     # TODO: Should I even keep this here? Also nix-hardware needs to get
     # in here at some point.
     cf-dns-update = inputs.cf-dns-update.packages.${prev.system}.default;
     kairos = inputs.kairos.packages.${prev.system}.default;
-    open-webui-cli = inputs.open-webui-cli.packages.${prev.system}.release;
+    # open-webui-cli = inputs.open-webui-cli.packages.${prev.system}.release;
     inherit (inputs.nix-update.packages.${prev.system}) nix-update;
     inherit (inputs.nixos-generators.packages.${prev.system}) nixos-generate;
     inherit (inputs.home-manager.packages.${prev.system}) home-manager;
@@ -73,8 +81,10 @@ in
   inputs.fenix.overlays.default
   inputs.nur.overlays.default
   inputs.nix-net-lib.overlays.default
+  inputs.wgsl-analyzer.overlays.default
 ]
 ++ (with inputs.self.overlays; [
   overrides
+  inetutils
   # emacs overlay is applied per-host with specific parameters
 ])

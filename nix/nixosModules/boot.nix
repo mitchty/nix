@@ -4,10 +4,12 @@
   environment = {
     systemPackages = [
       pkgs.efibootmgr
+      pkgs.xfsprogs
     ];
   };
 
   boot = {
+    supportedFilesystems = [ "xfs" ];
     tmp = {
       cleanOnBoot = true;
       useTmpfs = true;

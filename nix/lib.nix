@@ -1,5 +1,71 @@
 { lib, ... }:
 rec {
+  # Fetch a model file from HuggingFace. Takes pkgs first, then the spec attrset.
+  # Spec attrs: owner, repo, name, hash (optional), branch (optional, default "main")
+  fetchhf =
+    pkgs:
+    {
+      owner,
+      repo,
+      branch ? "main",
+      name,
+      hash ? "",
+      ...
+    }@args:
+    pkgs.fetchurl (
+      (builtins.removeAttrs args [
+        "owner"
+        "repo"
+        "branch"
+      ])
+      // {
+        url = "https://huggingface.co/${owner}/${repo}/resolve/${branch}/${name}";
+        inherit name;
+      }
+      // lib.optionalAttrs (hash != "") { inherit hash; }
+    );
+
+  # Raw model specs — no pkgs involved, just metadata.
+  # Modules pick the ones they want and call fetchhf pkgs spec to materialise.
+  llamaModels = {
+    flux2 = {
+      owner = "unsloth";
+      repo = "FLUX.2-klein-9B-GGUF";
+      name = "flux-2-klein-9b-F16.gguf";
+      hash = "sha256-WoiGr0jHTTmmk/iuem2b7a/SQxbDXTyZ5hEkMlrtu5g=";
+    };
+    minimax25 = {
+      owner = "unsloth";
+      repo = "MiniMax-M2.5-GGUF";
+      name = "MiniMax-M2.5-UD-TQ1_0.gguf";
+      hash = "sha256-YPxNL4z/Fn7jOfDtAMJ3GKHdid//AfIA33HcFe7nRy4=";
+    };
+    gemma3 = {
+      owner = "ggml-org";
+      repo = "gemma-3-4b-it-GGUF";
+      name = "gemma-3-4b-it-Q4_K_M.gguf";
+      hash = "sha256-iC6NLbRNxVT7DqUHfLfkvEnnNCofDaV5AcCALqIaCGM=";
+    };
+    llava = {
+      owner = "cjpais";
+      repo = "llava-1.6-mistral-7b-gguf";
+      name = "llava-v1.6-mistral-7b.Q6_K.gguf";
+      hash = "sha256-MYJhcP+i6AgLvNdMrHGPkGSE/VpZiVVQ75TBuqSZdZU=";
+    };
+    qwen3 = {
+      owner = "bartowski";
+      repo = "Qwen_Qwen3-0.6B-GGUF";
+      name = "Qwen_Qwen3-0.6B-Q4_K_M.gguf";
+      hash = "sha256-ms/B4AExHzS0JSABtiby5GbVkqQgZfZlcb/zeQ1OGxQ=";
+    };
+    gpt-oss-20b = {
+      owner = "ggml-org";
+      repo = "gpt-oss-20b-GGUF";
+      name = "gpt-oss-20b-mxfp4.gguf";
+      hash = "sha256-vjemNqyg/BquDTIyX4L2tNIUlfBoI7X7wYmK4DA+mTU=";
+    };
+  };
+
   # Admin user SSH key for secrets decryption, the private key backing this is not stored anywhere
   adminKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILGJSGtoArRe0CMGOek5iZXOdLikEvrulvjVUXpx4jLV";
   hmKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGimTE2+hCBsFIAOxFUO3+hmTMfXb2e8iSObBNnUr/af";
@@ -69,35 +135,14 @@ rec {
 
   # Detect if we're cross-evaluating (e.g., macOS evaluating Linux configs or vice versa)
   # Returns true if we should skip full builds to avoid cross-platform evaluation issues
-  isCrossEvaluation =
-    targetSystem:
-    let
-      # What platform are we evaluating on?
-      onMacos = builtins.pathExists "/System/Library";
-      onLinux = builtins.pathExists "/proc/kcore";
-
-      # What platform is the target?
-      targetIsDarwin = builtins.elem targetSystem [
-        "aarch64-darwin"
-        "x86_64-darwin"
-      ];
-      targetIsLinux = builtins.elem targetSystem [
-        "x86_64-linux"
-        "aarch64-linux"
-        "i686-linux"
-      ];
-
-      # Helper functions for native evaluation detection
-      evaluatingOnMacos = onMacos && targetIsDarwin;
-      evaluatingOnLinux = onLinux && targetIsLinux;
-
-      # Test positive: are we doing a native evaluation?
-      nativeEval = evaluatingOnMacos || evaluatingOnLinux;
-
-      # Invert: cross-evaluation is when we're NOT doing native eval
-      crossing = !nativeEval;
-    in
-    crossing;
+  #
+  # TODO: builtins.pathExists on non-store paths always returns false in Nix
+  # flake pure eval mode (e.g. `nix eval --expr 'builtins.pathExists "/proc/kcore"'`
+  # returns false even when the file physically exists). builtins.currentSystem is
+  # similarly unavailable without --impure. So any runtime host-detection approach
+  # is broken here. Hardcoded to false for now so enableFullBuild always returns
+  # true; the macOS nix flake check cross-eval guard needs a different strategy.
+  isCrossEvaluation = _targetSystem: false;
 
   # Helper to determine if we should do full builds (inverse of isCrossEvaluation)
   enableFullBuild = targetSystem: !(isCrossEvaluation targetSystem);

@@ -136,14 +136,34 @@ latest() {
   # just specifying things manually for now. If i start overlaying a lot more
   # future me problem.
   #for pkg in $(nix eval ".#legacyPackages.\"${arch}\"" --apply builtins.attrNames --json 2> /dev/null | jq -r '.[]'); do
-  for pkg in yt-dlp bgutil-ytdlp-pot-provider yt-dlp-get-pot; do
-    if nix eval --raw ".#.legacyPackages.\"${arch}\".${pkg}.latest" > /dev/null 2>&1; then
-      evalstring=$(nix eval --raw ".#.legacyPackages.\"${arch}\".${pkg}.latest" 2> /dev/null)
+
+  # Packages in commonOverlays are at .#legacyPackages."${arch}".${pkg}
+  for pkg in bgutil-ytdlp-pot-provider; do
+    if nix eval --raw ".#legacyPackages.\"${arch}\".${pkg}.latest" > /dev/null 2>&1; then
+      evalstring=$(nix eval --raw ".#legacyPackages.\"${arch}\".${pkg}.latest" 2> /dev/null)
       # Doing it this way so I don't have to rerun things, so go away
       #shellcheck disable=SC2181
       if [ "$?" -eq 0 ]; then
         latest=$(eval ${evalstring})
-        ours=$(nix eval --raw ".#.legacyPackages.\"${arch}\".${pkg}.version" 2> /dev/null)
+        ours=$(nix eval --raw ".#legacyPackages.\"${arch}\".${pkg}.version" 2> /dev/null)
+
+        if [ "$?" -eq 0 ]; then
+          cmp_versions "${latest}" "${ours}"
+        fi
+      fi
+    fi
+  done
+
+  # Packages in unstableOverlays live under pkgs.unstable.* — access via legacyPackages."${arch}".unstable.${pkg}
+  # Note: llama-cpp-blas has no latest attr (it inherits version from llama-cpp overlay)
+  for pkg in llama-cpp llama-swap yt-dlp yt-dlp-ejs yt-dlp-get-pot; do
+    if nix eval --raw ".#legacyPackages.\"${arch}\".unstable.${pkg}.latest" > /dev/null 2>&1; then
+      evalstring=$(nix eval --raw ".#legacyPackages.\"${arch}\".unstable.${pkg}.latest" 2> /dev/null)
+      # Doing it this way so I don't have to rerun things, so go away
+      #shellcheck disable=SC2181
+      if [ "$?" -eq 0 ]; then
+        latest=$(eval ${evalstring})
+        ours=$(nix eval --raw ".#legacyPackages.\"${arch}\".unstable.${pkg}.version" 2> /dev/null)
 
         if [ "$?" -eq 0 ]; then
           cmp_versions "${latest}" "${ours}"

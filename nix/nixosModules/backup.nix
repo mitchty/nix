@@ -42,7 +42,7 @@ in
     serviceConfig = {
       Type = "oneshot";
       User = "root";
-      ExecStart = "${pkgs.kopia}/bin/kopia snapshot create --tags script:true --tags gihugic:true /var/lib/forgejo /var/lib/karakeep /var/lib/prometheus2 /var/lib/grafana /var/lib/loki /var/lib/private /var/lib/media";
+      ExecStart = "${pkgs.kopia}/bin/kopia snapshot create --tags script:true --tags gihugic:true /var/lib";
     };
     requires = [
       "srv-backup.mount"

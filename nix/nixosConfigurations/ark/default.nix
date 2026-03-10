@@ -86,6 +86,7 @@ in
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
+              backupFileExtension = "bak";
 
               users.mitch = {
                 home = {

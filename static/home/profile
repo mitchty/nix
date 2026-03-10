@@ -344,3 +344,12 @@ nom() {
     ${NOM} "$@"
   fi
 }
+
+# Make running nix fast build a bit simpler across packages and checks
+#
+# This is to do tests for stuff like my nix flake where checks on some stuff
+# fail on macos.
+nfb() {
+  system=$(nix eval --raw --impure --expr builtins.currentSystem)
+  nix-fast-build --no-link --flake ".#packages.${system}" --flake ".#checks.${system}"
+}

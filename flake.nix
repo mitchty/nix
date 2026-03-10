@@ -318,10 +318,11 @@
       url = "github:mitchty/cf-dns-update";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    open-webui-cli = {
-      url = "github:mitchty/open-webui-cli";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # NB: I've ditched open-webui entirely
+    # open-webui-cli = {
+    #   url = "github:mitchty/open-webui-cli";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
     kairos = {
       url = "github:mitchty/kairos";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -340,6 +341,14 @@
     # slightly faster way to parallel build multiple derivations at once
     nix-fast-build = {
       url = "github:Mic92/nix-fast-build";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    mango = {
+      url = "github:DreamMaoMao/mango";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    wgsl-analyzer = {
+      url = "github:wgsl-analyzer/wgsl-analyzer";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

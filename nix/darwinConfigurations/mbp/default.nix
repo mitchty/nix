@@ -21,7 +21,8 @@
           laptop
           mutagen
           age
-          ollama
+          # ollama
+          llama-swap
           wireguard
         ]
         ++ (with inputs.self.crossplatformModules; [
@@ -33,7 +34,8 @@
         common.mosh.enable = true;
         mitchty = {
           age.enable = true;
-          ollama.enable = false;
+          # ollama.enable = false;
+          llama-swap.enable = true;
           wireguard = {
             enable = true;
             role = "client";
@@ -96,6 +98,7 @@
       home-manager = {
         useGlobalPkgs = true;
         useUserPackages = true;
+        backupFileExtension = "bak";
 
         users.mitch = {
           # ditto home manager state version generally

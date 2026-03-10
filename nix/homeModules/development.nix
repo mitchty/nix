@@ -15,7 +15,7 @@
       #      git
       nix-fast-build
       no-more-secrets
-      open-webui-cli
+      # open-webui-cli
       ripgrep
     ];
   };

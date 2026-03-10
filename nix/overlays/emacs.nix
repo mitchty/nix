@@ -6,8 +6,7 @@
 self: super:
 let
   mylib = import ../lib.nix { inherit (super) lib; };
-  #enableFullBuild = mylib.enableFullBuild super.stdenv.hostPlatform.system;
-  enableFullBuild = true;
+  enableFullBuild = mylib.enableFullBuild super.stdenv.hostPlatform.system;
 in
 if enableFullBuild then
   # Full complex emacs build - only evaluate when enableFullBuild is true

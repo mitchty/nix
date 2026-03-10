@@ -17,11 +17,11 @@ rec {
     (python-final: python-prev: {
       yt-dlp-ejs = python-prev.yt-dlp-ejs.overrideAttrs (old: rec {
         latest = "curl --silent https://api.github.com/repos/yt-dlp/ejs/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
-        version = "0.4.0";
+        version = "0.5.0";
         src = prev.fetchPypi {
           inherit version;
           pname = "yt_dlp_ejs";
-          hash = "sha256-PGfgvrb582A/vLVvQl6rqjfFIkPZDSDMvM4d2UHPvQc=";
+          hash = "sha256-jfrlnkGCMvSFJT3Pjhl/76IyQjw694JP4Z5FF7FzKTs=";
         };
       });
     })
@@ -34,11 +34,11 @@ rec {
     }).overrideAttrs
       (old: rec {
         latest = "curl --silent https://api.github.com/repos/yt-dlp/yt-dlp/tags | jq -r '.[] | .name' | grep -Ev post | head -n 1 | sed -E 's/\\.0?([1-9])/\\.\\1/g'";
-        version = "2026.1.29";
+        version = "2026.3.3";
         src = prev.fetchPypi {
           inherit version;
           pname = "yt_dlp";
-          hash = "sha256-ErSJ6xaCjMP/8XI/JEmS666KW/Gtdcjp8B1ymuI367k=";
+          hash = "sha256-PbeWnjqJZNx4a968/6JlPzESO/KmMPBKF72vt7vTmVI=";
         };
         postPatch = ":";
 

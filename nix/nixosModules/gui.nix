@@ -6,6 +6,10 @@
   ...
 }:
 {
+  imports = [
+    inputs.mango.nixosModules.mango
+  ];
+
   options.services.mitchty.gui = {
     enable = lib.mkEnableOption "Specify if this is a graphical install or not and if so what type";
 
@@ -54,6 +58,12 @@
         [
           "/share/applications"
           "/share/xdg-desktop-portal"
+          # GDM discovers Wayland sessions from this path; without it none of
+          # sway/hyprland/plasma-wayland .desktop files get symlinked into
+          # /run/current-system/sw/share and GDM won't see them.
+          "/share/wayland-sessions"
+          # Same deal for X11 sessions so i3/xfce show up when type="both".
+          "/share/xsessions"
         ];
 
     environment.systemPackages =
@@ -160,6 +170,13 @@
               "--verbose"
             ];
           };
+
+      mango =
+        lib.mkIf
+          (config.services.mitchty.gui.type == "wayland" || config.services.mitchty.gui.type == "both")
+          {
+            enable = true;
+          };
     };
 
     xdg = {
@@ -237,7 +254,13 @@
       };
 
       displayManager = {
-        defaultSession = lib.mkIf (config.services.mitchty.gui.type == "X") "xfce+i3";
+        defaultSession =
+          if
+            (config.services.mitchty.gui.type == "wayland" || config.services.mitchty.gui.type == "both")
+          then
+            "hyprland"
+          else
+            "xfce+i3";
 
         gdm =
           lib.mkIf
@@ -334,8 +357,14 @@
         {
           imports = [
             inputs.self.homeModules.linux-wayland
-            inputs.self.homeModules.linux-sway
+            # inputs.self.homeModules.linux-sway # renamed to linux-sway.disabled — not ready yet
             inputs.self.homeModules.linux-hyprland
+            # mango hm module must be imported here (at the NixOS level where
+            # inputs is available) rather than inside linux-mangowc.nix itself,
+            # because referencing inputs inside a module's imports = [] list
+            # causes infinite recursion.
+            inputs.mango.hmModules.mango
+            inputs.self.homeModules.linux-mangowc
             inputs.self.homeModules.linux-plasma
           ];
         }

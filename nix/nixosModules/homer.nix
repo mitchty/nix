@@ -209,7 +209,7 @@ in
                 {
                   name = "llama-swap";
                   logo = logoUrl "llama-swap.svg";
-                  url = "http://llama.home.arpa:11343/ui/activity";
+                  url = "http://llama.home.arpa:11343";
                   target = "_blank";
                 }
               ];

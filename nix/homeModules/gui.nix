@@ -15,14 +15,16 @@ in
 {
   # Fonts trigger builds on the destination platform if cross checking but
   # normally we always want them
-  home.packages = lib.optionals enableFullBuild [
-    pkgs.comic-code
-    pkgs.pragmata-pro
-    # These two so I can read Japanese at least, otherwise chrome displays
-    # literally nothing. Not even broken text.
-    pkgs.noto-fonts-cjk-sans
-    pkgs.noto-fonts-cjk-serif
-  ];
+  home.packages =
+    (lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.unstable.blender ])
+    ++ lib.optionals enableFullBuild [
+      pkgs.comic-code
+      pkgs.pragmata-pro
+      # These two so I can read Japanese at least, otherwise chrome displays
+      # literally nothing. Not even broken text.
+      pkgs.noto-fonts-cjk-sans
+      pkgs.noto-fonts-cjk-serif
+    ];
 
   fonts.fontconfig.enable = enableFullBuild;
 

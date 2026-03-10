@@ -30,10 +30,8 @@ nix/img
 .local/state
 
 # Steam related junk that doesn't need to be backed up
-.local/share/Steam/*/*cache*
-.local/share/Steam/*cache*
-.local/share/Steam/logs
-.local/share/Steam/steamapps
+.local/share/Steam
+.local/share/Steam.old
 
 # Mutagen caches can get gihugic and the data they're moving is backed
 # up anyway don't pollute.

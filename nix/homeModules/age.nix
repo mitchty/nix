@@ -20,7 +20,7 @@
     if pkgs.stdenv.isDarwin then
       ''
         # Restart the launchd agent to decrypt secrets
-        $DRY_RUN_CMD launchctl kickstart -k gui/$UID/org.nix-community.home.activate-agenix || true
+        $DRY_RUN_CMD /bin/launchctl kickstart -k gui/$UID/org.nix-community.home.activate-agenix || true
       ''
     else
       ''

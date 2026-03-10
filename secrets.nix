@@ -75,6 +75,9 @@ in
   "secrets/cifs/mitch.age".publicKeys = mkKeys { tags = [ "cifs" ]; };
   "secrets/cifs/backup.age".publicKeys = mkKeys { tags = [ "backup" ]; };
 
+  # iscsi secret for synology nas
+  "secrets/iscsi/password.age".publicKeys = mkKeys { tags = [ "iscsi" ]; };
+
   # This is really just wm2 atm but Wifi networkmanager file data
   "secrets/wifi/lostfox.age".publicKeys = mkKeys { tags = [ "wifi" ]; };
   "secrets/wifi/newerhotness.age".publicKeys = mkKeys { tags = [ "wifi" ]; };

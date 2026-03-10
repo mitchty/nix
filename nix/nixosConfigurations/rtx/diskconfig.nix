@@ -156,14 +156,6 @@
                       ];
                       mountpoint = "/Users/mitch/src";
                     };
-                    # # Steam gets its own subvolume
-                    # "/Users/mitch/.local/share/Steam" = {
-                    #   mountOptions = [
-                    #     "users"
-                    #     "noatime"
-                    #   ];
-                    #   mountpoint = "/Users/mitch/.local/share/Steam";
-                    # };
 
                     # Subvolume for the swapfile
                     "/swap" = {
